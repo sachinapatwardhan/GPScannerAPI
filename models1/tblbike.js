@@ -36,10 +36,6 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING,
       allowNull: true
     },
-    macname: {
-      type: DataTypes.STRING,
-      allowNull: true
-    },
     renewaldate: {
       type: DataTypes.DATE,
       allowNull: true
@@ -58,20 +54,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true,
       defaultValue: '0'
     },
-    IsCharging: {
-      type: DataTypes.BOOLEAN,
-      allowNull: true,
-      defaultValue: '0'
-    },
     IMEINumber: {
-      type: DataTypes.STRING,
-      allowNull: true
-    },
-    CurrentWifi: {
-      type: DataTypes.STRING,
-      allowNull: true
-    },
-    DeviceModel: {
       type: DataTypes.STRING,
       allowNull: true
     },
@@ -88,20 +71,11 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE,
       allowNull: true
     },
-    Weight: {
-      type: DataTypes.STRING,
-      allowNull: true
-    },
     DeviceType: {
       type: DataTypes.STRING,
       allowNull: true
     },
     IsOldDevice: {
-      type: DataTypes.BOOLEAN,
-      allowNull: true,
-      defaultValue: '0'
-    },
-    Gsercer: {
       type: DataTypes.BOOLEAN,
       allowNull: true,
       defaultValue: '0'
