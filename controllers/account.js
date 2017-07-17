@@ -1,0 +1,1141 @@
+﻿//Tables
+var router = express.Router();
+var User = models.tbluserinformation;
+var UserInRole = models.tbluserinrole;
+var Role = models.tblrole;
+var Country = models.tblcountrymgmt;
+var State = models.tblcountrystatemgmt;
+var SystemEmail = models.tblemailsettingsys;
+var EmailTemplate = models.tblemailtemplate;
+var PushNotification = models.tblpushnotification;
+var Setting = models.tblsetting;
+//End of Tables
+
+router.get('/login', jsonParser, function(req, res) {
+    var Encryptpassword = jwt.encode(req.query.password, "bugz");
+
+    var search = {};
+
+    search['$and'] = [];
+
+    var obj = new Object();
+    obj['username'] = {
+        $eq: req.query.username
+    };
+    search['$and'].push(obj);
+
+
+    search['$or'] = [];
+
+    var obj = new Object();
+    obj['OwnerPassword'] = {
+        $eq: Encryptpassword
+    };
+    search['$or'].push(obj);
+
+    var obj = new Object();
+    obj['password'] = {
+        $eq: Encryptpassword
+    };
+    search['$or'].push(obj);
+
+    User.findOne({
+        // where: {
+        //     username: req.query.username,
+        //     password: Encryptpassword
+        // }
+        where: search
+    }).then(function(response) {
+        if (response != null) {
+            UserInRole.belongsTo(Role, {
+                foreignKey: {
+                    name: 'roleId',
+                    allowNull: false
+                }
+            });
+            UserInRole.findAll({
+                where: {
+                    userId: response.id
+                },
+                include: [{
+                    model: Role,
+                    attributes: ['id', 'RoleName', 'Country']
+                }]
+            }).then(function(resUserInRole) {
+                var lstRole = [];
+                var lstRolewiseCountryList = [];
+                for (var i = 0; i < resUserInRole.length; i++) {
+                    var objRole = resUserInRole[i].tblrole.RoleName;
+                    lstRole.push(objRole);
+
+                    var objCountry = resUserInRole[i].tblrole.Country;
+                    lstRolewiseCountryList.push(objCountry);
+                }
+
+                var user = {
+                    username: req.query.username,
+                    password: response.password,
+                    Role: lstRole
+                }
+                var token = jwt.encode(user, "bugz");
+                res.json({
+                    success: true,
+                    token: 'JWT ' + token,
+                    UserId: response.id,
+                    UserImage: response.image,
+                    UserCountry: response.country,
+                    UserRoles: lstRole,
+                    RolewiseCountryList: lstRolewiseCountryList,
+                    message: "Login Successfully..."
+                });
+            })
+        } else {
+            res.json({
+                success: false,
+                message: "Invalid Username or Password..."
+            });
+        }
+    })
+})
+
+router.get('/Mobilelogin', jsonParser, function(req, res) {
+    var Encryptpassword = jwt.encode(req.query.password, "bugz");
+    var search = {};
+    search['$and'] = [];
+
+    var obj = new Object();
+    obj['username'] = {
+        $eq: req.query.username
+    };
+    search['$and'].push(obj);
+    if (req.query.type == 'Owner') {
+        var obj = new Object();
+        obj['OwnerPassword'] = {
+            $eq: Encryptpassword
+        };
+        search['$and'].push(obj);
+    } else {
+        var obj = new Object();
+        obj['password'] = {
+            $eq: Encryptpassword
+        };
+        search['$and'].push(obj);
+    }
+
+    User.findOne({
+        // where: {
+        //     username: req.query.username,
+        //     password: Encryptpassword,
+        //     // Type: req.query.type
+        // }
+        where: search
+    }).then(function(response) {
+        if (response != null) {
+            if (response.Type == req.query.type || response.Type == 'Both' || req.query.type == null || req.query.type == undefined) {
+                //if (response.IsMobileVerify == true) {
+                UserInRole.belongsTo(Role, {
+                    foreignKey: {
+                        name: 'roleId',
+                        allowNull: false
+                    }
+                });
+                UserInRole.findAll({
+                        where: {
+                            userId: response.id
+                        },
+                        include: [{
+                            model: Role,
+                            attributes: ['id', 'RoleName']
+                        }]
+                    }).then(function(resUserInRole) {
+                        var lstRole = [];
+                        for (var i = 0; i < resUserInRole.length; i++) {
+                            var objRole = resUserInRole[i].tblrole.RoleName;
+                            lstRole.push(objRole);
+                        }
+
+                        var user = {
+                            username: req.query.username,
+                            password: Encryptpassword,
+                            Role: lstRole
+                        }
+                        var token = jwt.encode(user, "bugz");
+                        res.json({
+                            success: true,
+                            token: 'JWT ' + token,
+                            UserId: response.id,
+                            message: "Login Successfully..."
+                        });
+                    })
+                    // } else {
+                    //     res.json({
+                    //         success: false,
+                    //         UserId: response.id,
+                    //         message: "OTP"
+                    //     });
+                    // };
+            } else {
+                res.json({
+                    success: false,
+                    message: "Invalid Username or Password..."
+                });
+            }
+        } else {
+
+            //Get Wifi Data
+            // request.get({
+            //     url: 'http://api.pettorway.com/GetDateServices.asmx/loginSystem?LoginName=' + req.query.username + '&LoginPassword=' + req.query.password + '&LoginType=ENTERPRISE&language=cn&ISMD5=0&timeZone=8&apply=APP&loginUrl=&PushID=',
+            // }, function(error, response, body) {
+            //     var data1 = JSON.parse(body)
+            //     if (data1.success == 'true') {
+            //         res.json({
+            //             success: false,
+            //             mds: data1.mds,
+            //             message: "Old User"
+            //         });
+            //     } else {
+            res.json({
+                success: false,
+                message: "Invalid Username or Password..."
+            });
+            // }
+
+
+
+            // });
+        }
+    })
+})
+
+router.get('/MobileOwnerlogin', jsonParser, function(req, res) {
+    var Encryptpassword = jwt.encode(req.query.password, "bugz");
+    var search = {};
+    search['$or'] = [];
+
+    var obj = new Object();
+    obj['username'] = {
+        $eq: req.query.username
+    };
+    search['$or'].push(obj);
+
+    var obj = new Object();
+    obj['OwnerPhone'] = {
+        $eq: req.query.username
+    };
+    search['$or'].push(obj);
+
+    search['$and'] = [];
+
+    var obj = new Object();
+    obj['OwnerPassword'] = {
+        $eq: Encryptpassword
+    };
+    search['$and'].push(obj);
+    
+    User.findOne({
+        where: search
+    }).then(function(response) {
+        if (response != null) {
+            if (response.Type == req.query.type || response.Type == 'Both' || req.query.type == null || req.query.type == undefined) {
+                if (response.IsMobileVerify == true) {
+                    UserInRole.belongsTo(Role, {
+                        foreignKey: {
+                            name: 'roleId',
+                            allowNull: false
+                        }
+                    });
+                    UserInRole.findAll({
+                        where: {
+                            userId: response.id
+                        },
+                        include: [{
+                            model: Role,
+                            attributes: ['id', 'RoleName']
+                        }]
+                    }).then(function(resUserInRole) {
+                        var lstRole = [];
+                        for (var i = 0; i < resUserInRole.length; i++) {
+                            var objRole = resUserInRole[i].tblrole.RoleName;
+                            lstRole.push(objRole);
+                        }
+
+                        var user = {
+                            username: response.username,
+                            password: Encryptpassword,
+                            Role: lstRole
+                        }
+                        var token = jwt.encode(user, "bugz");
+                        res.json({
+                            success: true,
+                            token: 'JWT ' + token,
+                            UserId: response.id,
+                            UserName: response.username,
+                            message: "Login Successfully..."
+                        });
+                    })
+                } else {
+                    res.json({
+                        success: false,
+                        UserId: response.id,
+                        UserName: response.username,
+                        message: "OTP"
+                    });
+                };
+            } else {
+                res.json({
+                    success: false,
+                    message: "Invalid Username or Password..."
+                });
+            }
+        } else {
+            res.json({
+                success: false,
+                message: "Invalid Username or Password..."
+            });
+        }
+    })
+})
+
+router.get('/OwnerMobilelogout', jsonParser, function(req, res) {
+    PushNotification.findOne({
+        where: {
+            udid: req.query.udid,
+            UserType: 'Owner',
+        }
+    }).then(function(response) {
+        if (response != null) {
+            var objPushnotification = response;
+            objPushnotification.updateAttributes({ iduser: 0 }).then(function(resUpdate) {
+                res.json({
+                    success: true,
+                    message: "Logout Successfully."
+                });
+            });
+
+        } else {
+            res.json({
+                success: true,
+                message: "Logout Successfully."
+            });
+        }
+    })
+})
+
+router.get('/Mobilelogout', jsonParser, function(req, res) {
+    PushNotification.findOne({
+        where: {
+            udid: req.query.udid,
+            UserType: 'Shop',
+        }
+    }).then(function(response) {
+        if (response != null) {
+            var objPushnotification = response;
+            objPushnotification.updateAttributes({ iduser: 0 }).then(function(resUpdate) {
+                res.json({
+                    success: true,
+                    message: "Logout Successfully."
+                });
+            });
+
+        } else {
+            res.json({
+                success: true,
+                message: "Logout Successfully."
+            });
+        }
+    })
+})
+
+router.post('/register', jsonParser, function(req, res) {
+    objUserReg = req.body
+
+    if (objUserReg.Type == undefined || objUserReg.Type == null || objUserReg.Type == '') {
+        objUserReg.Type = 'Shop';
+    }
+    objUserReg.password = jwt.encode(objUserReg.password, "bugz");
+
+    if (objUserReg.Type == 'Owner') {
+        objUserReg.OwnerPassword = objUserReg.password
+    }
+    if (!validator.isEmail(objUserReg.email)) {
+        res.json({
+            success: false,
+            message: "Invalid Email..."
+        });
+    } else {
+        User.findOne({
+            where: {
+                username: objUserReg.username
+            }
+        }).then(function(chkUserExist) {
+            if (chkUserExist != null && (chkUserExist.Type == objUserReg.Type || chkUserExist.Type == 'Both')) {
+                res.json({
+                    success: false,
+                    message: "Username is already Exist..."
+                });
+            } else {
+                User.findOne({
+                    where: {
+                        // email: objUserReg.email
+                        // $or: [{ email: objUserReg.email }, { phone: objUserReg.phone }]
+                        $or: [{ email: objUserReg.email }]
+                    }
+                }).then(function(chkEmailExist) {
+                    if (chkEmailExist != null && (chkEmailExist.Type == objUserReg.Type || chkEmailExist.Type == 'Both')) {
+                        // if (objUserReg.phone == chkEmailExist.phone) {
+                        //     res.json({
+                        //         success: false,
+                        //         message: "Phone is already Exist..."
+                        //     });
+                        // } else {
+                        res.json({
+                            success: false,
+                            message: "Email is already Exist..."
+                        });
+                        //}
+                    } else {
+                        if (chkEmailExist != null && objUserReg.Type == 'Owner') {
+                            objUserReg.Type = 'Both';
+                            chkEmailExist.updateAttributes({ Type: 'Both', OwnerPassword: objUserReg.OwnerPassword, MaxSpeed: objUserReg.MaxSpeed }).then(function(resUser) {
+                                funAuditLog.CreateAuditLog('register', chkEmailExist.username, 'Create New User in Both');
+                                res.json({
+                                    success: true,
+                                    message: "User Registered Successfully..."
+                                });
+                            })
+                        } else if (chkEmailExist != null && objUserReg.Type == 'Shop') {
+                            objUserReg.Type = 'Both';
+                            chkEmailExist.updateAttributes({ Type: 'Both', password: objUserReg.password }).then(function(resUser) {
+                                funAuditLog.CreateAuditLog('register', chkEmailExist.username, 'Create New User in Both');
+                                res.json({
+                                    success: true,
+                                    message: "User Registered Successfully..."
+                                });
+                            })
+                        } else {
+                            User.create(objUserReg).then(function(resUserReg) {
+                                Role.findOne({
+                                    where: {
+                                        RoleName: "User"
+                                    }
+                                }).then(function(objRole) {
+                                    if (objRole != null) {
+                                        var objUserInRole = {
+                                            userId: resUserReg.id,
+                                            roleId: objRole.id,
+                                        }
+                                        UserInRole.create(objUserInRole).then(function(resUserInRole) {
+                                            funAuditLog.CreateAuditLog('register', resUserReg.username, 'Create New User');
+                                            res.json({
+                                                success: true,
+                                                message: "User Registered Successfully..."
+                                            });
+                                        })
+                                    } else {
+                                        var objRole = {
+                                            RoleName: "User",
+                                            Description: null
+                                        }
+                                        Role.create(objRole).then(function(resRole) {
+
+                                            var objUserInRole = {
+                                                userId: resUserReg.id,
+                                                roleId: resRole.id,
+                                            }
+                                            UserInRole.create(objUserInRole).then(function(resUserInRole) {
+                                                funAuditLog.CreateAuditLog('register', resUserReg.username, 'Create New User');
+                                                res.json({
+                                                    success: true,
+                                                    message: "User Registered Successfully..."
+                                                });
+                                            })
+                                        })
+                                    }
+                                })
+                            }).catch(function(error) {
+                                res.json({
+                                    success: false,
+                                    message: error.Error[0].message + "..."
+                                });
+                            })
+                        }
+                    }
+                })
+            }
+        })
+    }
+});
+
+router.post('/OwnerRegister', jsonParser, function(req, res) {
+    objUserReg = req.body
+    objUserReg.password = jwt.encode(objUserReg.password, "bugz");
+    objUserReg.OwnerPassword = objUserReg.password
+ 
+    if (!validator.isEmail(objUserReg.email)) {
+        res.json({
+            success: false,
+            message: "Invalid Email..."
+        });
+    } else {
+        User.findOne({
+            where: {
+                username: objUserReg.username
+            }
+        }).then(function(chkUserExist) {
+            if (chkUserExist != null && (chkUserExist.Type == objUserReg.Type || chkUserExist.Type == 'Both')) {
+                res.json({
+                    success: false,
+                    message: "Username is already Exist..."
+                });
+            } else {
+                User.findOne({
+                    where: {
+                        $or: [{ email: objUserReg.email }]
+                    }
+                }).then(function(chkEmailExist) {
+                    if (chkEmailExist != null && (chkEmailExist.Type == objUserReg.Type || chkEmailExist.Type == 'Both')) {
+                        res.json({
+                            success: false,
+                            message: "Email is already Exist..."
+                        });
+                    } else {
+                        if (chkEmailExist != null) {
+                            objUserReg.Type = 'Both';
+                            chkEmailExist.updateAttributes({ Type: 'Both', OwnerPassword: objUserReg.OwnerPassword, MaxSpeed: objUserReg.MaxSpeed }).then(function(resUser) {
+                                funAuditLog.CreateAuditLog('register', chkEmailExist.username, 'Create New User in Both');
+
+                                //Send OTP
+                                var objOTP = new Object();
+                                objOTP.To = objUserReg.phone;
+                                objOTP.body = 'Your Verification Code for logging into GPSINA is ' + objUserReg.OTP + '. Kindly do not share it with anyone else.';
+                                global.sendSMS(objOTP, function(responseOTP) {
+                                    console.log(responseOTP)
+                                });
+
+                                res.json({
+                                    success: true,
+                                    message: "User Registered Successfully..."
+                                });
+                            })
+                        } else {
+                            User.create(objUserReg).then(function(resUserReg) {
+                                Role.findOne({
+                                    where: {
+                                        RoleName: "User"
+                                    }
+                                }).then(function(objRole) {
+                                    if (objRole != null) {
+                                        var objUserInRole = {
+                                            userId: resUserReg.id,
+                                            roleId: objRole.id,
+                                        }
+                                        UserInRole.create(objUserInRole).then(function(resUserInRole) {
+                                            funAuditLog.CreateAuditLog('register', resUserReg.username, 'Create New User');
+
+                                            //Send OTP
+                                            var objOTP = new Object();
+                                            objOTP.To = objUserReg.phone;
+                                            objOTP.body = 'Your Verification Code for logging into GPSINA is ' + objUserReg.OTP + '. Kindly do not share it with anyone else.';
+                                            global.sendSMS(objOTP, function(responseOTP) {
+                                                console.log(responseOTP)
+                                            });
+
+                                            res.json({
+                                                success: true,
+                                                message: "User Registered Successfully..."
+                                            });
+                                        })
+                                    } else {
+                                        var objRole = {
+                                            RoleName: "User",
+                                            Description: null
+                                        }
+                                        Role.create(objRole).then(function(resRole) {
+
+                                            var objUserInRole = {
+                                                userId: resUserReg.id,
+                                                roleId: resRole.id,
+                                            }
+                                            UserInRole.create(objUserInRole).then(function(resUserInRole) {
+                                                funAuditLog.CreateAuditLog('register', resUserReg.username, 'Create New User');
+
+                                                //Send OTP
+                                                var objOTP = new Object();
+                                                objOTP.To = objUserReg.phone;
+                                                objOTP.body = 'Your Verification Code for logging into GPSINA is ' + objUserReg.OTP + '. Kindly do not share it with anyone else.';
+                                                global.sendSMS(objOTP, function(responseOTP) {
+                                                    console.log(responseOTP)
+                                                });
+
+                                                res.json({
+                                                    success: true,
+                                                    message: "User Registered Successfully..."
+                                                });
+
+
+                                                res.json({
+                                                    success: true,
+                                                    message: "User Registered Successfully..."
+                                                });
+                                            })
+                                        })
+                                    }
+                                })
+                            }).catch(function(error) {
+                                res.json({
+                                    success: false,
+                                    message: error.Error[0].message + "..."
+                                });
+                            })
+                        }
+                    }
+                })
+            }
+        })
+    }
+});
+
+ router.get('/ResendOTP', function(req, res) {
+     User.findOne({
+         where: {
+             id: req.query.idUser
+         }
+     }).then(function(objUser) {
+         if (objUser != null) {
+             objUser.updateAttributes({ OTP: req.query.OTP }).then(function(resUpdate) {
+                 //Send OTP
+                 var objOTP = new Object();
+                 objOTP.To = objUser.phone;
+                 objOTP.body = 'Your Verification Code for logging into GPSINA is ' + req.query.OTP + '. Kindly do not share it with anyone else.';
+                 global.sendSMS(objOTP, function(responseOTP) {
+                     if (responseOTP.Status == true) {
+                         res.json({
+                             success: true,
+                             message: "Verification Code send to Registered Mobile Number."
+                         });
+                     } else {
+                         res.json({
+                             success: false,
+                             message: responseOTP.Message
+                         });
+                     }
+                 });
+             })
+         } else {
+             res.json({
+                 success: false,
+                 message: "Invalid User"
+             });
+         }
+
+     });
+ });
+
+router.post('/CheckUserExist', jsonParser, function(req, res) {
+    objUserReg = req.body
+    if (objUserReg.Type == undefined || objUserReg.Type == null || objUserReg.Type == '') {
+        objUserReg.Type = 'Shop';
+    }
+    if (!validator.isEmail(objUserReg.email)) {
+        res.json({
+            success: false,
+            message: "Invalid Email..."
+        });
+    } else {
+
+        User.findOne({
+            where: {
+                // email: objUserReg.email
+                // $or: [{ email: objUserReg.email }, { username: objUserReg.username }, { phone: objUserReg.phone }]
+                $or: [{ email: objUserReg.email }, { username: objUserReg.username }]
+            }
+        }).then(function(chkEmailExist) {
+            if (chkEmailExist != null) {
+                // if (objUserReg.phone == chkEmailExist.phone) {
+                //     res.json({
+                //         success: false,
+                //         message: "Phone is already Exist..."
+                //     });
+                // } else 
+                if (objUserReg.username == chkEmailExist.username && (chkEmailExist.Type == objUserReg.Type || chkEmailExist.Type == 'Both')) {
+                    res.json({
+                        success: false,
+                        message: "Username is already Exist..."
+                    });
+                }
+                // else {
+                //     res.json({
+                //         success: false,
+                //         message: "Email is already Exist..."
+                //     });
+                // }
+                else {
+                    res.json({
+                        success: true,
+                        message: "user is Exist in another Type..."
+                    });
+                }
+            } else {
+                res.json({
+                    success: true,
+                    message: "user is not Exist..."
+                });
+            }
+        })
+
+    }
+});
+
+var https = require('https');
+router.post('/CheckWebUserExistWithOTPsend', jsonParser, function(req, res) {
+    objUserReg = req.body
+    if (!validator.isEmail(objUserReg.email)) {
+        res.json({
+            success: false,
+            message: "Invalid Email..."
+        });
+    } else {
+
+        User.findOne({
+            where: {
+                // email: objUserReg.email
+                $or: [{ email: objUserReg.email }, { username: objUserReg.username }, { phone: objUserReg.phone }]
+            }
+        }).then(function(chkEmailExist) {
+            if (chkEmailExist != null) {
+                if (objUserReg.phone == chkEmailExist.phone) {
+                    res.json({
+                        success: false,
+                        message: "Phone is already Exist..."
+                    });
+                } else if (objUserReg.username == chkEmailExist.username) {
+                    res.json({
+                        success: false,
+                        message: "Username is already Exist..."
+                    });
+                } else {
+                    res.json({
+                        success: false,
+                        message: "Email is already Exist..."
+                    });
+                }
+            } else {
+
+                var data = JSON.stringify({
+                    api_key: 'a692ce5b',
+                    api_secret: '928903ee92ecd3e4',
+                    text: 'Your One Time Password(OTP) is ' + objUserReg.OTP,
+                    to: objUserReg.phone,
+                    from: 'Pettorway'
+
+                });
+
+                var options = {
+                    host: 'rest.nexmo.com',
+                    path: '/sms/json',
+                    port: 443,
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Content-Length': Buffer.byteLength(data)
+                    }
+                };
+
+                var req1 = https.request(options);
+
+                req1.write(data);
+                req1.end();
+
+                var responseData = '';
+                req1.on('response', function(res1) {
+                    res1.on('data', function(chunk) {
+                        responseData += chunk;
+                    });
+
+                    res1.on('end', function() {
+                        console.log(JSON.parse(responseData));
+                        res.json({
+                            success: true,
+                            message: "Record found...",
+                            data: JSON.parse(responseData)
+                        });
+                    });
+                });
+
+                // res.json({
+                //     success: true,
+                //     message: "user is Exist..."
+                // });
+            }
+        })
+
+    }
+});
+
+router.post('/changepassword', jsonParser, function(req, res) {
+    objUser = req.body;
+
+    //Set Parameter for User Permission
+    // req.query['tablename'] = req.headers['x-requested-with'];
+    var EncryptOldpassword = jwt.encode(objUser.oldpassword, "bugz");
+    var EncryptNewpassword = jwt.encode(objUser.password, "bugz");
+
+    if (objUser.password != objUser.confirmpassword) {
+        res.json({
+            success: false,
+            message: "Password and Confirm Password does not match..."
+        });
+    } else if (objUser.password.length < 2) {
+        res.json({
+            success: false,
+            message: "Password contains atleast 2 characters..."
+        });
+    } else {
+        User.findOne({
+            where: {
+                username: objUser.username
+            }
+        }).then(function(chkUserExist) {
+            if (chkUserExist != null) {
+
+                //set Parameter
+                // req.query['permission'] = "Modified";
+
+                // var obj = {};
+                // obj.headers = req.headers;
+                // obj.query = req.query;
+
+                // funAccessPermission.CheckUserAccessPermission(obj, function(responseAccessPermission) {
+                //     var AccessPermission = responseAccessPermission.success;
+                //     if (AccessPermission) {
+
+
+
+                if (EncryptOldpassword == chkUserExist.password) {
+                    chkUserExist.updateAttributes({
+                        password: EncryptNewpassword
+                    }).then(function(response) {
+                        funAuditLog.CreateAuditLog('changepassword', chkUserExist.username, 'Change User Password');
+                        res.json({
+                            success: true,
+                            message: "Password changed successfully..."
+                        });
+                    }).catch(function(error) {
+                        res.json({
+                            success: false,
+                            message: error.errors[0].message + "..."
+                        });
+                    })
+                } else {
+                    res.json({
+                        success: false,
+                        message: "Old Password is wrong..."
+                    });
+                }
+                //     } else {
+                //         res.json(NoAccessPermission);
+                //     }
+                // });
+            } else {
+                res.json({
+                    success: false,
+                    message: "User is not Exist..."
+                });
+            }
+        })
+    }
+});
+
+
+router.post('/changeUserPassword', jsonParser, function(req, res) {
+    objUser = req.body;
+
+    //Set Parameter for User Permission
+    // req.query['tablename'] = req.headers['x-requested-with'];
+    var EncryptOldpassword = jwt.encode(objUser.password, "bugz");
+    var EncryptNewpassword = jwt.encode(objUser.NewPassword, "bugz");
+
+    if (objUser.NewPassword.length < 2) {
+        res.json({
+            success: false,
+            message: "New Password contains atleast 2 characters..."
+        });
+    } else {
+        User.findOne({
+            where: {
+                username: objUser.username
+            }
+        }).then(function(chkUserExist) {
+            if (chkUserExist != null) {
+
+                //set Parameter
+                // req.query['permission'] = "Modified";
+
+                // var obj = {};
+                // obj.headers = req.headers;
+                // obj.query = req.query;
+
+                // funAccessPermission.CheckUserAccessPermission(obj, function(responseAccessPermission) {
+                //     var AccessPermission = responseAccessPermission.success;
+                //     if (AccessPermission) {
+
+                if (objUser.Type == 'Owner') {
+                    var Password = chkUserExist.OwnerPassword;
+                    var search = { OwnerPassword: EncryptNewpassword };
+                } else {
+                    var Password = chkUserExist.password;
+                    var search = { password: EncryptNewpassword };
+                }
+                if (EncryptOldpassword == Password) {
+                    chkUserExist.updateAttributes(search).then(function(response) {
+                        funAuditLog.CreateAuditLog('changepassword', chkUserExist.username, 'Change User Password');
+                        res.json({
+                            success: true,
+                            message: "Password changed successfully..."
+                        });
+                    }).catch(function(error) {
+                        res.json({
+                            success: false,
+                            message: error.errors[0].message + "..."
+                        });
+                    })
+                } else {
+                    res.json({
+                        success: false,
+                        message: "Old Password is wrong..."
+                    });
+                }
+                //     } else {
+                //         res.json(NoAccessPermission);
+                //     }
+                // });
+            } else {
+                res.json({
+                    success: false,
+                    message: "User is not Exist..."
+                });
+            }
+        })
+    }
+});
+
+router.get('/forgotpassword', function(req, res) {
+    User.findOne({
+        where: {
+            email: req.query.email
+        }
+    }).then(function(objUser) {
+        if (objUser != null) {
+            SystemEmail.findOne().then(function(objSystemEmail) {
+                var NewPassword = customPassword();
+                var EncryptNewpassword = jwt.encode(NewPassword, "bugz");
+                var flgIsUpdate = false;
+                if (req.query.Type == 'Owner' && (objUser.Type == req.query.Type || objUser.Type == 'Both')) {
+                    var search = { OwnerPassword: EncryptNewpassword };
+                    flgIsUpdate = true;
+                } else if (req.query.Type == 'Shop' && (objUser.Type == req.query.Type || objUser.Type == 'Both')) {
+                    var search = { password: EncryptNewpassword };
+                    flgIsUpdate = true;
+                }
+                if (flgIsUpdate) {
+                    objUser.updateAttributes(search).then(function(response) {
+                        if (response != null) {
+                            EmailTemplate.findOne({
+                                where: {
+                                    Type: "Forgot Password Email",
+                                }
+                            }).then(function(objEmailTemplate) {
+                                if (objEmailTemplate != null) {
+                                    var Name = objUser.username;
+                                    var Password = NewPassword;
+
+                                    var body = objEmailTemplate.EmailBody.replace(/{UserName}/g, Name).replace("{Password}", Password);
+                                    var mail = {
+                                        from: objSystemEmail.DefaultEmailFrom,
+                                        to: objUser.email, // + ', ' + objSystemEmail.NotificationEmailTo,
+                                        subject: objEmailTemplate.EmailSubject,
+                                        html: body
+                                    };
+                                    transporter.sendMail(mail, function(error, response) {
+                                        if (error) {
+                                            res.json(error);
+                                        } else {
+                                            funAuditLog.CreateAuditLog('forgotpassword', objUser.username, 'forgot User Password');
+                                            res.json({
+                                                success: true,
+                                                message: "Password sent to your email successfully...",
+                                                data: response
+                                            });
+                                        }
+                                    });
+                                } else {
+                                    res.json({
+                                        success: false,
+                                        message: "This Email template not found..."
+                                    })
+                                }
+                            });
+                        } else {
+                            res.json({
+                                success: false,
+                                message: "This system Email not found..."
+                            });
+                        }
+                    }).catch(function(error) {
+                        res.json({
+                            success: false,
+                            message: error.errors[0].message + "..."
+                        });
+                    })
+                } else {
+                    res.json({
+                        success: false,
+                        message: "This system Email not found..."
+                    });
+                }
+            })
+        } else {
+            res.json({
+                success: false,
+                message: "This Email not registered with us..."
+            });
+        }
+    })
+});
+
+router.get('/forgotpasswordfromOwnerCustomer', function(req, res) {
+    User.findOne({
+        where: {
+            email: req.query.email
+        }
+    }).then(function(objUser) {
+        if (objUser != null) {
+
+            SystemEmail.findOne().then(function(objSystemEmail) {
+
+                var NewPassword = customPassword();
+                var EncryptNewpassword = jwt.encode(NewPassword, "bugz");
+                var flgIsUpdate = false;
+
+                if (req.query.Type == 'Owner' && (objUser.Type == req.query.Type || objUser.Type == 'Both')) {
+                    var search = { OwnerPassword: EncryptNewpassword };
+                    flgIsUpdate = true;
+                } else if (req.query.Type == 'Shop' && (objUser.Type == req.query.Type || objUser.Type == 'Both')) {
+                    var search = { password: EncryptNewpassword };
+                    flgIsUpdate = true;
+                }
+
+                if (flgIsUpdate) {
+                    objUser.updateAttributes(search).then(function(response) {
+                        if (response != null) {
+                            EmailTemplate.findOne({
+                                where: {
+                                    Type: "Forgot Password Email",
+                                }
+                            }).then(function(objEmailTemplate) {
+                                if (objEmailTemplate != null) {
+                                    var Name = objUser.username;
+                                    var Password = NewPassword;
+
+                                    Setting.findOne({
+                                        where: {
+                                            Name: 'NotificationEmailTo'
+                                        }
+                                    }).then(function(objSetting) {
+
+                                        var body = objEmailTemplate.EmailBody.replace(/{UserName}/g, Name).replace("{Password}", Password);
+                                        var mail = {
+                                            from: objSystemEmail.DefaultEmailFrom,
+                                            to: objUser.email,
+                                            bcc: objSetting.Value,
+                                            subject: objEmailTemplate.EmailSubject,
+                                            html: body
+                                        };
+
+                                        transporter.sendMail(mail, function(error, response) {
+                                            if (error) {
+                                                res.json(error);
+                                            } else {
+                                                funAuditLog.CreateAuditLog('forgotpassword', objUser.username, 'forgot User Password');
+                                                res.json({
+                                                    success: true,
+                                                    message: "Password sent to your email successfully...",
+                                                    data: response
+                                                });
+                                            }
+                                        });
+                                    })
+                                } else {
+                                    res.json({
+                                        success: false,
+                                        message: "This Email template not found..."
+                                    })
+                                }
+                            });
+                        } else {
+                            res.json({
+                                success: false,
+                                message: "This system Email not found..."
+                            });
+                        }
+                    }).catch(function(error) {
+                        res.json({
+                            success: false,
+                            message: error.errors[0].message + "..."
+                        });
+                    })
+                } else {
+                    res.json({
+                        success: false,
+                        message: "This system Email not found..."
+                    });
+                }
+            })
+        } else {
+            res.json({
+                success: false,
+                message: "This Email not registered with us..."
+            });
+        }
+    })
+});
+
+//Private functions
+var maxLength = 6;
+var minLength = 6;
+var uppercaseMinCount = 2;
+var lowercaseMinCount = 2;
+var numberMinCount = 2;
+var specialMinCount = 1;
+var UPPERCASE_RE = /([A-Z])/g;
+var LOWERCASE_RE = /([a-z])/g;
+var NUMBER_RE = /([\d])/g;
+var SPECIAL_CHAR_RE = /([\?\-\^\$\#\@\!\%\&\*])/g;
+var NON_REPEATING_CHAR_RE = /([\w\d\?\-])\1{2,}/g;
+
+function isStrongEnough(password) {
+    var uc = password.match(UPPERCASE_RE);
+    var lc = password.match(LOWERCASE_RE);
+    var n = password.match(NUMBER_RE);
+    // var sc = password.match(SPECIAL_CHAR_RE);
+    var nr = password.match(NON_REPEATING_CHAR_RE);
+    return password.length >= minLength &&
+        !nr &&
+        uc && uc.length >= uppercaseMinCount &&
+        lc && lc.length >= lowercaseMinCount &&
+        n && n.length >= numberMinCount;
+    // &&
+    // sc && sc.length >= specialMinCount;
+}
+
+function customPassword() {
+    var password = "";
+    var randomLength = Math.floor(Math.random() * (maxLength - minLength)) + minLength;
+    while (!isStrongEnough(password)) {
+        password = generatePassword(randomLength, false, /[\w\d\?\-]/);
+    }
+    return password;
+}
+//End of Private functions
+
+module.exports = router

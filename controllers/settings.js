@@ -1,0 +1,493 @@
+﻿//Tables
+var router = express.Router();
+var User = models.tbluserinformation;
+var MediaSize = models.tblmediasetting;
+var TaxSetting = models.tblsetting;
+var RewardPointSetting = models.tblrewardpointssetting;
+var Handshake = models.tblhandshake;
+var PetGps = models.tblgpsscanner;
+var Alarm = models.tblalarm;
+//End of Tables
+
+//Media Size
+router.get('/GetAllMediaSize', function(req, res) {
+    MediaSize.findAll().then(function(response) {
+        res.json(response);
+    }).catch(function(error) {
+        res.json(error);
+    })
+})
+
+router.get('/GetMediaSizeById', function(req, res) {
+    MediaSize.findOne({ where: { id: req.query.idMediaSize } }).then(function(response) {
+        if (response != null) {
+            res.json({ success: true, message: "Record found...", data: response });
+        } else {
+            res.json({ success: false, message: "Record not found...", data: response });
+        }
+    })
+})
+
+router.post('/SaveMediaSize', jsonParser, function(req, res) {
+    objMediaSize = req.body;
+    objHeader = req.headers;
+    var token = getToken(objHeader);
+    if (token) {
+        var decoded = jwt.decode(token, TokenKey);
+        User.findOne({ where: { username: decoded.username, password: decoded.password } }).then(function(UserExist) {
+            if (UserExist != null) {
+                if (objMediaSize.id == 0) {
+                    MediaSize.findOrCreate({ where: { Height: objMediaSize.Height, Width: objMediaSize.Width }, defaults: objMediaSize }).then(function(response) {
+                        if ((response[1])) {
+                            funAuditLog.CreateAuditLog('SaveMediaSize', UserExist.username, 'Create Media Size');
+                            res.json({ success: true, message: "Media Size created successfully...", data: response });
+                        } else {
+                            res.json({ success: false, message: "Media Size is already Exist...", data: response });
+                        }
+                    })
+                } else {
+                    MediaSize.findOne({ where: { Height: objMediaSize.Height, Width: objMediaSize.Width }, defaults: objMediaSize }).then(function(objMediaSizeExist) {
+                        if (objMediaSizeExist != null && objMediaSize.id != objMediaSizeExist.id) {
+                            res.json({ success: false, message: "Media Size is already Exist...", data: objMediaSizeExist });
+                        } else {
+                            MediaSize.update(objMediaSize, { where: { id: objMediaSize.id } }).then(function(response) {
+                                if (response[0]) {
+                                    funAuditLog.CreateAuditLog('SaveMediaSize', UserExist.username, 'Update Media Size');
+                                    res.json({ success: true, message: "Media Size updated successfully...", data: response });
+                                }
+                            })
+                        }
+                    })
+                }
+            } else {
+                res.json(InvalidToken);
+            }
+        })
+    } else {
+        res.json(InvalidToken);
+    }
+})
+
+router.get('/DeleteMediaSize', function(req, res) {
+    objHeader = req.headers;
+    var token = getToken(objHeader);
+    if (token) {
+        var decoded = jwt.decode(token, TokenKey);
+        User.findOne({ where: { username: decoded.username, password: decoded.password } }).then(function(UserExist) {
+            if (UserExist != null) {
+                MediaSize.destroy({ where: { id: req.query.idMediaSize } }).then(function(response) {
+                    if (response) {
+                        funAuditLog.CreateAuditLog('DeleteMediaSize', UserExist.username, 'Delete Media Size');
+                        res.json({ success: true, message: "Media Size deleted successfully...", data: response });
+                    } else {
+                        res.json({ success: false, message: "Requested Record not Exist....", data: response });
+                    }
+                })
+            } else {
+                res.json(InvalidToken);
+            }
+        })
+    } else {
+        res.json(InvalidToken);
+    }
+});
+//End of Media Size
+
+//Tax Setting
+router.get('/GetAllTaxSetting', function(req, res) {
+    TaxSetting.findAll().then(function(response) {
+        res.json(response);
+    }).catch(function(error) {
+        res.json(error);
+    })
+})
+
+router.get('/GetTaxSettingByName', function(req, res) {
+    console.log(req.query.TaxSettingName);
+    TaxSetting.findOne({ where: { Name: req.query.TaxSettingName } }).then(function(response) {
+        if (response != null) {
+            res.json({ success: true, message: "Record found...", data: response });
+        } else {
+            res.json({ success: false, message: "Record not found...", data: response });
+        }
+    })
+})
+
+router.get('/GetSettingByName', function(req, res) {
+    console.log(req.query.SettingName);
+    TaxSetting.findAll({ where: { Name: { $like: '%' + req.query.SettingName + '%' } } }).then(function(response) {
+        res.json(response);
+    })
+})
+
+router.post('/SaveTaxSetting', jsonParser, function(req, res) {
+    lstTaxSetting = req.body;
+    objHeader = req.headers;
+
+    //Set Parameter for User Permission
+    req.query['tablename'] = req.headers['x-requested-with'];
+
+    var token = getToken(objHeader);
+    if (token) {
+        var decoded = jwt.decode(token, TokenKey);
+        User.findOne({ where: { username: decoded.username, password: decoded.password } }).then(function(UserExist) {
+            if (UserExist != null) {
+                function uploader(i) {
+                    if (i < lstTaxSetting.length) {
+                        if (lstTaxSetting[i].Name != null && lstTaxSetting[i].Name != undefined) {
+
+                            //set Parameter
+                            req.query['permission'] = "Modified";
+
+                            var obj = {};
+                            obj.headers = req.headers;
+                            obj.query = req.query;
+
+                            funAccessPermission.CheckUserAccessPermission(obj, function(responseAccessPermission) {
+                                var AccessPermission = responseAccessPermission.success;
+                                if (AccessPermission) {
+
+                                    TaxSetting.findOrCreate({ where: { Name: lstTaxSetting[i].Name }, defaults: lstTaxSetting[i] }).then(function(response) {
+                                        if ((response[1])) {
+                                            //insert
+                                            uploader(i + 1);
+                                        } else {
+                                            //update
+                                            TaxSetting.update(lstTaxSetting[i], { where: { Name: lstTaxSetting[i].Name } }).then(function(response) {
+                                                uploader(i + 1);
+                                            })
+                                        }
+                                    })
+                                } else {
+                                    res.json(NoAccessPermission);
+                                }
+                            });
+                        } else {
+                            uploader(i + 1);
+                        }
+
+                        // if (i == lstTaxSetting.length - 1) {
+                        //     res.json({ success: true, message: "Tax setting save successfully..." });
+                        // }
+                    } else {
+                        funAuditLog.CreateAuditLog('SaveTaxSetting', UserExist.username, 'Create Tax Setting');
+                        res.json({ success: true, message: "Setting save successfully..." });
+                    }
+                }
+                uploader(0);
+            } else {
+                res.json(InvalidToken);
+            }
+        })
+    } else {
+        res.json(InvalidToken);
+    }
+})
+
+router.post('/UpdateTaxSettingByName', jsonParser, function(req, res) {
+    objSetting = req.body;
+    objHeader = req.headers;
+    var token = getToken(objHeader);
+    //Set Parameter for User Permission
+    req.query['tablename'] = req.headers['x-requested-with'];
+
+    //set Parameter
+    req.query['permission'] = "Modified";
+
+    var obj = {};
+    obj.headers = req.headers;
+    obj.query = req.query;
+
+    funAccessPermission.CheckUserAccessPermission(obj, function(responseAccessPermission) {
+        var AccessPermission = responseAccessPermission.success;
+        if (AccessPermission) {
+            if (token) {
+                var decoded = jwt.decode(token, TokenKey);
+                User.findOne({ where: { username: decoded.username, password: decoded.password } }).then(function(UserExist) {
+                    if (UserExist != null) {
+
+                        TaxSetting.findOne({
+                            where: {
+                                Name: objSetting.Name
+                            }
+                        }).then(function(response) {
+                            if (response) {
+                                response.updateAttributes({ Value: objSetting.Value }).then(function(resUpdate) {
+                                    funAuditLog.CreateAuditLog('UpdateTaxSettingByName', UserExist.username, 'Update Tax Setting By Name');
+                                    res.json({
+                                        success: true,
+                                        message: "Settings Updated Successfully..."
+                                    });
+
+                                });
+                            } else {
+                                res.json(RecordNotFound);
+                            }
+
+
+                        })
+
+                    } else {
+                        res.json(InvalidToken);
+                    }
+                })
+            } else {
+                res.json(InvalidToken);
+            }
+        } else {
+            res.json(NoAccessPermission);
+        }
+    });
+})
+
+router.get('/DeleteTaxSetting', function(req, res) {
+    objHeader = req.headers;
+    var token = getToken(objHeader);
+    if (token) {
+        var decoded = jwt.decode(token, TokenKey);
+        User.findOne({ where: { username: decoded.username, password: decoded.password } }).then(function(UserExist) {
+            if (UserExist != null) {
+                TaxSetting.destroy({ where: { id: req.query.idTaxSetting } }).then(function(response) {
+                    if (response) {
+                        funAuditLog.CreateAuditLog('DeleteTaxSetting', UserExist.username, 'Delete Tax Setting');
+                        res.json({ success: true, message: "Tax Setting deleted successfully...", data: response });
+                    } else {
+                        res.json({ success: false, message: "Requested Record not Exist....", data: response });
+                    }
+                })
+            } else {
+                res.json(InvalidToken);
+            }
+        })
+    } else {
+        res.json(InvalidToken);
+    }
+});
+//End of Tax Setting
+
+//Reward Point Setting
+router.get('/GetAllRewardPointSetting', function(req, res) {
+    RewardPointSetting.findAll().then(function(response) {
+        res.json(response);
+    }).catch(function(error) {
+        res.json(error);
+    })
+})
+
+router.get('/GetRewardPointSetting', function(req, res) {
+    RewardPointSetting.findOne().then(function(response) {
+        if (response != null) {
+            res.json({ success: true, message: "Record found...", data: response });
+        } else {
+            res.json({ success: false, message: "Record not found...", data: response });
+        }
+    })
+})
+
+router.post('/SaveRewardPointSetting', jsonParser, function(req, res) {
+    objRewardPointSetting = req.body;
+    objHeader = req.headers;
+    var token = getToken(objHeader);
+    if (token) {
+        var decoded = jwt.decode(token, TokenKey);
+        User.findOne({ where: { username: decoded.username, password: decoded.password } }).then(function(UserExist) {
+            if (UserExist != null) {
+                if (objRewardPointSetting.Id == 0) {
+                    RewardPointSetting.create(objRewardPointSetting).then(function(response) {
+                        funAuditLog.CreateAuditLog('SaveRewardPointSetting', UserExist.username, 'Create Reward Point Setting');
+                        res.json({ success: true, message: "Reward Point Setting created successfully...", data: response });
+                    })
+                } else {
+                    RewardPointSetting.update(objRewardPointSetting, { where: { Id: objRewardPointSetting.Id } }).then(function(response) {
+                        if (response[0]) {
+                            funAuditLog.CreateAuditLog('SaveRewardPointSetting', UserExist.username, 'Update Reward Point Setting');
+                            res.json({ success: true, message: "Reward Point Setting updated successfully...", data: response });
+                        }
+                    })
+                }
+            } else {
+                res.json(InvalidToken);
+            }
+        })
+    } else {
+        res.json(InvalidToken);
+    }
+})
+
+router.get('/DeleteRewardPointSetting', function(req, res) {
+    objHeader = req.headers;
+    var token = getToken(objHeader);
+    if (token) {
+        var decoded = jwt.decode(token, TokenKey);
+        User.findOne({ where: { username: decoded.username, password: decoded.password } }).then(function(UserExist) {
+            if (UserExist != null) {
+                RewardPointSetting.destroy({ where: { Id: req.query.idRewardPointSetting } }).then(function(response) {
+                    if (response) {
+                        funAuditLog.CreateAuditLog('DeleteRewardPointSetting', UserExist.username, 'Delete Reward Point Setting');
+                        res.json({ success: true, message: "Reward Point Setting deleted successfully...", data: response });
+                    } else {
+                        res.json({ success: false, message: "Requested Record not Exist....", data: response });
+                    }
+                })
+            } else {
+                res.json(InvalidToken);
+            }
+        })
+    } else {
+        res.json(InvalidToken);
+    }
+});
+//End of Tax Setting
+
+
+//Hand shake
+router.get('/GetAllHandshake', function(req, res) {
+    var offset = (parseInt(req.query.page) * 50);
+    var objParam = req.query;
+    var DeviceID = objParam.deviceId;
+    var StartDate = objParam.fromDate;
+    var EndDate = objParam.todate;
+    var search = {};
+    search['$and'] = [];
+
+    if (DeviceID != '' && DeviceID != undefined) {
+        var obj = new Object();
+        obj['DeviceID'] = {
+            //$eq: DeviceID
+            $like: '%' + DeviceID + '%'
+        };
+        search['$and'].push(obj);
+    }
+    if (StartDate != undefined && EndDate != undefined && StartDate != '' && EndDate != '') {
+        StartDate = StartDate;
+        EndDate = EndDate;
+        var obj = new Object();
+        obj['Datetime'] = {
+            $between: [StartDate, EndDate]
+        };
+        search['$and'].push(obj);
+    } else if (StartDate != null && StartDate != '' && StartDate != undefined) {
+        StartDate = StartDate;
+        var obj = new Object();
+        obj['Datetime'] = {
+            $gt: StartDate
+        };
+        search['$and'].push(obj);
+    } else if (EndDate != null && EndDate != '' && EndDate != undefined) {
+        EndDate = EndDate;
+        var obj = new Object();
+        obj['Datetime'] = {
+            $lt: EndDate
+        };
+        search['$and'].push(obj);
+    }
+    Handshake.findAll({ where: search, order: 'Datetime desc', limit: 50, offset: offset }).then(function(response) {
+        res.json(response);
+    }).catch(function(error) {
+        res.json(error);
+    })
+})
+
+//End Hand shake
+
+
+//Pet Gps
+router.get('/GetAllGpsData', function(req, res) {
+    var offset = (parseInt(req.query.page) * 50);
+    var objParam = req.query;
+    var DeviceID = objParam.deviceId;
+    var StartDate = objParam.fromDate;
+    var EndDate = objParam.todate;
+    var search = {};
+    search['$and'] = [];
+
+    if (DeviceID != '' && DeviceID != undefined) {
+        var obj = new Object();
+        obj['DeviceID'] = {
+            //$eq: DeviceID
+            $like: '%' + DeviceID + '%'
+        };
+        search['$and'].push(obj);
+    }
+    if (StartDate != undefined && EndDate != undefined && StartDate != '' && EndDate != '') {
+        StartDate = StartDate;
+        EndDate = EndDate;
+        var obj = new Object();
+        obj['Datetime'] = {
+            $between: [StartDate, EndDate]
+        };
+        search['$and'].push(obj);
+    } else if (StartDate != null && StartDate != '' && StartDate != undefined) {
+        StartDate = StartDate;
+        var obj = new Object();
+        obj['Datetime'] = {
+            $gt: StartDate
+        };
+        search['$and'].push(obj);
+    } else if (EndDate != null && EndDate != '' && EndDate != undefined) {
+        EndDate = EndDate;
+        var obj = new Object();
+        obj['Datetime'] = {
+            $lt: EndDate
+        };
+        search['$and'].push(obj);
+    }
+    PetGps.findAll({ where: search, order: 'Id desc', limit: 50, offset: offset }).then(function(response) {
+        res.json(response);
+    }).catch(function(error) {
+        res.json(error);
+    })
+})
+
+//End Pet Gps
+
+//Pet Alarm
+router.get('/GetAllAlarmData', function(req, res) {
+    var offset = (parseInt(req.query.page) * 50);
+    var objParam = req.query;
+    var DeviceID = objParam.deviceId;
+    var StartDate = objParam.fromDate;
+    var EndDate = objParam.todate;
+    var search = {};
+    search['$and'] = [];
+
+    if (DeviceID != '' && DeviceID != undefined) {
+        var obj = new Object();
+        obj['DeviceID'] = {
+            //$eq: DeviceID
+            $like: '%' + DeviceID + '%'
+        };
+        search['$and'].push(obj);
+    }
+    if (StartDate != undefined && EndDate != undefined && StartDate != '' && EndDate != '') {
+        StartDate = StartDate;
+        EndDate = EndDate;
+        var obj = new Object();
+        obj['Datetime'] = {
+            $between: [StartDate, EndDate]
+        };
+        search['$and'].push(obj);
+    } else if (StartDate != null && StartDate != '' && StartDate != undefined) {
+        StartDate = StartDate;
+        var obj = new Object();
+        obj['Datetime'] = {
+            $gt: StartDate
+        };
+        search['$and'].push(obj);
+    } else if (EndDate != null && EndDate != '' && EndDate != undefined) {
+        EndDate = EndDate;
+        var obj = new Object();
+        obj['Datetime'] = {
+            $lt: EndDate
+        };
+        search['$and'].push(obj);
+    }
+    Alarm.findAll({ where: search, order: 'Datetime desc', limit: 50, offset: offset }).then(function(response) {
+        res.json(response);
+    }).catch(function(error) {
+        res.json(error);
+    })
+})
+
+//End Pet Alarm
+module.exports = router
