@@ -1867,7 +1867,7 @@ router.get('/GetAdvatureInfoByDeviceId', function(req, res) {
         res.json(objAdvantureInfo);
     })
 });
-
+/*
 router.post('/SaveWifiSetting', jsonParser, function(req, res) {
     var objData = req.body;
 
@@ -1961,7 +1961,7 @@ router.post('/SaveWifiSetting', jsonParser, function(req, res) {
     client.on('close', function() {
         console.log('Connection closed');
     });
-})
+})*/
 
 router.get('/ChangeFenceByPet', function(req, res) {
     var deviceId = req.query.deviceId;
@@ -2357,7 +2357,7 @@ router.get('/GetCurrentPetLocation', function(req, res) {
 router.get('/GetLocateMeMapZoom', function(req, res) {
     res.json(15);
 });
-
+/*
 router.get('/UpdateGsecerByDevice', function(req, res) {
     Pet.findOne({
         where: {
@@ -2376,7 +2376,7 @@ router.get('/UpdateGsecerByDevice', function(req, res) {
             res.json({ success: false, message: 'G-SECER Setting not saved successfully.' });
         }
     })
-});
+});*/
 
 router.get('/UpdateBatteryByDevice', function(req, res) {
     Pet.findOne({
