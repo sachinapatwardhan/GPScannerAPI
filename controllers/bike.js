@@ -147,7 +147,7 @@ router.get('/GetAllBikebyCountry', function(req, res) {
     var model = [];
 
     var objParam = req.query;
-    console.log("objParam", objParam);
+    // console.log("objParam", objParam);
     var objColumns = objParam.columns;
     var objOrderBy = objParam.order;
     var objSearch = objParam.search;
@@ -1280,9 +1280,9 @@ router.get('/ChangePetWorkingMode', function(req, res) {
 
                         client.on('data', function(data) {
                             var line = data.toString();
-                            console.log(line);
+                            //   console.log(line);
                             if (line.indexOf('BP30') > 0) {
-                                console.log('Received: ' + line);
+                                // console.log('Received: ' + line);
 
                                 var ModeCode = line.substring(17, 18);
                                 var deviceID = line.substring(1, 13);
@@ -1301,12 +1301,12 @@ router.get('/ChangePetWorkingMode', function(req, res) {
                                     }
                                 }).then(function(objPetresponse) {
                                     if (objPetresponse) {
-                                        console.log("Check for Old Device -   " + response.IsOldDevice)
+                                        //  console.log("Check for Old Device -   " + response.IsOldDevice)
                                         if (response.IsOldDevice) {
                                             FenceFlag = objPetresponse.IsFenceOnline;
                                         };
 
-                                        console.log(FenceFlag)
+                                        //  console.log(FenceFlag)
 
                                         objPetresponse.updateAttributes({ mode: ModeCode, IsFenceOnline: FenceFlag }).then(function(resUpdate) {
 
