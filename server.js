@@ -447,6 +447,9 @@ app.use('/socketapi', require('./controllers/socketapi'))
 
 app.use('/PetDevice', require('./controllers/PetDevice'))
 
+//gpsdata
+app.use('/gpsdata', require('./controllers/gpsdata'))
+
 
 
 
