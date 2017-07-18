@@ -12,18 +12,6 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING,
       allowNull: false
     },
-    GPSModuleNumber: {
-      type: DataTypes.STRING,
-      allowNull: false
-    },
-    Power: {
-      type: DataTypes.STRING,
-      allowNull: false
-    },
-    Charging: {
-      type: DataTypes.CHAR(1),
-      allowNull: false
-    },
     Datetime: {
       type: DataTypes.DATE,
       allowNull: false

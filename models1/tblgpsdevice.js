@@ -20,30 +20,9 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE,
       allowNull: true
     },
-    Latitude: {
-      type: DataTypes.STRING,
-      allowNull: true
-    },
-    Longitude: {
-      type: DataTypes.STRING,
-      allowNull: true
-    },
-    speed: {
-      type: DataTypes.STRING,
-      allowNull: true
-    },
-    Direction: {
-      type: DataTypes.STRING,
-      allowNull: true
-    },
     Type: {
       type: DataTypes.STRING,
       allowNull: true
-    },
-    IsOldDevice: {
-      type: DataTypes.BOOLEAN,
-      allowNull: true,
-      defaultValue: '1'
     },
     Version: {
       type: DataTypes.STRING,
@@ -52,14 +31,6 @@ module.exports = function(sequelize, DataTypes) {
     CreatedBy: {
       type: DataTypes.STRING,
       allowNull: true
-    },
-    CarrierId: {
-      type: DataTypes.INTEGER(11),
-      allowNull: true,
-      references: {
-        model: 'tblcarrier',
-        key: 'id'
-      }
     },
     CountryId: {
       type: DataTypes.INTEGER(11),

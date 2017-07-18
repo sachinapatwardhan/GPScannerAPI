@@ -8,10 +8,6 @@ module.exports = function(sequelize, DataTypes) {
       primaryKey: true,
       autoIncrement: true
     },
-    Datetime: {
-      type: DataTypes.DATE,
-      allowNull: false
-    },
     Latitude: {
       type: DataTypes.STRING,
       allowNull: false
@@ -36,14 +32,6 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING,
       allowNull: false
     },
-    ReservedSign: {
-      type: DataTypes.CHAR(1),
-      allowNull: false
-    },
-    ReservedSelection: {
-      type: DataTypes.STRING,
-      allowNull: true
-    },
     DeviceId: {
       type: DataTypes.STRING,
       allowNull: false
@@ -51,6 +39,10 @@ module.exports = function(sequelize, DataTypes) {
     AlarmCode: {
       type: DataTypes.CHAR(2),
       allowNull: false
+    },
+    CreatedDate: {
+      type: DataTypes.DATE,
+      allowNull: true
     }
   }, {
     tableName: 'tblalarm'
