@@ -8,7 +8,6 @@ router.get('/GetAllGpsData', function(req, res) {
     var objColumns = objParam.columns;
     var objOrderBy = objParam.order;
     var objSearch = objParam.search;
-    var objSearch = objParam.search.value;
     var Orderby = objColumns[parseInt(objOrderBy[0].column)].data + ' ' + objOrderBy[0].dir;
     var search = {};
     var search1 = {};
@@ -102,9 +101,6 @@ function convertdateformat(date1, flg) {
         return ("0000" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("00" + firstdayDay.toString()).slice(-2);
     }
 }
-
-<style>
-</style>
 
 module.exports = router;
 //End of Tables

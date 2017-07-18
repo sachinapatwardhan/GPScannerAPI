@@ -425,7 +425,7 @@
  })
 
  router.get('/GetUserById', function(req, res) {
-
+     console.log(req.query.idUser);
      User.findOne({
          where: {
              id: req.query.idUser
@@ -442,6 +442,7 @@
                      });
                  })
              } else {
+                 console.log(response);
                  res.json({
                      success: true,
                      message: "Record found...",

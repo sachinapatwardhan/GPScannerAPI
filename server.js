@@ -368,6 +368,7 @@ app.use('/dashboard', require('./controllers/dashboard'))
 app.use('/account', require('./controllers/account'))
 
 app.use('/enquiry', require('./controllers/enquiry'))
+app.use('/vehicles', require('./controllers/vehicles'))
 
 //Pet
 

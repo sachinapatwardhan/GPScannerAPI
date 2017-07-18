@@ -74,17 +74,17 @@ router.get('/CheckSubscribe', function(req, res) {
         where: search
     }).then(function(obj) {
         if (obj != null) {
-                res.json({
-                    success: false,
-                    message: "User already Subscribed...",
-                });
+            res.json({
+                success: false,
+                message: "User already Subscribed...",
+            });
         } else {
             // PushNotification.create(objPushNotification).then(function(response) {
-                // if ((response[1])) {
-                res.json({
-                    success: true,
-                    message: "User is not Subscribe...",
-                });
+            // if ((response[1])) {
+            res.json({
+                success: true,
+                message: "User is not Subscribe...",
+            });
             // })
         }
     })
@@ -119,11 +119,11 @@ router.get('/UpdateUserIdByUdId', function(req, res) {
 
         if (req.query.Type == 'Owner') {
             var obj = new Object();
-            obj['OwnerPassword'] = {
+            obj['password'] = {
                 $eq: decoded.password
             };
             search['$and'].push(obj);
-            
+
             var objPushNotification = new Object();
             objPushNotification['UserType'] = {
                 $eq: 'Owner'

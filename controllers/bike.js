@@ -826,7 +826,7 @@ router.post('/SaveBike', jsonParser, function(req, res) {
         if (objPet.Type == 'Owner') {
             var DeviceType = 'M2-U';
             var obj = new Object();
-            obj['OwnerPassword'] = {
+            obj['password'] = {
                 $eq: decoded.password
             };
             search['$and'].push(obj);
@@ -1143,7 +1143,7 @@ router.get('/DeleteBike', function(req, res) {
         search['$and'].push(obj);
         if (req.query.Type == 'Owner') {
             var obj = new Object();
-            obj['OwnerPassword'] = {
+            obj['password'] = {
                 $eq: decoded.password
             };
             search['$and'].push(obj);

@@ -14,7 +14,7 @@ var sequelize = new Sequelize("gpsscanner", "di", "di123##", {
         min: 0,
         idle: 10000
     },
-    logging: false,
+    // logging: false,
     define: {
         timestamps: false,
     }
