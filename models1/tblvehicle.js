@@ -119,6 +119,10 @@ module.exports = function(sequelize, DataTypes) {
     TimeZone: {
       type: DataTypes.STRING,
       allowNull: true
+    },
+    IsDelete: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true
     }
   }, {
     tableName: 'tblvehicle'
