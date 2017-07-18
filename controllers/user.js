@@ -1320,7 +1320,7 @@
          User.findOne({
              where: {
                  username: decoded.username,
-                 OwnerPassword: decoded.password
+                 password: decoded.password
              }
          }).then(function(UserExist) {
              if (UserExist != null) {
@@ -1567,7 +1567,7 @@
          User.findOne({
              where: {
                  username: decoded.username,
-                 OwnerPassword: decoded.password
+                 password: decoded.password
              }
          }).then(function(UserExist) {
              if (UserExist != null) {
@@ -1706,7 +1706,7 @@
  //         User.findOne({
  //             where: {
  //                 username: decoded.username,
- //                 OwnerPassword: decoded.password
+ //                 password: decoded.password
  //             }
  //         }).then(function (UserExist) {
  //             if (UserExist != null) {
@@ -1824,7 +1824,7 @@
          User.findOne({
              where: {
                  username: decoded.username,
-                 OwnerPassword: decoded.password
+                 password: decoded.password
              }
          }).then(function(UserExist) {
              if (UserExist != null) {

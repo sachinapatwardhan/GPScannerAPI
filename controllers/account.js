@@ -28,7 +28,7 @@ router.get('/login', jsonParser, function(req, res) {
     search['$or'] = [];
 
     var obj = new Object();
-    obj['OwnerPassword'] = {
+    obj['password'] = {
         $eq: Encryptpassword
     };
     search['$or'].push(obj);
@@ -110,7 +110,7 @@ router.get('/Mobilelogin', jsonParser, function(req, res) {
     search['$and'].push(obj);
     if (req.query.type == 'Owner') {
         var obj = new Object();
-        obj['OwnerPassword'] = {
+        obj['password'] = {
             $eq: Encryptpassword
         };
         search['$and'].push(obj);
@@ -227,11 +227,11 @@ router.get('/MobileOwnerlogin', jsonParser, function(req, res) {
     search['$and'] = [];
 
     var obj = new Object();
-    obj['OwnerPassword'] = {
+    obj['password'] = {
         $eq: Encryptpassword
     };
     search['$and'].push(obj);
-    
+
     User.findOne({
         where: search
     }).then(function(response) {
@@ -355,7 +355,7 @@ router.post('/register', jsonParser, function(req, res) {
     objUserReg.password = jwt.encode(objUserReg.password, "bugz");
 
     if (objUserReg.Type == 'Owner') {
-        objUserReg.OwnerPassword = objUserReg.password
+        objUserReg.password = objUserReg.password
     }
     if (!validator.isEmail(objUserReg.email)) {
         res.json({
@@ -396,7 +396,7 @@ router.post('/register', jsonParser, function(req, res) {
                     } else {
                         if (chkEmailExist != null && objUserReg.Type == 'Owner') {
                             objUserReg.Type = 'Both';
-                            chkEmailExist.updateAttributes({ Type: 'Both', OwnerPassword: objUserReg.OwnerPassword, MaxSpeed: objUserReg.MaxSpeed }).then(function(resUser) {
+                            chkEmailExist.updateAttributes({ Type: 'Both', password: objUserReg.password, MaxSpeed: objUserReg.MaxSpeed }).then(function(resUser) {
                                 funAuditLog.CreateAuditLog('register', chkEmailExist.username, 'Create New User in Both');
                                 res.json({
                                     success: true,
@@ -469,8 +469,8 @@ router.post('/register', jsonParser, function(req, res) {
 router.post('/OwnerRegister', jsonParser, function(req, res) {
     objUserReg = req.body
     objUserReg.password = jwt.encode(objUserReg.password, "bugz");
-    objUserReg.OwnerPassword = objUserReg.password
- 
+    objUserReg.password = objUserReg.password
+
     if (!validator.isEmail(objUserReg.email)) {
         res.json({
             success: false,
@@ -501,7 +501,7 @@ router.post('/OwnerRegister', jsonParser, function(req, res) {
                     } else {
                         if (chkEmailExist != null) {
                             objUserReg.Type = 'Both';
-                            chkEmailExist.updateAttributes({ Type: 'Both', OwnerPassword: objUserReg.OwnerPassword, MaxSpeed: objUserReg.MaxSpeed }).then(function(resUser) {
+                            chkEmailExist.updateAttributes({ Type: 'Both', password: objUserReg.password, MaxSpeed: objUserReg.MaxSpeed }).then(function(resUser) {
                                 funAuditLog.CreateAuditLog('register', chkEmailExist.username, 'Create New User in Both');
 
                                 //Send OTP
@@ -595,41 +595,41 @@ router.post('/OwnerRegister', jsonParser, function(req, res) {
     }
 });
 
- router.get('/ResendOTP', function(req, res) {
-     User.findOne({
-         where: {
-             id: req.query.idUser
-         }
-     }).then(function(objUser) {
-         if (objUser != null) {
-             objUser.updateAttributes({ OTP: req.query.OTP }).then(function(resUpdate) {
-                 //Send OTP
-                 var objOTP = new Object();
-                 objOTP.To = objUser.phone;
-                 objOTP.body = 'Your Verification Code for logging into GPSINA is ' + req.query.OTP + '. Kindly do not share it with anyone else.';
-                 global.sendSMS(objOTP, function(responseOTP) {
-                     if (responseOTP.Status == true) {
-                         res.json({
-                             success: true,
-                             message: "Verification Code send to Registered Mobile Number."
-                         });
-                     } else {
-                         res.json({
-                             success: false,
-                             message: responseOTP.Message
-                         });
-                     }
-                 });
-             })
-         } else {
-             res.json({
-                 success: false,
-                 message: "Invalid User"
-             });
-         }
+router.get('/ResendOTP', function(req, res) {
+    User.findOne({
+        where: {
+            id: req.query.idUser
+        }
+    }).then(function(objUser) {
+        if (objUser != null) {
+            objUser.updateAttributes({ OTP: req.query.OTP }).then(function(resUpdate) {
+                //Send OTP
+                var objOTP = new Object();
+                objOTP.To = objUser.phone;
+                objOTP.body = 'Your Verification Code for logging into GPSINA is ' + req.query.OTP + '. Kindly do not share it with anyone else.';
+                global.sendSMS(objOTP, function(responseOTP) {
+                    if (responseOTP.Status == true) {
+                        res.json({
+                            success: true,
+                            message: "Verification Code send to Registered Mobile Number."
+                        });
+                    } else {
+                        res.json({
+                            success: false,
+                            message: responseOTP.Message
+                        });
+                    }
+                });
+            })
+        } else {
+            res.json({
+                success: false,
+                message: "Invalid User"
+            });
+        }
 
-     });
- });
+    });
+});
 
 router.post('/CheckUserExist', jsonParser, function(req, res) {
     objUserReg = req.body
@@ -880,8 +880,8 @@ router.post('/changeUserPassword', jsonParser, function(req, res) {
                 //     if (AccessPermission) {
 
                 if (objUser.Type == 'Owner') {
-                    var Password = chkUserExist.OwnerPassword;
-                    var search = { OwnerPassword: EncryptNewpassword };
+                    var Password = chkUserExist.password;
+                    var search = { password: EncryptNewpassword };
                 } else {
                     var Password = chkUserExist.password;
                     var search = { password: EncryptNewpassword };
@@ -931,7 +931,7 @@ router.get('/forgotpassword', function(req, res) {
                 var EncryptNewpassword = jwt.encode(NewPassword, "bugz");
                 var flgIsUpdate = false;
                 if (req.query.Type == 'Owner' && (objUser.Type == req.query.Type || objUser.Type == 'Both')) {
-                    var search = { OwnerPassword: EncryptNewpassword };
+                    var search = { password: EncryptNewpassword };
                     flgIsUpdate = true;
                 } else if (req.query.Type == 'Shop' && (objUser.Type == req.query.Type || objUser.Type == 'Both')) {
                     var search = { password: EncryptNewpassword };
@@ -1018,7 +1018,7 @@ router.get('/forgotpasswordfromOwnerCustomer', function(req, res) {
                 var flgIsUpdate = false;
 
                 if (req.query.Type == 'Owner' && (objUser.Type == req.query.Type || objUser.Type == 'Both')) {
-                    var search = { OwnerPassword: EncryptNewpassword };
+                    var search = { password: EncryptNewpassword };
                     flgIsUpdate = true;
                 } else if (req.query.Type == 'Shop' && (objUser.Type == req.query.Type || objUser.Type == 'Both')) {
                     var search = { password: EncryptNewpassword };
