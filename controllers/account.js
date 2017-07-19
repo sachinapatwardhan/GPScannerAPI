@@ -1420,6 +1420,57 @@ router.get('/MobileForgotPassword', function(req, res) {
     })
 });
 
+router.post('/changeMobileUserPassword', jsonParser, function(req, res) {
+    objUser = req.body;
+    console.log(objUser)
+    var EncryptOldpassword = jwt.encode(objUser.password, "bugz");
+    var EncryptNewpassword = jwt.encode(objUser.NewPassword, "bugz");
+
+    if (objUser.NewPassword.length < 2) {
+        res.json({
+            success: false,
+            message: "New Password contains atleast 2 characters..."
+        });
+    } else {
+        User.findOne({
+            where: {
+                username: objUser.username
+            }
+        }).then(function(chkUserExist) {
+            if (chkUserExist != null) {
+
+               
+                var Password = chkUserExist.password;
+                var search = { password: EncryptNewpassword };
+                
+                if (EncryptOldpassword == Password) {
+                    chkUserExist.updateAttributes(search).then(function(response) {
+                        funAuditLog.CreateAuditLog('changepassword', chkUserExist.username, 'Change User Password');
+                        res.json({
+                            success: true,
+                            message: "Password changed successfully..."
+                        });
+                    }).catch(function(error) {
+                        res.json({
+                            success: false,
+                            message: error.errors[0].message + "..."
+                        });
+                    })
+                } else {
+                    res.json({
+                        success: false,
+                        message: "Old Password is wrong..."
+                    });
+                }
+            } else {
+                res.json({
+                    success: false,
+                    message: "User is not Exist..."
+                });
+            }
+        })
+    }
+});
 
 //End Mobile App
 

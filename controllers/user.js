@@ -1830,218 +1830,17 @@
              }
          }).then(function(UserExist) {
              if (UserExist != null) {
-                 if (objUser.id != 0) {
-                     User.findOne({
-                         where: {
-                             username: objUser.username
-                         },
-                         defaults: objUser
-                     }).then(function(objUserExist) {
-
-                         if (objUserExist != null) {
-
-                             if (objUserExist.MaxSpeed == null) {
-                                 objUserExist.MaxSpeed = 0;
-                             }
-                             var Speed = objUserExist.MaxSpeed;
-                             var Security = objUserExist.IsOwnerSecurity;
-
-
-                             var search = {};
-
-                             search['$and'] = [];
-
-                             var obj = new Object();
-                             obj['iduser'] = {
-                                 $eq: objUserExist.id
-                             };
-                             search['$and'].push(obj);
-
-                             var obj = new Object();
-                             obj['IsOnline'] = {
-                                 $eq: true
-                             };
-                             search['$and'].push(obj);
-
-                             var obj = new Object();
-                             obj['IsDeleted'] = {
-                                 $eq: false
-                             };
-                             search['$and'].push(obj);
-
-                             var obj = new Object();
-                             obj['deviceid'] = {
-                                 $ne: ''
-                             };
-                             search['$and'].push(obj);
-
-                             var obj = new Object();
-                             obj['DeviceType'] = {
-                                 $ne: 'M2'
-                             };
-                             search['$and'].push(obj);
-
-                             Bike.findAll({
-                                 where: search,
-                             }).then(function(UserRes) {
-                                 if (UserRes.length > 0) {
-                                     var client = new net.Socket();
-                                     var SecurityFlag = '0';
-                                     var timerHander = 0;
-                                     var timerHanderSecurity = 0;
-
-                                     // if (Speed != objUser.MaxSpeed) {
-                                     //     var MaxSpeed = ("00" + objUser.MaxSpeed).slice(-3);
-
-                                     //     function SetMaxSpeedCommand(i) {
-                                     //         if (i < UserRes.length) {
-                                     //             var Sendflag = false;
-                                     //             var DeviceId = UserRes[i].deviceid;
-                                     //             var Data = "(" + DeviceId + "DP12H" + MaxSpeed + "L000)";
-
-                                     //             client.connect(SocketPort, SocketIPAddress, function() {
-                                     //                 console.log(Data);
-                                     //                 client.write(Data);
-                                     //                 client.setTimeout(180000, function() {
-                                     //                     if (Sendflag == false) {
-                                     //                         Sendflag = true;
-                                     //                         // res.json({ success: false, message: 'Network searching, please try again' });
-                                     //                         client.destroy();
-                                     //                         SetMaxSpeedCommand(i + 1);
-                                     //                     };
-
-                                     //                 });
-                                     //             });
-
-                                     //             client.on('data', function(data) {
-                                     //                 var line = data.toString();
-                                     //                 //console.log(line);
-                                     //                 if (Sendflag == false) {
-                                     //                     if (line.indexOf('BP12') > 0) {
-                                     //                         console.log('Received: ' + line);
-
-                                     //                         var deviceID = line.substring(1, 13);
-                                     //                         var SpeedDetail = line.substring(17, 25);
-
-                                     //                         Sendflag = true;
-                                     //                         // res.json({ success: true, data: objNavigation });
-                                     //                         // res.json(objNavigation);
-
-                                     //                         client.destroy();
-                                     //                         //clearTimeout(timerHander);
-                                     //                         timerHander = 0;
-                                     //                         SetMaxSpeedCommand(i + 1); // kill client after server's response
-                                     //                     } else {
-                                     //                         Sendflag = true;
-                                     //                         // res.json({ success: false, message: 'Network searching, please try again' });
-
-                                     //                         client.destroy();
-                                     //                         //clearTimeout(timerHander);
-                                     //                         timerHander = 0;
-                                     //                         SetMaxSpeedCommand(i + 1);
-                                     //                     }
-
-                                     //                 }
-                                     //             });
-
-                                     //             client.on('close', function() {
-                                     //                 console.log('Connection closed');
-                                     //             });
-                                     //         } else {
-                                     //             if (Security != objUser.IsSecurity) {
-                                     //                 var Sendflag = false;
-
-                                     //                 if (objUser.IsSecurity) {
-                                     //                     SecurityFlag = '1';
-                                     //                 }
-                                     //                 SetSecurityCommand(0);
-                                     //             }
-                                     //         }
-                                     //     }
-                                     //     SetMaxSpeedCommand(0);
-                                     // } else {
-                                     if (objUser.IsOwnerSecurity != Security) {
-                                         var Sendflag = false;
-                                         if (objUser.IsOwnerSecurity) {
-                                             SecurityFlag = '1';
-                                         }
-                                         SetSecurityCommand(0);
-                                     };
-                                     //}
-                                     function SetSecurityCommand(j) {
-                                         if (j < UserRes.length) {
-                                             var Sendflag = false;
-                                             var DeviceId = UserRes[j].deviceid;
-                                             var Data = "(" + DeviceId + "DV03" + SecurityFlag + ")";
-
-                                             client.connect(SocketPort, SocketIPAddress, function() {
-                                                 console.log(Data);
-                                                 client.write(Data);
-                                                 client.setTimeout(180000, function() {
-                                                     if (Sendflag == false) {
-                                                         Sendflag = true;
-                                                         // res.json({ success: false, message: 'Network searching, please try again' });
-                                                         client.destroy();
-                                                         GetSecurityCommand(j + 1);
-                                                     };
-
-                                                 });
-                                             });
-
-                                             client.on('data', function(data) {
-                                                 var line = data.toString();
-                                                 //console.log(line);
-                                                 if (Sendflag == false) {
-                                                     if (line.indexOf('BV03') > 0) {
-                                                         console.log('Received: ' + line);
-
-                                                         var deviceID = line.substring(1, 13);
-                                                         var SecurityFlag = line.substring(17, 18);
-
-                                                         Sendflag = true;
-                                                         // res.json({ success: true, data: objNavigation });
-                                                         // res.json(objNavigation);
-                                                         client.destroy();
-                                                         //clearTimeout(timerHanderSecurity);
-                                                         timerHanderSecurity = 0;
-                                                         SetSecurityCommand(j + 1); // kill client after server's response
-                                                     } else {
-                                                         Sendflag = true;
-                                                         // res.json({ success: false, message: 'Network searching, please try again' });
-
-                                                         client.destroy();
-                                                         //clearTimeout(timerHanderSecurity);
-                                                         timerHanderSecurity = 0;
-                                                         SetSecurityCommand(j + 1);
-                                                     }
-                                                 }
-                                             });
-
-                                             client.on('close', function() {
-                                                 console.log('Connection closed');
-                                             });
-                                         }
-                                     }
-                                 }
-                             });
-                             //Umang -- End
-                             objUserExist.updateAttributes({ OwnerName: objUser.OwnerName, email: objUser.email, OwnerPhone: objUser.OwnerPhone, IsOwnerSecurity: objUser.IsOwnerSecurity }).then(function(responseUser) {
-                                 funAuditLog.CreateAuditLog('UpdateMobileUserOwner', UserExist.username, 'Update Owner User');
+                
+                   
+                             UserExist.updateAttributes({ ProfileName: objUser.ProfileName, email: objUser.email, phone: objUser.phone }).then(function(responseUser) {
+                                 funAuditLog.CreateAuditLog('UpdateMobileUserOwner', UserExist.username, 'Update User');
                                  res.json({
                                      success: true,
                                      message: "User updated successfully...",
                                      data: responseUser
                                  });
                              })
-                         }
-                     })
-                 } else {
-                     res.json({
-                         success: false,
-                         message: "User not updated...",
-                         data: responseUser
-                     });
-                 }
+                        
              } else {
                  res.json(InvalidToken);
              }
@@ -2237,23 +2036,23 @@
 
                  User.findOne({ where: { id: UserId } }).then(function(response) {
                      if (response != null) {
-                         if (req.query.UserType == 'Owner') {
-                             if (response.OwnerImage != '' && response.OwnerImage != null) {
-                                 var oldFile = __dirname + '/../MediaUploads/UserUpload/' + response.OwnerImage;
-                                 fs.exists(oldFile, function(exists) {
-                                     if (exists) {
-                                         fs.unlink(oldFile);
-                                     }
-                                 });
-                             };
-                             response.updateAttributes({ OwnerImage: FileName[i] }).then(function(resUpdate) {
-                                 if ((i + 1) == FileName.length) {
-                                     res.json({ success: true, message: "Images Uploaded Successfully...", data: FileName[i] });
-                                 } else {
-                                     uploader(i + 1);
-                                 };
-                             })
-                         } else {
+                        //  if (req.query.UserType == 'Owner') {
+                        //      if (response.OwnerImage != '' && response.OwnerImage != null) {
+                        //          var oldFile = __dirname + '/../MediaUploads/UserUpload/' + response.OwnerImage;
+                        //          fs.exists(oldFile, function(exists) {
+                        //              if (exists) {
+                        //                  fs.unlink(oldFile);
+                        //              }
+                        //          });
+                        //      };
+                        //      response.updateAttributes({ OwnerImage: FileName[i] }).then(function(resUpdate) {
+                        //          if ((i + 1) == FileName.length) {
+                        //              res.json({ success: true, message: "Images Uploaded Successfully...", data: FileName[i] });
+                        //          } else {
+                        //              uploader(i + 1);
+                        //          };
+                        //      })
+                        //  } else {
                              if (response.image != '' && response.image != null) {
                                  var oldFile = __dirname + '/../MediaUploads/UserUpload/' + response.image;
                                  fs.exists(oldFile, function(exists) {
@@ -2269,7 +2068,7 @@
                                      uploader(i + 1);
                                  };
                              })
-                         }
+                        //  }
                      }
                  })
              }
