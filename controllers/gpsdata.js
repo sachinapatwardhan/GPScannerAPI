@@ -2,7 +2,8 @@ var router = express.Router();
 var User = models.tbluserinformation;
 var Gps = models.tblgpsdata;
 var GpsDevice = models.tblgpsdevice;
-
+var Alarm = models.tblalarm;
+//gpsdata
 router.get('/GetAllGpsData', function(req, res) {
     var objParam = req.query;
     var objColumns = objParam.columns;
@@ -74,6 +75,89 @@ router.get('/GetAllGpsData', function(req, res) {
     })
 })
 
+
+//AlarmData
+router.get('/GetAllAlarm', function(req, res) {
+    var objParam = req.query;
+    var objColumns = objParam.columns;
+    var objOrderBy = objParam.order;
+    var objSearch = objParam.search;
+    var Orderby = objColumns[parseInt(objOrderBy[0].column)].data + ' ' + objOrderBy[0].dir;
+    var search = {};
+    var search1 = {};
+    if (objSearch != null && objSearch != '') {
+        search['$or'] = [];
+        for (var i = 0; i < objColumns.length; i++) {
+            if (objColumns[i].data != null && objColumns[i].data != '') {
+                var columnName = objColumns[i].data;
+                if (columnName != 'id' && columnName != 'AlarmCode') {
+                    search['$or'].push([columnName + ' like ?', "%" + objSearch + "%"]);
+                }
+            };
+        };
+    }
+    search['$and'] = [];
+    var DeviceId = objParam.DeviceId;
+    if (DeviceId != null && DeviceId != '' && DeviceId != undefined) {
+        var obj = new Object();
+        obj['DeviceId'] = {
+            $eq: DeviceId
+        };
+        search['$and'].push(obj);
+    }
+
+    var AlarmCode = objParam.AlarmCode;
+
+    if (AlarmCode != null && AlarmCode != undefined && AlarmCode != '') {
+        var obj = new Object();
+        obj['AlarmCode'] = {
+            $eq: AlarmCode
+        };
+        search['$and'].push(obj);
+    }
+    var StartDate = objParam.StartDate;
+    var EndDate = objParam.EndDate;
+    if (StartDate != '' && EndDate != '') {
+        StartDate = convertdateformat(StartDate, 0);
+        EndDate = convertdateformat(EndDate, 1);
+        var obj = new Object();
+        obj['CreatedDate'] = {
+            $between: [StartDate, EndDate]
+        };
+        search['$and'].push(obj);
+    } else if (StartDate != null && StartDate != '') {
+        StartDate = convertdateformat(StartDate, 0);
+        var obj = new Object();
+        obj['CreatedDate'] = {
+            $gt: StartDate
+        };
+        search['$and'].push(obj);
+    } else if (EndDate != null && EndDate != '') {
+        EndDate = convertdateformat(EndDate, 1);
+        var obj = new Object();
+        obj['CreatedDate'] = {
+            $lt: EndDate
+        };
+        search['$and'].push(obj);
+    }
+    console.log(search)
+    Alarm.findAndCountAll({
+        where: search,
+        order: Orderby,
+        offset: parseInt(objParam.start),
+        limit: parseInt(objParam.length),
+    }).then(function(response) {
+        var response1 = new Object();
+        response1.draw = objParam.draw;
+        response1.recordsTotal = response.count;
+        response1.recordsFiltered = response.count;
+        response1.data = response.rows;
+        res.json(response1);
+    }).catch(function(error) {
+        console.log(error)
+        res.json(error);
+    })
+})
 
 router.get('/GetAllGpsDevice', function(req, res) {
     GpsDevice.findAll().then(function(response) {
