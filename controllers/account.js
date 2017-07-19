@@ -1100,6 +1100,335 @@ router.get('/forgotpasswordfromOwnerCustomer', function(req, res) {
     })
 });
 
+
+
+
+
+
+//Start Mobile App
+
+router.get('/MobileAppLogin', jsonParser, function(req, res) {
+    var Encryptpassword = jwt.encode(req.query.password, "bugz");
+    var search = {};
+    search['$or'] = [];
+
+    var obj = new Object();
+    obj['username'] = {
+        $eq: req.query.username
+    };
+    search['$or'].push(obj);
+
+    var obj = new Object();
+    obj['phone'] = {
+        $eq: req.query.username
+    };
+    search['$or'].push(obj);
+
+    search['$and'] = [];
+
+    var obj = new Object();
+    obj['password'] = {
+        $eq: Encryptpassword
+    };
+    search['$and'].push(obj);
+
+    User.findOne({
+        where: search
+    }).then(function(response) {
+        if (response != null) {
+           
+                // if (response.IsMobileVerify == true) {
+                    UserInRole.belongsTo(Role, {
+                        foreignKey: {
+                            name: 'roleId',
+                            allowNull: false
+                        }
+                    });
+                    UserInRole.findAll({
+                        where: {
+                            userId: response.id
+                        },
+                        include: [{
+                            model: Role,
+                            attributes: ['id', 'RoleName']
+                        }]
+                    }).then(function(resUserInRole) {
+                        var lstRole = [];
+                        for (var i = 0; i < resUserInRole.length; i++) {
+                            var objRole = resUserInRole[i].tblrole.RoleName;
+                            lstRole.push(objRole);
+                        }
+
+                        var user = {
+                            username: response.username,
+                            password: Encryptpassword,
+                            Role: lstRole
+                        }
+                        var token = jwt.encode(user, "bugz");
+                        res.json({
+                            success: true,
+                            token: 'JWT ' + token,
+                            UserId: response.id,
+                            UserName: response.username,
+                            message: "Login Successfully..."
+                        });
+                    })
+                // } else {
+                //     res.json({
+                //         success: false,
+                //         UserId: response.id,
+                //         UserName: response.username,
+                //         message: "OTP"
+                //     });
+                // };
+            
+        } else {
+            res.json({
+                success: false,
+                message: "Invalid Username or Password..."
+            });
+        }
+    })
+})
+
+router.post('/CheckMobileUserExist', jsonParser, function(req, res) {
+    objUserReg = req.body
+   
+    if (!validator.isEmail(objUserReg.email)) {
+        res.json({
+            success: false,
+            message: "Invalid Email..."
+        });
+    } else {
+        User.findOne({
+            where: {
+                $or: [{ email: objUserReg.email }, { username: objUserReg.username }]
+            }
+        }).then(function(chkEmailExist) {
+            if (chkEmailExist != null) {
+                res.json({
+                    success: false,
+                    message: "Username is already Exist..."
+                });
+            } else {
+                res.json({
+                    success: true,
+                    message: "user is not Exist..."
+                });
+            }
+        })
+    }
+});
+
+router.post('/MobileRegister', jsonParser, function(req, res) {
+    objUserReg = req.body
+    objUserReg.password = jwt.encode(objUserReg.password, "bugz");
+ 
+    if (!validator.isEmail(objUserReg.email)) {
+        res.json({
+            success: false,
+            message: "Invalid Email..."
+        });
+    } else {
+        User.findOne({
+            where: {
+                username: objUserReg.username
+            }
+        }).then(function(chkUserExist) {
+            if (chkUserExist != null && (chkUserExist.Type == objUserReg.Type || chkUserExist.Type == 'Both')) {
+                res.json({
+                    success: false,
+                    message: "Username is already Exist..."
+                });
+            } else {
+                User.findOne({
+                    where: {
+                        $or: [{ email: objUserReg.email }]
+                    }
+                }).then(function(chkEmailExist) {
+                    if (chkEmailExist != null) {
+                        res.json({
+                            success: false,
+                            message: "Email is already Exist..."
+                        });
+                    } else {
+                        // if (chkEmailExist != null) {
+                        //     objUserReg.Type = 'Both';
+                        //     chkEmailExist.updateAttributes({ Type: 'Both', OwnerPassword: objUserReg.OwnerPassword, MaxSpeed: objUserReg.MaxSpeed }).then(function(resUser) {
+                        //         funAuditLog.CreateAuditLog('register', chkEmailExist.username, 'Create New User in Both');
+
+                        //         //Send OTP
+                        //         var objOTP = new Object();
+                        //         objOTP.To = objUserReg.phone;
+                        //         objOTP.body = 'Your Verification Code for logging into GPSINA is ' + objUserReg.OTP + '. Kindly do not share it with anyone else.';
+                        //         global.sendSMS(objOTP, function(responseOTP) {
+                        //             console.log(responseOTP)
+                        //         });
+
+                        //         res.json({
+                        //             success: true,
+                        //             message: "User Registered Successfully..."
+                        //         });
+                        //     })
+                        // } else {
+                            User.create(objUserReg).then(function(resUserReg) {
+                                Role.findOne({
+                                    where: {
+                                        RoleName: "User"
+                                    }
+                                }).then(function(objRole) {
+                                    if (objRole != null) {
+                                        var objUserInRole = {
+                                            userId: resUserReg.id,
+                                            roleId: objRole.id,
+                                        }
+                                        UserInRole.create(objUserInRole).then(function(resUserInRole) {
+                                            funAuditLog.CreateAuditLog('register', resUserReg.username, 'Create New User');
+
+                                            //Send OTP
+                                            // var objOTP = new Object();
+                                            // objOTP.To = objUserReg.phone;
+                                            // objOTP.body = 'Your Verification Code for logging into GPSINA is ' + objUserReg.OTP + '. Kindly do not share it with anyone else.';
+                                            // global.sendSMS(objOTP, function(responseOTP) {
+                                            //     console.log(responseOTP)
+                                            // });
+
+                                            res.json({
+                                                success: true,
+                                                message: "User Registered Successfully..."
+                                            });
+                                        })
+                                    } else {
+                                        var objRole = {
+                                            RoleName: "User",
+                                            Description: null
+                                        }
+                                        Role.create(objRole).then(function(resRole) {
+
+                                            var objUserInRole = {
+                                                userId: resUserReg.id,
+                                                roleId: resRole.id,
+                                            }
+                                            UserInRole.create(objUserInRole).then(function(resUserInRole) {
+                                                funAuditLog.CreateAuditLog('register', resUserReg.username, 'Create New User');
+
+                                                //Send OTP
+                                                // var objOTP = new Object();
+                                                // objOTP.To = objUserReg.phone;
+                                                // objOTP.body = 'Your Verification Code for logging into GPSINA is ' + objUserReg.OTP + '. Kindly do not share it with anyone else.';
+                                                // global.sendSMS(objOTP, function(responseOTP) {
+                                                //     console.log(responseOTP)
+                                                // });
+
+                                                res.json({
+                                                    success: true,
+                                                    message: "User Registered Successfully..."
+                                                });
+
+
+                                                // res.json({
+                                                //     success: true,
+                                                //     message: "User Registered Successfully..."
+                                                // });
+                                            })
+                                        })
+                                    }
+                                })
+                            }).catch(function(error) {
+                                console.log("errrrrrrrrr", error);
+                                res.json({
+                                    success: false,
+                                    message: "User Registration Failed..."
+                                });
+                            })
+                        // }
+                    }
+                })
+            }
+        })
+    }
+});
+
+router.get('/MobileForgotPassword', function(req, res) {
+    User.findOne({
+        where: {
+            email: req.query.email
+        }
+    }).then(function(objUser) {
+        if (objUser != null) {
+            SystemEmail.findOne().then(function(objSystemEmail) {
+                var NewPassword = customPassword();
+                var EncryptNewpassword = jwt.encode(NewPassword, "bugz");
+                var search = { password: EncryptNewpassword };
+                    objUser.updateAttributes(search).then(function(response) {
+                        if (response != null) {
+                            EmailTemplate.findOne({
+                                where: {
+                                    Type: "Forgot Password Email",
+                                }
+                            }).then(function(objEmailTemplate) {
+                                if (objEmailTemplate != null) {
+                                    var Name = objUser.username;
+                                    var Password = NewPassword;
+
+                                    var body = objEmailTemplate.EmailBody.replace(/{UserName}/g, Name).replace("{Password}", Password);
+                                    var mail = {
+                                        from: objSystemEmail.DefaultEmailFrom,
+                                        to: objUser.email, // + ', ' + objSystemEmail.NotificationEmailTo,
+                                        subject: objEmailTemplate.EmailSubject,
+                                        html: body
+                                    };
+                                    transporter.sendMail(mail, function(error, response) {
+                                        if (error) {
+                                            res.json(error);
+                                        } else {
+                                            funAuditLog.CreateAuditLog('forgotpassword', objUser.username, 'forgot User Password');
+                                            res.json({
+                                                success: true,
+                                                message: "Password sent to your email successfully...",
+                                                data: response
+                                            });
+                                        }
+                                    });
+                                } else {
+                                    res.json({
+                                        success: false,
+                                        message: "This Email template not found..."
+                                    })
+                                }
+                            });
+                        } else {
+                            res.json({
+                                success: false,
+                                message: "This system Email not found..."
+                            });
+                        }
+                    }).catch(function(error) {
+                        res.json({
+                            success: false,
+                            message: error.errors[0].message + "..."
+                        });
+                    })
+                
+            })
+        } else {
+            res.json({
+                success: false,
+                message: "This Email not registered with us..."
+            });
+        }
+    })
+});
+
+
+//End Mobile App
+
+
+
+
+
+
+
 //Private functions
 var maxLength = 6;
 var minLength = 6;
