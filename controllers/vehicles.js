@@ -470,5 +470,45 @@ router.get('/DeleteVehicle', function(req, res) {
     // });
 });
 
+router.get('/GetAllVehicleByUser', function(req, res) {
+    console.log(req.query);
+    if (req.query.iduser != null || req.query.iduser != undefined) {
+
+        var search = {};
+
+        search['$and'] = [];
+
+        var obj = new Object();
+        obj['iduser'] = {
+            $eq: req.query.iduser
+        };
+        search['$and'].push(obj);
+
+        var obj = new Object();
+        obj['deviceid'] = {
+            $ne: ''
+        };
+        search['$and'].push(obj);
+
+        var obj = new Object();
+        obj['IsDelete'] = {
+            $eq: false
+        };
+        search['$and'].push(obj);
+
+        Vehicle.findAll({
+            where: search,
+            order: 'CreatedDate'
+        }).then(function(response) {
+            res.json(response);
+        }).catch(function(error) {
+            res.json(error);
+        })
+    } else {
+        res.json(RecordNotFound);
+    }
+
+})
+
 
 module.exports = router

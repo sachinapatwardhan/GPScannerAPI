@@ -177,7 +177,7 @@ router.get('/GetAllDynamicMedia', function(req, res) {
     var objParam = req.query;
     var objColumns = objParam.columns;
     var objOrder = objParam.order;
-    var objSearch = objParam.search.value;
+    var objSearch = objParam.search;
 
     var Orderby = objColumns[parseInt(objOrder[0].column)].data + ' ' + objOrder[0].dir;
     var search = {};
@@ -244,7 +244,7 @@ router.get('/CreateMedia', jsonParser, function(req, res) {
 
                 Media.findOrCreate({ where: { FileName: objMedia.FileName }, defaults: objMedia }).then(function(response) {
                     if ((response[1])) {
-                        funAuditLog.CreateAuditLog('CreateMedia', UserExist.username , 'Create Media');
+                        funAuditLog.CreateAuditLog('CreateMedia', UserExist.username, 'Create Media');
                         res.json("Media created successfully...");
                     } else {
                         res.json("Media is already Exist...");
@@ -281,7 +281,7 @@ router.post('/UpdateMedia', jsonParser, function(req, res) {
                     if (UserExist != null) {
                         Media.update(objMedia, { where: { id: objMedia.id } }).then(function(response) {
                             if (response[0]) {
-                                funAuditLog.CreateAuditLog('UpdateMedia', UserExist.username , 'Update Media');
+                                funAuditLog.CreateAuditLog('UpdateMedia', UserExist.username, 'Update Media');
                                 res.json({ success: true, message: "Media updated successfully...", data: response });
                             } else {
                                 res.json({ success: false, message: "Media not Found...", data: response });
@@ -337,7 +337,7 @@ router.get('/DeleteMedia', function(req, res) {
                                                 fs.unlink(oldFile);
                                             }
                                         });
-                                        funAuditLog.CreateAuditLog('DeleteMedia', UserExist.username , 'Delete Media');
+                                        funAuditLog.CreateAuditLog('DeleteMedia', UserExist.username, 'Delete Media');
                                         res.json({ success: true, message: "Media deleted successfully...", data: response });
                                     } else {
                                         res.json(RecordNotFound);

@@ -4,7 +4,7 @@
  var UserInRole = models.tbluserinrole;
  var Role = models.tblrole;
  var Pet = models.tblpet;
- var Bike = models.tblbike;
+ var Vehicle = models.tblvehicle;
  var Country = models.tblcountrymgmt;
  var State = models.tblcountrystatemgmt;
  //End of Tables
@@ -59,7 +59,7 @@
      var objParam = req.query;
      var objColumns = objParam.columns;
      var objOrder = objParam.order;
-     var objSearch = objParam.search.value;
+     var objSearch = objParam.search;
 
      var Orderby = objColumns[parseInt(objOrder[0].column)].data + ' ' + objOrder[0].dir;
      var search = {};
@@ -934,6 +934,7 @@
                                  } else {
 
                                      var UserPassword = customPassword();
+                                     console.log(UserPassword);
                                      var EncryptUserpassword = jwt.encode(UserPassword, "bugz");
 
                                      if (objUser.phone && objUser.phone != '') {
@@ -2286,8 +2287,8 @@
      var objParam = req.query;
      var objColumns = objParam.columns;
      var objOrder = objParam.order;
-     var objSearch = objParam.search.value;
-
+     var objSearch = objParam.search;
+     console.log(objSearch)
      var CountryList = objParam.CountryList;
      if (CountryList == undefined || CountryList == null || CountryList == "") {
          CountryList = [];
@@ -2321,15 +2322,6 @@
                      search['$and'] = [];
                  }
 
-                 search2['$or'] = [];
-                 var obje = new Object();
-                 obje['Type'] = 'Owner';
-                 search2['$or'].push(obje);
-                 var obje1 = new Object();
-                 obje1['Type'] = 'Both';
-                 search2['$or'].push(obje1);
-
-
                  if (objSearch != null && objSearch != '') {
                      search1['$or'] = [];
 
@@ -2348,13 +2340,13 @@
 
                  search1['$and'].push(search2)
 
-                 User.hasMany(Bike, {
+                 User.hasMany(Vehicle, {
                      foreignKey: {
                          name: 'iduser',
                          allowNull: false
                      }
                  });
-
+                 console.log("==============================================================");
                  User.findAndCountAll({
                      required: true,
                      where: search1,
@@ -2362,15 +2354,12 @@
                      offset: parseInt(objParam.start),
                      limit: parseInt(objParam.length),
                      include: [{
-                         model: Bike,
+                         model: Vehicle,
                          attributes: [
                              [('DISTINCT', models.sequelize.col('iduser')), 'iduser']
                          ],
                          where: {
-                             IsDeleted: 0,
-                             DeviceType: {
-                                 $ne: 'M2'
-                             },
+                             IsDelete: 0,
                              deviceid: {
                                  $ne: ''
                              }
@@ -2378,12 +2367,14 @@
                      }],
                  }).then(function(response) {
                      var response1 = new Object();
+                     console.log(response.count);
                      response1.draw = objParam.draw;
                      response1.recordsTotal = response.count;
                      response1.recordsFiltered = response.count;
                      response1.data = response.rows;
                      res.json(response1);
                  }).catch(function(error) {
+                     console.log(error);
                      res.json(error);
                  })
              }
@@ -2394,6 +2385,7 @@
 
 
  router.get('/GetAllDynamicShopperCustomer', function(req, res) {
+
      var objParam = req.query;
      var objColumns = objParam.columns;
      var objOrder = objParam.order;
@@ -2454,7 +2446,7 @@
                  }
 
                  search1['$and'].push(search2)
-                 User.hasMany(Bike, {
+                 User.hasMany(Vehicle, {
                      foreignKey: {
                          name: 'iduser',
                          allowNull: false
@@ -2468,7 +2460,7 @@
                      offset: parseInt(objParam.start),
                      limit: parseInt(objParam.length),
                      include: [{
-                         model: Bike,
+                         model: Vehicle,
                          attributes: [
                              [('DISTINCT', models.sequelize.col('iduser')), 'iduser']
                          ],
@@ -2489,6 +2481,7 @@
                      response1.data = response.rows;
                      res.json(response1);
                  }).catch(function(error) {
+                     console.log(error);
                      res.json(error);
                  })
              }
