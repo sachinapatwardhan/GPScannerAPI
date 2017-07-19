@@ -97,65 +97,21 @@ router.get('/UpdateUserIdByUdId', function(req, res) {
     objHeader = req.headers;
     var token = getToken(objHeader);
     if (token) {
-        var decoded = jwt.decode(token, TokenKey);
-
-        var search = {};
-        search['$and'] = [];
-
-        var searchPushNotification = {};
-        searchPushNotification['$and'] = [];
-
-        var obj = new Object();
-        obj['username'] = {
-            $eq: decoded.username
-        };
-        search['$and'].push(obj);
-
-        var objPushNotification = new Object();
-        objPushNotification['udid'] = {
-            $eq: req.query.udid
-        };
-        searchPushNotification['$and'].push(objPushNotification);
-
-        if (req.query.Type == 'Owner') {
-            var obj = new Object();
-            obj['password'] = {
-                $eq: decoded.password
-            };
-            search['$and'].push(obj);
-
-            var objPushNotification = new Object();
-            objPushNotification['UserType'] = {
-                $eq: 'Owner'
-            };
-            searchPushNotification['$and'].push(objPushNotification);
-        } else {
-            var obj = new Object();
-            obj['password'] = {
-                $eq: decoded.password
-            };
-            search['$and'].push(obj);
-
-            var objPushNotification = new Object();
-            objPushNotification['UserType'] = {
-                $eq: 'Shop'
-            };
-            searchPushNotification['$and'].push(objPushNotification);
-        }
+        var decoded = jwt.decode(token, TokenKey); 
 
         User.findOne({
-            // where: {
-            //     username: decoded.username,
-            //     password: decoded.password
-            // }
-            where: search
+            where: {
+                username: decoded.username,
+                password: decoded.password
+            }
+            // where: search
         }).then(function(UserExist) {
             if (UserExist != null) {
                 PushNotification.findOne({
-                    // where: {
-                    //     udid: req.query.udid,
-                    // }
-                    where: searchPushNotification
+                    where: {
+                        udid: req.query.udid,
+                    }
+                    // where: searchPushNotification
                 }).then(function(response) {
                     if (response) {
                         response.updateAttributes({ iduser: req.query.UserId, Country: req.query.Country }).then(function(resUpdate) {
