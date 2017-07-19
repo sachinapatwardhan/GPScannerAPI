@@ -4,6 +4,7 @@ var express = require('express'),
 var User = models.tbluserinformation;
 var Bike = models.tblbike;
 var Vehicle = models.tblvehicle;
+var GPSData = models.tblgpsdata;
 var Pet = models.tblpet;
 var PetTracking = models.tbldevicetracking;
 var Fence = models.tblfence;
@@ -664,10 +665,10 @@ router.get('/GetAllMobilePetByUser', function(req, res) {
 })
 
 
-router.get('/GetPetById', function(req, res) {
-    Bike.findOne({
+router.get('/GetVehicleById', function(req, res) {
+    Vehicle.findOne({
         where: {
-            id: req.query.idPet
+            id: req.query.idVehicle
         }
     }).then(function(response) {
         if (response != null) {
@@ -1425,12 +1426,17 @@ router.post('/login', jsonParser, function(req, res) {
     })
 })
 
-router.get('/GetPetCurrentLocation', function(req, res) {
+router.get('/GetVehicleCurrentLocation', function(req, res) {
 
-    PetGPS.findOne({
+    var Startdate = new Date();
+
+    var convertDate = convertdateformatForUnix(Startdate);
+    var unixStartdate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
+
+    GPSData.findOne({
         where: {
             DeviceId: req.query.DeviceId,
-            Datetime: { $lte: new Date() }
+            Date: { $lte: unixStartdate }
         },
         order: 'id DESC'
     }).then(function(response) {
@@ -1444,14 +1450,21 @@ router.get('/GetPetCurrentLocation', function(req, res) {
 
 router.get('/GetAllGPSDate', function(req, res) {
     var todaydata = new Date();
+
+    var convertDate = convertdateformat(todaydata);
+    var unixNewDate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
+
     todaydata = new Date(todaydata.setMonth(todaydata.getMonth() - 4));
-    PetGPS.findAll({
-        attributes: ['Datetime'],
+
+    var convertDate = convertdateformat(todaydata);
+    var unixTodaydata = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
+
+
+    GPSData.findAll({
+        attributes: ['Datetime','Date'],
         where: {
             DeviceId: req.query.DeviceId,
-            Datetime: { $lte: new Date(), $gte: todaydata }
-            // Datetime: { $gte: todaydata }
-            // IsAdvanture: true
+            Date: { $lte: unixNewDate, $gte: unixTodaydata }
         },
         group: [models.sequelize.fn('date', models.sequelize.col('Datetime'))],
         order: 'id DESC'
@@ -1476,21 +1489,24 @@ router.get('/GetAllGPSDateByDate', function(req, res) {
     if (Startdate == null || Startdate == '') {
         Startdate = new Date();
         Startdate = new Date(Startdate.setMonth(Startdate.getMonth() - 4));
+        var convertDate = convertdateformat(Startdate);
+        var unixStartdata = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
     }
-    PetGPS.findAll({
-        attributes: ['Datetime'],
+
+
+    var todaydata = new Date();
+    var convertDate = convertdateformat(todaydata);
+    var unixNewDate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
+
+    GPSData.findAll({
+        attributes: ['Datetime','Date'],
         where: {
             DeviceId: req.query.DeviceId,
-            Datetime: { $lte: new Date(), $gt: Startdate }
+            Datetime: { $lte: unixNewDate, $gt: unixStartdata }
         },
         group: [models.sequelize.fn('date', models.sequelize.col('Datetime'))],
         order: 'id DESC'
     }).then(function(response) {
-
-        console.log("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
-        console.log(Startdate)
-        console.log(response)
-        console.log("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
         res.json(response);
     })
 });
@@ -1587,7 +1603,14 @@ router.get('/GetAllGPSByTimeZoneDate', function(req, res) {
     var Startdate = req.query.TodayStartDateTime;
     var Enddate = req.query.TodayEndDateTime;
 
-    var query = "select Id,Datetime, Latitude, Longtitude, GPSPositioning, Speed, Direction, DeviceId from tblgpsscanner where deviceid=" + req.query.DeviceId + " and GPSPositioning='A' and Datetime >= '" + Startdate + "' and Datetime <= '" + Enddate + "';"
+    var convertDate = convertdateformatForUnix(Startdate);
+    var unixStartdate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
+
+    var convertDate = convertdateformatForUnix(Enddate);
+    var unixEnddate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
+
+
+    var query = "select Id,Datetime, Latitude, Longtitude, GPSPositioning, Speed, Direction, DeviceId, Date from tblgpsdata where deviceid=" + req.query.DeviceId + " and GPSPositioning='A' and Date >= '" + unixStartdate + "' and Date <= '" + unixEnddate + "';"
     connection.query(query, function(err, lstGPSData, fields) {
         res.json(lstGPSData);
     });
@@ -3178,5 +3201,18 @@ router.post('/setSOS', jsonParser, function(req, res) {
         }
     })
 });
+
+function convertdateformatForUnix(date1) {
+    var date = new Date(date1);
+    var firstdayMonth = date.getMonth() + 1;
+    var firstdayDay = date.getDate();
+    var firstdayYear = date.getFullYear();
+    var firstdayHours = date.getHours();
+    var firstdayMinutes = date.getMinutes();
+    var firstdaySeconds = date.getSeconds();
+
+    return ("00" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("0000" + firstdayDay.toString()).slice(-2) + " " + ("00" + firstdayHours.toString()).slice(-2) + ':' + ("00" + firstdayMinutes.toString()).slice(-2) + ':' + ("00" + firstdaySeconds.toString()).slice(-2);
+
+}
 
 module.exports = router

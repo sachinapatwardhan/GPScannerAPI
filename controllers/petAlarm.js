@@ -3,6 +3,7 @@ var router = express.Router();
 var User = models.tbluserinformation;
 var PetAlarm = models.tblalarm;
 var Bike = models.tblbike;
+var Vehicle = models.tblvehicle;
 
 //End of Tables
 
@@ -133,7 +134,7 @@ router.post('/SavePetAlarm', jsonParser, function(req, res) {
     }
 });
 
-router.get('/DeleteBikeAlarm', function(req, res) {
+router.get('/DeleteVehicleAlarm', function(req, res) {
     objHeader = req.headers;
     var token = getToken(objHeader);
     var msg = null;
@@ -146,7 +147,7 @@ router.get('/DeleteBikeAlarm', function(req, res) {
             }
         }).then(function(UserExist) {
             if (UserExist != null) {
-                Bike.findAll({
+                Vehicle.findAll({
                     where: {
                         iduser: req.query.UserId
                     }
@@ -161,11 +162,11 @@ router.get('/DeleteBikeAlarm', function(req, res) {
                                         DeviceId: resBike[i].deviceid
                                     }
                                 }).then(function(response) {
-                                    msg = { success: true, message: "Bike Alarm deleted successfully...", data: response };
+                                    msg = { success: true, message: "Vehicle Alarm deleted successfully...", data: response };
                                     DeleteBike(i + 1);
                                 })
                             } else {
-                                funAuditLog.CreateAuditLog('DeletePetAlarm', UserExist.username, 'Delete Pet Alarm');
+                                funAuditLog.CreateAuditLog('DeleteVehicleAlarm', UserExist.username, 'Delete Vehicle Alarm');
                                 res.json(msg);
                             }
                         }
@@ -180,16 +181,12 @@ router.get('/DeleteBikeAlarm', function(req, res) {
         res.json(InvalidToken);
     }
 });
-router.get('/GetBikeAlarmByUser', function(req, res) {
+router.get('/GetVehicleAlarmByUser', function(req, res) {
     var offset = (parseInt(req.query.page) * 10);
-    console.log(offset)
-        //connection.query("select  tp.*, tpg.* from tblalarm tp inner join tblbike tpg where tp.DeviceId = tpg.deviceid and tpg.iduser = " + req.query.UserId + " and tpg.IsDeleted = 0 and tpg.DeviceType = 'M2-U' and tp.Datetime <='" + GetCurrentDate() + "' order by Datetime DESC limit 10 OFFSET " + offset, function(err, rows, fields) {
-    connection.query("select  tp.Id,tp.Datetime,tp.DeviceId,tp.Speed,tp.AlarmCode, tpg.id,tpg.bikeNumber from tblalarm tp inner join tblbike tpg where tp.DeviceId = tpg.deviceid and tpg.iduser = " + req.query.UserId + " and tpg.IsDeleted = 0 and tpg.DeviceType != 'M2' and tp.Datetime <='" + GetCurrentDate() + "' order by tp.Id DESC limit 10 OFFSET " + offset, function(err, rows, fields) {
-        console.log(err)
+    connection.query("select  tp.Id,tp.CreatedDate,tp.DeviceId,tp.Speed,tp.AlarmCode, tpg.id,tpg.Name from tblalarm tp inner join tblvehicle tpg where tp.DeviceId = tpg.deviceid and tpg.iduser = " + req.query.UserId + " and tpg.IsDelete = 0 and tp.CreatedDate <='" + GetCurrentDate() + "' order by tp.Id DESC limit 10 OFFSET " + offset, function(err, rows, fields) {
         if (!err) {
             res.json({ success: true, data: rows });
         } else {
-
             res.json({ success: false, data: [] });
         }
     })

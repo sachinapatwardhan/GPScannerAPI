@@ -103,6 +103,10 @@ module.exports = function(sequelize, DataTypes) {
     OdoMeter: {
       type: DataTypes.INTEGER(11),
       allowNull: true
+    },
+    Date: {
+      type: DataTypes.BIGINT,
+      allowNull: true
     }
   }, {
     tableName: 'tblgpsdata'

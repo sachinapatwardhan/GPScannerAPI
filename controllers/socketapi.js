@@ -3144,157 +3144,157 @@ router.get('/UpdateDeviceStatus', function(req, res) {
 
 //End of Send Email
 
-var rule = new schedule.RecurrenceRule();
-//rule.dayOfWeek = [0, new schedule.Range(4, 6)];
-// rule.hour = 0;
-// rule.minute = 0;
-// rule.second = 30;
-rule.minute = new schedule.Range(0, 59, 1);
-//rule.minute = new schedule.Range(0, 59, 1);
-var testStatus = false;
-var IsOnlineDeviceCheck = schedule.scheduleJob(rule, function() {
-    var today = new Date();
-    var year = today.getFullYear();
-    var month = today.getMonth() + 1; // beware: January = 0; February = 1, etc.
-    // var month1 = today.getMonth() + 1; // beware: January = 0; February = 1, etc.
-    var day = today.getDate();
+// var rule = new schedule.RecurrenceRule();
+// //rule.dayOfWeek = [0, new schedule.Range(4, 6)];
+// // rule.hour = 0;
+// // rule.minute = 0;
+// // rule.second = 30;
+// rule.minute = new schedule.Range(0, 59, 1);
+// //rule.minute = new schedule.Range(0, 59, 1);
+// var testStatus = false;
+// var IsOnlineDeviceCheck = schedule.scheduleJob(rule, function() {
+//     var today = new Date();
+//     var year = today.getFullYear();
+//     var month = today.getMonth() + 1; // beware: January = 0; February = 1, etc.
+//     // var month1 = today.getMonth() + 1; // beware: January = 0; February = 1, etc.
+//     var day = today.getDate();
 
-    var data = year + '-' + month + '-' + day;
-    console.log(new Date())
+//     var data = year + '-' + month + '-' + day;
+//     console.log(new Date())
 
-    // var objConnection = {
-    //     deviceid: '075034498021',
-    //     PetId: 50303,
-    //     Status: testStatus
-    // }
-    // io.sockets.emit('BikeDeviceStatus', JSON.stringify(objConnection));
-    // var objConnection = {
-    //     AlarmCode: '5',
-    //     DeviceId: '123456',
-    //     Datetime: '2016-12-15 10:50:02',
-    //     IdUser : '51588'
-    // }
-    // io.sockets.emit('DeviceAlarm', JSON.stringify(objConnection));
-    // var objConnection1 = {
-    //     Deviceid: '075034498021',
-    //     Latitute: '40.704059',
-    //     Longitude: '117.102490'
-    // }
-    // console.log("objConnection1",objConnection1);
-    // io.sockets.emit('BikeRoute', JSON.stringify(objConnection1));
+//     // var objConnection = {
+//     //     deviceid: '075034498021',
+//     //     PetId: 50303,
+//     //     Status: testStatus
+//     // }
+//     // io.sockets.emit('BikeDeviceStatus', JSON.stringify(objConnection));
+//     // var objConnection = {
+//     //     AlarmCode: '5',
+//     //     DeviceId: '123456',
+//     //     Datetime: '2016-12-15 10:50:02',
+//     //     IdUser : '51588'
+//     // }
+//     // io.sockets.emit('DeviceAlarm', JSON.stringify(objConnection));
+//     // var objConnection1 = {
+//     //     Deviceid: '075034498021',
+//     //     Latitute: '40.704059',
+//     //     Longitude: '117.102490'
+//     // }
+//     // console.log("objConnection1",objConnection1);
+//     // io.sockets.emit('BikeRoute', JSON.stringify(objConnection1));
 
-    // if (testStatus) {
-    //     testStatus = false
-    // } else {
-    //     testStatus = true;
-    // }
-    // var deviceID = '075034498021';
-    // var Latitude = '40.704059';
-    // var Longtitude = '117.102490';
+//     // if (testStatus) {
+//     //     testStatus = false
+//     // } else {
+//     //     testStatus = true;
+//     // }
+//     // var deviceID = '075034498021';
+//     // var Latitude = '40.704059';
+//     // var Longtitude = '117.102490';
 
 
 
-    Bike.findAll({
-        where: {
-            IsOnline: true,
-            IsDeleted: false
-        },
-    }).then(function(resBike) {
-        // for (var i = 0; i < resBike.length; i++) {
-        function setDeviceStatus(i) {
-            if (i < resBike.length) {
-                if (resBike[i].HandshakDatetime != null) {
-                    var date1 = new Date();
-                    var date2 = new Date(resBike[i].HandshakDatetime);
-                    var timeDiff = Math.abs(date2.getTime() - date1.getTime());
-                    var min = Math.floor(timeDiff / 60000);
-                    console.log(resBike[i].deviceid + "    = " + min);
-                    if (min > 20) {
-                        var objPetExist = resBike[i];
-                        Bike.findOne({
-                            where: {
-                                id: objPetExist.id
-                            }
-                        }).then(function(objPetExistOnline) {
-                            if (objPetExistOnline && objPetExistOnline.IsOnline) {
-                                objPetExistOnline.updateAttributes({ IsOnline: false }).then(function(resUpdate) {
+//     Bike.findAll({
+//         where: {
+//             IsOnline: true,
+//             IsDeleted: false
+//         },
+//     }).then(function(resBike) {
+//         // for (var i = 0; i < resBike.length; i++) {
+//         function setDeviceStatus(i) {
+//             if (i < resBike.length) {
+//                 if (resBike[i].HandshakDatetime != null) {
+//                     var date1 = new Date();
+//                     var date2 = new Date(resBike[i].HandshakDatetime);
+//                     var timeDiff = Math.abs(date2.getTime() - date1.getTime());
+//                     var min = Math.floor(timeDiff / 60000);
+//                     console.log(resBike[i].deviceid + "    = " + min);
+//                     if (min > 20) {
+//                         var objPetExist = resBike[i];
+//                         Bike.findOne({
+//                             where: {
+//                                 id: objPetExist.id
+//                             }
+//                         }).then(function(objPetExistOnline) {
+//                             if (objPetExistOnline && objPetExistOnline.IsOnline) {
+//                                 objPetExistOnline.updateAttributes({ IsOnline: false }).then(function(resUpdate) {
 
-                                    if (objPetExistOnline.IsDeleted.toString('hex') == '00') {
-                                        var PushNotificationdata = {
-                                            title: 'Alert',
-                                            message: 'Vehicle ' + objPetExistOnline.bikeNumber + ' Device offline alert! Please check!',
-                                            Fence: 'Default',
-                                            otherfields: {
-                                                deviceid: objPetExistOnline.deviceid,
-                                                PetId: objPetExistOnline.id,
-                                                PetName: objPetExistOnline.bikeNumber
-                                            }
-                                        };
+//                                     if (objPetExistOnline.IsDeleted.toString('hex') == '00') {
+//                                         var PushNotificationdata = {
+//                                             title: 'Alert',
+//                                             message: 'Vehicle ' + objPetExistOnline.bikeNumber + ' Device offline alert! Please check!',
+//                                             Fence: 'Default',
+//                                             otherfields: {
+//                                                 deviceid: objPetExistOnline.deviceid,
+//                                                 PetId: objPetExistOnline.id,
+//                                                 PetName: objPetExistOnline.bikeNumber
+//                                             }
+//                                         };
 
-                                        if (objPetExistOnline.DeviceType == 'M2') {
-                                            SendPushNotification(PushNotificationdata, objPetExistOnline.iduser, 'Shop', null);
-                                        } else {
-                                            SendPushNotification(PushNotificationdata, objPetExistOnline.iduser, 'Owner', 'OwnerDeviceStatusPushNotification');
-                                        }
-                                    }
-                                    var objConnection = {
-                                        deviceid: objPetExistOnline.deviceid,
-                                        PetId: objPetExistOnline.id,
-                                        Status: false
-                                    }
-                                    io.sockets.emit('BikeDeviceStatus', JSON.stringify(objConnection));
-                                    setDeviceStatus(i + 1);
-                                })
-                            } else {
-                                setDeviceStatus(i + 1);
-                            }
-                        })
-                    } else {
-                        setDeviceStatus(i + 1);
-                    }
-                } else {
-                    var objPetExist = resBike[i];
-                    Bike.findOne({
-                        where: {
-                            id: objPetExist.id
-                        }
-                    }).then(function(objPetExistOnline) {
-                        if (objPetExistOnline && objPetExistOnline.IsOnline) {
-                            objPetExistOnline.updateAttributes({ IsOnline: false }).then(function(resUpdate) {
-                                if (objPetExistOnline.IsDeleted.toString('hex') == '00') {
-                                    var PushNotificationdata = {
-                                        title: 'Alert',
-                                        message: 'Vehicle ' + objPetExistOnline.bikeNumber + ' Device offline alert! Please check!',
-                                        Fence: 'Default',
-                                        otherfields: {
-                                            deviceid: objPetExistOnline.deviceid,
-                                            PetId: objPetExistOnline.id,
-                                            PetName: objPetExistOnline.bikeNumber
-                                        }
-                                    };
-                                    if (objPetExistOnline.DeviceType == 'M2') {
-                                        SendPushNotification(PushNotificationdata, objPetExistOnline.iduser, 'Shop', null);
-                                    } else {
-                                        SendPushNotification(PushNotificationdata, objPetExistOnline.iduser, 'Owner', 'OwnerDeviceStatusPushNotification');
-                                    }
-                                }
-                                var objConnection = {
-                                    deviceid: objPetExistOnline.deviceid,
-                                    PetId: objPetExistOnline.id,
-                                    Status: false
-                                }
-                                io.sockets.emit('BikeDeviceStatus', JSON.stringify(objConnection));
-                                setDeviceStatus(i + 1);
-                            })
-                        } else {
-                            setDeviceStatus(i + 1);
-                        }
-                    })
-                }
-            }
-        }
-        setDeviceStatus(0);
-    })
-});
+//                                         if (objPetExistOnline.DeviceType == 'M2') {
+//                                             SendPushNotification(PushNotificationdata, objPetExistOnline.iduser, 'Shop', null);
+//                                         } else {
+//                                             SendPushNotification(PushNotificationdata, objPetExistOnline.iduser, 'Owner', 'OwnerDeviceStatusPushNotification');
+//                                         }
+//                                     }
+//                                     var objConnection = {
+//                                         deviceid: objPetExistOnline.deviceid,
+//                                         PetId: objPetExistOnline.id,
+//                                         Status: false
+//                                     }
+//                                     io.sockets.emit('BikeDeviceStatus', JSON.stringify(objConnection));
+//                                     setDeviceStatus(i + 1);
+//                                 })
+//                             } else {
+//                                 setDeviceStatus(i + 1);
+//                             }
+//                         })
+//                     } else {
+//                         setDeviceStatus(i + 1);
+//                     }
+//                 } else {
+//                     var objPetExist = resBike[i];
+//                     Bike.findOne({
+//                         where: {
+//                             id: objPetExist.id
+//                         }
+//                     }).then(function(objPetExistOnline) {
+//                         if (objPetExistOnline && objPetExistOnline.IsOnline) {
+//                             objPetExistOnline.updateAttributes({ IsOnline: false }).then(function(resUpdate) {
+//                                 if (objPetExistOnline.IsDeleted.toString('hex') == '00') {
+//                                     var PushNotificationdata = {
+//                                         title: 'Alert',
+//                                         message: 'Vehicle ' + objPetExistOnline.bikeNumber + ' Device offline alert! Please check!',
+//                                         Fence: 'Default',
+//                                         otherfields: {
+//                                             deviceid: objPetExistOnline.deviceid,
+//                                             PetId: objPetExistOnline.id,
+//                                             PetName: objPetExistOnline.bikeNumber
+//                                         }
+//                                     };
+//                                     if (objPetExistOnline.DeviceType == 'M2') {
+//                                         SendPushNotification(PushNotificationdata, objPetExistOnline.iduser, 'Shop', null);
+//                                     } else {
+//                                         SendPushNotification(PushNotificationdata, objPetExistOnline.iduser, 'Owner', 'OwnerDeviceStatusPushNotification');
+//                                     }
+//                                 }
+//                                 var objConnection = {
+//                                     deviceid: objPetExistOnline.deviceid,
+//                                     PetId: objPetExistOnline.id,
+//                                     Status: false
+//                                 }
+//                                 io.sockets.emit('BikeDeviceStatus', JSON.stringify(objConnection));
+//                                 setDeviceStatus(i + 1);
+//                             })
+//                         } else {
+//                             setDeviceStatus(i + 1);
+//                         }
+//                     })
+//                 }
+//             }
+//         }
+//         setDeviceStatus(0);
+//     })
+// });
 
 module.exports = router
