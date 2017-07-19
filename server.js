@@ -22,6 +22,8 @@ global.jsonfile = require('jsonfile');
 global.CountryLanguage = require('country-language');
 global.moment = require('moment');
 global.crc = require('crc');
+global.net = require('net');
+
 global.MysqlHost = '192.168.1.209';
 global.Mysqluser = 'di';
 global.Mysqlpassword = 'di123##';

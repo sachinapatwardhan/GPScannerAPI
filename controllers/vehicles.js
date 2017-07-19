@@ -121,279 +121,6 @@ router.post('/SaveVehicle', jsonParser, function(req, res) {
     }
 })
 
-router.post('/SaveVehicle1', jsonParser, function(req, res) {
-    objVehicle = req.body;
-    objHeader = req.headers;
-    var token = getToken(objHeader);
-    if (token) {
-        var decoded = jwt.decode(token, TokenKey);
-        User.findOne({
-            where: {
-                username: decoded.username,
-                password: decoded.password
-            }
-        }).then(function(UserExist) {
-            if (UserExist != null) {
-                Bike.count({
-                    where: {
-                        iduser: objPet.iduser,
-                        IsDeleted: false,
-                        DeviceType: {
-                            $ne: 'M2'
-                        },
-                    }
-                }).then(function(objCount) {
-                    if (objPet.deviceid != '' && objPet.deviceid != null) {
-
-                        var searchDevice = {};
-                        searchDevice['$and'] = [];
-
-                        var obj = new Object();
-                        obj['DeviceId'] = {
-                            $eq: objPet.deviceid
-                        };
-                        searchDevice['$and'].push(obj);
-
-                        if (objPet.Type == 'Owner') {
-                            var obj = new Object();
-                            obj['Type'] = {
-                                $ne: 'M2'
-                            };
-                            searchDevice['$and'].push(obj);
-                        } else {
-                            var obj = new Object();
-                            obj['Type'] = {
-                                $eq: 'M2'
-                            };
-                            searchDevice['$and'].push(obj);
-                        }
-
-                        PetDevice.findOne({
-                            // where: {
-                            //     DeviceId: objPet.deviceid,
-                            //     Type: DeviceType,
-                            // }
-
-                            where: searchDevice
-                        }).then(function(objPetDevice) {
-                            if (objPetDevice != null) {
-                                if (objPet.id == 0) {
-
-                                    objPet.IMEINumber = objPetDevice.IMEI;
-                                    objPet.IsOldDevice = objPetDevice.IsOldDevice;
-                                    objPet.IsOnline = false;
-                                    // objPet.HandshakDatetime = null;
-                                    objPet.CreatedDate = GetCurrentDate();
-                                    objPet.DeviceType = objPetDevice.Type;
-                                    Bike.findOne({
-                                        where: {
-                                            deviceid: objPet.deviceid,
-                                            IsDeleted: true
-                                        }
-                                    }).then(function(objPetExist) {
-                                        if (objPetExist) {
-                                            objPet.id = objPetExist.id;
-                                            Bike.update(objPet, {
-                                                where: {
-                                                    id: objPet.id
-                                                }
-                                            }).then(function(response) {
-                                                if (response[0]) {
-                                                    funAuditLog.CreateAuditLog('SaveBike', UserExist.username, 'Create Vehicle');
-                                                    res.json({
-                                                        success: true,
-                                                        message: "Vehicle created successfully...",
-                                                        data: objPet
-                                                    });
-                                                }
-                                            })
-                                        } else {
-                                            objPet.mode = 1;
-                                            Bike.findOne({
-                                                where: {
-                                                    deviceid: objPet.deviceid,
-                                                    IsDeleted: false
-                                                }
-                                            }).then(function(objNewPetExist) {
-                                                if (objNewPetExist) {
-                                                    res.json({
-                                                        success: false,
-                                                        message: "Tracker No. is already assign to other Vehicle...",
-                                                        data: null
-                                                    });
-
-                                                } else {
-                                                    Bike.create(objPet).then(function(response) {
-                                                        if (response) {
-                                                            funAuditLog.CreateAuditLog('SaveBike', UserExist.username, 'Create Vehicle');
-                                                            res.json({
-                                                                success: true,
-                                                                message: "Vehicle created successfully...",
-                                                                data: response
-                                                            });
-                                                        } else {
-                                                            res.json({
-                                                                success: false,
-                                                                message: "Tracker No. is already assign to other Vehicle...",
-                                                                data: null
-                                                            });
-                                                        }
-                                                    })
-                                                }
-
-                                            })
-                                        }
-                                    })
-                                } else {
-                                    objPet.IsOldDevice = objPetDevice.IsOldDevice;
-                                    Bike.findOne({
-                                        where: {
-                                            deviceid: objPet.deviceid
-                                        }
-                                    }).then(function(objPetExist) {
-                                        if (objPetExist != null && objPetExist.id != objPet.id && objPetExist.IsDeleted == false) {
-                                            res.json({
-                                                success: false,
-                                                message: "Tracker No. is already assign to other Vehicle...",
-                                                data: objPetExist
-                                            });
-                                        } else {
-                                            Bike.update(objPet, {
-                                                where: {
-                                                    id: objPet.id
-                                                }
-                                            }).then(function(response) {
-                                                if (response[0]) {
-                                                    funAuditLog.CreateAuditLog('SaveBike', UserExist.username, 'Update Vehicle');
-                                                    res.json({
-                                                        success: true,
-                                                        message: "Vehicle updated successfully...",
-                                                        data: objPet
-                                                    });
-                                                }
-                                            })
-                                        }
-                                    })
-                                }
-                            } else {
-                                res.json({
-                                    success: false,
-                                    message: "Invalid Tracker No., Please insert valid Tracker No.",
-                                    data: ""
-                                });
-                            }
-                        })
-                    } else {
-                        if (objPet.id == 0) {
-                            objPet.IMEINumber = '';
-                            // objPet.IsOldDevice = objPetDevice.IsOldDevice;
-                            objPet.IsOnline = false;
-                            objPet.HandshakDatetime = null;
-                            objPet.CreatedDate = GetCurrentDate();
-
-                            // Pet.findOne({
-                            //     where: {
-                            //         deviceid: objPet.deviceid,
-                            //         IsDeleted: true
-                            //     }
-                            // }).then(function(objPetExist) {
-                            //     if (objPetExist) {
-                            //         objPet.id = objPetExist.id;
-                            //         Pet.update(objPet, {
-                            //             where: {
-                            //                 id: objPet.id
-                            //             }
-                            //         }).then(function(response) {
-                            //             if (response[0]) {
-                            //                 res.json({
-                            //                     success: true,
-                            //                     message: "Pet created successfully...",
-                            //                     data: objPet
-                            //                 });
-                            //             }
-                            //         })
-
-                            //     } else {
-                            objPet.mode = 1;
-                            // Pet.findOne({
-                            //     where: {
-                            //         deviceid: objPet.deviceid,
-                            //         IsDeleted: false
-                            //     }
-                            // }).then(function(objNewPetExist) {
-                            //     if (objNewPetExist) {
-                            //         res.json({
-                            //             success: false,
-                            //             message: "Device id is already assign to other pet...",
-                            //             data: null
-                            //         });
-
-                            //     } else {
-                            Bike.create(objPet).then(function(response) {
-                                if (response) {
-                                    funAuditLog.CreateAuditLog('SaveBike', UserExist.username, 'Create Vehicle');
-                                    res.json({
-                                        success: true,
-                                        message: "Vehicle created successfully...",
-                                        data: response
-                                    });
-                                } else {
-                                    res.json({
-                                        success: false,
-                                        message: "Tracker No. is already assign to other pet...",
-                                        data: null
-                                    });
-                                }
-                            })
-
-                            //     }
-
-                            // })
-                            //     }
-                            // })
-                        } else {
-                            // objPet.IsOldDevice = objPetDevice.IsOldDevice;
-                            Bike.findOne({
-                                where: {
-                                    id: objPet.id
-                                }
-                            }).then(function(objPetExist) {
-                                if (objPetExist != null && objPetExist.id != objPet.id && objPetExist.IsDeleted == false) {
-                                    res.json({
-                                        success: false,
-                                        message: "Tracker No. is already assign to other Vehicle...",
-                                        data: objPetExist
-                                    });
-                                } else {
-                                    Bike.update(objPet, {
-                                        where: {
-                                            id: objPet.id
-                                        }
-                                    }).then(function(response) {
-                                        if (response[0]) {
-                                            funAuditLog.CreateAuditLog('SaveBike', UserExist.username, 'Update Vehicle');
-                                            res.json({
-                                                success: true,
-                                                message: "Vehicle updated successfully...",
-                                                data: objPet
-                                            });
-                                        }
-                                    })
-                                }
-                            })
-                        }
-                    }
-                    //}
-                });
-            } else {
-                res.json(InvalidToken);
-            }
-        })
-    } else {
-        res.json(InvalidToken);
-    }
-});
-
 router.get('/DeleteVehicle', function(req, res) {
     objHeader = req.headers;
     var token = getToken(objHeader);
@@ -499,6 +226,39 @@ router.get('/GetAllVehicleByUser', function(req, res) {
         Vehicle.findAll({
             where: search,
             order: 'CreatedDate'
+        }).then(function(response) {
+            res.json(response);
+        }).catch(function(error) {
+            res.json(error);
+        })
+    } else {
+        res.json(RecordNotFound);
+    }
+
+})
+
+router.get('/GetAllVehicleById', function(req, res) {
+    console.log(req.query);
+    if (req.query.id != null || req.query.id != undefined) {
+        var search = {};
+
+        search['$and'] = [];
+
+        var obj = new Object();
+        obj['id'] = {
+            $eq: req.query.id
+        };
+        search['$and'].push(obj);
+
+        var obj = new Object();
+        obj['IsDelete'] = {
+            $eq: false
+        };
+        search['$and'].push(obj);
+        console.log(search);
+        console.log("===============================================")
+        Vehicle.findOne({
+            where: search,
         }).then(function(response) {
             res.json(response);
         }).catch(function(error) {
