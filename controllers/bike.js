@@ -3,6 +3,7 @@ var express = require('express'),
 //Tables
 var User = models.tbluserinformation;
 var Bike = models.tblbike;
+var Vehicle = models.tblvehicle;
 var Pet = models.tblpet;
 var PetTracking = models.tbldevicetracking;
 var Fence = models.tblfence;
@@ -315,63 +316,14 @@ router.get('/GetAllBikebyCountry', function(req, res) {
 })
 
 router.get('/getAllBikeByUser', function(req, res) {
-
-    var search = {};
-    var objSearch = req.query.objSearch;
-
-    if (objSearch != null && objSearch != '') {
-        search['$or'] = [];
-        if (req.query.Type != 'M2-U' && req.query.Type != 'M3') {
-            search['$or'].push(['Buyer like ?', "%" + objSearch + "%"]);
-        }
-        search['$or'].push(['deviceid like ?', "%" + objSearch + "%"]);
-        search['$or'].push(['bikeNumber like ?', "%" + objSearch + "%"]);
-    }
-
-
-    search['$and'] = [];
-
-    var obj = new Object();
-    obj['iduser'] = {
-        $eq: req.query.idUser
-    };
-    search['$and'].push(obj);
-
-    var obj = new Object();
-    obj['IsDeleted'] = {
-        $eq: false
-    };
-    search['$and'].push(obj);
-
-    var obj = new Object();
-    obj['deviceid'] = {
-        $ne: ''
-    };
-    search['$and'].push(obj);
-
-    if (req.query.Type == 'M2' || req.query.Type == null || req.query.Type == undefined) {
-        var obj = new Object();
-        obj['DeviceType'] = {
-            $eq: 'M2'
-        };
-        search['$and'].push(obj);
-    } else {
-        var obj = new Object();
-        obj['DeviceType'] = {
-            $ne: 'M2'
-        };
-        search['$and'].push(obj);
-    }
-
-    Bike.findAll({
-        // where: {
-        //     iduser: req.query.idUser,
-        //     IsDeleted: false,
-        //     deviceid: {
-        //         $ne: ''
-        //     }
-        // },
-        where: search,
+    Vehicle.findAll({
+        where: {
+            iduser: req.query.idUser,
+            IsDelete: false,
+            deviceid: {
+                $ne: ''
+            }
+        },
         order: 'CreatedDate'
     }).then(function(response) {
         res.json(response);
@@ -776,9 +728,7 @@ router.post('/GetAllNotWorkingBike', jsonParser, function(req, res) {
 })
 
 router.post('/GetAllWorkingBike', jsonParser, function(req, res) {
-    //connection.query("select  tp.*, tpg.Latitude,tpg.Longtitude,tpg.Datetime, tpg.Id, tpg.Speed  from (select s1.Datetime, s1.Latitude, s1.Longtitude, s1.Id, s1.Speed, s1.DeviceId from tblgpsscanner s1 inner join (select max(Datetime) Datetime, deviceid from tblgpsscanner group by deviceid) s2 on s1.deviceid = s2.deviceid and s1.Datetime = s2.Datetime group by Datetime) tpg INNER JOIN tblbike as tp ON tp.deviceid = tpg.DeviceId  where tp.iduser = " + req.query.idUser + " && tp.IsDeleted = false && tp.DeviceType = 'M2-U';", function(err, rows, fields) {
-    // connection.query("SELECT  tb.*, tpg.Latitude,tpg.Longtitude,tpg.Datetime, tpg.Id, tpg.Speed FROM tblbike tb INNER JOIN tblgpsscanner tpg ON tb.deviceid=tpg.DeviceId INNER JOIN (SELECT Latitude,DeviceId, MAX(Datetime) Datetime FROM tblgpsscanner where Datetime<=now() GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId AND tpg.Datetime = b.Datetime WHERE iduser=" + req.query.idUser + " and IsDeleted=false and DeviceType='M2-U'", function(err, rows, fields) {
-    connection.query("SELECT  tb.id,tb.deviceid,tb.bikeimageURl,tb.bikeNumber,tb.IsOnline, tpg.Latitude,tpg.Longtitude,tpg.Datetime, tpg.Id, tpg.Speed FROM tblbike tb INNER JOIN tblgpsscanner tpg ON tb.deviceid=tpg.DeviceId INNER JOIN (SELECT DeviceId,MAX(Id) Id FROM tblgpsscanner GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId AND tpg.Id = b.Id WHERE iduser=" + req.query.idUser + " and IsDeleted=false and DeviceType != 'M2';", function(err, rows, fields) {
+    connection.query("SELECT  tb.id,tb.deviceid,tb.Name,tb.IsOnline, tpg.Latitude,tpg.Longtitude,tpg.Datetime, tpg.Id, tpg.Speed FROM tblvehicle tb INNER JOIN tblgpsdata tpg ON tb.deviceid=tpg.DeviceId INNER JOIN (SELECT DeviceId,MAX(Id) Id FROM tblgpsdata GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId AND tpg.Id = b.Id WHERE iduser=" + req.query.idUser + " and IsDelete=false;", function(err, rows, fields) {
         if (!err) {
             res.json({ success: true, data: rows });
         } else {
@@ -795,7 +745,7 @@ router.post('/GetNotWorkingBikeById', jsonParser, function(req, res) {
         var Type = "tp.DeviceType != 'M2'";
     }
     // connection.query("SELECT tp.*, tpg.Latitude,tpg.Longtitude,tpg.MAXDateTime, tpg.Id, tpg.Speed FROM (SELECT DeviceId,Latitude,Longtitude, MAX(Datetime) AS MAXDateTime, Id, Speed FROM tblgpsscanner GROUP BY DeviceId) tpg INNER JOIN tblbike as tp ON tp.deviceid = tpg.DeviceId  where tp.IsWireCut=1 && tp.iduser = "+ req.query.idUser + " && tp.IsDeleted = false", function(err, rows, fields) {
-    connection.query("select  tp.*, tpg.Latitude,tpg.Longtitude,tpg.Datetime, tpg.Id, tpg.Speed  from (select s1.Datetime, s1.Latitude, s1.Longtitude, s1.Id, s1.Speed, s1.DeviceId from tblgpsscanner s1 inner join (select max(Datetime) Datetime, deviceid from tblgpsscanner group by deviceid) s2 on s1.deviceid = s2.deviceid and s1.Datetime = s2.Datetime group by Datetime) tpg INNER JOIN tblbike as tp ON tp.deviceid = tpg.DeviceId  where tp.IsOnline= false && tp.id = " + req.query.bikeId + " && tp.IsDeleted = false && '" + Type + "';", function(err, rows, fields) {
+    connection.query("select  tp.*, tpg.Latitude,tpg.Longtitude,tpg.Datetime, tpg.Id, tpg.Speed  from (select s1.Datetime, s1.Latitude, s1.Longtitude, s1.Id, s1.Speed, s1.DeviceId from tblgpsdata s1 inner join (select max(Datetime) Datetime, deviceid from tblgpsdata group by deviceid) s2 on s1.deviceid = s2.deviceid and s1.Datetime = s2.Datetime group by Datetime) tpg INNER JOIN tblbike as tp ON tp.deviceid = tpg.DeviceId  where tp.IsOnline= false && tp.id = " + req.query.bikeId + " && tp.IsDelete = false && '" + Type + "';", function(err, rows, fields) {
         if (!err) {
             res.json({ success: true, data: rows });
         } else {
@@ -1119,48 +1069,19 @@ router.post('/SaveBike', jsonParser, function(req, res) {
 router.get('/DeleteBike', function(req, res) {
     objHeader = req.headers;
     var token = getToken(objHeader);
-    //Set Parameter for User Permission
-    // req.query['tablename'] = req.headers['x-requested-with'];
-    // req.query['permission'] = "Deleted";
-
+    
     var obj = {};
     obj.headers = req.headers;
     obj.query = req.query;
 
-    // funAccessPermission.CheckUserAccessPermission(obj, function(responseAccessPermission) {
-    //     var AccessPermission = responseAccessPermission.success;
-    //     if (AccessPermission) {
     if (token) {
         var decoded = jwt.decode(token, TokenKey);
 
-        var search = {};
-        search['$and'] = [];
-
-        var obj = new Object();
-        obj['username'] = {
-            $eq: decoded.username
-        };
-        search['$and'].push(obj);
-        if (req.query.Type == 'Owner') {
-            var obj = new Object();
-            obj['password'] = {
-                $eq: decoded.password
-            };
-            search['$and'].push(obj);
-        } else {
-            var obj = new Object();
-            obj['password'] = {
-                $eq: decoded.password
-            };
-            search['$and'].push(obj);
-        }
-
         User.findOne({
-            // where: {
-            //     username: decoded.username,
-            //     password: decoded.password
-            // }
-            where: search
+            where: {
+                username: decoded.username,
+                password: decoded.password
+            }
         }).then(function(UserExist) {
             if (UserExist != null) {
                 if (req.query.DeviceId != '' && req.query.DeviceId != null) {
@@ -1213,10 +1134,6 @@ router.get('/DeleteBike', function(req, res) {
     } else {
         res.json(InvalidToken);
     }
-    //     } else {
-    //         res.json(NoAccessPermission);
-    //     }
-    // });
 });
 
 router.get('/ChangePetWorkingMode', function(req, res) {
