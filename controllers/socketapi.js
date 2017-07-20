@@ -2411,7 +2411,7 @@ router.get('/Command5000', function(req, res) {
     var DeviceId = line.substring(8, 22);
 
     var CurrentDate = GetCurrentDate();
-    var response = '40400011' + DeviceId + '4000';
+    var response = '40400011' + DeviceId + '400001';
     response = response + CalculateCRCbyHex(response) + '0D0A';
     connection.query("SELECT * from tblgpsdevice where DeviceId=" + DeviceId, function(err, rows, fields) {
         if (!err) {
