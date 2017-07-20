@@ -183,7 +183,7 @@ router.get('/DeleteVehicleAlarm', function(req, res) {
 });
 router.get('/GetVehicleAlarmByUser', function(req, res) {
     var offset = (parseInt(req.query.page) * 10);
-    connection.query("select  tp.Id,tp.CreatedDate,tp.DeviceId,tp.Speed,tp.AlarmCode, tpg.id,tpg.Name from tblalarm tp inner join tblvehicle tpg where tp.DeviceId = tpg.deviceid and tpg.iduser = " + req.query.UserId + " and tpg.IsDelete = 0 and tp.CreatedDate <='" + GetCurrentDate() + "' order by tp.Id DESC limit 10 OFFSET " + offset, function(err, rows, fields) {
+    connection.query("select  tp.Id,tp.CreatedDate,tp.Datetime,tp.DeviceId,tp.Speed,tp.AlarmCode, tpg.id,tpg.Name from tblalarm tp inner join tblvehicle tpg where tp.DeviceId = tpg.deviceid and tpg.iduser = " + req.query.UserId + " and tpg.IsDelete = 0 order by tp.Id DESC limit 10 OFFSET " + offset, function(err, rows, fields) {
         if (!err) {
             res.json({ success: true, data: rows });
         } else {

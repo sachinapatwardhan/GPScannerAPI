@@ -283,13 +283,18 @@ var ServerConnectionCheck = schedule.scheduleJob('* * 9 * * *', function() {
 });
 
 //Calculate CRC
+// global.CalculateCRCbyHex = function(hex) {
+//     var bytedata = hex2byteCRC(hex);
+//     return ("0000" + decimalToHexString(crc.crc16ccitt(bytedata))).slice(-4);
+// }
+
 global.CalculateCRCbyHex = function(hex) {
     var bytedata = hex2byteCRC(hex);
     return ("0000" + decimalToHexString(crc.crc16x25(bytedata))).slice(-4);
 }
 
 // var Testdatatt = '100000000C9461000C9473000C9473000C9473000C9473000C9473000C9473000C9473000C9473000C9473000C9473000C9473000C9473000C9473000C9473000C9473000C94C3000C9473000C9473000C9473000C9473000C9473000C9473000C9473000C9473000C94730000000000240027002A000000000023002600290000000000DD10008000250028002B0004040404040404040202020202020303030303030102040810204080010204081020010204081020000000080002010000030407000000000000000011241FBECFEFD8E0DEBFCDBF21E0A0E0B1E001C01D92A930B207E1F70E940D010C94E1010C940000833081F028F4813099F08230A1F008958730A9F088305310010000B9F08430D1F4809180008F7D03C0809180008F7780938000089584B58F7702C084B58F7D84BD08958091B0008F7703C08091B0008F7D8093B00008953FB7F8948091050190910601A0910701B091080126B5A89B05C02F3F19F00196A11DB11D3FBFBA2FA92F982F8827820F911DA11DB11DBC01CD0142E0660F771F881F991FF3100180004A95D1F708951F920F920FB60F9211242F933F938F939F93AF93BF938091010190910201A0910301B09104013091000123E0230F2D3720F40196A11DB11D05C026E8230F0296A11DB11D209300018093010190930201A0930301B09304018091050190910601A0910701B09108010196A11DB11D8093050190930601A09307018410020000B0930801BF91AF919F918F913F912F910F900FBE0F901F901895789484B5826084BD84B5816084BD85B5826085BD85B5816085BD80916E00816080936E00109281008091810082608093810080918100816080938100809180008160809380008091B10084608093B1008091B00081608093B00080917A00846080937A00809159100280007A00826080937A0080917A00816080937A0080917A00806880937A001092C100CCE9D0E0FE01249108E810E0F8018491882399F090E0880F991FFC01E859FF4FA591B49184589F4FFC01459154918FB7F8949C91292B2C938FBF40EBE42E40E0F42E50E0C52E50E0D52EF7018491FE01A490F801B490BB20A1F081110E947500DF10030000EB2DF0E0EE0FFF1FEE58FF4FA591B4918C91A82291E080E009F490E0A92EB82E02C0A12CB12CF7018491FE018490F80194909920C1F081110E947500892D90E0880F991F84589F4FFC01A591B4918FB7F8949C91AA94AB2819F48094892201C0892A8C928FBF0E949E002B013C0184EF882E99249394A12CB12C0E949E00DC014D10038000CB0184199509A609B709883E9340A105B10558F021E0821A9108A108B10888EE480E83E0581E611C711C81149104A104B10419F7C114D10409F497CF0E94000094CFF894FFCFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFAC00000001';
-// console.log(CalculateCRCbyHex(Testdatatt));
+// console.log(CalculateCRCbyHex('4040001266104024166087400001'));
 
 router.get('/CalculateCRCOnline', function(req, res) {
     res.send(CalculateCRCbyHex(req.query.data));
@@ -894,7 +899,7 @@ global.Command9999 = function(line, Callback) {
     // console.log(Longtitude)
     // console.log(GPSDateTime)
 
-    var query = "INSERT INTO tblalarm (Datetime,Latitude,Longtitude,GPSPositioning,Speed,Direction,Status,ReservedSign,ReservedSelection,DeviceId,AlarmCode ) VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longtitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + Status + "', '" + Sign + "', '" + ReserveSection + "', '" + DeviceId + "','" + alarmcode + "');";
+    var query = "INSERT INTO tblalarm (Datetime,Latitude,Longtitude,GPSPositioning,Speed,Direction,Status,DeviceId,AlarmCode,CreatedDate ) VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longtitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + inputoutputSTatus + "', '" + DeviceId + "','" + alarmcode + "','" + CurrentDate + "');";
     connection.query(query, function(err, rows, fields) {
         // console.log("Alarm");
         // console.log(err);
@@ -2411,11 +2416,11 @@ router.get('/Command5000', function(req, res) {
     var DeviceId = line.substring(8, 22);
 
     var CurrentDate = GetCurrentDate();
-    var response = '40400011' + DeviceId + '400001';
+    var response = '40400012' + DeviceId + '400001';
     response = response + CalculateCRCbyHex(response) + '0D0A';
     connection.query("SELECT * from tblgpsdevice where DeviceId=" + DeviceId, function(err, rows, fields) {
         if (!err) {
-            // if (rows.length > 0) {
+            //if (rows.length > 0) {
             //tblapisresponse Entry
             // var ResponceQuery = "INSERT INTO tblapisresponse (Code,Response,Datetime) VALUES ('5000', '" + response + "', '" + CurrentDate + "');";
             // connection.query(ResponceQuery, function(err, rows1, fields) {
@@ -2423,8 +2428,8 @@ router.get('/Command5000', function(req, res) {
             // });
             // } else {
             //     //tblPetgps Entry
-            //     //tblapisresponse Entry
-            //     var ResponceQuery = "INSERT INTO tblapisresponse (Code,Response,Datetime) VALUES ('5000', '" + response + "', '" + CurrentDate + "');";
+
+            //     var ResponceQuery = "INSERT INTO tblgpsdevice (Code,Response,Datetime) VALUES ('5000', '" + response + "', '" + CurrentDate + "');";
             //     connection.query(ResponceQuery, function(err, rows1, fields) {
             //         res.json(response);
             //     });

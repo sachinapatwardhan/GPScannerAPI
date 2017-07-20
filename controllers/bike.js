@@ -41,9 +41,9 @@ function SendPushNotification(data, UserId) {
                 if (i < response.length) {
                     var deviceIds = [];
                     deviceIds.push(response[i].PushNotificationId)
-                    //SendNotification(i + 1);
-                    // } else {
-                    // console.log(deviceIds)
+                        //SendNotification(i + 1);
+                        // } else {
+                        // console.log(deviceIds)
                     var objData = clone(data);
                     if (response[i].Platform == 'ios') {
                         objData.title = data.message;
@@ -293,10 +293,10 @@ router.get('/GetAllBikebyCountry', function(req, res) {
                         offset: parseInt(objParam.start),
                         limit: parseInt(objParam.length),
                         include: [{
-                            model: User,
-                            required: true
-                        }]
-                        // include: model
+                                model: User,
+                                required: true
+                            }]
+                            // include: model
                     }).then(function(response) {
                         var BikeList = [];
                         var response1 = new Object();
@@ -1451,13 +1451,13 @@ router.get('/GetVehicleCurrentLocation', function(req, res) {
 router.get('/GetAllGPSDate', function(req, res) {
     var todaydata = new Date();
 
-    var convertDate = convertdateformat(todaydata);
-    var unixNewDate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
+    // var convertDate = convertdateformat(todaydata);
+    var unixNewDate = todaydata.getTime() / 1000;
 
     todaydata = new Date(todaydata.setMonth(todaydata.getMonth() - 4));
 
-    var convertDate = convertdateformat(todaydata);
-    var unixTodaydata = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
+    // var convertDate = convertdateformat(todaydata);
+    var unixTodaydata = todaydata.getTime() / 1000;
 
 
     GPSData.findAll({
@@ -1521,12 +1521,12 @@ router.get('/GetAllGPSDateByUser', function(req, res) {
 router.get('/GetAllGPSDateByUser1', function(req, res) {
     console.log("################################################################")
     console.log(new Date())
-    // var query = "SELECT Datetime,DeviceId from tblgpsscanner where Datetime <= now() and Datetime >= DATE_SUB(now() ,INTERVAL 4 MONTH) and DeviceId in('075034498153','075034499458','075034807742','075034800879','075034803469');";
+        // var query = "SELECT Datetime,DeviceId from tblgpsscanner where Datetime <= now() and Datetime >= DATE_SUB(now() ,INTERVAL 4 MONTH) and DeviceId in('075034498153','075034499458','075034807742','075034800879','075034803469');";
     var query = "SELECT a.Datetime, a.DeviceId FROM tblgpsscanner as a, tblbike as b where a.DeviceId = b.deviceid and a.Datetime <= now() and a.Datetime >= DATE_SUB(now() ,INTERVAL 4 MONTH) and b.idUser = 51592;";
     connection.query(query, function(err, lstGPSData, fields) {
         console.log(new Date())
         console.log("######################################################################################")
-        //  groups = u.groupBy(lstGPSData, function(o) {
+            //  groups = u.groupBy(lstGPSData, function(o) {
 
         //             return momentz.utc(o.Datetime).tz(AppTimeZone).format('DD-MM-YYYY')
         //         });
@@ -1566,7 +1566,7 @@ router.get('/GetAllGPSDateByUser1', function(req, res) {
 
             // } else {
             lstAllGPSData = lstAllGPSData.concat(lstGroupDate[i].data)
-            // }
+                // }
         }
 
         res.json(lstAllGPSData);
@@ -1942,78 +1942,78 @@ router.get('/ChangeFenceByPet', function(req, res) {
     //         if (Data == "1") {
 
     Fence.findOne({
-        where: {
-            deviceId: deviceId
-        }
-    }).then(function(response) {
-        if (response) {
-            // var IsPetOnline = false;
+            where: {
+                deviceId: deviceId
+            }
+        }).then(function(response) {
+            if (response) {
+                // var IsPetOnline = false;
 
-            // if (status == "1") {
-            //     IsPetOnline = true;
-            // };
-            response.updateAttributes({ IsFenceOnline: IsFenceOnline }).then(function(resUpdate) {
-                var desc = "Fence Status = " + IsFenceOnline;
-                var objPetLogs = {
-                    DeviceId: deviceId,
-                    Description: desc,
-                    Datetime: GetCurrentDate()
-                }
+                // if (status == "1") {
+                //     IsPetOnline = true;
+                // };
+                response.updateAttributes({ IsFenceOnline: IsFenceOnline }).then(function(resUpdate) {
+                    var desc = "Fence Status = " + IsFenceOnline;
+                    var objPetLogs = {
+                        DeviceId: deviceId,
+                        Description: desc,
+                        Datetime: GetCurrentDate()
+                    }
 
-                if (IsFenceOnline == 'true') {
-                    var query = 'UPDATE tblbike SET IsFenceOnline = ' + IsFenceOnline + ' WHERE deviceid = ' + deviceId + ';';
-                    connection.query(query, function(err, rows, fields) {
-                        PetLogs.create(objPetLogs).then(function(response1) {
-                            res.json({
-                                success: true,
-                                message: "Fence Setting saved successfully.",
-                                data: IsFenceOnline
-                            });
-                        })
-                    });
-                } else {
-                    Fence.findOne({
-                        where: {
-                            deviceId: deviceId,
-                            IsFenceOnline: true,
-                        }
-                    }).then(function(responseFence) {
-                        if (responseFence != null) {
-                            var query = 'UPDATE tblbike SET IsFenceOnline = true WHERE deviceid = ' + deviceId + ';';
-                            connection.query(query, function(err, rows, fields) {
-                                PetLogs.create(objPetLogs).then(function(response1) {
-                                    res.json({
-                                        success: true,
-                                        message: "Fence Setting saved successfully.",
-                                        data: IsFenceOnline
-                                    });
-                                })
-                            });
-                        } else {
-                            var query = 'UPDATE tblbike SET IsFenceOnline = false WHERE deviceid = ' + deviceId + ';';
-                            connection.query(query, function(err, rows, fields) {
-                                PetLogs.create(objPetLogs).then(function(response1) {
-                                    res.json({
-                                        success: true,
-                                        message: "Fence Setting saved successfully.",
-                                        data: IsFenceOnline
-                                    });
-                                })
-                            });
-                        }
-                    });
-                }
+                    if (IsFenceOnline == 'true') {
+                        var query = 'UPDATE tblbike SET IsFenceOnline = ' + IsFenceOnline + ' WHERE deviceid = ' + deviceId + ';';
+                        connection.query(query, function(err, rows, fields) {
+                            PetLogs.create(objPetLogs).then(function(response1) {
+                                res.json({
+                                    success: true,
+                                    message: "Fence Setting saved successfully.",
+                                    data: IsFenceOnline
+                                });
+                            })
+                        });
+                    } else {
+                        Fence.findOne({
+                            where: {
+                                deviceId: deviceId,
+                                IsFenceOnline: true,
+                            }
+                        }).then(function(responseFence) {
+                            if (responseFence != null) {
+                                var query = 'UPDATE tblbike SET IsFenceOnline = true WHERE deviceid = ' + deviceId + ';';
+                                connection.query(query, function(err, rows, fields) {
+                                    PetLogs.create(objPetLogs).then(function(response1) {
+                                        res.json({
+                                            success: true,
+                                            message: "Fence Setting saved successfully.",
+                                            data: IsFenceOnline
+                                        });
+                                    })
+                                });
+                            } else {
+                                var query = 'UPDATE tblbike SET IsFenceOnline = false WHERE deviceid = ' + deviceId + ';';
+                                connection.query(query, function(err, rows, fields) {
+                                    PetLogs.create(objPetLogs).then(function(response1) {
+                                        res.json({
+                                            success: true,
+                                            message: "Fence Setting saved successfully.",
+                                            data: IsFenceOnline
+                                        });
+                                    })
+                                });
+                            }
+                        });
+                    }
 
-            });
-        } else {
-            res.json({ success: false, message: 'Fence Setting not saved successfully. Try after 5 minute.' });
-        }
-        // client.destroy();
-    })
-    //         } else {
-    //             res.json({ success: false, message: 'Fence Setting not saved successfully. Try after 5 minute.' });
-    //             client.destroy();
-    //         };
+                });
+            } else {
+                res.json({ success: false, message: 'Fence Setting not saved successfully. Try after 5 minute.' });
+            }
+            // client.destroy();
+        })
+        //         } else {
+        //             res.json({ success: false, message: 'Fence Setting not saved successfully. Try after 5 minute.' });
+        //             client.destroy();
+        //         };
 
 
     //     } else {
@@ -2072,77 +2072,77 @@ router.get('/ChangeFenceByBike', function(req, res) {
     //         if (Data == "1") {
 
     Fence.findOne({
-        where: {
-            id: idFence
-        }
-    }).then(function(response) {
-        if (response) {
-            // var IsPetOnline = false;
+            where: {
+                id: idFence
+            }
+        }).then(function(response) {
+            if (response) {
+                // var IsPetOnline = false;
 
-            // if (status == "1") {
-            //     IsPetOnline = true;
-            // };
-            response.updateAttributes({ IsFenceOnline: IsFenceOnline }).then(function(resUpdate) {
-                var desc = "Fence Status = " + IsFenceOnline;
-                var objPetLogs = {
-                    DeviceId: deviceId,
-                    Description: desc,
-                    Datetime: GetCurrentDate()
-                }
+                // if (status == "1") {
+                //     IsPetOnline = true;
+                // };
+                response.updateAttributes({ IsFenceOnline: IsFenceOnline }).then(function(resUpdate) {
+                    var desc = "Fence Status = " + IsFenceOnline;
+                    var objPetLogs = {
+                        DeviceId: deviceId,
+                        Description: desc,
+                        Datetime: GetCurrentDate()
+                    }
 
-                if (IsFenceOnline == 'true') {
-                    var query = 'UPDATE tblbike SET IsFenceOnline = ' + IsFenceOnline + ' WHERE deviceid = ' + deviceId + ';';
-                    connection.query(query, function(err, rows, fields) {
-                        PetLogs.create(objPetLogs).then(function(response1) {
-                            res.json({
-                                success: true,
-                                message: "Fence Setting saved successfully.",
-                                data: IsFenceOnline
-                            });
-                        })
-                    });
-                } else {
-                    Fence.findOne({
-                        where: {
-                            deviceId: deviceId,
-                            IsFenceOnline: true,
-                        }
-                    }).then(function(responseFence) {
-                        if (responseFence != null) {
-                            var query = 'UPDATE tblbike SET IsFenceOnline = true WHERE deviceid = ' + deviceId + ';';
-                            connection.query(query, function(err, rows, fields) {
-                                PetLogs.create(objPetLogs).then(function(response1) {
-                                    res.json({
-                                        success: true,
-                                        message: "Fence Setting saved successfully.",
-                                        data: IsFenceOnline
-                                    });
-                                })
-                            });
-                        } else {
-                            var query = 'UPDATE tblbike SET IsFenceOnline = false WHERE deviceid = ' + deviceId + ';';
-                            connection.query(query, function(err, rows, fields) {
-                                PetLogs.create(objPetLogs).then(function(response1) {
-                                    res.json({
-                                        success: true,
-                                        message: "Fence Setting saved successfully.",
-                                        data: IsFenceOnline
-                                    });
-                                })
-                            });
-                        }
-                    });
-                }
-            });
-        } else {
-            res.json({ success: false, message: 'Fence Setting not saved successfully. Try after 5 minute.' });
-        }
-        // client.destroy();
-    })
-    //         } else {
-    //             res.json({ success: false, message: 'Fence Setting not saved successfully. Try after 5 minute.' });
-    //             client.destroy();
-    //         };
+                    if (IsFenceOnline == 'true') {
+                        var query = 'UPDATE tblbike SET IsFenceOnline = ' + IsFenceOnline + ' WHERE deviceid = ' + deviceId + ';';
+                        connection.query(query, function(err, rows, fields) {
+                            PetLogs.create(objPetLogs).then(function(response1) {
+                                res.json({
+                                    success: true,
+                                    message: "Fence Setting saved successfully.",
+                                    data: IsFenceOnline
+                                });
+                            })
+                        });
+                    } else {
+                        Fence.findOne({
+                            where: {
+                                deviceId: deviceId,
+                                IsFenceOnline: true,
+                            }
+                        }).then(function(responseFence) {
+                            if (responseFence != null) {
+                                var query = 'UPDATE tblbike SET IsFenceOnline = true WHERE deviceid = ' + deviceId + ';';
+                                connection.query(query, function(err, rows, fields) {
+                                    PetLogs.create(objPetLogs).then(function(response1) {
+                                        res.json({
+                                            success: true,
+                                            message: "Fence Setting saved successfully.",
+                                            data: IsFenceOnline
+                                        });
+                                    })
+                                });
+                            } else {
+                                var query = 'UPDATE tblbike SET IsFenceOnline = false WHERE deviceid = ' + deviceId + ';';
+                                connection.query(query, function(err, rows, fields) {
+                                    PetLogs.create(objPetLogs).then(function(response1) {
+                                        res.json({
+                                            success: true,
+                                            message: "Fence Setting saved successfully.",
+                                            data: IsFenceOnline
+                                        });
+                                    })
+                                });
+                            }
+                        });
+                    }
+                });
+            } else {
+                res.json({ success: false, message: 'Fence Setting not saved successfully. Try after 5 minute.' });
+            }
+            // client.destroy();
+        })
+        //         } else {
+        //             res.json({ success: false, message: 'Fence Setting not saved successfully. Try after 5 minute.' });
+        //             client.destroy();
+        //         };
 
 
     //     } else {
@@ -2754,21 +2754,21 @@ router.post('/ImportPetActivities', jsonParser, function(req, res) {
                                         // console.log("---------**************************----------------")
 
                                         PetActivity.findOrCreate({
-                                            where: {
-                                                $and: [{
-                                                    Datetime: sDateFormat
-                                                }, {
-                                                    DeviceId: objPetActivity['DeviceId']
-                                                }]
-                                            },
-                                            defaults: objPetActivity
-                                        }).then(function(response) {
-                                            StartTime = newEndDate;
-                                            SetStatus(k + 1);
-                                        })
-                                        // } else {
-                                        //     SetStatus(k + 1);
-                                        // };
+                                                where: {
+                                                    $and: [{
+                                                        Datetime: sDateFormat
+                                                    }, {
+                                                        DeviceId: objPetActivity['DeviceId']
+                                                    }]
+                                                },
+                                                defaults: objPetActivity
+                                            }).then(function(response) {
+                                                StartTime = newEndDate;
+                                                SetStatus(k + 1);
+                                            })
+                                            // } else {
+                                            //     SetStatus(k + 1);
+                                            // };
                                     } else {
                                         SetStatus(k + 1);
                                     }
@@ -3286,19 +3286,19 @@ router.post('/SaveVehical', jsonParser, function(req, res) {
                         };
                         searchDevice['$and'].push(obj);
 
-                        if (objPet.Type == 'Owner') {
-                            var obj = new Object();
-                            obj['Type'] = {
-                                $ne: 'M2'
-                            };
-                            searchDevice['$and'].push(obj);
-                        } else {
-                            var obj = new Object();
-                            obj['Type'] = {
-                                $eq: 'M2'
-                            };
-                            searchDevice['$and'].push(obj);
-                        }
+                        // if (objPet.Type == 'Owner') {
+                        //     var obj = new Object();
+                        //     obj['Type'] = {
+                        //         $ne: 'M2'
+                        //     };
+                        //     searchDevice['$and'].push(obj);
+                        // } else {
+                        //     var obj = new Object();
+                        //     obj['Type'] = {
+                        //         $eq: 'M2'
+                        //     };
+                        //     searchDevice['$and'].push(obj);
+                        // }
 
                         PetDevice.findOne({
                             // where: {
