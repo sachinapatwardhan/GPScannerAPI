@@ -471,8 +471,8 @@ var Fence = models.tblfence;
 
 var geolib = require("geolib");
 
-http.listen(7100, function() {
-    console.log('listening on *:7100');
+http.listen(7212, function() {
+    console.log('listening on *:7212');
 });
 
 // http.listen(3333, function() {
