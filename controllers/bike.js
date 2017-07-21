@@ -3218,7 +3218,6 @@ function convertdateformatForUnix(date1) {
 router.post('/SaveVehicle', jsonParser, function(req, res) {
     objPet = req.body;
     objHeader = req.headers;
-
     var token = getToken(objHeader);
 
     if (token) {
@@ -3242,7 +3241,6 @@ router.post('/SaveVehicle', jsonParser, function(req, res) {
                                     objPet.IsOnline = false;
                                     objPet.CreatedDate = GetCurrentDate();
                                     objPet.DeviceType = objPetDevice.Type;
-                                    console.log(objPet.DeviceType)
                                     Vehicle.findOne({
                                         where: {
                                             deviceid: objPet.deviceid,
