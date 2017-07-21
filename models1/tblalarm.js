@@ -43,6 +43,10 @@ module.exports = function(sequelize, DataTypes) {
     CreatedDate: {
       type: DataTypes.DATE,
       allowNull: true
+    },
+    Datetime: {
+      type: DataTypes.STRING,
+      allowNull: true
     }
   }, {
     tableName: 'tblalarm'
