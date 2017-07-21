@@ -1472,6 +1472,29 @@ router.post('/changeMobileUserPassword', jsonParser, function(req, res) {
     }
 });
 
+router.get('/MobileApplogout', jsonParser, function(req, res) {
+    PushNotification.findOne({
+        where: {
+            udid: req.query.udid,
+        }
+    }).then(function(response) {
+        if (response != null) {
+            var objPushnotification = response;
+            objPushnotification.updateAttributes({ iduser: 0 }).then(function(resUpdate) {
+                res.json({
+                    success: true,
+                    message: "Logout Successfully."
+                });
+            });
+        } else {
+            res.json({
+                success: true,
+                message: "Logout Successfully."
+            });
+        }
+    })
+})
+
 //End Mobile App
 
 

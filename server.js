@@ -434,7 +434,7 @@ app.use('/taxrate', require('./controllers/taxrate'))
 app.use('/language', require('./controllers/language'))
 app.use('/languageresources', require('./controllers/languageResources'))
 app.use('/pushnotification', require('./controllers/pushnotification'))
-
+app.use('/petfence', require('./controllers/petFence'))
 app.use('/facebookpagesetting', require('./controllers/facebookpagesetting'))
 
 //End of Setting
