@@ -486,26 +486,43 @@ io.sockets.on('connection', function(socket) {
         io.sockets.emit('emit_from_server', data);
     });
 
-    socket.on('BR00Method', function(data) {
-        console.log('socket.io server received BR00 : ' + data);
-        // 接続しているソケット全部
-        BR00Method(data, function(res) {
+    //GPS Data
+    socket.on('Command9955', function(data) {
+        // console.log('socket.io server received 9955 : ' + data);
+        Command9955(data, function(res) {
 
         })
     });
 
-    socket.on('BE21Method', function(data) {
-        console.log('socket.io server received BE21 : ' + data);
-        // 接続しているソケット全部
-        BE21Method(data, function(res) {
+    //Alarm Data
+    socket.on('Command9999', function(data) {
+        // console.log('socket.io server received 9999 : ' + data);
+        Command9999(data, function(res) {
 
         })
     });
 
-    socket.on('BP00Method', function(data) {
-        console.log('socket.io server received BP00 : ' + data);
-        // 接続しているソケット全部
-        BP00Method(data, function(res) {
+    //Heart Beat Data
+    socket.on('Command5001', function(data) {
+        // console.log('socket.io server received 5001 : ' + data);
+
+        Command5001(data, function(res) {
+
+        })
+    });
+
+    //CAN-BUS Data
+    socket.on('Command9901', function(data) {
+        // console.log('socket.io server received 9901 : ' + data);
+        Command9901(data, function(res) {
+
+        })
+    });
+
+    //Driving Behavior Data
+    socket.on('Command9902', function(data) {
+        // console.log('socket.io server received 9902 : ' + data);
+        Command9902(data, function(res) {
 
         })
     });

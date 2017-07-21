@@ -472,13 +472,69 @@ function customPassword() {
 }
 //End of Private functions
 
-// console.log(global.deg_to_lat_long('0300.85955', 'N'))
-// console.log(global.deg_to_lat_long('2308.4302', 'N'))
+//5000 - Login
+router.get('/Command5000', function(req, res) {
+    var line = req.query.Code;
+    console.log("Login = " + line);
 
-// console.log(global.deg_to_lat_long('10125.84324', 'E'))
+    var DeviceId = line.substring(8, 22);
 
-var Inputoutputbit = hexToBinary('1001');
-var lstInputOutputStatus = Inputoutputbit.split('');
+    var CurrentDate = GetCurrentDate();
+    var response = '40400012' + DeviceId + '400001';
+    response = response + CalculateCRCbyHex(response) + '0D0A';
+    connection.query("SELECT * from tblgpsdevice where DeviceId=" + DeviceId, function(err, rows, fields) {
+        if (!err) {
+            //if (rows.length > 0) {
+            //tblapisresponse Entry
+            // var ResponceQuery = "INSERT INTO tblapisresponse (Code,Response,Datetime) VALUES ('5000', '" + response + "', '" + CurrentDate + "');";
+            // connection.query(ResponceQuery, function(err, rows1, fields) {
+            res.send(response);
+            // });
+            // } else {
+            //     //tblPetgps Entry
+
+            //     var ResponceQuery = "INSERT INTO tblgpsdevice (Code,Response,Datetime) VALUES ('5000', '" + response + "', '" + CurrentDate + "');";
+            //     connection.query(ResponceQuery, function(err, rows1, fields) {
+            //         res.json(response);
+            //     });
+            //     //});
+            // }
+        }
+    })
+
+})
+
+//Command5001 - Heartbeat Command
+global.Command5001 = function(line, Callback) {
+    console.log("HandShak = " + line);
+    //Server Reconnet If Disconneted
+    if (connection.state == 'disconnected') {
+        global.connection = mysql.createConnection({
+            host: MysqlHost,
+            user: Mysqluser,
+            password: Mysqlpassword,
+            database: Mysqldatabase
+        });
+    }
+
+    var DeviceId = line.substring(8, 22);
+
+    var CurrentDate = GetCurrentDate();
+
+    //tblPetgps Entry
+    var query = "INSERT INTO tblhandshake (DeviceId,Datetime ) VALUES ('" + DeviceId + "', '" + CurrentDate + "');";
+    connection.query(query, function(err, rows, fields) {
+
+        connection.query("Update tblvehicle set HandshakDatetime='" + CurrentDate + "',IsOnline=true where deviceid=" + DeviceId, function(err, rows1, fields) {
+            var objConnection = {
+                DeviceId: DeviceId,
+                Status: true
+            }
+            io.sockets.emit('BikeDeviceStatus', JSON.stringify(objConnection));
+        });
+
+    });
+};
 
 //Command9955 - GPS Command
 global.Command9955 = function(line, Callback) {
@@ -1290,6 +1346,135 @@ global.Command9999 = function(line, Callback) {
     // } else {
 
     // }
+};
+
+//Command9901 - CAN-BUS Command
+global.Command9901 = function(line, Callback) {
+    console.log("CAN-BUS Data = " + line);
+    //Server Reconnet If Disconneted
+    if (connection.state == 'disconnected') {
+        global.connection = mysql.createConnection({
+            host: MysqlHost,
+            user: Mysqluser,
+            password: Mysqlpassword,
+            database: Mysqldatabase
+        });
+    }
+
+    var DeviceId = line.substring(8, 22);
+
+    var CANBUSData = hex2a(line.substring(26, (line.length - 8)));
+
+    var lstCANBUSAllData = CANBUSData.split(',');
+
+
+    var BatteryVoltage = lstCANBUSAllData[0];
+    var EngineSpeed = lstCANBUSAllData[1];
+    var RunningSpeed = lstCANBUSAllData[2];
+    var ThrottleOpeningWidth = lstCANBUSAllData[3];
+    var EngineLoad = lstCANBUSAllData[4];
+    var CoolantTemperature = lstCANBUSAllData[5];
+    var InstantaneousFuelConsumption = lstCANBUSAllData[6];
+    var AverageFuelConsumption = lstCANBUSAllData[7];
+    var DrivingRange = lstCANBUSAllData[8];
+    var TotalMileage = lstCANBUSAllData[9];
+    var SingleFuelConsumptionVolume = lstCANBUSAllData[10];
+    var TotalFuelConsumptionVolume = lstCANBUSAllData[11];
+    var CurrentErrorCodeNumbers = lstCANBUSAllData[12];
+    var HarshAccelerationNo = lstCANBUSAllData[13];
+    var HarshBrakeNo = lstCANBUSAllData[14];
+
+
+    var CurrentDate = GetCurrentDate();
+    var unixDateStemp = Math.floor((new Date()).getTime() / 1000);
+
+    var query = "INSERT INTO tblcanbusdata (DeviceId,Datetime,BatteryVoltage,EngineSpeed,RunningSpeed,ThrottleOpeningWidth,EngineLoad,CoolantTemperature,InstantaneousFuelConsumption,AverageFuelConsumption,DrivingRange,TotalMileage,SingleFuelConsumptionVolume,CurrentErrorCodeNumbers,HarshAccelerationNo,HarshBrakeNo,CreatedDate) " +
+        "VALUES ('" + DeviceId + "', '" + unixDateStemp + "', '" + BatteryVoltage + "', '" + EngineSpeed + "', '" + RunningSpeed + "', '" + ThrottleOpeningWidth + "', '" + EngineLoad + "', '" + CoolantTemperature + "'," + InstantaneousFuelConsumption + "," + AverageFuelConsumption + "," + DrivingRange + "," + TotalMileage + "," + SingleFuelConsumptionVolume + "," + CurrentErrorCodeNumbers + "," + HarshAccelerationNo + "," + HarshBrakeNo + ",'" + CurrentDate + "'');";
+    connection.query(query, function(err, rows, fields) {
+
+        var objConnection = {
+            DeviceId: DeviceId,
+            BatteryVoltage: BatteryVoltage,
+            EngineSpeed: EngineSpeed,
+            RunningSpeed: RunningSpeed,
+            ThrottleOpeningWidth: ThrottleOpeningWidth,
+            EngineLoad: EngineLoad,
+            CoolantTemperature: CoolantTemperature,
+            InstantaneousFuelConsumption: InstantaneousFuelConsumption,
+            AverageFuelConsumption: AverageFuelConsumption,
+            DrivingRange: DrivingRange,
+            TotalMileage: TotalMileage,
+            SingleFuelConsumptionVolume: SingleFuelConsumptionVolume,
+            TotalFuelConsumptionVolume: TotalFuelConsumptionVolume,
+            CurrentErrorCodeNumbers: CurrentErrorCodeNumbers,
+            HarshAccelerationNo: HarshAccelerationNo,
+            HarshBrakeNo: HarshBrakeNo,
+            Datetime: unixDateStemp
+        }
+
+        io.sockets.emit('canbusdata', JSON.stringify(objConnection));
+
+    });
+
+};
+
+//Command9902 -  Driving Behavior Command
+global.Command9902 = function(line, Callback) {
+    console.log("Driving Data = " + line);
+    //Server Reconnet If Disconneted
+    if (connection.state == 'disconnected') {
+        global.connection = mysql.createConnection({
+            host: MysqlHost,
+            user: Mysqluser,
+            password: Mysqlpassword,
+            database: Mysqldatabase
+        });
+    }
+
+    var DeviceId = line.substring(8, 22);
+
+    var DrivingData = hex2a(line.substring(26, (line.length - 8)));
+
+    var lstDrivingAllData = DrivingData.split(',');
+
+
+    var TotalIgnition = lstDrivingAllData[0];
+    var TotalDrivingTime = lstDrivingAllData[1];
+    var TotalIdlingTime = lstDrivingAllData[2];
+    var AverageHotStartTime = lstDrivingAllData[3];
+    var AverageSpeed = lstDrivingAllData[4];
+    var HistoryHighestSpeed = lstDrivingAllData[5];
+    var HistoryHighestRotation = lstDrivingAllData[6];
+    var TotalHarshAcceleration = lstDrivingAllData[7];
+    var TotalHarshBrake = lstDrivingAllData[8];
+
+
+
+    var CurrentDate = GetCurrentDate();
+    var unixDateStemp = Math.floor((new Date()).getTime() / 1000);
+
+    var query = "INSERT INTO tbldrivingdata (DeviceId,Datetime,TotalIgnition,TotalDrivingTime,TotalIdlingTime,AverageHotStartTime,AverageSpeed,HistoryHighestSpeed,HistoryHighestRotation,TotalHarshAcceleration,TotalHarshBrake,CreatedDate) " +
+        "VALUES ('" + DeviceId + "', '" + unixDateStemp + "', '" + TotalIgnition + "', '" + TotalDrivingTime + "', '" + TotalIdlingTime + "', '" + AverageHotStartTime + "', '" + AverageSpeed + "', '" + HistoryHighestSpeed + "'," + HistoryHighestRotation + "," + TotalHarshAcceleration + "," + TotalHarshBrake + ",'" + CurrentDate + "'');";
+    connection.query(query, function(err, rows, fields) {
+
+        var objConnection = {
+            DeviceId: DeviceId,
+            TotalIgnition: TotalIgnition,
+            TotalDrivingTime: TotalDrivingTime,
+            TotalIdlingTime: TotalIdlingTime,
+            AverageHotStartTime: AverageHotStartTime,
+            AverageSpeed: AverageSpeed,
+            HistoryHighestSpeed: HistoryHighestSpeed,
+            HistoryHighestRotation: HistoryHighestRotation,
+            TotalHarshAcceleration: TotalHarshAcceleration,
+            TotalHarshBrake: TotalHarshBrake,
+            Datetime: unixDateStemp
+        }
+
+        io.sockets.emit('drivingdata', JSON.stringify(objConnection));
+
+    });
+
 };
 
 //Send Speed Data
@@ -2394,131 +2579,6 @@ router.get('/ReadGPRSTimeInterval', function(req, res) {
 
 })
 
-// var deviceID = '075034904002';
-// connection.query("SELECT * from tblbike where deviceid=" + deviceID, function(err, Bikerows, fields) {
-//     //tblPetgps Entry
-//     if (!err && Bikerows.length > 0) {
-//         var objPet = Bikerows[0];
-//         console.log(objPet)
-//         if (objPet.IsDeleted.toString('hex') == '01') {
-//             console.log("Deleted")
-//         };
-//         console.log(objPet.IsCharging.toString('hex'))
-
-//     }
-// });
-
-//5000 - Login
-router.get('/Command5000', function(req, res) {
-    var line = req.query.Code;
-    console.log("Login = " + line);
-
-    var DeviceId = line.substring(8, 22);
-
-    var CurrentDate = GetCurrentDate();
-    var response = '40400012' + DeviceId + '400001';
-    response = response + CalculateCRCbyHex(response) + '0D0A';
-    connection.query("SELECT * from tblgpsdevice where DeviceId=" + DeviceId, function(err, rows, fields) {
-        if (!err) {
-            //if (rows.length > 0) {
-            //tblapisresponse Entry
-            // var ResponceQuery = "INSERT INTO tblapisresponse (Code,Response,Datetime) VALUES ('5000', '" + response + "', '" + CurrentDate + "');";
-            // connection.query(ResponceQuery, function(err, rows1, fields) {
-            res.send(response);
-            // });
-            // } else {
-            //     //tblPetgps Entry
-
-            //     var ResponceQuery = "INSERT INTO tblgpsdevice (Code,Response,Datetime) VALUES ('5000', '" + response + "', '" + CurrentDate + "');";
-            //     connection.query(ResponceQuery, function(err, rows1, fields) {
-            //         res.json(response);
-            //     });
-            //     //});
-            // }
-        }
-    })
-
-})
-
-global.Command5001 = function(line, Callback) {
-    console.log("HandShak = " + line);
-    //Server Reconnet If Disconneted
-    if (connection.state == 'disconnected') {
-        global.connection = mysql.createConnection({
-            host: MysqlHost,
-            user: Mysqluser,
-            password: Mysqlpassword,
-            database: Mysqldatabase
-        });
-    }
-
-    var DeviceId = line.substring(8, 22);
-
-    var CurrentDate = GetCurrentDate();
-
-    //tblPetgps Entry
-    var query = "INSERT INTO tblhandshake (DeviceId,Datetime ) VALUES ('" + DeviceId + "', '" + CurrentDate + "');";
-    connection.query(query, function(err, rows, fields) {
-
-        connection.query("Update tblvehicle set HandshakDatetime='" + CurrentDate + "',IsOnline=true where deviceid=" + DeviceId, function(err, rows1, fields) {
-            var objConnection = {
-                DeviceId: DeviceId,
-                Status: true
-            }
-            io.sockets.emit('BikeDeviceStatus', JSON.stringify(objConnection));
-        });
-        //Check for WireCut Ready
-        // connection.query("SELECT * from tblbike where deviceid=" + deviceID + " and IsDeleted=false", function(err, Bikerows, fields) {
-        //     if (!err && Bikerows.length > 0) {
-        //         //Update Pet
-        //         IsOnline = true;
-        //         var Updatequery = "UPDATE tblbike set DeviceBattery='" + BatteryPercentage + "',IsOnline=" + IsOnline + ",HandshakDatetime='" + CurrentDate + "' WHERE deviceid = '" + deviceID + "';";
-        //         connection.query(Updatequery, function(err, rows1, fields) {
-
-        //             var objBike = Bikerows[0];
-        //             if (!objBike.IsOnline && IsOnline) {
-        //                 console.log(objBike.IsDeleted.toString('hex'));
-        //                 if (objBike.IsDeleted.toString('hex') == '00') {
-        //                     var PushNotificationdata = {
-        //                         title: 'Alert',
-        //                         message: 'Vehicle ' + objBike.Name + 'Device online again, please confirm!',
-        //                         Fence: 'Default',
-        //                         otherfields: {
-        //                             deviceid: deviceID,
-        //                             PetId: objBike.id,
-        //                             PetName: objBike.Name
-        //                         }
-        //                     };
-
-        //                     if (objBike.DeviceType == 'M2') {
-        //                         SendPushNotification(PushNotificationdata, objBike.iduser, 'Shop', null);
-        //                     } else {
-        //                         SendPushNotification(PushNotificationdata, objBike.iduser, 'Owner', 'OwnerDeviceStatusPushNotification');
-        //                     }
-        //                 }
-        //                 var objConnection = {
-        //                     deviceid: deviceID,
-        //                     PetId: objBike.id,
-        //                     Status: IsOnline
-        //                 }
-        //                 io.sockets.emit('BikeDeviceStatus', JSON.stringify(objConnection));
-
-        //             };
-
-        //         });
-        //     }
-
-        //     //tblapisresponse Entry
-        //     var ResponceQuery = "INSERT INTO tblapisresponse (Code,Response,Datetime) VALUES ('BP00', '(" + deviceID + "AP01HSO)', '" + CurrentDate + "');";
-        //     connection.query(ResponceQuery, function(err, rows2, fields) {
-        //         // res.json("(" + deviceID + "AP01HSO)");
-        //         Callback("(" + deviceID + "AP01HSO)");
-        //         strResponce = "(" + deviceID + "AP01HSO)";
-        //     });
-        // });
-    });
-};
-
 function convertdateformat(date1) {
     var date = new Date(date1);
     var firstdayMonth = date.getMonth() + 1;
@@ -2528,19 +2588,9 @@ function convertdateformat(date1) {
     var firstdayMinutes = date.getMinutes();
     var firstdaySeconds = date.getSeconds();
 
-    return ("00" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("0000" + firstdayDay.toString()).slice(-2) + " " + ("00" + firstdayHours.toString()).slice(-2) + ':' + ("00" + firstdayMinutes.toString()).slice(-2) + ':' + ("00" + firstdaySeconds.toString()).slice(-2);
+    return ("0000" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("0000" + firstdayDay.toString()).slice(-2) + " " + ("00" + firstdayHours.toString()).slice(-2) + ':' + ("00" + firstdayMinutes.toString()).slice(-2) + ':' + ("00" + firstdaySeconds.toString()).slice(-2);
 
 }
-
-//7878 0A 13 44 01 04 00 01 0005 0845 0D0A
-
-global.ConvertHetToBit = function(Hexdata) {
-
-    var decimaldata = parseInt(Hexdata, 16);
-    return ("00000000" + decimaldata.toString(2)).slice(-8);
-}
-
-// console.log(ConvertHetToBit('44'));
 
 router.get('/UpdateDeviceStatus', function(req, res) {
     var DeviceId = req.query.DeviceId;
