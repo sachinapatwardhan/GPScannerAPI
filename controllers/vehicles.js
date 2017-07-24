@@ -4,6 +4,7 @@ var express = require('express'),
 var User = models.tbluserinformation;
 var Vehicle = models.tblvehicle;
 var UserInRole = models.tbluserinrole;
+var DrivingData = models.tbldrivingdata;
 //End of Tables
 
 router.get('/GetAllDynamicVehicle', function(req, res) {
@@ -270,5 +271,20 @@ router.get('/GetAllVehicleById', function(req, res) {
 
 })
 
+router.get('/GetDrivingDataByDeviceId', function(req, res) {
+    DrivingData.findOne({
+        where: {DeviceId: req.query.DeviceId},
+        order: 'Datetime desc'
+    }).then(function(response) {
+        res.json({
+            success: true,
+            message: "Record found...",
+            data: response
+        });
+    }).catch(function(error) {
+        res.json(RecordNotFound);
+    })
+   
+})
 
 module.exports = router
