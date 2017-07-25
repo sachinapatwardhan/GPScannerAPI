@@ -652,11 +652,7 @@ global.Command9955 = function(line, Callback) {
     }
 
     var IsAdvanture = false;
-    // if (line.indexOf('BP04') > 0) {
-    //     IsAdvanture = true;
-    // }
     // //Insert data in gps
-    // // var query = "INSERT INTO tblpetgps (Datetime,Latitude,Longtitude,GPSPositioning,Speed,Direction,Status,ReservedSign,ReservedSelection,DeviceId,IsAdvanture ) VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longtitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + Status + "', '" + Sign + "', '" + ReserveSection + "', '" + deviceID + "'," + IsAdvanture + ");";
     var query = "INSERT INTO tblgpsdata (Datetime,Latitude,Longtitude,GPSPositioning,Speed,Direction,Status,DeviceId,IsRelayToStopTheCar,IsSirenSound,IsUserDefined,IsLockTheDoor,IsUnlockTheDoor,IsSOS,IsWiringForAntiTamper,IsDoor,IsEngine,IsOriginalSirenTriggeringStatus,CreatedDate,HDOP,Altitude,AD1,AD2,OdoMeter,Date ) " +
         "VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longtitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + inputoutputSTatus + "', '" + DeviceId + "'," + IsRelayToStopTheCar + "," + IsSirenSound + "," + IsUserDefined + "," + IsLockTheDoor + "," + IsUnlockTheDoor + "," + IsSOS + "," + IsWiringForAntiTamper + "," + IsDoor + "," + IsEngine + "," + IsOriginalSirenTriggeringStatus + ",'" + CurrentDate + "','" + HDOP + "','" + altitude + "','" + AD1 + "','" + AD2 + "','" + Odometer + "','" + unixDateStemp + "');";
     connection.query(query, function(err, rows, fields) {
@@ -700,192 +696,142 @@ global.Command9955 = function(line, Callback) {
             io.sockets.emit('BikeRoute', JSON.stringify(objConnection));
         }
     });
-    // //});
 
+    connection.query("SELECT * from tblfence where deviceId=" + DeviceId, function(err, rows, fields) {
+        if (!err && rows.length > 0) {
+            connection.query("SELECT * from tblvehicle where deviceid=" + DeviceId + " and IsDeleted=false", function(err, Bikerows, fields) {
+                if (!err && Bikerows.length > 0) {
+                    var objBike = Bikerows[0];
+                    if (Position == 'A') {
 
-    // console.log(Latitude)
-    // console.log(Longtitude)
-    // console.log(GPSDateTime)
+                        function checkFence(j) {
+                            if (j < rows.length) {
+                                rows[j].IsPetInFence = true;
+                                var response = rows[j];
 
-    // console.log("Start Function", new Date());
+                                // var response = rows[0];
 
-    // var today = new Date();
+                                var CheckPoints = {
+                                    latitude: parseFloat(Latitude),
+                                    longitude: parseFloat(Longtitude)
+                                }
 
-    // var testsec = today.getUTCSeconds();
-    // var testmin = today.getUTCMinutes();
-    // var testhour = today.getUTCHours();
+                                // var IsPetInFence = true;
 
-    // var testyear = today.getUTCFullYear();
-    // var testmonth = today.getUTCMonth() + 1; // beware: January = 0; February = 1, etc.
-    // var testday = today.getUTCDate();
-    // var Devicedate = new Date(year, month - 1, day, hour, min, sec);
-    // var Currentdatetime = new Date(testyear, testmonth - 1, testday, testhour, testmin, testsec);
-    // console.log("Device Datetime", Devicedate);
-    // console.log("Current Datetime", Currentdatetime);
-    // console.log("Time Difference =", (Currentdatetime - Devicedate));
+                                if (response.fencedraw == "circle") {
+                                    var CircleCenterPoints = {
+                                        latitude: parseFloat(response.lat),
+                                        longitude: parseFloat(response.lng)
+                                    }
+                                    var CircleRadius = parseFloat(response.range);
+                                    rows[j].IsPetInFence = geolib.isPointInCircle(CheckPoints, CircleCenterPoints, CircleRadius)
+                                } else if (response.fencedraw == "polygon" || response.fencedraw == "polyline") {
+                                    var lstpolygonDrawC = [];
+                                    var lstlatC = response.lat.split(',');
+                                    var lstlngC = response.lng.split(',');
 
-    // connection.query("SELECT * from tblfence where deviceId=" + deviceID, function(err, rows, fields) {
-    //     if (!err && rows.length > 0) {
-    //         connection.query("SELECT * from tblbike where deviceid=" + deviceID + " and IsDeleted=false", function(err, Bikerows, fields) {
-    //             if (!err && Bikerows.length > 0) {
-    //                 var objBike = Bikerows[0];
-    //                 if (objBike.DeviceType == 'M2-U' && Position == 'A') {
+                                    for (var i = 0; i < lstlatC.length; i++) {
+                                        var objDraw = {
+                                            latitude: parseFloat(lstlatC[i]),
+                                            longitude: parseFloat(lstlngC[i])
+                                        }
+                                        lstpolygonDrawC.push(objDraw);
+                                    }
+                                    rows[j].IsPetInFence = geolib.isPointInside(CheckPoints, lstpolygonDrawC)
+                                } else if (response.fencedraw == "rectangle") {
+                                    var lstpolygonDrawC = [];
+                                    var lstlatC = response.lat.split(',');
+                                    var lstlngC = response.lng.split(',');
 
-    //                     function checkFence(j) {
-    //                         if (j < rows.length) {
-    //                             rows[j].IsPetInFence = true;
-    //                             var response = rows[j];
+                                    var objDraw = {
+                                        latitude: parseFloat(lstlatC[0]),
+                                        longitude: parseFloat(lstlngC[0])
+                                    }
+                                    lstpolygonDrawC.push(objDraw);
+                                    var objDraw = {
+                                        latitude: parseFloat(lstlatC[0]),
+                                        longitude: parseFloat(lstlngC[1])
+                                    }
+                                    lstpolygonDrawC.push(objDraw);
+                                    var objDraw = {
+                                        latitude: parseFloat(lstlatC[1]),
+                                        longitude: parseFloat(lstlngC[1])
+                                    }
+                                    lstpolygonDrawC.push(objDraw);
+                                    var objDraw = {
+                                        latitude: parseFloat(lstlatC[1]),
+                                        longitude: parseFloat(lstlngC[0])
+                                    }
+                                    lstpolygonDrawC.push(objDraw);
+                                    var objDraw = {
+                                        latitude: parseFloat(lstlatC[0]),
+                                        longitude: parseFloat(lstlngC[0])
+                                    }
+                                    lstpolygonDrawC.push(objDraw);
 
-    //                             // var response = rows[0];
+                                    rows[j].IsPetInFence = geolib.isPointInside(CheckPoints, lstpolygonDrawC)
+                                };
 
-    //                             var CheckPoints = {
-    //                                 latitude: parseFloat(Latitude),
-    //                                 longitude: parseFloat(Longtitude)
-    //                             }
+                                // console.log("Fence Last State = " + objBike.IsInFence)
+                                // console.log("Fence Current State = " + IsPetInFence)
+                                if (rows[j].IsPetInFence != rows[j].IsInFence && rows[j].IsFenceOnline) {
+                                    var AlarmCode = '6';
+                                    var message = '';
 
-    //                             // var IsPetInFence = true;
+                                    if (rows[j].IsPetInFence == false) {
+                                        AlarmCode = '66';
+                                        if (rows[j].name != null && rows[j].name != '' && rows[j].name != undefined) {
+                                            message = objBike.Name + ' is out of ' + rows[j].name + ' Fence.';
+                                        } else {
+                                            message = objBike.Name + ' is out of Fence.';
+                                        }
+                                    } else {
+                                        AlarmCode = '6';
+                                        if (rows[j].name != null && rows[j].name != '' && rows[j].name != undefined) {
+                                            message = objBike.Name + ' is in ' + rows[j].name + ' Fence.';
+                                        } else {
+                                            message = objBike.Name + ' is in Fence.';
+                                        }
+                                    }
 
-    //                             if (response.fencedraw == "circle") {
-    //                                 var CircleCenterPoints = {
-    //                                     latitude: parseFloat(response.lat),
-    //                                     longitude: parseFloat(response.lng)
-    //                                 }
-    //                                 var CircleRadius = parseFloat(response.range);
-    //                                 rows[j].IsPetInFence = geolib.isPointInCircle(CheckPoints, CircleCenterPoints, CircleRadius)
-    //                             } else if (response.fencedraw == "polygon" || response.fencedraw == "polyline") {
-    //                                 var lstpolygonDrawC = [];
-    //                                 var lstlatC = response.lat.split(',');
-    //                                 var lstlngC = response.lng.split(',');
+                                    connection.query('UPDATE tblfence set IsInFence=' + rows[j].IsPetInFence + ' WHERE id=' + rows[j].id, function(err, rowsFence, fields) {
+                                        console.log(err)
+                                        var Alarmquery = "INSERT INTO tblalarm (Datetime,Latitude,Longtitude,GPSPositioning,Speed,Direction,Status,DeviceId,AlarmCode,CreatedDate ) VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longtitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + inputoutputSTatus + "', '" + DeviceId + "','" + alarmcode + "','" + CurrentDate + "');";
+                                        // var Alarmquery = "INSERT INTO tblalarm (Datetime,Latitude,Longtitude,GPSPositioning,Speed,Direction,Status,ReservedSign,ReservedSelection,DeviceId,AlarmCode ) VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longtitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + Status + "', '" + Sign + "', '" + ReserveSection + "', '" + deviceID + "','" + AlarmCode + "');";
+                                        connection.query(Alarmquery, function(err1, Alarmrows, fields) {
 
-    //                                 for (var i = 0; i < lstlatC.length; i++) {
-    //                                     var objDraw = {
-    //                                         latitude: parseFloat(lstlatC[i]),
-    //                                         longitude: parseFloat(lstlngC[i])
-    //                                     }
-    //                                     lstpolygonDrawC.push(objDraw);
-    //                                 }
-    //                                 rows[j].IsPetInFence = geolib.isPointInside(CheckPoints, lstpolygonDrawC)
-    //                             } else if (response.fencedraw == "rectangle") {
-    //                                 var lstpolygonDrawC = [];
-    //                                 var lstlatC = response.lat.split(',');
-    //                                 var lstlngC = response.lng.split(',');
+                                            // var PushNotificationdata = {
+                                            //     title: 'Fence',
+                                            //     message: message,
+                                            //     Fence: 'Default',
+                                            //     otherfields: {
+                                            //         deviceid: deviceID,
+                                            //         PetId: objBike.id,
+                                            //         PetName: objBike.Name
+                                            //     }
+                                            // };
+                                            // if (rows[j].IsPetInFence == false) {
+                                            //     PushNotificationdata.Fence = 'FenceIn';
+                                            // } else {
+                                            //     PushNotificationdata.Fence = 'FenceOut';
+                                            // }
+                                            // SendPushNotification(PushNotificationdata, objBike.iduser, 'Owner', 'OwnerFencePushNotification');
+                                            checkFence(j + 1);
+                                        });
+                                    });
+                                } else {
+                                    checkFence(j + 1);
+                                }
+                            } else {
 
-    //                                 var objDraw = {
-    //                                     latitude: parseFloat(lstlatC[0]),
-    //                                     longitude: parseFloat(lstlngC[0])
-    //                                 }
-    //                                 lstpolygonDrawC.push(objDraw);
-    //                                 var objDraw = {
-    //                                     latitude: parseFloat(lstlatC[0]),
-    //                                     longitude: parseFloat(lstlngC[1])
-    //                                 }
-    //                                 lstpolygonDrawC.push(objDraw);
-    //                                 var objDraw = {
-    //                                     latitude: parseFloat(lstlatC[1]),
-    //                                     longitude: parseFloat(lstlngC[1])
-    //                                 }
-    //                                 lstpolygonDrawC.push(objDraw);
-    //                                 var objDraw = {
-    //                                     latitude: parseFloat(lstlatC[1]),
-    //                                     longitude: parseFloat(lstlngC[0])
-    //                                 }
-    //                                 lstpolygonDrawC.push(objDraw);
-    //                                 var objDraw = {
-    //                                     latitude: parseFloat(lstlatC[0]),
-    //                                     longitude: parseFloat(lstlngC[0])
-    //                                 }
-    //                                 lstpolygonDrawC.push(objDraw);
-
-    //                                 rows[j].IsPetInFence = geolib.isPointInside(CheckPoints, lstpolygonDrawC)
-    //                             };
-
-    //                             // console.log("Fence Last State = " + objBike.IsInFence)
-    //                             // console.log("Fence Current State = " + IsPetInFence)
-    //                             if (rows[j].IsPetInFence != rows[j].IsInFence && rows[j].IsFenceOnline) {
-    //                                 var AlarmCode = '6';
-    //                                 var message = '';
-
-    //                                 if (rows[j].IsPetInFence == false) {
-    //                                     AlarmCode = '66';
-    //                                     if (rows[j].name != null && rows[j].name != '' && rows[j].name != undefined) {
-    //                                         message = objBike.Name + ' is out of ' + rows[j].name + ' Fence.';
-    //                                     } else {
-    //                                         message = objBike.Name + ' is out of Fence.';
-    //                                     }
-    //                                 } else {
-    //                                     AlarmCode = '6';
-    //                                     if (rows[j].name != null && rows[j].name != '' && rows[j].name != undefined) {
-    //                                         message = objBike.Name + ' is in ' + rows[j].name + ' Fence.';
-    //                                     } else {
-    //                                         message = objBike.Name + ' is in Fence.';
-    //                                     }
-    //                                 }
-
-    //                                 connection.query('UPDATE tblfence set IsInFence=' + rows[j].IsPetInFence + ' WHERE id=' + rows[j].id, function(err, rowsFence, fields) {
-    //                                     console.log(err)
-    //                                     var Alarmquery = "INSERT INTO tblalarm (Datetime,Latitude,Longtitude,GPSPositioning,Speed,Direction,Status,ReservedSign,ReservedSelection,DeviceId,AlarmCode ) VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longtitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + Status + "', '" + Sign + "', '" + ReserveSection + "', '" + deviceID + "','" + AlarmCode + "');";
-    //                                     connection.query(Alarmquery, function(err1, Alarmrows, fields) {
-
-    //                                         var PushNotificationdata = {
-    //                                             title: 'Fence',
-    //                                             message: message,
-    //                                             Fence: 'Default',
-    //                                             otherfields: {
-    //                                                 deviceid: deviceID,
-    //                                                 PetId: objBike.id,
-    //                                                 PetName: objBike.Name
-    //                                             }
-    //                                         };
-    //                                         if (rows[j].IsPetInFence == false) {
-    //                                             PushNotificationdata.Fence = 'FenceIn';
-    //                                         } else {
-    //                                             PushNotificationdata.Fence = 'FenceOut';
-    //                                         }
-    //                                         SendPushNotification(PushNotificationdata, objBike.iduser, 'Owner', 'OwnerFencePushNotification');
-    //                                         checkFence(j + 1);
-    //                                     });
-    //                                 });
-    //                             } else {
-    //                                 checkFence(j + 1);
-    //                             }
-    //                         } else {
-
-    //                         }
-    //                     }
-    //                     checkFence(0);
-    //                 }
-    //             }
-    //         });
-    //     };
-    // });
-
-    // // connection.query("SELECT user.MaxSpeed, bike.* from tbluserinformation as user inner join tblbike as bike where user.id = bike.iduser and deviceid=" + deviceID, function(err, Userrows, fields) {
-    // //     if (!err && Userrows.length > 0) {
-    // //         var objUser = Userrows[0];
-    // //         var maxSpeed = parseFloat(objUser.MaxSpeed);
-    // //         var deviceSpeed = parseFloat(Speed);
-    // //         if (deviceSpeed > maxSpeed) {
-    // //             var query = "INSERT INTO tblalarm (Datetime,Latitude,Longtitude,GPSPositioning,Speed,Direction,Status,ReservedSign,ReservedSelection,DeviceId,AlarmCode ) VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longtitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + Status + "', '" + Sign + "', '" + ReserveSection + "', '" + deviceID + "','" + alarmcode + "');";
-    // //             connection.query(query, function(err, rows, fields) {
-
-    // //                 var PushNotificationdata = {
-    // //                     title: 'Alert',
-    // //                     message: 'Vehicle ' + objUser.Name + 'Max Speed alert! Please check!',
-    // //                     Fence: 'Default',
-    // //                     otherfields: {
-    // //                         deviceid: deviceID,
-    // //                         PetId: objUser.id,
-    // //                         PetName: objUser.Name
-    // //                     }
-    // //                 };
-
-    // //                 SendPushNotification(PushNotificationdata, objUser.iduser, 'Owner', 'OwnerMaxSpeedPushNotification');
-
-    // //             });
-    // //         }
-    // //     }
-    // // });
-
+                            }
+                        }
+                        checkFence(0);
+                    }
+                }
+            });
+        };
+    });
 
 };
 
