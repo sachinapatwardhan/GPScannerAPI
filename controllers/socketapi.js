@@ -1389,7 +1389,7 @@ global.Command9901 = function(line, Callback) {
     var unixDateStemp = Math.floor((new Date()).getTime() / 1000);
 
     var query = "INSERT INTO tblcanbusdata (DeviceId,Datetime,BatteryVoltage,EngineSpeed,RunningSpeed,ThrottleOpeningWidth,EngineLoad,CoolantTemperature,InstantaneousFuelConsumption,AverageFuelConsumption,DrivingRange,TotalMileage,SingleFuelConsumptionVolume,CurrentErrorCodeNumbers,HarshAccelerationNo,HarshBrakeNo,CreatedDate) " +
-        "VALUES ('" + DeviceId + "', '" + unixDateStemp + "', '" + BatteryVoltage + "', '" + EngineSpeed + "', '" + RunningSpeed + "', '" + ThrottleOpeningWidth + "', '" + EngineLoad + "', '" + CoolantTemperature + "'," + InstantaneousFuelConsumption + "," + AverageFuelConsumption + "," + DrivingRange + "," + TotalMileage + "," + SingleFuelConsumptionVolume + "," + CurrentErrorCodeNumbers + "," + HarshAccelerationNo + "," + HarshBrakeNo + ",'" + CurrentDate + "'');";
+        "VALUES ('" + DeviceId + "', '" + unixDateStemp + "', '" + BatteryVoltage + "', '" + EngineSpeed + "', '" + RunningSpeed + "', '" + ThrottleOpeningWidth + "', '" + EngineLoad + "', '" + CoolantTemperature + "'," + InstantaneousFuelConsumption + "," + AverageFuelConsumption + "," + DrivingRange + "," + TotalMileage + "," + SingleFuelConsumptionVolume + "," + CurrentErrorCodeNumbers + "," + HarshAccelerationNo + "," + HarshBrakeNo + ",'" + CurrentDate + "');";
     connection.query(query, function(err, rows, fields) {
 
         var objConnection = {
@@ -1454,7 +1454,7 @@ global.Command9902 = function(line, Callback) {
     var unixDateStemp = Math.floor((new Date()).getTime() / 1000);
 
     var query = "INSERT INTO tbldrivingdata (DeviceId,Datetime,TotalIgnition,TotalDrivingTime,TotalIdlingTime,AverageHotStartTime,AverageSpeed,HistoryHighestSpeed,HistoryHighestRotation,TotalHarshAcceleration,TotalHarshBrake,CreatedDate) " +
-        "VALUES ('" + DeviceId + "', '" + unixDateStemp + "', '" + TotalIgnition + "', '" + TotalDrivingTime + "', '" + TotalIdlingTime + "', '" + AverageHotStartTime + "', '" + AverageSpeed + "', '" + HistoryHighestSpeed + "'," + HistoryHighestRotation + "," + TotalHarshAcceleration + "," + TotalHarshBrake + ",'" + CurrentDate + "'');";
+        "VALUES ('" + DeviceId + "', '" + unixDateStemp + "', '" + TotalIgnition + "', '" + TotalDrivingTime + "', '" + TotalIdlingTime + "', '" + AverageHotStartTime + "', '" + AverageSpeed + "', '" + HistoryHighestSpeed + "'," + HistoryHighestRotation + "," + TotalHarshAcceleration + "," + TotalHarshBrake + ",'" + CurrentDate + "');";
     connection.query(query, function(err, rows, fields) {
 
         var objConnection = {
@@ -2565,6 +2565,327 @@ router.get('/ReadGPRSTimeInterval', function(req, res) {
 
                 client.destroy();
                 res.json({ success: false, message: 'could not get GPRS Time Interval. Try again later.' });
+                // SendGSensorCommand(i + 1);
+            }
+        };
+
+
+    });
+
+    client.on('close', function() {
+        console.log('Connection closed');
+    });
+
+
+})
+
+//Read Trouble Code
+router.get('/ReadTroubleCode', function(req, res) {
+    req.setTimeout(3600000);
+
+    var DeviceId = req.query.DeviceId;
+    var Data = "40400011" + DeviceId + "9903";
+    Data = Data + CalculateCRCbyHex(Data) + '0D0A';
+    var client = new net.Socket();
+    var Sendflag = false;
+
+    client.connect(SocketPort, SocketIPAddress, function() {
+
+        client.write(Data, 'hex');
+        client.setTimeout(30000, function() {
+            if (Sendflag == false) {
+                Sendflag = true;
+
+                client.destroy();
+                res.json({ success: false, message: 'Device not connected. Try after 5 minute.' });
+
+            };
+
+        });
+    });
+
+    client.on('data', function(data) {
+        var line = data.toString();
+        if (Sendflag == false) {
+            if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '9903') {
+                console.log('Received: ' + line);
+                var TroubleCodehex = line.substring(26, line.length - 8);
+                var TroubleCode = hex2a(TroubleCodehex);
+
+                Sendflag = true;
+
+                client.destroy();
+
+                res.json({ success: true, message: 'Trouble Code Retrive Successfully.', data: TroubleCode });
+
+            } else {
+                Sendflag = true;
+
+                client.destroy();
+                res.json({ success: false, message: 'could not get Trouble Code. Try again later.' });
+
+            }
+        };
+
+
+    });
+
+    client.on('close', function() {
+        console.log('Connection closed');
+    });
+
+
+})
+
+//Clear Trouble Code
+router.get('/ClearTroubleCode', function(req, res) {
+    req.setTimeout(3600000);
+
+    var DeviceId = req.query.DeviceId;
+
+    var Data = "40400011" + DeviceId + "9904";
+    Data = Data + CalculateCRCbyHex(Data) + '0D0A';
+    var client = new net.Socket();
+    var Sendflag = false;
+
+    client.connect(SocketPort, SocketIPAddress, function() {
+
+        client.write(Data, 'hex');
+
+        client.setTimeout(30000, function() {
+            if (Sendflag == false) {
+                Sendflag = true;
+
+                client.destroy();
+                res.json({ success: false, message: 'Device not connected. Try after 5 minute.' });
+            };
+
+        });
+    });
+
+    client.on('data', function(data) {
+        var line = data.toString();
+        if (Sendflag == false) {
+            if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '9904') {
+                console.log('Received: ' + line);
+                var StatusCode = line.substring(26, 28);
+                Sendflag = true;
+
+                client.destroy();
+                if (StatusCode == '01') {
+                    res.json({ success: true, message: 'Trouble Code clear successfully.' });
+                } else {
+                    res.json({ success: false, message: 'Can Not Clear Trouble Code. Try again later.' });
+                }
+
+            } else {
+                Sendflag = true;
+
+                client.destroy();
+                res.json({ success: false, message: 'Can Not Clear Trouble Co. Try again later.' });
+            }
+        };
+
+
+    });
+
+    client.on('close', function() {
+        console.log('Connection closed');
+    });
+
+
+})
+
+//Read VIN Code
+router.get('/ReadVINCode', function(req, res) {
+    req.setTimeout(3600000);
+
+    var DeviceId = req.query.DeviceId;
+    var Data = "40400011" + DeviceId + "9905";
+    Data = Data + CalculateCRCbyHex(Data) + '0D0A';
+    var client = new net.Socket();
+    var Sendflag = false;
+
+    client.connect(SocketPort, SocketIPAddress, function() {
+
+        client.write(Data, 'hex');
+        client.setTimeout(30000, function() {
+            if (Sendflag == false) {
+                Sendflag = true;
+
+                client.destroy();
+                res.json({ success: false, message: 'Device not connected. Try after 5 minute.' });
+
+            };
+
+        });
+    });
+
+    client.on('data', function(data) {
+        var line = data.toString();
+        if (Sendflag == false) {
+            if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '9905') {
+                console.log('Received: ' + line);
+                var VINCodehex = line.substring(26, line.length - 8);
+                var VINCode = hex2a(VINCodehex);
+
+                Sendflag = true;
+
+                client.destroy();
+
+                res.json({ success: true, message: 'VIN Code Retrive Successfully.', data: VINCode });
+
+            } else {
+                Sendflag = true;
+
+                client.destroy();
+                res.json({ success: false, message: 'could not get VIN Code. Try again later.' });
+
+            }
+        };
+
+
+    });
+
+    client.on('close', function() {
+        console.log('Connection closed');
+    });
+
+
+})
+
+//Read RFID Tags
+router.get('/ReadRFIDTags', function(req, res) {
+    req.setTimeout(3600000);
+    //GetLookAtMeDP3110a0f
+    //Test Device 075034699503  
+    //404018580420800457925119326b320d0a
+    var DeviceId = req.query.DeviceId;
+    var Data = "40400011" + DeviceId + "4170";
+    Data = Data + CalculateCRCbyHex(Data) + '0D0A';
+    var client = new net.Socket();
+    var Sendflag = false;
+
+    client.connect(SocketPort, SocketIPAddress, function() {
+        // console.log('G-Sensor send to ' + DeviceId);
+        client.write(Data, 'hex');
+        // client.setTimeout(30000, function() {
+        //     if (Sendflag == false) {
+        //         Sendflag = true;
+        //         res.json({ success: false, message: 'Device not connected. Try after 5 minute.' });
+        //         client.destroy();
+        //     };
+
+        // });
+
+        client.setTimeout(30000, function() {
+            if (Sendflag == false) {
+                Sendflag = true;
+
+                client.destroy();
+                res.json({ success: false, message: 'Device not connected. Try after 5 minute.' });
+                // SendGSensorCommand(i + 1);
+            };
+
+        });
+    });
+
+    client.on('data', function(data) {
+        var line = data.toString();
+        if (Sendflag == false) {
+            if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4170') {
+                console.log('Received: ' + line);
+                var RFIDTagshex = line.substring(26, line.length - 8);
+                var RFIDTags = hex2a(RFIDTagshex);
+
+                Sendflag = true;
+                // SuccessDevice = SuccessDevice + 1;
+                // res.json(objNavigation);
+                client.destroy(); // kill client after server's response
+                // if (StatusCode == '01') {
+                res.json({ success: true, message: 'RFID Tags Retrive Successfully.', data: RFIDTags });
+                // } else {
+                //     res.json({ success: false, message: 'Data Logger could not Clear. Try again later.' });
+                // }
+
+            } else {
+                Sendflag = true;
+
+                client.destroy();
+                res.json({ success: false, message: 'could not get RFID Tags. Try again later.' });
+                // SendGSensorCommand(i + 1);
+            }
+        };
+
+
+    });
+
+    client.on('close', function() {
+        console.log('Connection closed');
+    });
+
+
+})
+
+//Minitor Voice
+router.get('/MonitorVoice', function(req, res) {
+    req.setTimeout(3600000);
+
+    var packetLength = 17;
+    var DeviceId = req.query.DeviceId;
+    var Phone = req.query.Phone;
+    var PhoneHex = a2hex(Phone);
+    packetLength = packetLength + (PhoneHex.length / 2);
+
+    var Data = "4040" + ('0000' + packetLength.toString(16)).slice(-4) + DeviceId + "4130" + PhoneHex;
+    Data = Data + CalculateCRCbyHex(Data) + '0D0A';
+    var client = new net.Socket();
+    var Sendflag = false;
+
+    client.connect(SocketPort, SocketIPAddress, function() {
+        // console.log('G-Sensor send to ' + DeviceId);
+        client.write(Data, 'hex');
+        // client.setTimeout(30000, function() {
+        //     if (Sendflag == false) {
+        //         Sendflag = true;
+        //         res.json({ success: false, message: 'Device not connected. Try after 5 minute.' });
+        //         client.destroy();
+        //     };
+
+        // });
+
+        client.setTimeout(30000, function() {
+            if (Sendflag == false) {
+                Sendflag = true;
+
+                client.destroy();
+                res.json({ success: false, message: 'Device not connected. Try after 5 minute.' });
+                // SendGSensorCommand(i + 1);
+            };
+
+        });
+    });
+
+    client.on('data', function(data) {
+        var line = data.toString();
+        if (Sendflag == false) {
+            if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4130') {
+                console.log('Received: ' + line);
+                var StatusCode = line.substring(26, 28);
+                Sendflag = true;
+
+                client.destroy(); // kill client after server's response
+                if (StatusCode == '01') {
+                    res.json({ success: true, message: 'Monitor Voice Successfully. You will receive Call soon.' });
+                } else {
+                    res.json({ success: false, message: 'Monitor Voice could not retrive. Try again later.' });
+                }
+
+            } else {
+                Sendflag = true;
+
+                client.destroy();
+                res.json({ success: false, message: 'Monitor Voice could not retrive. Try again later.' });
                 // SendGSensorCommand(i + 1);
             }
         };
