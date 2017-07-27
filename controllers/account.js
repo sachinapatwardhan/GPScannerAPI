@@ -1014,16 +1014,12 @@ router.get('/forgotpasswordfromOwnerCustomer', function(req, res) {
             SystemEmail.findOne().then(function(objSystemEmail) {
 
                 var NewPassword = customPassword();
+                console.log(NewPassword);
                 var EncryptNewpassword = jwt.encode(NewPassword, "bugz");
                 var flgIsUpdate = false;
 
-                if (req.query.Type == 'Owner' && (objUser.Type == req.query.Type || objUser.Type == 'Both')) {
-                    var search = { password: EncryptNewpassword };
-                    flgIsUpdate = true;
-                } else if (req.query.Type == 'Shop' && (objUser.Type == req.query.Type || objUser.Type == 'Both')) {
-                    var search = { password: EncryptNewpassword };
-                    flgIsUpdate = true;
-                }
+                var search = { password: EncryptNewpassword };
+                flgIsUpdate = true;
 
                 if (flgIsUpdate) {
                     objUser.updateAttributes(search).then(function(response) {
@@ -1054,6 +1050,7 @@ router.get('/forgotpasswordfromOwnerCustomer', function(req, res) {
 
                                         transporter.sendMail(mail, function(error, response) {
                                             if (error) {
+                                                console.log(error);
                                                 res.json(error);
                                             } else {
                                                 funAuditLog.CreateAuditLog('forgotpassword', objUser.username, 'forgot User Password');
@@ -1136,43 +1133,43 @@ router.get('/MobileAppLogin', jsonParser, function(req, res) {
         where: search
     }).then(function(response) {
         if (response != null) {
-           
-                // if (response.IsMobileVerify == true) {
-                    UserInRole.belongsTo(Role, {
-                        foreignKey: {
-                            name: 'roleId',
-                            allowNull: false
-                        }
-                    });
-                    UserInRole.findAll({
-                        where: {
-                            userId: response.id
-                        },
-                        include: [{
-                            model: Role,
-                            attributes: ['id', 'RoleName']
-                        }]
-                    }).then(function(resUserInRole) {
-                        var lstRole = [];
-                        for (var i = 0; i < resUserInRole.length; i++) {
-                            var objRole = resUserInRole[i].tblrole.RoleName;
-                            lstRole.push(objRole);
-                        }
 
-                        var user = {
-                            username: response.username,
-                            password: Encryptpassword,
-                            Role: lstRole
-                        }
-                        var token = jwt.encode(user, "bugz");
-                        res.json({
-                            success: true,
-                            token: 'JWT ' + token,
-                            UserId: response.id,
-                            UserName: response.username,
-                            message: "Login Successfully..."
-                        });
-                    })
+            // if (response.IsMobileVerify == true) {
+            UserInRole.belongsTo(Role, {
+                foreignKey: {
+                    name: 'roleId',
+                    allowNull: false
+                }
+            });
+            UserInRole.findAll({
+                    where: {
+                        userId: response.id
+                    },
+                    include: [{
+                        model: Role,
+                        attributes: ['id', 'RoleName']
+                    }]
+                }).then(function(resUserInRole) {
+                    var lstRole = [];
+                    for (var i = 0; i < resUserInRole.length; i++) {
+                        var objRole = resUserInRole[i].tblrole.RoleName;
+                        lstRole.push(objRole);
+                    }
+
+                    var user = {
+                        username: response.username,
+                        password: Encryptpassword,
+                        Role: lstRole
+                    }
+                    var token = jwt.encode(user, "bugz");
+                    res.json({
+                        success: true,
+                        token: 'JWT ' + token,
+                        UserId: response.id,
+                        UserName: response.username,
+                        message: "Login Successfully..."
+                    });
+                })
                 // } else {
                 //     res.json({
                 //         success: false,
@@ -1181,7 +1178,7 @@ router.get('/MobileAppLogin', jsonParser, function(req, res) {
                 //         message: "OTP"
                 //     });
                 // };
-            
+
         } else {
             res.json({
                 success: false,
@@ -1193,7 +1190,7 @@ router.get('/MobileAppLogin', jsonParser, function(req, res) {
 
 router.post('/CheckMobileUserExist', jsonParser, function(req, res) {
     objUserReg = req.body
-   
+
     if (!validator.isEmail(objUserReg.email)) {
         res.json({
             success: false,
@@ -1223,7 +1220,7 @@ router.post('/CheckMobileUserExist', jsonParser, function(req, res) {
 router.post('/MobileRegister', jsonParser, function(req, res) {
     objUserReg = req.body
     objUserReg.password = jwt.encode(objUserReg.password, "bugz");
- 
+
     if (!validator.isEmail(objUserReg.email)) {
         res.json({
             success: false,
@@ -1271,7 +1268,7 @@ router.post('/MobileRegister', jsonParser, function(req, res) {
                         //         });
                         //     })
                         // } else {
-                            User.create(objUserReg).then(function(resUserReg) {
+                        User.create(objUserReg).then(function(resUserReg) {
                                 Role.findOne({
                                     where: {
                                         RoleName: "User"
@@ -1341,7 +1338,7 @@ router.post('/MobileRegister', jsonParser, function(req, res) {
                                     message: "User Registration Failed..."
                                 });
                             })
-                        // }
+                            // }
                     }
                 })
             }
@@ -1360,56 +1357,56 @@ router.get('/MobileForgotPassword', function(req, res) {
                 var NewPassword = customPassword();
                 var EncryptNewpassword = jwt.encode(NewPassword, "bugz");
                 var search = { password: EncryptNewpassword };
-                    objUser.updateAttributes(search).then(function(response) {
-                        if (response != null) {
-                            EmailTemplate.findOne({
-                                where: {
-                                    Type: "Forgot Password Email",
-                                }
-                            }).then(function(objEmailTemplate) {
-                                if (objEmailTemplate != null) {
-                                    var Name = objUser.username;
-                                    var Password = NewPassword;
+                objUser.updateAttributes(search).then(function(response) {
+                    if (response != null) {
+                        EmailTemplate.findOne({
+                            where: {
+                                Type: "Forgot Password Email",
+                            }
+                        }).then(function(objEmailTemplate) {
+                            if (objEmailTemplate != null) {
+                                var Name = objUser.username;
+                                var Password = NewPassword;
 
-                                    var body = objEmailTemplate.EmailBody.replace(/{UserName}/g, Name).replace("{Password}", Password);
-                                    var mail = {
-                                        from: objSystemEmail.DefaultEmailFrom,
-                                        to: objUser.email, // + ', ' + objSystemEmail.NotificationEmailTo,
-                                        subject: objEmailTemplate.EmailSubject,
-                                        html: body
-                                    };
-                                    transporter.sendMail(mail, function(error, response) {
-                                        if (error) {
-                                            res.json(error);
-                                        } else {
-                                            funAuditLog.CreateAuditLog('forgotpassword', objUser.username, 'forgot User Password');
-                                            res.json({
-                                                success: true,
-                                                message: "Password sent to your email successfully...",
-                                                data: response
-                                            });
-                                        }
-                                    });
-                                } else {
-                                    res.json({
-                                        success: false,
-                                        message: "This Email template not found..."
-                                    })
-                                }
-                            });
-                        } else {
-                            res.json({
-                                success: false,
-                                message: "This system Email not found..."
-                            });
-                        }
-                    }).catch(function(error) {
+                                var body = objEmailTemplate.EmailBody.replace(/{UserName}/g, Name).replace("{Password}", Password);
+                                var mail = {
+                                    from: objSystemEmail.DefaultEmailFrom,
+                                    to: objUser.email, // + ', ' + objSystemEmail.NotificationEmailTo,
+                                    subject: objEmailTemplate.EmailSubject,
+                                    html: body
+                                };
+                                transporter.sendMail(mail, function(error, response) {
+                                    if (error) {
+                                        res.json(error);
+                                    } else {
+                                        funAuditLog.CreateAuditLog('forgotpassword', objUser.username, 'forgot User Password');
+                                        res.json({
+                                            success: true,
+                                            message: "Password sent to your email successfully...",
+                                            data: response
+                                        });
+                                    }
+                                });
+                            } else {
+                                res.json({
+                                    success: false,
+                                    message: "This Email template not found..."
+                                })
+                            }
+                        });
+                    } else {
                         res.json({
                             success: false,
-                            message: error.errors[0].message + "..."
+                            message: "This system Email not found..."
                         });
-                    })
-                
+                    }
+                }).catch(function(error) {
+                    res.json({
+                        success: false,
+                        message: error.errors[0].message + "..."
+                    });
+                })
+
             })
         } else {
             res.json({
@@ -1439,10 +1436,10 @@ router.post('/changeMobileUserPassword', jsonParser, function(req, res) {
         }).then(function(chkUserExist) {
             if (chkUserExist != null) {
 
-               
+
                 var Password = chkUserExist.password;
                 var search = { password: EncryptNewpassword };
-                
+
                 if (EncryptOldpassword == Password) {
                     chkUserExist.updateAttributes(search).then(function(response) {
                         funAuditLog.CreateAuditLog('changepassword', chkUserExist.username, 'Change User Password');

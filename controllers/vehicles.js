@@ -256,8 +256,8 @@ router.get('/GetAllVehicleById', function(req, res) {
             $eq: false
         };
         search['$and'].push(obj);
-        console.log(search);
-        console.log("===============================================")
+        // console.log(search);
+        // console.log("===============================================")
         Vehicle.findOne({
             where: search,
         }).then(function(response) {
@@ -273,7 +273,7 @@ router.get('/GetAllVehicleById', function(req, res) {
 
 router.get('/GetDrivingDataByDeviceId', function(req, res) {
     DrivingData.findOne({
-        where: {DeviceId: req.query.DeviceId},
+        where: { DeviceId: req.query.DeviceId },
         order: 'Datetime desc'
     }).then(function(response) {
         res.json({
@@ -284,7 +284,7 @@ router.get('/GetDrivingDataByDeviceId', function(req, res) {
     }).catch(function(error) {
         res.json(RecordNotFound);
     })
-   
+
 })
 
 module.exports = router

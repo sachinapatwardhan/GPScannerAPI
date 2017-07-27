@@ -1830,17 +1830,17 @@
              }
          }).then(function(UserExist) {
              if (UserExist != null) {
-                
-                   
-                             UserExist.updateAttributes({ ProfileName: objUser.ProfileName, email: objUser.email, phone: objUser.phone }).then(function(responseUser) {
-                                 funAuditLog.CreateAuditLog('UpdateMobileUserOwner', UserExist.username, 'Update User');
-                                 res.json({
-                                     success: true,
-                                     message: "User updated successfully...",
-                                     data: responseUser
-                                 });
-                             })
-                        
+
+
+                 UserExist.updateAttributes({ ProfileName: objUser.ProfileName, email: objUser.email, phone: objUser.phone }).then(function(responseUser) {
+                     funAuditLog.CreateAuditLog('UpdateMobileUserOwner', UserExist.username, 'Update User');
+                     res.json({
+                         success: true,
+                         message: "User updated successfully...",
+                         data: responseUser
+                     });
+                 })
+
              } else {
                  res.json(InvalidToken);
              }
@@ -2036,39 +2036,39 @@
 
                  User.findOne({ where: { id: UserId } }).then(function(response) {
                      if (response != null) {
-                        //  if (req.query.UserType == 'Owner') {
-                        //      if (response.OwnerImage != '' && response.OwnerImage != null) {
-                        //          var oldFile = __dirname + '/../MediaUploads/UserUpload/' + response.OwnerImage;
-                        //          fs.exists(oldFile, function(exists) {
-                        //              if (exists) {
-                        //                  fs.unlink(oldFile);
-                        //              }
-                        //          });
-                        //      };
-                        //      response.updateAttributes({ OwnerImage: FileName[i] }).then(function(resUpdate) {
-                        //          if ((i + 1) == FileName.length) {
-                        //              res.json({ success: true, message: "Images Uploaded Successfully...", data: FileName[i] });
-                        //          } else {
-                        //              uploader(i + 1);
-                        //          };
-                        //      })
-                        //  } else {
-                             if (response.image != '' && response.image != null) {
-                                 var oldFile = __dirname + '/../MediaUploads/UserUpload/' + response.image;
-                                 fs.exists(oldFile, function(exists) {
-                                     if (exists) {
-                                         fs.unlink(oldFile);
-                                     }
-                                 });
-                             };
-                             response.updateAttributes({ image: FileName[i] }).then(function(resUpdate) {
+                         //  if (req.query.UserType == 'Owner') {
+                         //      if (response.OwnerImage != '' && response.OwnerImage != null) {
+                         //          var oldFile = __dirname + '/../MediaUploads/UserUpload/' + response.OwnerImage;
+                         //          fs.exists(oldFile, function(exists) {
+                         //              if (exists) {
+                         //                  fs.unlink(oldFile);
+                         //              }
+                         //          });
+                         //      };
+                         //      response.updateAttributes({ OwnerImage: FileName[i] }).then(function(resUpdate) {
+                         //          if ((i + 1) == FileName.length) {
+                         //              res.json({ success: true, message: "Images Uploaded Successfully...", data: FileName[i] });
+                         //          } else {
+                         //              uploader(i + 1);
+                         //          };
+                         //      })
+                         //  } else {
+                         if (response.image != '' && response.image != null) {
+                             var oldFile = __dirname + '/../MediaUploads/UserUpload/' + response.image;
+                             fs.exists(oldFile, function(exists) {
+                                 if (exists) {
+                                     fs.unlink(oldFile);
+                                 }
+                             });
+                         };
+                         response.updateAttributes({ image: FileName[i] }).then(function(resUpdate) {
                                  if ((i + 1) == FileName.length) {
                                      res.json({ success: true, message: "Images Uploaded Successfully...", data: FileName[i] });
                                  } else {
                                      uploader(i + 1);
                                  };
                              })
-                        //  }
+                             //  }
                      }
                  })
              }
@@ -2087,7 +2087,6 @@
      var objColumns = objParam.columns;
      var objOrder = objParam.order;
      var objSearch = objParam.search;
-     console.log(objSearch)
      var CountryList = objParam.CountryList;
      if (CountryList == undefined || CountryList == null || CountryList == "") {
          CountryList = [];
@@ -2145,7 +2144,6 @@
                          allowNull: false
                      }
                  });
-                 console.log("==============================================================");
                  User.findAndCountAll({
                      required: true,
                      where: search1,
@@ -2166,7 +2164,6 @@
                      }],
                  }).then(function(response) {
                      var response1 = new Object();
-                     console.log(response.count);
                      response1.draw = objParam.draw;
                      response1.recordsTotal = response.count;
                      response1.recordsFiltered = response.count;

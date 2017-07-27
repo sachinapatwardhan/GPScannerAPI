@@ -452,9 +452,7 @@ app.use('/PetDevice', require('./controllers/PetDevice'))
 
 //gpsdata
 app.use('/gpsdata', require('./controllers/gpsdata'))
-
-
-
+app.use('/canbusdata', require('./controllers/canbusdata'))
 
 //socket API End
 
