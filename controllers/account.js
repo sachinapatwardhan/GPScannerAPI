@@ -1105,36 +1105,43 @@ router.get('/forgotpasswordfromOwnerCustomer', function(req, res) {
 //Start Mobile App
 
 router.get('/MobileAppLogin', jsonParser, function(req, res) {
+    console.log(req.query);
     var Encryptpassword = jwt.encode(req.query.password, "bugz");
-    var search = {};
-    search['$or'] = [];
+    // var search = {};
+    // search['$or'] = [];
 
-    var obj = new Object();
-    obj['username'] = {
-        $eq: req.query.username
-    };
-    search['$or'].push(obj);
+    // var obj = new Object();
+    // obj['username'] = {
+    //     $eq: req.query.username
+    // };
+    // search['$or'].push(obj);
 
-    var obj = new Object();
-    obj['phone'] = {
-        $eq: req.query.username
-    };
-    search['$or'].push(obj);
+    // var obj = new Object();
+    // obj['phone'] = {
+    //     $eq: req.query.username
+    // };
+    // search['$or'].push(obj);
 
-    search['$and'] = [];
+    // search['$and'] = [];
 
-    var obj = new Object();
-    obj['password'] = {
-        $eq: Encryptpassword
-    };
-    search['$and'].push(obj);
+    // var obj = new Object();
+    // obj['password'] = {
+    //     $eq: Encryptpassword
+    // };
+    // search['$and'].push(obj);
 
     User.findOne({
-        where: search
+        where: {
+            $or: {
+                username: req.query.username,
+                email: req.query.username,
+                phone: req.query.username,
+            },
+            password: Encryptpassword,
+        }
     }).then(function(response) {
+        console.log(response);
         if (response != null) {
-
-            // if (response.IsMobileVerify == true) {
             UserInRole.belongsTo(Role, {
                 foreignKey: {
                     name: 'roleId',
@@ -1142,43 +1149,34 @@ router.get('/MobileAppLogin', jsonParser, function(req, res) {
                 }
             });
             UserInRole.findAll({
-                    where: {
-                        userId: response.id
-                    },
-                    include: [{
-                        model: Role,
-                        attributes: ['id', 'RoleName']
-                    }]
-                }).then(function(resUserInRole) {
-                    var lstRole = [];
-                    for (var i = 0; i < resUserInRole.length; i++) {
-                        var objRole = resUserInRole[i].tblrole.RoleName;
-                        lstRole.push(objRole);
-                    }
+                where: {
+                    userId: response.id
+                },
+                include: [{
+                    model: Role,
+                    attributes: ['id', 'RoleName']
+                }]
+            }).then(function(resUserInRole) {
+                var lstRole = [];
+                for (var i = 0; i < resUserInRole.length; i++) {
+                    var objRole = resUserInRole[i].tblrole.RoleName;
+                    lstRole.push(objRole);
+                }
 
-                    var user = {
-                        username: response.username,
-                        password: Encryptpassword,
-                        Role: lstRole
-                    }
-                    var token = jwt.encode(user, "bugz");
-                    res.json({
-                        success: true,
-                        token: 'JWT ' + token,
-                        UserId: response.id,
-                        UserName: response.username,
-                        message: "Login Successfully..."
-                    });
-                })
-                // } else {
-                //     res.json({
-                //         success: false,
-                //         UserId: response.id,
-                //         UserName: response.username,
-                //         message: "OTP"
-                //     });
-                // };
-
+                var user = {
+                    username: response.username,
+                    password: Encryptpassword,
+                    Role: lstRole
+                }
+                var token = jwt.encode(user, "bugz");
+                res.json({
+                    success: true,
+                    token: 'JWT ' + token,
+                    UserId: response.id,
+                    UserName: response.username,
+                    message: "Login Successfully..."
+                });
+            })
         } else {
             res.json({
                 success: false,

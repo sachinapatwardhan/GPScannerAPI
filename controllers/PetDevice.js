@@ -494,6 +494,9 @@ router.get('/GetAllPetbyCountry', function(req, res) {
 
 router.post('/SaveGPSDevice', jsonParser, function(req, res) {
     objGPSDevice = req.body;
+    if (objGPSDevice.idSalesAgent == 0) {
+        objGPSDevice.idSalesAgent = null
+    }
     objHeader = req.headers;
     //Set parameters for user permission
     req.query['tablename'] = req.headers['x-requested-with'];

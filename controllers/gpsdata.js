@@ -35,22 +35,22 @@ router.get('/GetAllGpsData', function(req, res) {
     var StartDate = objParam.StartDate;
     var EndDate = objParam.EndDate;
     if (StartDate != '' && EndDate != '') {
-        StartDate = convertdateformat(StartDate, 0);
-        EndDate = convertdateformat(EndDate, 1);
+        StartDate = convertdateUTCformat(StartDate);
+        EndDate = convertdateUTCformat(EndDate);
         var obj = new Object();
         obj['CreatedDate'] = {
             $between: [StartDate, EndDate]
         };
         search['$and'].push(obj);
     } else if (StartDate != null && StartDate != '') {
-        StartDate = convertdateformat(StartDate, 0);
+        StartDate = convertdateUTCformat(StartDate);
         var obj = new Object();
         obj['CreatedDate'] = {
             $gt: StartDate
         };
         search['$and'].push(obj);
     } else if (EndDate != null && EndDate != '') {
-        EndDate = convertdateformat(EndDate, 1);
+        EndDate = convertdateUTCformat(EndDate);
         var obj = new Object();
         obj['CreatedDate'] = {
             $lt: EndDate
@@ -117,29 +117,26 @@ router.get('/GetAllAlarm', function(req, res) {
     var StartDate = objParam.StartDate;
     var EndDate = objParam.EndDate;
     if (StartDate != '' && EndDate != '') {
-        StartDate = convertdateformat(StartDate, 0);
-        EndDate = convertdateformat(EndDate, 1);
+        StartDate = convertdateUTCformat(StartDate);
+        EndDate = convertdateUTCformat(EndDate);
         var obj = new Object();
         obj['CreatedDate'] = {
             $between: [StartDate, EndDate]
         };
         search['$and'].push(obj);
     } else if (StartDate != null && StartDate != '') {
-        StartDate = convertdateformat(StartDate, 0);
         var obj = new Object();
         obj['CreatedDate'] = {
             $gt: StartDate
         };
         search['$and'].push(obj);
     } else if (EndDate != null && EndDate != '') {
-        EndDate = convertdateformat(EndDate, 1);
         var obj = new Object();
         obj['CreatedDate'] = {
             $lt: EndDate
         };
         search['$and'].push(obj);
     }
-    console.log(search)
     Alarm.findAndCountAll({
         where: search,
         order: Orderby,
@@ -253,22 +250,22 @@ router.get('/ExportAllGpsData', function(req, res) {
     var StartDate = objParam.StartDate;
     var EndDate = objParam.EndDate;
     if (StartDate != '' && EndDate != '' && StartDate != undefined && EndDate != undefined) {
-        StartDate = convertdateformat(StartDate, 0);
-        EndDate = convertdateformat(EndDate, 1);
+        StartDate = convertdateUTCformat(StartDate);
+        EndDate = convertdateUTCformat(EndDate);
         var obj = new Object();
         obj['CreatedDate'] = {
             $between: [StartDate, EndDate]
         };
         search['$and'].push(obj);
     } else if (StartDate != null && StartDate != '' && StartDate != undefined) {
-        StartDate = convertdateformat(StartDate, 0);
+        StartDate = convertdateUTCformat(StartDate);
         var obj = new Object();
         obj['CreatedDate'] = {
             $gt: StartDate
         };
         search['$and'].push(obj);
     } else if (EndDate != null && EndDate != '' && EndDate != undefined) {
-        EndDate = convertdateformat(EndDate, 1);
+        EndDate = convertdateUTCformat(EndDate);
         var obj = new Object();
         obj['CreatedDate'] = {
             $lt: EndDate
@@ -433,22 +430,22 @@ router.get('/ExportAlarm', function(req, res) {
     var StartDate = objParam.StartDate;
     var EndDate = objParam.EndDate;
     if (StartDate != '' && EndDate != '' && StartDate != undefined && EndDate != undefined) {
-        StartDate = convertdateformat(StartDate, 0);
-        EndDate = convertdateformat(EndDate, 1);
+        StartDate = convertdateUTCformat(StartDate);
+        EndDate = convertdateUTCformat(EndDate);
         var obj = new Object();
         obj['CreatedDate'] = {
             $between: [StartDate, EndDate]
         };
         search['$and'].push(obj);
     } else if (StartDate != null && StartDate != '' && StartDate != undefined) {
-        StartDate = convertdateformat(StartDate, 0);
+        StartDate = convertdateUTCformat(StartDate);
         var obj = new Object();
         obj['CreatedDate'] = {
             $gt: StartDate
         };
         search['$and'].push(obj);
     } else if (EndDate != null && EndDate != '' && EndDate != undefined) {
-        EndDate = convertdateformat(EndDate, 1);
+        EndDate = convertdateUTCformat(EndDate);
         var obj = new Object();
         obj['CreatedDate'] = {
             $lt: EndDate
@@ -532,14 +529,21 @@ router.get('/ExportAlarm', function(req, res) {
 function convertdateformat(date1, flg) {
     var date = new Date(date1);
     var firstdayMonth = date.getMonth() + 1;
+
     var firstdayDay = date.getDate();
+
     var firstdayYear = date.getFullYear();
-    var firstdayHours = date.getHours();
+
+    var firstdayHours = date.getMinutes();
+
     var firstdayMinutes = date.getMinutes();
+
     var firstdaySeconds = date.getSeconds();
+
     if (flg == 1) {
         return ("0000" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("00" + firstdayDay.toString()).slice(-2) + " " + "23:59:59";
     } else if (flg == "Excel Export") {
+        // return moment(moment.utc(date).toDate()).format("YYYY-MM-DD hh:mm:ss");
         return ("0000" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("00" + firstdayDay.toString()).slice(-2) + " " + ("00" + firstdayHours.toString()).slice(-2) + ':' + ("00" + firstdayMinutes.toString()).slice(-2) + ':' + ("00" + firstdaySeconds.toString()).slice(-2);
     } else if (flg == 2) {
         return ("00" + firstdayDay.toString()).slice(-2) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("0000" + firstdayYear.toString()).slice(-4);
@@ -547,6 +551,19 @@ function convertdateformat(date1, flg) {
         //return ("0000" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("00" + firstdayDay.toString()).slice(-2) + " " + "00:00:00";
         return ("0000" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("00" + firstdayDay.toString()).slice(-2);
     }
+}
+
+function convertdateUTCformat(date1, flg) {
+    var date = new Date(date1);
+    var firstdayMonth = date.getUTCMonth() + 1;
+    var firstdayDay = date.getUTCDate();
+    var firstdayYear = date.getUTCFullYear();
+    var firstdayHours = date.getUTCHours();
+    var firstdayMinutes = date.getUTCMinutes();
+    var firstdaySeconds = date.getUTCSeconds();
+    //return ("0000" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("00" + firstdayDay.toString()).slice(-2) + " " + "00:00:00";
+    return ("0000" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("00" + firstdayDay.toString()).slice(-2) + " " + ("00" + firstdayHours.toString()).slice(-2) + ':' + ("00" + firstdayMinutes.toString()).slice(-2) + ':' + ("00" + firstdaySeconds.toString()).slice(-2);
+
 }
 
 

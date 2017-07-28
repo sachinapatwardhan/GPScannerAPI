@@ -1,10 +1,9 @@
 //Tables
 var router = express.Router();
 var User = models.tbluserinformation;
-var Pet = models.tblpet;
-var PetDevice = models.tblgpsdevice;
+var Vehicle = models.tblvehicle;
+var GPSDevice = models.tblgpsdevice;
 var Country = models.tblcountrymgmt;
-var Bike = models.tblbike;
 
 //End of Tables
 
@@ -31,7 +30,7 @@ Date.prototype.addDays = function(days) {
     return this;
 };
 router.get('/GetAllWorkingBike', jsonParser, function(req, res) {
-    connection.query("SELECT  tb.id,tb.deviceid,tb.bikeimageURl,tb.bikeNumber,tb.IsOnline, tpg.Latitude,tpg.Longtitude,tpg.Datetime, tpg.Id, tpg.Speed FROM tblbike tb INNER JOIN tblgpsscanner tpg ON tb.deviceid=tpg.DeviceId INNER JOIN (SELECT DeviceId,MAX(Id) Id FROM tblgpsscanner GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId AND tpg.Id = b.Id WHERE IsDeleted=false and IsOnline=1;", function(err, rows, fields) {
+    connection.query("SELECT  tb.id,tb.deviceid,tb.bikeimageURl,tb.bikeNumber,tb.IsOnline, tpg.Latitude,tpg.Longtitude,tpg.Datetime, tpg.Id, tpg.Speed FROM tblbike tb INNER JOIN tblgpsscanner tpg ON tb.deviceid=tpg.DeviceId INNER JOIN (SELECT DeviceId,MAX(Id) Id FROM tblgpsscanner GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId AND tpg.Id = b.Id WHERE IsDelete=false and IsOnline=1;", function(err, rows, fields) {
         if (!err) {
             res.json({ success: true, data: rows });
         } else {
@@ -43,15 +42,16 @@ router.get('/GetAllWorkingBike', jsonParser, function(req, res) {
 })
 
 router.get('/GetTotalCustomerByCountry', function(req, res) {
-    Bike.belongsTo(User, {
+    Vehicle.belongsTo(User, {
         foreignKey: {
             name: 'iduser',
             allowNull: false
         }
     });
-    Bike.findAll({
+    // console.log("======================================================")
+    Vehicle.findAll({
         where: {
-            IsDeleted: '0',
+            IsDelete: '0',
             deviceid: {
                 $ne: ''
             }
@@ -59,7 +59,6 @@ router.get('/GetTotalCustomerByCountry', function(req, res) {
         include: [{
             model: User,
             attributes: [
-                //[models.sequelize.fn('count', 'iduser'), 'Total'],
                 [models.Sequelize.literal('COUNT(DISTINCT(iduser))'), 'Total'],
                 'country', 'Type'
             ]
@@ -67,6 +66,7 @@ router.get('/GetTotalCustomerByCountry', function(req, res) {
         group: ['country', 'Type'],
         order: 'country',
     }).then(function(resUser) {
+        // console.log("======================================================")
         if (resUser != null) {
             res.json({
                 success: true,
@@ -182,21 +182,21 @@ router.get('/GetDashboardData', function(req, res) {
     var IsCountryAll = false;
     var lstDashboard = {};
     var currentDate = new Date();
-    var StartDate = convertdateformat(currentDate, 1);
-    var EndDate = convertdateformat(currentDate, 1);
+    var StartDate = convertdateformat(currentDate, 3);
+    var EndDate = convertdateformat(currentDate, 3);
 
     //var Last7days = currentDate.addDays(-7);
-    var LastWeek = convertdateformat(currentDate.addDays(-7), 1);
+    var LastWeek1 = convertdateformat(currentDate.addDays(-7), 3);
     var firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
     var lastDay = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
-    var firstDayMonth = convertdateformat(firstDay, 1);
-    var lastDayMonth = convertdateformat(lastDay, 1);
+    var firstDayMonth = convertdateformat(firstDay, 3);
+    var lastDayMonth = convertdateformat(lastDay, 3);
 
     firstDate = new Date(new Date().getFullYear(), 0, 1);
     lastDate = new Date(new Date().getFullYear(), 11, 31);
 
-    var firstDateYear = convertdateformat(firstDate, 1);
-    var lastDateYear = convertdateformat(lastDate, 1);
+    var firstDateYear = convertdateformat(firstDate, 3);
+    var lastDateYear = convertdateformat(lastDate, 3);
 
     var search = {};
     var search1 = {};
@@ -251,14 +251,12 @@ router.get('/GetDashboardData', function(req, res) {
 })
 
 router.get('/GetTotalCustomer', function(req, res) {
-
-    Bike.belongsTo(User, {
+    Vehicle.belongsTo(User, {
         foreignKey: {
             name: 'iduser',
             allowNull: false
         }
     });
-
     var CountryName = req.query.countryName;
     var IsSuperAdmin = req.query.IsSuperAdmin;
     var CountryList = req.query.CountryList;
@@ -307,30 +305,22 @@ router.get('/GetTotalCustomer', function(req, res) {
             search1['$or'].push(obj);
         }
     }
-
-
-    Bike.findAll({
+    Vehicle.findAll({
         attributes: [
-            [models.Sequelize.literal('COUNT(DISTINCT(iduser))'), 'Count'],
+            [models.sequelize.literal('COUNT(DISTINCT(iduser))'), 'Count'],
         ],
         where: {
-            IsDeleted: 0,
+            IsDelete: 0,
             deviceid: {
                 $ne: ''
             }
         },
         include: [{
             model: User,
-            //where: search1,
-            // attributes: [
-            //     //[models.sequelize.fn('count', 'iduser'), 'Total'],
-            //     'Type'
-            // ]
         }]
     }).then(function(response) {
         res.json(response);
     })
-
 })
 
 
@@ -442,14 +432,14 @@ router.get('/GetTotalDevice', function(req, res) {
 })
 router.get('/GetBikeTotalDevice', function(req, res) {
 
-    Bike.belongsTo(User, {
+    Vehicle.belongsTo(User, {
         foreignKey: {
             name: 'iduser',
             allowNull: false
         }
     });
 
-    PetDevice.belongsTo(Country, {
+    GPSDevice.belongsTo(Country, {
         foreignKey: {
             name: 'CountryId',
             allowNull: false
@@ -517,7 +507,7 @@ router.get('/GetBikeTotalDevice', function(req, res) {
         }
     }
 
-    PetDevice.count({
+    GPSDevice.count({
         where: search,
         include: [{
             model: Country,
@@ -527,10 +517,10 @@ router.get('/GetBikeTotalDevice', function(req, res) {
         }],
     }).then(function(respetdevice) {
 
-        Bike.findAndCountAll({
-            attributes: ["id", "IsOnline", "IsWireCut", "DeviceType"],
+        Vehicle.findAndCountAll({
+            attributes: ["id", "IsOnline", "DeviceType"],
             where: {
-                IsDeleted: 0,
+                IsDelete: 0,
                 deviceid: {
                     $ne: ''
                 }
@@ -619,7 +609,7 @@ router.get('/GetGraphCustomer', function(req, res) {
     search1['$and'] = [];
     search1['$and'].push(search);
 
-    User.hasMany(Bike, {
+    User.hasMany(Vehicle, {
         foreignKey: {
             name: 'iduser',
             allowNull: false
@@ -628,9 +618,9 @@ router.get('/GetGraphCustomer', function(req, res) {
     if (IsSuperAdmin == 'false' || IsSuperAdmin == false && flg == true) {
         User.findAll({
             include: [{
-                model: Bike,
+                model: Vehicle,
                 where: models.sequelize.and({
-                    'IsDeleted': 0,
+                    'IsDelete': 0,
                     deviceid: {
                         $ne: ''
                     }
@@ -662,9 +652,9 @@ router.get('/GetGraphCustomer', function(req, res) {
     } else {
         User.findAll({
             include: [{
-                model: Bike,
+                model: Vehicle,
                 where: models.sequelize.and({
-                    'IsDeleted': 0,
+                    'IsDelete': 0,
                     deviceid: {
                         $ne: ''
                     }
