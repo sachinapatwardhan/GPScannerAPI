@@ -26,11 +26,20 @@ router.get('/GetAllDynamicVehicle', function(req, res) {
         search = search + 'vehicle.IsOnline like "%' + objSearch + '%") ';
     }
 
+    if (objParam.UserId != null && objParam.UserId != '' && objParam.UserId != undefined) {
+        if (search != "") {
+            search += ' and vehicle.idSalesAgent = ' + objParam.UserId;
+        } else {
+            search += ' where vehicle.idSalesAgent = ' + objParam.UserId;
+        }
+    }
+
     if (search != "") {
         search += ' and vehicle.IsDelete = 0 ';
     } else {
         search += ' where vehicle.IsDelete = 0 ';
     }
+
 
 
     var qry = "Select Vehicle.*, " +
@@ -205,27 +214,23 @@ router.get('/GetAllVehicleByUser', function(req, res) {
         var search = {};
 
         search['$and'] = [];
+        if (req.query.idSalesAgent != null && req.query.idSalesAgent != '' && req.query.idSalesAgent != undefined) {
+            var obj = new Object();
+            obj['idSalesAgent'] = {
+                $eq: req.query.idSalesAgent
+            };
+            search['$and'].push(obj);
+        }
 
-        var obj = new Object();
-        obj['iduser'] = {
-            $eq: req.query.iduser
-        };
-        search['$and'].push(obj);
-
-        var obj = new Object();
-        obj['deviceid'] = {
-            $ne: ''
-        };
-        search['$and'].push(obj);
-
-        var obj = new Object();
-        obj['IsDelete'] = {
-            $eq: false
-        };
-        search['$and'].push(obj);
 
         Vehicle.findAll({
-            where: search,
+            where: [search, {
+                IsDelete: 0,
+                deviceid: {
+                    $ne: '',
+                },
+                iduser: req.query.iduser,
+            }],
             order: 'CreatedDate'
         }).then(function(response) {
             res.json(response);

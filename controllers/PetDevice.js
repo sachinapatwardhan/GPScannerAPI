@@ -5,6 +5,7 @@ var GPSDevice = models.tblgpsdevice;
 var Pet = models.tblpet;
 var Carrier = models.tblcarrier;
 var Country = models.tblcountrymgmt;
+var TelCo = models.tbltelco;
 //End of Tables
 
 router.get('/GetAllGPSDevice', function(req, res) {
@@ -13,7 +14,6 @@ router.get('/GetAllGPSDevice', function(req, res) {
     var objColumns = objParam.columns;
     var objOrderBy = objParam.order;
     var objSearch = objParam.search;
-    console.log(objSearch);
     var Orderby = objColumns[parseInt(objOrderBy[0].column)].data + ' ' + objOrderBy[0].dir;
     var search = {};
     var search1 = {};
@@ -27,7 +27,13 @@ router.get('/GetAllGPSDevice', function(req, res) {
     }
 
     var UserRoles = objParam.UserRoles;
-
+    if (UserRoles == 'Sales Agent') {
+        var obj1 = new Object();
+        obj1['idSalesAgent'] = {
+            $eq: parseInt(objParam.UserId)
+        }
+        search1['$and'].push(obj1);
+    }
     if (UserRoles.length > 0) {
 
         function CheckUserCountry(i) {
@@ -58,11 +64,13 @@ router.get('/GetAllGPSDevice', function(req, res) {
                                 search1['$or'].push(['tblgpsdevice.CreatedBy like ?', "%" + objSearch + "%"]);
                             } else if (columnName == 'CreatedDate') {
                                 search1['$or'].push(['tblgpsdevice.CreatedDate like ?', "%" + objSearch + "%"]);
+                            } else if (columnName == 'SimNum') {
+                                search1['$or'].push(['tblgpsdevice.SimNum like ?', "%" + objSearch + "%"]);
                             }
                         };
                     };
                 }
-                if (!IsUserSuperAdmin) {
+                if (!IsUserSuperAdmin && CountryList.length != 0) {
                     search['$or'] = [];
                     if (CountryList.length > 0) {
                         function CheckCountry(p) {
@@ -98,7 +106,19 @@ router.get('/GetAllGPSDevice', function(req, res) {
                         allowNull: true
                     }
                 });
-                console.log("==============================================================");
+                GPSDevice.belongsTo(TelCo, {
+                    foreignKey: {
+                        name: 'TelCoId',
+                        allowNull: true
+                    }
+                });
+                GPSDevice.belongsTo(User, {
+                    foreignKey: {
+                        name: 'idSalesAgent',
+                        allowNull: true
+                    }
+                });
+                // console.log("=================================================================0");
                 GPSDevice.findAndCountAll({
                     where: search1,
                     order: Orderby,
@@ -109,8 +129,15 @@ router.get('/GetAllGPSDevice', function(req, res) {
                         attributes: ['Country'],
                         required: flg,
                         where: search,
+                    }, {
+                        model: TelCo,
+                        required: false,
+                    }, {
+                        model: User,
+                        required: false,
                     }],
                 }).then(function(response) {
+                    // console.log("========================================================================1");
                     var response1 = new Object();
                     response1.draw = objParam.draw;
                     response1.recordsTotal = response.count;
@@ -128,6 +155,18 @@ router.get('/GetAllGPSDevice', function(req, res) {
         }
         CheckUserCountry(0)
     }
+})
+
+router.get('/GetGPSDeviceById', function(req, res) {
+    GPSDevice.findOne({
+        where: {
+            DeviceId: req.query.DeviceId
+        }
+    }).then(function(response) {
+        res.json(response);
+    }).catch(function(err) {
+        res.json(err);
+    })
 })
 
 // router.get('/GetAllPetDeviceStatusbyCountry', function(req, res) {
@@ -456,7 +495,6 @@ router.get('/GetAllPetbyCountry', function(req, res) {
 router.post('/SaveGPSDevice', jsonParser, function(req, res) {
     objGPSDevice = req.body;
     objHeader = req.headers;
-
     //Set parameters for user permission
     req.query['tablename'] = req.headers['x-requested-with'];
     var token = getToken(objHeader);
@@ -489,7 +527,6 @@ router.post('/SaveGPSDevice', jsonParser, function(req, res) {
                         }
                     });
                 } else {
-
                     //set parameter
                     req.query['permission'] = "Modified";
 
@@ -500,7 +537,7 @@ router.post('/SaveGPSDevice', jsonParser, function(req, res) {
                     funAccessPermission.CheckUserAccessPermission(obj, function(responseAccessPermission) {
                         var AccessPermission = responseAccessPermission.success;
                         if (AccessPermission) {;
-                            GPSDevice.findOne({ where: { DeviceId: objGPSDevice.DeviceId }, defaults: objGPSDevice }).then(function(objGPSDeviceExit) {
+                            GPSDevice.findOne({ where: { DeviceId: objGPSDevice.DeviceId } }).then(function(objGPSDeviceExit) {
                                 if (objGPSDeviceExit != null && objGPSDevice.id != objGPSDeviceExit.id) {
                                     res.json({ success: false, message: "Tracker is already exist...", data: objGPSDeviceExit });
                                 } else {

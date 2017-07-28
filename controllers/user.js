@@ -40,6 +40,37 @@
      })
  })
 
+ router.get('/GetAllUserBySalesRole', function(req, res) {
+     User.hasMany(UserInRole, {
+         foreignKey: {
+             name: 'userId',
+             allowNull: false
+         }
+     });
+
+     UserInRole.belongsTo(Role, {
+         foreignKey: {
+             name: 'roleId',
+             allowNull: false
+         }
+     });
+
+     User.findAll({
+         include: [{
+             model: UserInRole,
+             include: [{
+                 model: Role,
+                 where: { RoleName: 'Sales Agent' }
+             }]
+         }],
+         order: 'createddate'
+     }).then(function(response) {
+         res.json(response);
+     }).catch(function(error) {
+         res.json(error);
+     })
+ })
+
  router.get('/GetFirstUserSequelize', function(req, res) {
      User.findOne().then(function(response) {
          var obj = new Object();
@@ -2091,15 +2122,25 @@
      if (CountryList == undefined || CountryList == null || CountryList == "") {
          CountryList = [];
      }
-     var UserRoles = objParam.UserRoles;
+
      var Orderby = objColumns[parseInt(objOrder[0].column)].data + ' ' + objOrder[0].dir;
      var search = {};
      var search1 = {};
      var search2 = {};
+     var searchUser = {};
      search1['$and'] = [];
-
+     searchUser['$and'] = [];
      var IsUserSuperAdmin = false;
      var IsCountryAll = false;
+
+     var UserRoles = objParam.UserRoles;
+     if (UserRoles == "Sales Agent") {
+         var UserId = objParam.UserId;
+         var obj = new Object();
+         obj['idSalesAgent'] = { $eq: parseInt(UserId) }
+         console.log(obj);
+         searchUser['$and'].push(obj);
+     }
 
      if (UserRoles.length > 0) {
 
@@ -2135,8 +2176,8 @@
                          };
                      };
                  }
-
-                 search1['$and'].push(search2)
+                 console.log(searchUser);
+                 search1['$and'].push(search2);
 
                  User.hasMany(Vehicle, {
                      foreignKey: {
@@ -2144,6 +2185,7 @@
                          allowNull: false
                      }
                  });
+                 console.log("=================================================================0");
                  User.findAndCountAll({
                      required: true,
                      where: search1,
@@ -2155,14 +2197,16 @@
                          attributes: [
                              [('DISTINCT', models.sequelize.col('iduser')), 'iduser']
                          ],
-                         where: {
+                         where: [searchUser, {
                              IsDelete: 0,
                              deviceid: {
-                                 $ne: ''
+                                 $ne: '',
                              }
-                         },
+                         }],
                      }],
                  }).then(function(response) {
+                     console.log("=================================================================1");
+                     console.log(response);
                      var response1 = new Object();
                      response1.draw = objParam.draw;
                      response1.recordsTotal = response.count;

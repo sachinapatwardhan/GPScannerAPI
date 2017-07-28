@@ -39,6 +39,26 @@ module.exports = function(sequelize, DataTypes) {
         model: 'tblcountrymgmt',
         key: 'id'
       }
+    },
+    TelCoId: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true,
+      references: {
+        model: 'tbltelco',
+        key: 'id'
+      }
+    },
+    SimNum: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    idSalesAgent: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true,
+      references: {
+        model: 'tbluserinformation',
+        key: 'id'
+      }
     }
   }, {
     tableName: 'tblgpsdevice'
