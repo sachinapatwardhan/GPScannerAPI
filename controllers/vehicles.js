@@ -42,7 +42,7 @@ router.get('/GetAllDynamicVehicle', function(req, res) {
 
 
 
-    var qry = "Select Vehicle.*, " +
+    var qry = "Select vehicle.*, " +
         "user.username AS username " +
         "FROM tblvehicle AS vehicle " +
         "LEFT JOIN tbluserinformation AS user ON vehicle.iduser = user.id " + search +
