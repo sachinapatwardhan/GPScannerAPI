@@ -32,7 +32,6 @@ router.get('/GetCurrentCountry', function(req, res) {
         url: 'http://freegeoip.net/json/' + req.connection.remoteAddress,
     }, function(error, response, body) {
         var data = eval('(' + body + ')');
-        console.log(data)
         var objCurrentCountry = data
         res.json(objCurrentCountry);
     })
@@ -116,7 +115,7 @@ router.post('/SaveCountry', jsonParser, function(req, res) {
 
                             Country.findOrCreate({ where: { Country: objCountry.Country }, defaults: objCountry }).then(function(response) {
                                 if ((response[1])) {
-                                    funAuditLog.CreateAuditLog('SaveCountry', UserExist.username , 'Create Country');
+                                    funAuditLog.CreateAuditLog('SaveCountry', UserExist.username, 'Create Country');
                                     res.json({ success: true, message: "Country created successfully...", data: response });
                                 } else {
                                     res.json({ success: false, message: "Country is already Exist...", data: response });
@@ -141,13 +140,12 @@ router.post('/SaveCountry', jsonParser, function(req, res) {
                         if (AccessPermission) {
 
                             Country.findOne({ where: { Country: objCountry.Country }, defaults: objCountry }).then(function(objCountryExist) {
-                                console.log(objCountryExist);
                                 if (objCountryExist != null && objCountry.id != objCountryExist.id) {
                                     res.json({ success: false, message: "Country is already Exist...", data: objCountryExist });
                                 } else {
                                     Country.update(objCountry, { where: { id: objCountry.id } }).then(function(response) {
                                         if (response[0]) {
-                                            funAuditLog.CreateAuditLog('SaveCountry', UserExist.username , 'Update Country');
+                                            funAuditLog.CreateAuditLog('SaveCountry', UserExist.username, 'Update Country');
                                             res.json({ success: true, message: "Country updated successfully...", data: response });
                                         }
                                     })
@@ -195,7 +193,7 @@ router.get('/DeleteCountry', function(req, res) {
                                             if (resState == null && resAddress == null && resBillingAddress == null && resDeliveryAddress == null && resOrder == null) {
                                                 Country.destroy({ where: { id: req.query.idCountry } }).then(function(response) {
                                                     if (response) {
-                                                        funAuditLog.CreateAuditLog('DeleteCountry', UserExist.username , 'Delete Country');
+                                                        funAuditLog.CreateAuditLog('DeleteCountry', UserExist.username, 'Delete Country');
                                                         res.json({ success: true, message: "Country deleted successfully...", data: response });
                                                     } else {
                                                         res.json({ success: false, message: "Requested Country not Exist...", data: response });

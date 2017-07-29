@@ -30,11 +30,10 @@ Date.prototype.addDays = function(days) {
     return this;
 };
 router.get('/GetAllWorkingBike', jsonParser, function(req, res) {
-    connection.query("SELECT  tb.id,tb.deviceid,tb.bikeimageURl,tb.bikeNumber,tb.IsOnline, tpg.Latitude,tpg.Longtitude,tpg.Datetime, tpg.Id, tpg.Speed FROM tblbike tb INNER JOIN tblgpsscanner tpg ON tb.deviceid=tpg.DeviceId INNER JOIN (SELECT DeviceId,MAX(Id) Id FROM tblgpsscanner GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId AND tpg.Id = b.Id WHERE IsDelete=false and IsOnline=1;", function(err, rows, fields) {
+    connection.query("SELECT tb.id,tb.deviceid,tb.Name,tb.IsOnline, tpg.Latitude,tpg.Longtitude,tpg.Datetime, tpg.Id, tpg.Speed FROM tblvehicle tb INNER JOIN tblgpsdata tpg ON tb.deviceid=tpg.DeviceId INNER JOIN (SELECT DeviceId,MAX(Id) Id FROM tblgpsdata GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId AND tpg.Id = b.Id WHERE IsDelete=false;", function(err, rows, fields) {
         if (!err) {
             res.json({ success: true, data: rows });
         } else {
-
             res.json({ success: false, data: [] });
         }
     })
@@ -48,7 +47,6 @@ router.get('/GetTotalCustomerByCountry', function(req, res) {
             allowNull: false
         }
     });
-    // console.log("======================================================")
     Vehicle.findAll({
         where: {
             IsDelete: '0',
@@ -66,7 +64,6 @@ router.get('/GetTotalCustomerByCountry', function(req, res) {
         group: ['country', 'Type'],
         order: 'country',
     }).then(function(resUser) {
-        // console.log("======================================================")
         if (resUser != null) {
             res.json({
                 success: true,
@@ -530,7 +527,6 @@ router.get('/GetBikeTotalDevice', function(req, res) {
                 where: search1
             }]
         }).then(function(respet) {
-            //console.log("respet", respet.rows);
             var bal_device = respetdevice - respet.count;
             res.json({ DeviceStatus: respet.rows, BalanceDevice: bal_device });
         })

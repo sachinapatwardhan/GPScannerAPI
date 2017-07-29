@@ -45,7 +45,7 @@ router.get('/GetAllEnquiry', function(req, res) {
         for (var i = 0; i < objColumns.length; i++) {
             if (objColumns[i].data != null && objColumns[i].data != '') {
                 var columnName = objColumns[i].data;
-                
+
                 if (columnName == 'Detail') {
                     var obj = new Object();
                     obj['Name'] = {
@@ -101,7 +101,6 @@ router.get('/GetAllEnquiry', function(req, res) {
         search['$and'].push(obj);
     } else if (EndDate != null && EndDate != '') {
         EndDate = convertdateformat(EndDate, 1);
-        console.log(EndDate);
         var obj = new Object();
         obj['CreatedOn'] = {
             $lt: EndDate
@@ -116,8 +115,7 @@ router.get('/GetAllEnquiry', function(req, res) {
         offset: parseInt(objParam.start),
         limit: parseInt(objParam.length),
     }).then(function(response) {
-        console.log(response)
-            // res.json({ success: true, response: response });
+        // res.json({ success: true, response: response });
         var response1 = new Object();
         response1.draw = objParam.draw;
         response1.recordsTotal = response.count;

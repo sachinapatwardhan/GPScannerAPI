@@ -13,7 +13,6 @@ router.get('/GetAllCompany', function(req, res) {
 
 router.post('/SaveCompany', jsonParser, function(req, res) {
     objTelCo = req.body;
-    console.log(objTelCo);
     objHeader = req.headers;
     req.query['tablename'] = req.headers['x-requested-with'];
 

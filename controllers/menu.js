@@ -152,12 +152,9 @@ router.post('/CreateBulkMenuStructure', jsonParser, function(req, res) {
 
                         function uploader(i) {
                             if (i < lstMenuStructure.length) {
-                                console.log(i);
                                 if (lstMenuStructure[i].ParentId > 0) {
                                     MenuStructure.findOne({ where: { idMenu: MenuId, idType: lstMenuStructure[i].ParentId, Type: lstMenuStructure[i].Type } }).then(function(results) {
-                                        console.log(results)
                                         if (results != null && results != undefined) {
-                                            console.log(results)
                                             lstMenuStructure[i].idParent = results.id;
                                         } else {
                                             var objMenudata = u.findWhere(lstMenuStructure, { idType: lstMenuStructure[i].ParentId, Type: lstMenuStructure[i].ParentType });

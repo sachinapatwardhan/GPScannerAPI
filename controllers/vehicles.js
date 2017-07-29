@@ -5,6 +5,7 @@ var User = models.tbluserinformation;
 var Vehicle = models.tblvehicle;
 var UserInRole = models.tbluserinrole;
 var DrivingData = models.tbldrivingdata;
+var GPSData = models.tblgpsdata;
 //End of Tables
 
 router.get('/GetAllDynamicVehicle', function(req, res) {
@@ -208,7 +209,6 @@ router.get('/DeleteVehicle', function(req, res) {
 });
 
 router.get('/GetAllVehicleByUser', function(req, res) {
-    console.log(req.query);
     if (req.query.iduser != null || req.query.iduser != undefined) {
 
         var search = {};
@@ -244,7 +244,6 @@ router.get('/GetAllVehicleByUser', function(req, res) {
 })
 
 router.get('/GetAllVehicleById', function(req, res) {
-    console.log(req.query);
     if (req.query.id != null || req.query.id != undefined) {
         var search = {};
 
@@ -261,8 +260,6 @@ router.get('/GetAllVehicleById', function(req, res) {
             $eq: false
         };
         search['$and'].push(obj);
-        // console.log(search);
-        // console.log("===============================================")
         Vehicle.findOne({
             where: search,
         }).then(function(response) {
@@ -291,5 +288,40 @@ router.get('/GetDrivingDataByDeviceId', function(req, res) {
     })
 
 })
+
+router.get('/GetVehicleCurrentLocation', function(req, res) {
+
+    var Startdate = new Date();
+
+    var convertDate = convertdateformatForUnix(Startdate);
+    var unixStartdate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
+
+    GPSData.findOne({
+        where: {
+            DeviceId: req.query.DeviceId,
+            Date: { $lte: unixStartdate }
+        },
+        order: 'id DESC'
+    }).then(function(response) {
+        if (response != null) {
+            res.json({ success: true, data: response });
+        } else {
+            res.json(RecordNotFound);
+        }
+    })
+});
+
+function convertdateformatForUnix(date1) {
+    var date = new Date(date1);
+    var firstdayMonth = date.getMonth() + 1;
+    var firstdayDay = date.getDate();
+    var firstdayYear = date.getFullYear();
+    var firstdayHours = date.getHours();
+    var firstdayMinutes = date.getMinutes();
+    var firstdaySeconds = date.getSeconds();
+
+    return ("00" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("0000" + firstdayDay.toString()).slice(-2) + " " + ("00" + firstdayHours.toString()).slice(-2) + ':' + ("00" + firstdayMinutes.toString()).slice(-2) + ':' + ("00" + firstdaySeconds.toString()).slice(-2);
+
+}
 
 module.exports = router

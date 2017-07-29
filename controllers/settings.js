@@ -103,7 +103,6 @@ router.get('/GetAllTaxSetting', function(req, res) {
 })
 
 router.get('/GetTaxSettingByName', function(req, res) {
-    console.log(req.query.TaxSettingName);
     TaxSetting.findOne({ where: { Name: req.query.TaxSettingName } }).then(function(response) {
         if (response != null) {
             res.json({ success: true, message: "Record found...", data: response });
@@ -114,7 +113,6 @@ router.get('/GetTaxSettingByName', function(req, res) {
 })
 
 router.get('/GetSettingByName', function(req, res) {
-    console.log(req.query.SettingName);
     TaxSetting.findAll({ where: { Name: { $like: '%' + req.query.SettingName + '%' } } }).then(function(response) {
         res.json(response);
     })

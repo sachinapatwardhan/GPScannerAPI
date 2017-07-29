@@ -137,7 +137,6 @@ router.get('/GetAllGPSDevice', function(req, res) {
                         required: false,
                     }],
                 }).then(function(response) {
-                    // console.log("========================================================================1");
                     var response1 = new Object();
                     response1.draw = objParam.draw;
                     response1.recordsTotal = response.count;

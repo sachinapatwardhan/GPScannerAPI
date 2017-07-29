@@ -150,7 +150,6 @@ router.get('/GetAllAlarm', function(req, res) {
         response1.data = response.rows;
         res.json(response1);
     }).catch(function(error) {
-        console.log(error)
         res.json(error);
     })
 })
