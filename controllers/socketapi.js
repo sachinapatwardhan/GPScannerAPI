@@ -717,7 +717,7 @@ global.Command9955 = function(line, Callback) {
                                         longitude: parseFloat(Longtitude)
                                     }
 
-                                    // var IsPetInFence = true;
+                                    var IsPetInFence = true;
 
                                     if (response.fencedraw == "circle") {
                                         var CircleCenterPoints = {
@@ -725,7 +725,7 @@ global.Command9955 = function(line, Callback) {
                                             longitude: parseFloat(response.lng)
                                         }
                                         var CircleRadius = parseFloat(response.range);
-                                        rows[j].IsPetInFence = geolib.isPointInCircle(CheckPoints, CircleCenterPoints, CircleRadius)
+                                        IsPetInFence = geolib.isPointInCircle(CheckPoints, CircleCenterPoints, CircleRadius)
                                     } else if (response.fencedraw == "polygon" || response.fencedraw == "polyline") {
                                         var lstpolygonDrawC = [];
                                         var lstlatC = response.lat.split(',');
@@ -738,7 +738,7 @@ global.Command9955 = function(line, Callback) {
                                             }
                                             lstpolygonDrawC.push(objDraw);
                                         }
-                                        rows[j].IsPetInFence = geolib.isPointInside(CheckPoints, lstpolygonDrawC)
+                                        IsPetInFence = geolib.isPointInside(CheckPoints, lstpolygonDrawC)
                                     } else if (response.fencedraw == "rectangle") {
                                         var lstpolygonDrawC = [];
                                         var lstlatC = response.lat.split(',');
@@ -770,16 +770,16 @@ global.Command9955 = function(line, Callback) {
                                         }
                                         lstpolygonDrawC.push(objDraw);
 
-                                        rows[j].IsPetInFence = geolib.isPointInside(CheckPoints, lstpolygonDrawC)
+                                        IsPetInFence = geolib.isPointInside(CheckPoints, lstpolygonDrawC)
                                     };
 
                                     // console.log("Fence Last State = " + objBike.IsInFence)
                                     // console.log("Fence Current State = " + IsPetInFence)
-                                    if (rows[j].IsPetInFence != rows[j].IsInFence && rows[j].IsFenceOnline) {
+                                    if (IsPetInFence != rows[j].IsInFence && rows[j].IsFenceOnline) {
                                         var AlarmCode = '6';
                                         var message = '';
 
-                                        if (rows[j].IsPetInFence == false) {
+                                        if (IsPetInFence == false) {
                                             AlarmCode = '66';
                                             if (rows[j].name != null && rows[j].name != '' && rows[j].name != undefined) {
                                                 message = objBike.Name + ' is out of ' + rows[j].name + ' Fence.';
@@ -795,7 +795,7 @@ global.Command9955 = function(line, Callback) {
                                             }
                                         }
 
-                                        connection.query('UPDATE tblfence set IsInFence=' + rows[j].IsPetInFence + ' WHERE id=' + rows[j].id, function(err, rowsFence, fields) {
+                                        connection.query('UPDATE tblfence set IsInFence=' + IsPetInFence + ' WHERE id=' + rows[j].id, function(err, rowsFence, fields) {
                                             console.log(err)
                                             var Alarmquery = "INSERT INTO tblalarm (Datetime,Latitude,Longtitude,GPSPositioning,Speed,Direction,Status,DeviceId,AlarmCode,CreatedDate ) VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longtitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + inputoutputSTatus + "', '" + DeviceId + "','" + alarmcode + "','" + CurrentDate + "');";
                                             // var Alarmquery = "INSERT INTO tblalarm (Datetime,Latitude,Longtitude,GPSPositioning,Speed,Direction,Status,ReservedSign,ReservedSelection,DeviceId,AlarmCode ) VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longtitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + Status + "', '" + Sign + "', '" + ReserveSection + "', '" + deviceID + "','" + AlarmCode + "');";
