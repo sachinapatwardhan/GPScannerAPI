@@ -5,6 +5,7 @@ var Fence = models.tblfence;
 var PetGPS = models.tblgpsdata;
 var Bike = models.tblvehicle;
 var CanbusData = models.tblcanbusdata;
+var DrivingData = models.tbldrivingdata;
 router.get('/GetAllBike', function(req, res) {
     Vehicle.findAll( /*{ order: 'bikeNumber desc' }*/ ).then(function(response) {
         res.json(response);
@@ -18,7 +19,7 @@ router.post('/GetPath', jsonParser, function(req, res) {
     console.log("@@...", objTask);
 
 
-    var query = "Select * from tblgpsdata where DATE(tblgpsdata.Datetime) >= '" + convertdateformat(objTask.StartDate) + "' and DATE(tblgpsdata.Datetime)<='" + convertdateformat(objTask.EndDate) + "' and TIME(tblgpsdata.Datetime)>='" + convertdateformat(objTask.StartTime, 1) + "' and  TIME(tblgpsdata.Datetime)<='" + convertdateformat(objTask.EndTime, 1) + "' and DeviceId='" + objTask.DeviceId + "' order by DateTime asc";
+    var query = "Select tblgpsdata.* ,tblvehicle.Name from tblgpsdata, tblvehicle where tblvehicle.deviceid = tblgpsdata.DeviceId and  DATE(tblgpsdata.Datetime) >= '" + convertdateformat(objTask.StartDate) + "' and DATE(tblgpsdata.Datetime)<='" + convertdateformat(objTask.EndDate) + "' and TIME(tblgpsdata.Datetime)>='" + convertdateformat(objTask.StartTime, 1) + "' and  TIME(tblgpsdata.Datetime)<='" + convertdateformat(objTask.EndTime, 1) + "' and tblgpsdata.DeviceId='" + objTask.DeviceId + "' order by DateTime asc";
     console.log(query);
     connection.query(query, function(err, response) {
         if (response != undefined && response != null && response.length != 0) {
@@ -31,6 +32,7 @@ router.post('/GetPath', jsonParser, function(req, res) {
     })
 
 });
+
 router.get('/ExportReport', function(req, res) {
     objTask = req.query;
     var conf = {};
@@ -429,6 +431,17 @@ router.get('/GetFenceByPet', function(req, res) {
 router.get('/GetAllCanvasData', function(req, res) {
 
     CanbusData.findOne({
+        where: { DeviceId: req.query.DeviceId },
+        order: 'CreatedDate desc',
+    }).then(function(response) {
+        res.json(response);
+    }).catch(function(error) {
+        res.json(error);
+    })
+});
+router.get('/GetAllDrivingData', function(req, res) {
+
+    DrivingData.findOne({
         where: { DeviceId: req.query.DeviceId },
         order: 'CreatedDate desc',
     }).then(function(response) {
