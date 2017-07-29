@@ -454,6 +454,8 @@ app.use('/PetDevice', require('./controllers/PetDevice'))
 app.use('/gpsdata', require('./controllers/gpsdata'))
 app.use('/canbusdata', require('./controllers/canbusdata'))
 app.use('/telco', require('./controllers/telco'))
+app.use('/MapData', require('./controllers/MapData'))
+app.use('/homepage', require('./controllers/homepage'))
 
 //socket API End
 
