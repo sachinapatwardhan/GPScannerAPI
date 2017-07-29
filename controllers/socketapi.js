@@ -700,7 +700,7 @@ global.Command9955 = function(line, Callback) {
 
         connection.query("SELECT * from tblfence where deviceId=" + DeviceId, function(err, rows, fields) {
             if (!err && rows.length > 0) {
-                connection.query("SELECT * from tblvehicle where deviceid=" + DeviceId + " and IsDeleted=false", function(err, Bikerows, fields) {
+                connection.query("SELECT * from tblvehicle where deviceid=" + DeviceId + " and IsDelete=false", function(err, Bikerows, fields) {
                     if (!err && Bikerows.length > 0) {
                         var objBike = Bikerows[0];
                         if (Position == 'A') {
@@ -996,13 +996,13 @@ global.Command9999 = function(line, Callback) {
     //                         // connection.query("Update tblbike set IsWireCut=true where deviceid=" + DeviceId, function (err1, rows, fields) {
 
     //                         //     if (!err) {
-    //                         connection.query("SELECT * from tblbike where deviceid=" + DeviceId + " and IsDeleted=false", function(err, Petrows, fields) {
+    //                         connection.query("SELECT * from tblbike where deviceid=" + DeviceId + " and IsDelete=false", function(err, Petrows, fields) {
     //                             if (!err && Petrows.length > 0) {
     //                                 var objPet = Petrows[0];
 
     //                                 // if (flgIsMaxSpeedNotification == true) {
-    //                                 console.log(objPet.IsDeleted.toString('hex'));
-    //                                 if (objPet.IsDeleted.toString('hex') == '00') {
+    //                                 console.log(objPet.IsDelete.toString('hex'));
+    //                                 if (objPet.IsDelete.toString('hex') == '00') {
     //                                     var PushNotificationdata = {
     //                                         title: 'Alert',
     //                                         message: 'Vehicle ' + objPet.Name + 'Max Speed alert! Please check!',
@@ -1099,13 +1099,13 @@ global.Command9999 = function(line, Callback) {
     //                 // connection.query("Update tblbike set IsWireCut=true where deviceid=" + DeviceId, function (err1, rows, fields) {
 
     //                 // if (!err) {
-    //                 connection.query("SELECT * from tblbike where deviceid=" + DeviceId + " and IsDeleted=false", function(err, Petrows, fields) {
+    //                 connection.query("SELECT * from tblbike where deviceid=" + DeviceId + " and IsDelete=false", function(err, Petrows, fields) {
     //                     if (!err && Petrows.length > 0) {
 
     //                         var objPet = Petrows[0];
     //                         // if (flgIsNotification == true) {
-    //                         console.log(objPet.IsDeleted.toString('hex'));
-    //                         if (objPet.IsDeleted.toString('hex') == '00') {
+    //                         console.log(objPet.IsDelete.toString('hex'));
+    //                         if (objPet.IsDelete.toString('hex') == '00') {
     //                             var PushNotificationdata = {
     //                                 title: 'Alert',
     //                                 message: 'Vehicle ' + objPet.Name + ' Vibrating alert! Please check!',
@@ -1177,11 +1177,11 @@ global.Command9999 = function(line, Callback) {
     //                 // connection.query("Update tblbike set IsWireCut=true where deviceid=" + DeviceId, function (err1, rows, fields) {
 
     //                 // if (!err) {
-    //                 connection.query("SELECT * from tblbike where deviceid=" + DeviceId + " and IsDeleted=false", function(err, Petrows, fields) {
+    //                 connection.query("SELECT * from tblbike where deviceid=" + DeviceId + " and IsDelete=false", function(err, Petrows, fields) {
     //                     if (!err && Petrows.length > 0) {
     //                         var objPet = Petrows[0];
-    //                         console.log(objPet.IsDeleted.toString('hex'));
-    //                         if (objPet.IsDeleted.toString('hex') == '00') {
+    //                         console.log(objPet.IsDelete.toString('hex'));
+    //                         if (objPet.IsDelete.toString('hex') == '00') {
     //                             var PushNotificationdata = {
     //                                 title: 'Alert',
     //                                 message: 'Vehicle ' + objPet.Name + ' Wire Cut alert! Please check!',
@@ -1252,11 +1252,11 @@ global.Command9999 = function(line, Callback) {
     //                 // connection.query("Update tblbike set IsWireCut=true where deviceid=" + DeviceId, function (err1, rows, fields) {
 
     //                 // if (!err) {
-    //                 connection.query("SELECT * from tblbike where deviceid=" + DeviceId + " and IsDeleted=false", function(err, Petrows, fields) {
+    //                 connection.query("SELECT * from tblbike where deviceid=" + DeviceId + " and IsDelete=false", function(err, Petrows, fields) {
     //                     if (!err && Petrows.length > 0) {
     //                         var objPet = Petrows[0];
-    //                         console.log(objPet.IsDeleted.toString('hex'));
-    //                         if (objPet.IsDeleted.toString('hex') == '00') {
+    //                         console.log(objPet.IsDelete.toString('hex'));
+    //                         if (objPet.IsDelete.toString('hex') == '00') {
     //                             var PushNotificationdata = {
     //                                 title: 'Alert',
     //                                 message: 'Vehicle ' + objPet.Name + ' SOS alert! Please check!',
@@ -2870,7 +2870,7 @@ router.get('/UpdateDeviceStatus', function(req, res) {
     var Status = req.query.Status;
     // var Status = true;
 
-    connection.query("SELECT * from tblvehicle where deviceid=" + DeviceId + " and IsDeleted=false", function(err, Vehiclerows, fields) {
+    connection.query("SELECT * from tblvehicle where deviceid=" + DeviceId + " and IsDelete=false", function(err, Vehiclerows, fields) {
         //tblPetgps Entry
         if (!err && Vehiclerows.length > 0) {
             var objVehicle = Vehiclerows[0];
@@ -2883,7 +2883,7 @@ router.get('/UpdateDeviceStatus', function(req, res) {
                 var query = "Update tblvehicle set IsOnline=" + Status + " where deviceid='" + DeviceId + "';";
                 connection.query(query, function(err, rows, fields) {
                     //tblapisresponse Entry
-                    // if (objVehicle.IsDeleted == false) {
+                    // if (objVehicle.IsDelete == false) {
                     //     if (!Status) {
                     //         var PushNotificationdata = {
                     //             title: 'Alert',
@@ -2994,7 +2994,7 @@ var IsOnlineDeviceCheck = schedule.scheduleJob(rule, function() {
                             if (objVehicleExistOnline && objVehicleExistOnline.IsOnline) {
                                 objVehicleExistOnline.updateAttributes({ IsOnline: false }).then(function(resUpdate) {
 
-                                    if (objVehicleExistOnline.IsDeleted == false) {
+                                    if (objVehicleExistOnline.IsDelete == false) {
                                         var PushNotificationdata = {
                                             title: 'Alert',
                                             message: 'Vehicle ' + objVehicleExistOnline.Name + ' Device offline alert! Please check!',
@@ -3032,7 +3032,7 @@ var IsOnlineDeviceCheck = schedule.scheduleJob(rule, function() {
                     }).then(function(objVehicleExistOnline) {
                         if (objVehicleExistOnline && objVehicleExistOnline.IsOnline) {
                             objVehicleExistOnline.updateAttributes({ IsOnline: false }).then(function(resUpdate) {
-                                if (objVehicleExistOnline.IsDeleted == false) {
+                                if (objVehicleExistOnline.IsDelete == false) {
                                     var PushNotificationdata = {
                                         title: 'Alert',
                                         message: 'Vehicle ' + objVehicleExistOnline.Name + ' Device offline alert! Please check!',
