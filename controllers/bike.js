@@ -1609,7 +1609,7 @@ router.get('/GetAllGPSByTimeZoneDate', function(req, res) {
     var unixEnddate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
 
 
-    var query = "select Id,Datetime, Latitude, Longtitude, GPSPositioning, Speed, Direction, DeviceId, Date from tblgpsdata where deviceid=" + req.query.DeviceId + " and GPSPositioning='A' and Date >= '" + unixStartdate + "' and Date <= '" + unixEnddate + "' order by Datetime;"
+    var query = "select Id,Datetime, Latitude, Longtitude, GPSPositioning, Speed, Direction, DeviceId,IsEngine, Date from tblgpsdata where deviceid=" + req.query.DeviceId + " and GPSPositioning='A' and Date >= '" + unixStartdate + "' and Date <= '" + unixEnddate + "' order by Datetime;"
     connection.query(query, function(err, lstGPSData, fields) {
         res.json(lstGPSData);
     });
