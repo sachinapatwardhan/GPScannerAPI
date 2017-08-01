@@ -3406,7 +3406,7 @@ router.post('/SaveVehicle', jsonParser, function(req, res) {
 });
 
 
-router.post('/UpdateVehicleName', jsonParser, function(req, res) {
+router.get('/UpdateVehicleName', jsonParser, function(req, res) {
 
     connection.query("Update tblvehicle set Name=" + req.query.Name + " where deviceid=" + req.query.DeviceId, function(err, rows, fields) {
         if (!err) {
