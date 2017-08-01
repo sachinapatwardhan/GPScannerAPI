@@ -16,11 +16,7 @@ router.get('/GetAllBike', function(req, res) {
 
 router.post('/GetPath', jsonParser, function(req, res) {
     var objTask = req.body;
-    console.log("@@...", objTask);
-
-
     var query = "Select tblgpsdata.* ,tblvehicle.Name from tblgpsdata, tblvehicle where tblvehicle.deviceid = tblgpsdata.DeviceId and  DATE(tblgpsdata.Datetime) >= '" + convertdateformat(objTask.StartDate) + "' and DATE(tblgpsdata.Datetime)<='" + convertdateformat(objTask.EndDate) + "' and TIME(tblgpsdata.Datetime)>='" + convertdateformat(objTask.StartTime, 1) + "' and  TIME(tblgpsdata.Datetime)<='" + convertdateformat(objTask.EndTime, 1) + "' and tblgpsdata.DeviceId='" + objTask.DeviceId + "' order by DateTime asc";
-    console.log(query);
     connection.query(query, function(err, response) {
         if (response != undefined && response != null && response.length != 0) {
             // console.log(response);
@@ -35,6 +31,7 @@ router.post('/GetPath', jsonParser, function(req, res) {
 
 router.get('/ExportReport', function(req, res) {
     objTask = req.query;
+    console.log(objTask);
     var conf = {};
     conf.name = "sheet1";
     conf.cols = [{
@@ -54,20 +51,21 @@ router.get('/ExportReport', function(req, res) {
         type: 'string'
     }];
 
-    var query = "Select * from tblgpsdata where DATE(tblgpsdata.Datetime) >= '" + dateformat(new Date(objTask.StartDate)) + "' and DATE(tblgpsdata.Datetime)<='" + dateformat(new Date(objTask.EndDate)) + "' and TIME(tblgpsdata.Datetime)>='" + dateformat(new Date(objTask.StartTime), 1) + "' and  TIME(tblgpsdata.Datetime)<='" + dateformat(new Date(objTask.EndTime), 1) + "' and DeviceId='" + objTask.DeviceId + "' order by DateTime asc";
+    var StartDate = dateformat(new Date(objTask.StartDate));
+    var EndDate = dateformat(new Date(objTask.EndDate));
+    var EndTime = dateformat(new Date(objTask.EndDate), 1);
+    var StartTime = dateformat(new Date(objTask.StartDate), 1)
+    console.log("End Time", EndTime);
+    console.log("Start Time", StartTime);
+    var query = "Select * from tblgpsdata where DATE(tblgpsdata.Datetime) >= '" + StartDate + "' and DATE(tblgpsdata.Datetime)<='" + EndDate + "' and TIME(tblgpsdata.Datetime)>='" + StartTime + "' and  TIME(tblgpsdata.Datetime)<='" + EndTime + "' and DeviceId='" + objTask.DeviceId + "' order by DateTime asc";
     console.log(query);
     connection.query(query, function(err, response) {
-        console.log(response);
         conf.rows = [];
         GetData(0);
 
         function GetData(i) {
-
-
             if (i < response.length) {
                 var row = [];
-
-
                 var Datetime = 'N/A';
                 var longitude = 0.00;
                 var Longtitude = 0.00;
@@ -90,7 +88,7 @@ router.get('/ExportReport', function(req, res) {
                     GPSPositioning = response[i].GPSPositioning;
                 }
                 if (response[i].Speed != null && response[i].Speed != '' && response[i].Speed != undefined) {
-                    Speed = response[i].Speed;
+                    Speed = parseFloat(response[i].Speed).toFixed(2);
                 }
                 if (response[i].Direction != null && response[i].Direction != '' && response[i].Direction != undefined) {
                     Direction = response[i].Direction;
@@ -141,7 +139,6 @@ function dateformat(date1, flg) {
 
 function convertdateformat(date1, flg) {
     var date = new Date(date1);
-    console.log(date);
     var firstdayMonth = date.getMonth() + 1;
     var firstdayDay = date.getDate();
     var firstdayYear = date.getFullYear();
@@ -175,7 +172,6 @@ router.get('/GetNotification', function(req, res) {
     }
 
     var query = "Select tblalarm.*,tblvehicle.Name  from tblalarm LEFT OUTER JOIN tblvehicle ON tblalarm.DeviceId = tblvehicle.deviceid where tblvehicle.iduser ='" + req.query.userid + "' " + where + " ORDER BY tblalarm.createddate desc;";
-    console.log(query);
     connection.query(query, function(err, response) {
         res.json(response);
 
@@ -185,18 +181,17 @@ router.get('/GetNotification', function(req, res) {
 
 router.post('/SaveFence', jsonParser, function(req, res) {
     objFence = req.body;
-    console.log(objFence)
-        // objHeader = req.headers;
-        // var token = getToken(objHeader);
-        // if (token) {
-        //     var decoded = jwt.decode(token, TokenKey);
-        //     User.findOne({
-        //         where: {
-        //             username: decoded.username,
-        //             password: decoded.password
-        //         }
-        //     }).then(function(UserExist) {
-        //         if (UserExist != null) {
+    // objHeader = req.headers;
+    // var token = getToken(objHeader);
+    // if (token) {
+    //     var decoded = jwt.decode(token, TokenKey);
+    //     User.findOne({
+    //         where: {
+    //             username: decoded.username,
+    //             password: decoded.password
+    //         }
+    //     }).then(function(UserExist) {
+    //         if (UserExist != null) {
     Fence.findOrCreate({
         where: {
             deviceId: objFence.deviceId,
@@ -204,11 +199,9 @@ router.post('/SaveFence', jsonParser, function(req, res) {
         },
         defaults: objFence
     }).then(function(response) {
-        console.log("@@@.....", response);
         if (objFence.id == 0) {
             if ((response[1])) {
                 var IsPetInFence = true;
-                console.log("ssd....");
                 PetGPS.findOne({
                     where: {
                         DeviceId: objFence.deviceId
@@ -301,7 +294,6 @@ router.post('/SaveFence', jsonParser, function(req, res) {
                 })
             }
         } else {
-            console.log("@@....");
             Fence.update(objFence, {
                 where: {
                     //deviceId: objFence.deviceId
