@@ -97,22 +97,23 @@ router.get('/GetAllAlarm', function(req, res) {
     }
     search['$and'] = [];
     var DeviceId = objParam.DeviceId;
+
     if (DeviceId != null && DeviceId != '' && DeviceId != undefined) {
-        var obj = new Object();
-        obj['DeviceId'] = {
-            $eq: DeviceId
+        var obj1 = new Object();
+        obj1['DeviceId'] = {
+            $eq: parseInt(DeviceId)
         };
-        search['$and'].push(obj);
+        search['$and'].push(obj1);
     }
 
     var AlarmCode = objParam.AlarmCode;
 
     if (AlarmCode != null && AlarmCode != undefined && AlarmCode != '') {
-        var obj = new Object();
-        obj['AlarmCode'] = {
-            $eq: AlarmCode
+        var obj2 = new Object();
+        obj2['AlarmCode'] = {
+            $eq: parseInt(AlarmCode)
         };
-        search['$and'].push(obj);
+        search['$and'].push(obj2);
     }
     var StartDate = objParam.StartDate;
     var EndDate = objParam.EndDate;
