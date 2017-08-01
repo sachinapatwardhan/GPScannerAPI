@@ -10,7 +10,7 @@ var PetTracking = models.tbldevicetracking;
 var Fence = models.tblfence;
 var UserInRole = models.tbluserinrole;
 var Role = models.tblrole;
-var PetGPS = models.tblgpsscanner;
+var PetGPS = models.tblgpsdata;
 var PetAlarm = models.tblalarm;
 var PetDevice = models.tblgpsdevice;
 var PetLogs = models.tblpetlogs;
@@ -1095,14 +1095,14 @@ router.get('/DeleteBike', function(req, res) {
         }).then(function(UserExist) {
             if (UserExist != null) {
                 if (req.query.DeviceId != '' && req.query.DeviceId != null) {
-                    Bike.findOne({
+                    Vehicle.findOne({
                         where: {
                             deviceid: req.query.DeviceId,
-                            IsDeleted: false
+                            IsDelete: false
                         }
                     }).then(function(response) {
                         if (response) {
-                            response.updateAttributes({ IsDeleted: true }).then(function(resUpdate) {
+                            response.updateAttributes({ IsDelete: true }).then(function(resUpdate) {
                                 PetGPS.destroy({ where: { DeviceId: req.query.DeviceId } }).then(function(responseGPS) {
                                     PetAlarm.destroy({ where: { DeviceId: req.query.DeviceId } }).then(function(responseAlarm) {
                                         funAuditLog.CreateAuditLog('DeleteBike', UserExist.username, 'Delete Vehicle');
@@ -1121,7 +1121,7 @@ router.get('/DeleteBike', function(req, res) {
                     })
                 } else {
                     if (req.query.BikeId != '' && req.query.BikeId != null) {
-                        Bike.destroy({ where: { id: req.query.BikeId } }).then(function(response) {
+                        Vehicle.destroy({ where: { id: req.query.BikeId } }).then(function(response) {
                             if (response) {
                                 funAuditLog.CreateAuditLog('DeleteBike', UserExist.username, 'Delete Vehicle');
                                 res.json({
