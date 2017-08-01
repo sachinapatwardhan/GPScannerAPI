@@ -729,7 +729,17 @@ router.post('/GetAllNotWorkingBike', jsonParser, function(req, res) {
 })
 
 router.post('/GetAllWorkingBike', jsonParser, function(req, res) {
-    connection.query("SELECT  tb.id,tb.deviceid,tb.Name,tb.IsOnline, tb.IsACC, tpg.Latitude,tpg.Longtitude,tpg.Datetime, tpg.Date, tpg.Id, tpg.Speed FROM tblvehicle tb INNER JOIN tblgpsdata tpg ON tb.deviceid=tpg.DeviceId INNER JOIN (SELECT DeviceId,MAX(Id) Id FROM tblgpsdata GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId AND tpg.Id = b.Id WHERE iduser=" + req.query.idUser + " and IsDelete=false;", function(err, rows, fields) {
+    connection.query("SELECT  tb.id,tb.deviceid,tb.Name,tb.IsOnline, tb.IsACC,tpg.IsEngine, tpg.Latitude,tpg.Longtitude,tpg.Datetime, tpg.Date, tpg.Id, tpg.Speed, tpg.Direction FROM tblvehicle tb INNER JOIN tblgpsdata tpg ON tb.deviceid=tpg.DeviceId INNER JOIN (SELECT DeviceId,MAX(Id) Id FROM tblgpsdata GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId AND tpg.Id = b.Id WHERE iduser=" + req.query.idUser + " and IsDelete=false;", function(err, rows, fields) {
+        if (!err) {
+            res.json({ success: true, data: rows });
+        } else {
+            res.json({ success: false, data: [] });
+        }
+    })
+})
+
+router.get('/GetAllWorkingBikeWebApp', jsonParser, function(req, res) {
+    connection.query("SELECT  tb.*,tpg.IsEngine, tpg.Latitude,tpg.Longtitude,tpg.Datetime, tpg.Date, tpg.Speed, tpg.Direction FROM tblvehicle tb INNER JOIN tblgpsdata tpg ON tb.deviceid=tpg.DeviceId INNER JOIN (SELECT DeviceId,MAX(Id) Id FROM tblgpsdata GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId AND tpg.Id = b.Id WHERE iduser=" + req.query.idUser + " and IsDelete=false;", function(err, rows, fields) {
         if (!err) {
             res.json({ success: true, data: rows });
         } else {
