@@ -182,30 +182,39 @@ router.get('/DeleteVehicleAlarm', function(req, res) {
     }
 });
 router.get('/GetVehicleAlarmByUser', function(req, res) {
+    var search = "";
+    if (search != "") {
+        search += " and tp.DeviceId = tpg.deviceid and tpg.iduser = " + req.query.UserId + " and tpg.IsDelete = 0";
+    } else {
+        search += " Where tp.DeviceId = tpg.deviceid and tpg.iduser = " + req.query.UserId + " and tpg.IsDelete = 0";
+    }
+
+    if (req.query.DeviceId != null && req.query.DeviceId != undefined && req.query.DeviceId != '-1' && req.query.DeviceId != 'All') {
+        if (search != "") {
+            search += " and tp.DeviceId = '" + req.query.DeviceId + "'";
+        } else {
+            search += " Where tp.DeviceId = '" + req.query.DeviceId + "'";
+        }
+    }
+    var query = "select tp.Id,tp.CreatedDate,tp.Datetime,tp.DeviceId,tp.Speed,tp.AlarmCode, tpg.id,tpg.Name from tblalarm tp inner join tblvehicle tpg";
+    query += search;
 
     var limit = 10;
     if (req.query.limit != undefined && req.query.limit != null) {
         limit = req.query.limit;
     }
+
     var offset = (parseInt(req.query.page) * limit);
-    connection.query("select  tp.Id,tp.CreatedDate,tp.Datetime,tp.DeviceId,tp.Speed,tp.AlarmCode, tpg.id,tpg.Name from tblalarm tp inner join tblvehicle tpg where tp.DeviceId = tpg.deviceid and tpg.iduser = " + req.query.UserId + " and tpg.IsDelete = 0 order by tp.Id DESC limit " + limit + " OFFSET " + offset, function(err, rows, fields) {
+
+    query += " order by tp.Id DESC limit " + limit + " OFFSET " + offset;
+
+    connection.query(query, function(err, rows, fields) {
         if (!err) {
             res.json({ success: true, data: rows });
         } else {
             res.json({ success: false, data: [] });
         }
     })
-
-    // PetAlarm.findAll({
-    //     where: {
-    //         DeviceId: req.query.DeviceId
-    //     },
-    //     offset: offset,
-    //     limit: 10,
-    //     order: 'Id DESC'
-    // }).then(function(response) {
-    //     res.json(response);
-    // })
 })
 
 function GetCurrentDate() {
