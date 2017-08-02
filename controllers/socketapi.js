@@ -677,7 +677,7 @@ global.Command9955 = function(line, Callback) {
                 Position: Position,
                 Speed: Speed,
                 Deviceid: DeviceId,
-                Latitute: Latitude,
+                Latitude: Latitude,
                 Longitude: Longitude,
                 Direction: Direction,
                 IsRelayToStopTheCar: IsRelayToStopTheCar,
@@ -987,7 +987,7 @@ global.Command9999 = function(line, Callback) {
     //                             Position: Position,
     //                             Speed: Speed,
     //                             Deviceid: DeviceId,
-    //                             Latitute: Latitude,
+    //                             Latitude: Latitude,
     //                             Longitude: Longitude,
     //                             Direction: Direction,
     //                         }
@@ -1090,7 +1090,7 @@ global.Command9999 = function(line, Callback) {
     //                     Position: Position,
     //                     Speed: Speed,
     //                     Deviceid: DeviceId,
-    //                     Latitute: Latitude,
+    //                     Latitude: Latitude,
     //                     Longitude: Longitude,
     //                     Direction: Direction,
     //                 }
@@ -1168,7 +1168,7 @@ global.Command9999 = function(line, Callback) {
     //                     Position: Position,
     //                     Speed: Speed,
     //                     Deviceid: DeviceId,
-    //                     Latitute: Latitude,
+    //                     Latitude: Latitude,
     //                     Longitude: Longitude,
     //                     Direction: Direction,
     //                 }
@@ -1243,7 +1243,7 @@ global.Command9999 = function(line, Callback) {
     //                     Position: Position,
     //                     Speed: Speed,
     //                     Deviceid: DeviceId,
-    //                     Latitute: Latitude,
+    //                     Latitude: Latitude,
     //                     Longitude: Longitude,
     //                     Direction: Direction,
     //                 }
@@ -2942,7 +2942,7 @@ router.get('/UpdateDeviceStatus', function(req, res) {
 
     // var objConnection = {
     //     Deviceid: deviceID,
-    //     Latitute: Latitude,
+    //     Latitude: Latitude,
     //     Longitude: Longitude,
     // }
     // io.sockets.emit('BikeRoute', JSON.stringify(objConnection));
