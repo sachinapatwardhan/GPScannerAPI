@@ -753,7 +753,6 @@ router.post('/CheckWebUserExistWithOTPsend', jsonParser, function(req, res) {
                     });
 
                     res1.on('end', function() {
-                        console.log(JSON.parse(responseData));
                         res.json({
                             success: true,
                             message: "Record found...",
@@ -1014,7 +1013,6 @@ router.get('/forgotpasswordfromOwnerCustomer', function(req, res) {
             SystemEmail.findOne().then(function(objSystemEmail) {
 
                 var NewPassword = customPassword();
-                console.log(NewPassword);
                 var EncryptNewpassword = jwt.encode(NewPassword, "bugz");
                 var flgIsUpdate = false;
 
@@ -1050,7 +1048,6 @@ router.get('/forgotpasswordfromOwnerCustomer', function(req, res) {
 
                                         transporter.sendMail(mail, function(error, response) {
                                             if (error) {
-                                                console.log(error);
                                                 res.json(error);
                                             } else {
                                                 funAuditLog.CreateAuditLog('forgotpassword', objUser.username, 'forgot User Password');
@@ -1105,7 +1102,6 @@ router.get('/forgotpasswordfromOwnerCustomer', function(req, res) {
 //Start Mobile App
 
 router.get('/MobileAppLogin', jsonParser, function(req, res) {
-    console.log(req.query);
     var Encryptpassword = jwt.encode(req.query.password, "bugz");
     // var search = {};
     // search['$or'] = [];
@@ -1140,7 +1136,6 @@ router.get('/MobileAppLogin', jsonParser, function(req, res) {
             password: Encryptpassword,
         }
     }).then(function(response) {
-        console.log(response);
         if (response != null) {
             UserInRole.belongsTo(Role, {
                 foreignKey: {
@@ -1330,7 +1325,6 @@ router.post('/MobileRegister', jsonParser, function(req, res) {
                                     }
                                 })
                             }).catch(function(error) {
-                                console.log("errrrrrrrrr", error);
                                 res.json({
                                     success: false,
                                     message: "User Registration Failed..."
@@ -1417,7 +1411,6 @@ router.get('/MobileForgotPassword', function(req, res) {
 
 router.post('/changeMobileUserPassword', jsonParser, function(req, res) {
     objUser = req.body;
-    console.log(objUser)
     var EncryptOldpassword = jwt.encode(objUser.password, "bugz");
     var EncryptNewpassword = jwt.encode(objUser.NewPassword, "bugz");
 

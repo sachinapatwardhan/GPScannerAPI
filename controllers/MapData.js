@@ -51,18 +51,36 @@ router.get('/ExportReport', function(req, res) {
         caption: 'Direction',
         type: 'string'
     }];
-    var StartDate = dateformat(new Date(objTask.StartDate));
-    var EndDate = dateformat(new Date(objTask.EndDate));
-    var EndTime = dateformat(new Date(objTask.EndDate), 1);
-    var StartTime = dateformat(new Date(objTask.StartDate), 1)
-    var query = "Select * from tblgpsdata where DATE(tblgpsdata.Datetime) >= '" + StartDate + "' and DATE(tblgpsdata.Datetime)<='" + EndDate + "' and TIME(tblgpsdata.Datetime)>='" + StartTime + "' and  TIME(tblgpsdata.Datetime)<='" + EndTime + "' and DeviceId='" + objTask.DeviceId + "' order by DateTime asc";
+    var Startdate = objTask.StartDate;
+    var Enddate = objTask.EndDate;
+
+    var convertDate = convertdateformatForUnix(Startdate);
+    var unixStartdate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
+
+    var convertDate = convertdateformatForUnix(Enddate);
+    var unixEnddate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
+
+
+    var query = "select Id,Datetime, Latitude, Longitude, GPSPositioning, Speed, Direction, DeviceId,IsEngine, Date from tblgpsdata where deviceid=" + req.query.DeviceId + " and GPSPositioning='A' and Date >= '" + unixStartdate + "' and Date <= '" + unixEnddate + "' order by Datetime;"
 
     connection.query(query, function(err, response) {
         conf.rows = [];
         GetData(0);
+        var COuntEngineOff = 0;
+        for (var i = 0; i < response.length; i++) {
+            if (response[i].IsEngine == true) {
+                COuntEngineOff = 0;
+                $scope.lstTemp.push(response[i]);
+            } else {
+                if (COuntEngineOff == 0) {
+                    $scope.lstTemp.push(response[i]);
+                }
+                COuntEngineOff = COuntEngineOff + 1;
+            }
+        }
 
         function GetData(i) {
-            if (i < response.length) {
+            if (i < $scope.lstTemp.length) {
                 var row = [];
                 var Datetime = 'N/A';
                 var longitude = 0.00;
@@ -72,25 +90,25 @@ router.get('/ExportReport', function(req, res) {
                 var Direction = 0.00;
 
 
-                if (response[i].Datetime != null && response[i].Datetime != '' && response[i].Datetime != undefined) {
+                if ($scope.lstTemp[i].Datetime != null && $scope.lstTemp[i].Datetime != '' && $scope.lstTemp[i].Datetime != undefined) {
                     // Datetime = dateformat(response[i].Datetime, 2);
-                    Datetime = momentz.utc(new Date(response[i].Date * 1000)).tz(objTask.TimeZone).format('DD-MM-YYYY hh:mm:ss a')
+                    Datetime = momentz.utc(new Date($scope.lstTemp[i].Date * 1000)).tz(objTask.TimeZone).format('DD-MM-YYYY hh:mm:ss a')
                 }
 
-                if (response[i].Latitude != null && response[i].Latitude != '' && response[i].Latitude != undefined) {
-                    Latitude = response[i].Latitude;
+                if ($scope.lstTemp[i].Latitude != null && $scope.lstTemp[i].Latitude != '' && $scope.lstTemp[i].Latitude != undefined) {
+                    Latitude = $scope.lstTemp[i].Latitude;
                 }
-                if (response[i].Longitude != null && response[i].Longitude != '' && response[i].Longitude != undefined) {
-                    Longitude = response[i].Longitude;
+                if ($scope.lstTemp[i].Longitude != null && $scope.lstTemp[i].Longitude != '' && $scope.lstTemp[i].Longitude != undefined) {
+                    Longitude = $scope.lstTemp[i].Longitude;
                 }
-                if (response[i].GPSPositioning != null && response[i].GPSPositioning != '' && response[i].GPSPositioning != undefined) {
-                    GPSPositioning = response[i].GPSPositioning;
+                if ($scope.lstTemp[i].GPSPositioning != null && $scope.lstTemp[i].GPSPositioning != '' && $scope.lstTemp[i].GPSPositioning != undefined) {
+                    GPSPositioning = $scope.lstTemp[i].GPSPositioning;
                 }
-                if (response[i].Speed != null && response[i].Speed != '' && response[i].Speed != undefined) {
-                    Speed = parseFloat(response[i].Speed).toFixed(2);
+                if ($scope.lstTemp[i].Speed != null && $scope.lstTemp[i].Speed != '' && $scope.lstTemp[i].Speed != undefined) {
+                    Speed = parseFloat($scope.lstTemp[i].Speed).toFixed(2);
                 }
-                if (response[i].Direction != null && response[i].Direction != '' && response[i].Direction != undefined) {
-                    Direction = response[i].Direction;
+                if ($scope.lstTemp[i].Direction != null && $scope.lstTemp[i].Direction != '' && $scope.lstTemp[i].Direction != undefined) {
+                    Direction = $scope.lstTemp[i].Direction;
                 }
                 var latlng = Longitude + "/" + Longitude;
                 row.push(Datetime.toString(), latlng, GPSPositioning.toString(), Speed.toString(), Direction.toString());
@@ -105,8 +123,6 @@ router.get('/ExportReport', function(req, res) {
         }
 
     })
-
-
 })
 
 function dateformat(date1, flg) {
@@ -158,6 +174,19 @@ function convertdateformat(date1, flg) {
     } else {
         return ("0000" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("00" + firstdayDay.toString()).slice(-2);
     }
+}
+
+function convertdateformatForUnix(date1) {
+    var date = new Date(date1);
+    var firstdayMonth = date.getMonth() + 1;
+    var firstdayDay = date.getDate();
+    var firstdayYear = date.getFullYear();
+    var firstdayHours = date.getHours();
+    var firstdayMinutes = date.getMinutes();
+    var firstdaySeconds = date.getSeconds();
+
+    return ("00" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("0000" + firstdayDay.toString()).slice(-2) + " " + ("00" + firstdayHours.toString()).slice(-2) + ':' + ("00" + firstdayMinutes.toString()).slice(-2) + ':' + ("00" + firstdaySeconds.toString()).slice(-2);
+
 }
 
 router.get('/GetNotification', function(req, res) {

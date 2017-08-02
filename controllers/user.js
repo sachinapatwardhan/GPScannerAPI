@@ -456,7 +456,6 @@
  })
 
  router.get('/GetUserById', function(req, res) {
-     console.log(req.query.idUser);
      User.findOne({
          where: {
              id: req.query.idUser
@@ -473,7 +472,6 @@
                      });
                  })
              } else {
-                 console.log(response);
                  res.json({
                      success: true,
                      message: "Record found...",
@@ -547,7 +545,6 @@
                                  });
 
                                  res1.on('end', function() {
-                                     console.log(JSON.parse(responseData));
                                      res.json({
                                          success: true,
                                          message: "Record found...",
@@ -628,7 +625,6 @@
                  });
 
                  res1.on('end', function() {
-                     console.log(JSON.parse(responseData));
                      res.json({
                          success: true,
                          message: "Record found...",
@@ -965,7 +961,6 @@
                                  } else {
 
                                      var UserPassword = customPassword();
-                                     console.log(UserPassword);
                                      var EncryptUserpassword = jwt.encode(UserPassword, "bugz");
 
                                      if (objUser.phone && objUser.phone != '') {
@@ -1130,7 +1125,6 @@
 
  router.post('/SaveMobileUser', jsonParser, function(req, res) {
      objUser = req.body;
-     console.log(objUser)
      objHeader = req.headers;
 
      var token = getToken(objHeader);
@@ -1428,7 +1422,6 @@
                                                  var Data = "(" + DeviceId + "DP12H" + MaxSpeed + "L000)";
 
                                                  client.connect(SocketPort, SocketIPAddress, function() {
-                                                     console.log(Data);
                                                      client.write(Data);
                                                      client.setTimeout(180000, function() {
                                                          if (Sendflag == false) {
@@ -1446,7 +1439,6 @@
                                                      //console.log(line);
                                                      if (Sendflag == false) {
                                                          if (line.indexOf('BP12') > 0) {
-                                                             console.log('Received: ' + line);
 
                                                              var deviceID = line.substring(1, 13);
                                                              var SpeedDetail = line.substring(17, 25);
@@ -1616,7 +1608,6 @@
                          },
                          defaults: objUser
                      }).then(function(objUserExist) {
-                         console.log("objUserExist", objUserExist)
                          if (objUserExist != null) {
 
                              if (objUserExist.MaxSpeed == null) {
@@ -1639,7 +1630,6 @@
                                  var Data = "(" + DeviceId + "DP12H" + MaxSpeed + "L000)";
 
                                  client.connect(SocketPort, SocketIPAddress, function() {
-                                     console.log(Data);
                                      client.write(Data);
                                      client.setTimeout(120000, function() {
                                          if (Sendflag == false) {
@@ -2138,7 +2128,6 @@
          var UserId = objParam.UserId;
          var obj = new Object();
          obj['idSalesAgent'] = { $eq: parseInt(UserId) }
-         console.log(obj);
          searchUser['$and'].push(obj);
      }
 
@@ -2176,7 +2165,6 @@
                          };
                      };
                  }
-                 console.log(searchUser);
                  search1['$and'].push(search2);
 
                  User.hasMany(Vehicle, {
@@ -2185,7 +2173,6 @@
                          allowNull: false
                      }
                  });
-                 console.log("=================================================================0");
                  User.findAndCountAll({
                      required: true,
                      where: search1,
@@ -2205,8 +2192,6 @@
                          }],
                      }],
                  }).then(function(response) {
-                     console.log("=================================================================1");
-                     console.log(response);
                      var response1 = new Object();
                      response1.draw = objParam.draw;
                      response1.recordsTotal = response.count;
@@ -2313,7 +2298,6 @@
                          },
                      }],
                  }).then(function(response) {
-                     console.log(response)
                      var response1 = new Object();
                      response1.draw = objParam.draw;
                      response1.recordsTotal = response.count;
