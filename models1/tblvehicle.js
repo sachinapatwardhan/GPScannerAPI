@@ -29,9 +29,9 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     IsOnline: {
-      type: DataTypes.INTEGER(1),
+      type: DataTypes.BOOLEAN,
       allowNull: true,
-      defaultValue: "0"
+      defaultValue: '0'
     },
     HandshakDatetime: {
       type: DataTypes.DATE,
@@ -46,9 +46,9 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     IsACC: {
-      type: DataTypes.INTEGER(1),
+      type: DataTypes.BOOLEAN,
       allowNull: true,
-      defaultValue: "0"
+      defaultValue: '0'
     },
     BatteryPercentage: {
       type: DataTypes.INTEGER(11),
@@ -69,32 +69,32 @@ module.exports = function(sequelize, DataTypes) {
     SleepMode: {
       type: DataTypes.INTEGER(11),
       allowNull: true,
-      defaultValue: "0"
+      defaultValue: '0'
     },
     GPRSInterval: {
       type: DataTypes.INTEGER(11),
       allowNull: true,
-      defaultValue: "10"
+      defaultValue: '10'
     },
     GPRSStopInterval: {
       type: DataTypes.INTEGER(11),
       allowNull: true,
-      defaultValue: "0"
+      defaultValue: '0'
     },
     Arm: {
       type: DataTypes.INTEGER(11),
       allowNull: true,
-      defaultValue: "0"
+      defaultValue: '0'
     },
     OdoMeter: {
       type: DataTypes.INTEGER(11),
       allowNull: true,
-      defaultValue: "0"
+      defaultValue: '0'
     },
     HeartbeatInterval: {
       type: DataTypes.INTEGER(11),
       allowNull: true,
-      defaultValue: "1"
+      defaultValue: '1'
     },
     Relay: {
       type: DataTypes.INTEGER(11),
@@ -121,9 +121,9 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     IsDelete: {
-      type: DataTypes.INTEGER(1),
+      type: DataTypes.BOOLEAN,
       allowNull: true,
-      defaultValue: "0"
+      defaultValue: '0'
     },
     DeviceType: {
       type: DataTypes.STRING,
