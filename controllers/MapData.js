@@ -6,6 +6,8 @@ var PetGPS = models.tblgpsdata;
 var Bike = models.tblvehicle;
 var CanbusData = models.tblcanbusdata;
 var DrivingData = models.tbldrivingdata;
+var momentz = require('moment-timezone');
+
 router.get('/GetAllBike', function(req, res) {
     Vehicle.findAll( /*{ order: 'bikeNumber desc' }*/ ).then(function(response) {
         res.json(response);
@@ -31,7 +33,6 @@ router.post('/GetPath', jsonParser, function(req, res) {
 
 router.get('/ExportReport', function(req, res) {
     objTask = req.query;
-    console.log(objTask);
     var conf = {};
     conf.name = "sheet1";
     conf.cols = [{
@@ -50,15 +51,13 @@ router.get('/ExportReport', function(req, res) {
         caption: 'Direction',
         type: 'string'
     }];
-
+    console.log(objTask);
     var StartDate = dateformat(new Date(objTask.StartDate));
     var EndDate = dateformat(new Date(objTask.EndDate));
     var EndTime = dateformat(new Date(objTask.EndDate), 1);
     var StartTime = dateformat(new Date(objTask.StartDate), 1)
-    console.log("End Time", EndTime);
-    console.log("Start Time", StartTime);
     var query = "Select * from tblgpsdata where DATE(tblgpsdata.Datetime) >= '" + StartDate + "' and DATE(tblgpsdata.Datetime)<='" + EndDate + "' and TIME(tblgpsdata.Datetime)>='" + StartTime + "' and  TIME(tblgpsdata.Datetime)<='" + EndTime + "' and DeviceId='" + objTask.DeviceId + "' order by DateTime asc";
-    console.log(query);
+
     connection.query(query, function(err, response) {
         conf.rows = [];
         GetData(0);
@@ -75,7 +74,8 @@ router.get('/ExportReport', function(req, res) {
 
 
                 if (response[i].Datetime != null && response[i].Datetime != '' && response[i].Datetime != undefined) {
-                    Datetime = dateformat(response[i].Datetime, 2);
+                    // Datetime = dateformat(response[i].Datetime, 2);
+                    Datetime = momentz.utc(new Date(response[i].Date * 1000)).tz(objTask.TimeZone).format('DD-MM-YYYY hh:mm:ss a')
                 }
 
                 if (response[i].Latitude != null && response[i].Latitude != '' && response[i].Latitude != undefined) {
@@ -112,6 +112,7 @@ router.get('/ExportReport', function(req, res) {
 
 function dateformat(date1, flg) {
     var date = new Date(date1);
+    console.log(date);
     var firstdayMonth = date.getUTCMonth() + 1;
     var firstdayDay = date.getUTCDate();
     var firstdayYear = date.getUTCFullYear();
@@ -120,15 +121,17 @@ function dateformat(date1, flg) {
     var firstdaySeconds = date.getUTCSeconds();
     if (flg == 2) {
         var newdate = (("0000" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("00" + firstdayDay.toString()).slice(-2) + "  " + ("00" + firstdayHours.toString()).slice(-2) + ":" + ("00" + firstdayMinutes.toString()).slice(-2) + ":" + ("00" + firstdaySeconds.toString()).slice(-2));
+        console.log(newdate);
         newdate = new Date(newdate);
         var options = {
             hour: 'numeric',
             minute: 'numeric',
             hour12: true
         };
+        console.log(options);
         var timeString = newdate.toLocaleString('en-US', options);
-        // console.log(timeString);
-        return (("00" + firstdayDay.toString()).slice(-2) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("0000" + firstdayYear.toString()).slice(-4) + "  " + timeString);
+        console.log(timeString);
+        return (("00" + firstdayDay.toString()).slice(-2) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("0000" + firstdayYear.toString()).slice(-4) + " " + timeString);
 
     } else if (flg == 1) {
         return (("00" + firstdayHours.toString()).slice(-2) + ":" + ("00" + firstdayMinutes.toString()).slice(-2) + ":" + ("00" + firstdaySeconds.toString()).slice(-2));
