@@ -2100,7 +2100,7 @@ router.get('/ImportUserIdByAPI', jsonParser, function(req, res) {
                                                     var speed = gpsstring[3];
                                                     var direction = gpsstring[4];
 
-                                                    // var query = "INSERT INTO tblgpsscanner (Datetime,Latitude,Longtitude,GPSPositioning,Speed,Direction,Status,ReservedSign,ReservedSelection,DeviceId,IsAdvanture ) VALUES ('" + gpsdate + "', '" + latitude + "', '" + longitude + "', 'A', '" + speed + "', '" + direction + "', '00000000', 'L', '00000000', '" + DeviceId + "',1);";
+                                                    // var query = "INSERT INTO tblgpsscanner (Datetime,Latitude,Longitude,GPSPositioning,Speed,Direction,Status,ReservedSign,ReservedSelection,DeviceId,IsAdvanture ) VALUES ('" + gpsdate + "', '" + latitude + "', '" + longitude + "', 'A', '" + speed + "', '" + direction + "', '00000000', 'L', '00000000', '" + DeviceId + "',1);";
                                                     // connection.query(query, function(err, rows, fields) {
                                                     //     console.log(err);
                                                     //     gpsdata(k + 1);
@@ -2112,7 +2112,7 @@ router.get('/ImportUserIdByAPI', jsonParser, function(req, res) {
                                                         Datetime: gpsdate,
                                                         GPSPositioning: 'A',
                                                         Latitude: latitude,
-                                                        Longtitude: longitude,
+                                                        Longitude: longitude,
                                                         Speed: speed,
                                                         Direction: direction,
                                                         Status: '00000000',

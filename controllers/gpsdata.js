@@ -177,7 +177,7 @@ router.get('/ExportAllGpsData', function(req, res) {
             caption: 'Latitude',
             type: 'string'
         }, {
-            caption: 'Longtitude',
+            caption: 'Longitude',
             type: 'string'
         }, {
             caption: 'GPSPositioning',
@@ -281,7 +281,7 @@ router.get('/ExportAllGpsData', function(req, res) {
         var DeviceId = '';
         var Datetime = '';
         var Latitude = '';
-        var Longtitude = '';
+        var Longitude = '';
         var GPSPositioning = '';
         var Speed = '';
         var Direction = '';
@@ -315,8 +315,8 @@ router.get('/ExportAllGpsData', function(req, res) {
                     Latitude = response[i].Latitude
                 }
 
-                if (response[i].Longtitude != null && response[i].Longtitude != '' && response[i].Longtitude != undefined) {
-                    Longtitude = response[i].Longtitude;
+                if (response[i].Longitude != null && response[i].Longitude != '' && response[i].Longitude != undefined) {
+                    Longitude = response[i].Longitude;
                 }
 
                 if (response[i].GPSPositioning != null && response[i].GPSPositioning != '' && response[i].GPSPositioning != undefined) {
@@ -371,7 +371,7 @@ router.get('/ExportAllGpsData', function(req, res) {
                 if (response[i].OdoMeter != null && response[i].OdoMeter != '' && response[i].OdoMeter != undefined) {
                     OdoMeter = response[i].OdoMeter;
                 }
-                row.push(DeviceId, Datetime, Latitude, Longtitude, GPSPositioning, Speed, Direction, Status, IsRelayToStopTheCar, IsSirenSound, IsLockTheDoor, IsUnlockTheDoor, IsSOS, IsDoor, IsEngine, CreatedDate, Altitude, AD1, AD2, OdoMeter);
+                row.push(DeviceId, Datetime, Latitude, Longitude, GPSPositioning, Speed, Direction, Status, IsRelayToStopTheCar, IsSirenSound, IsLockTheDoor, IsUnlockTheDoor, IsSOS, IsDoor, IsEngine, CreatedDate, Altitude, AD1, AD2, OdoMeter);
                 conf.rows.push(row);
                 GetGpsData(i + 1);
             } else {
@@ -398,7 +398,7 @@ router.get('/ExportAlarm', function(req, res) {
         caption: 'Latitude',
         type: 'string'
     }, {
-        caption: 'Longtitude',
+        caption: 'Longitude',
         type: 'string'
     }, {
         caption: 'GPSPositioning',
@@ -470,7 +470,7 @@ router.get('/ExportAlarm', function(req, res) {
         var AlarmCode = '';
         var DeviceId = '';
         var Latitude = '';
-        var Longtitude = '';
+        var Longitude = '';
         var GPSPositioning = '';
         var Status = '';
         var CreatedDate = '';
@@ -498,8 +498,8 @@ router.get('/ExportAlarm', function(req, res) {
                     Latitude = response[i].Latitude
                 }
 
-                if (response[i].Longtitude != null && response[i].Longtitude != '' && response[i].Longtitude != undefined) {
-                    Longtitude = response[i].Longtitude;
+                if (response[i].Longitude != null && response[i].Longitude != '' && response[i].Longitude != undefined) {
+                    Longitude = response[i].Longitude;
                 }
 
                 if (response[i].GPSPositioning != null && response[i].GPSPositioning != '' && response[i].GPSPositioning != undefined) {
@@ -511,7 +511,7 @@ router.get('/ExportAlarm', function(req, res) {
                 }
 
 
-                row.push(AlarmCode, DeviceId, Latitude, Longtitude, GPSPositioning, Status, CreatedDate);
+                row.push(AlarmCode, DeviceId, Latitude, Longitude, GPSPositioning, Status, CreatedDate);
                 conf.rows.push(row);
                 GetAlarmData(i + 1);
             } else {

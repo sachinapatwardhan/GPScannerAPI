@@ -148,7 +148,7 @@ router.post('/SaveFence', jsonParser, function(req, res) {
 
                     var CheckPoints = {
                         latitude: parseFloat(response.Latitude),
-                        longitude: parseFloat(response.Longtitude)
+                        longitude: parseFloat(response.Longitude)
                     }
 
                     if (objFence.fencedraw == "circle") {
@@ -244,7 +244,7 @@ router.post('/SaveFence', jsonParser, function(req, res) {
                     if (response != null) {
                         var CheckPoints = {
                                 latitude: parseFloat(response.Latitude),
-                                longitude: parseFloat(response.Longtitude)
+                                longitude: parseFloat(response.Longitude)
                             }
                             // var IsPetInFence = true;
 
@@ -357,7 +357,7 @@ router.post('/SaveFenceById', jsonParser, function(req, res) {
 
                     var CheckPoints = {
                         latitude: parseFloat(response.Latitude),
-                        longitude: parseFloat(response.Longtitude)
+                        longitude: parseFloat(response.Longitude)
                     }
 
                     if (objFence.fencedraw == "circle") {
@@ -451,7 +451,7 @@ router.post('/SaveFenceById', jsonParser, function(req, res) {
                     if (response != null) {
                         var CheckPoints = {
                             latitude: parseFloat(response.Latitude),
-                            longitude: parseFloat(response.Longtitude)
+                            longitude: parseFloat(response.Longitude)
                         }
                         if (objFence.fencedraw == "circle") {
                             var CircleCenterPoints = {

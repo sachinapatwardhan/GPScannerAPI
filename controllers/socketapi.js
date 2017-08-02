@@ -255,7 +255,7 @@ function sendServerDisconnectMail() {
 function CheckServerLoadIncreaseMail() {
     var Currentdatetime = new Date();
     console.log("Call Datetime = " + Currentdatetime);
-    var query = "select Id,Datetime, Latitude, Longtitude, GPSPositioning, Speed, Direction, DeviceId from tblpetgps where deviceid=075034498153 and GPSPositioning='A' and Datetime >= '2017-07-03 18:30:00' and Datetime <= '2017-07-04 18:29:59';"
+    var query = "select Id,Datetime, Latitude, Longitude, GPSPositioning, Speed, Direction, DeviceId from tblpetgps where deviceid=075034498153 and GPSPositioning='A' and Datetime >= '2017-07-03 18:30:00' and Datetime <= '2017-07-04 18:29:59';"
     connection.query(query, function(err, lstGPSData, fields) {
         //console.log(response)
         var Responsedatetime = new Date();
@@ -596,7 +596,7 @@ global.Command9955 = function(line, Callback) {
         var unixDateStemp = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
 
         var Latitude = global.deg_to_lat_long(Lat, LatDirection);
-        var Longtitude = global.deg_to_lat_long(Lan, LanDirection);
+        var Longitude = global.deg_to_lat_long(Lan, LanDirection);
 
         var Inputoutputbit = hexToBinary(inputoutputSTatus);
         var lstInputOutputStatus = Inputoutputbit.split('');
@@ -654,8 +654,8 @@ global.Command9955 = function(line, Callback) {
 
         var IsAdvanture = false;
         // //Insert data in gps
-        var query = "INSERT INTO tblgpsdata (Datetime,Latitude,Longtitude,GPSPositioning,Speed,Direction,Status,DeviceId,IsRelayToStopTheCar,IsSirenSound,IsUserDefined,IsLockTheDoor,IsUnlockTheDoor,IsSOS,IsWiringForAntiTamper,IsDoor,IsEngine,IsOriginalSirenTriggeringStatus,CreatedDate,HDOP,Altitude,AD1,AD2,OdoMeter,Date ) " +
-            "VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longtitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + inputoutputSTatus + "', '" + DeviceId + "'," + IsRelayToStopTheCar + "," + IsSirenSound + "," + IsUserDefined + "," + IsLockTheDoor + "," + IsUnlockTheDoor + "," + IsSOS + "," + IsWiringForAntiTamper + "," + IsDoor + "," + IsEngine + "," + IsOriginalSirenTriggeringStatus + ",'" + CurrentDate + "','" + HDOP + "','" + altitude + "','" + AD1 + "','" + AD2 + "','" + Odometer + "','" + unixDateStemp + "');";
+        var query = "INSERT INTO tblgpsdata (Datetime,Latitude,Longitude,GPSPositioning,Speed,Direction,Status,DeviceId,IsRelayToStopTheCar,IsSirenSound,IsUserDefined,IsLockTheDoor,IsUnlockTheDoor,IsSOS,IsWiringForAntiTamper,IsDoor,IsEngine,IsOriginalSirenTriggeringStatus,CreatedDate,HDOP,Altitude,AD1,AD2,OdoMeter,Date ) " +
+            "VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + inputoutputSTatus + "', '" + DeviceId + "'," + IsRelayToStopTheCar + "," + IsSirenSound + "," + IsUserDefined + "," + IsLockTheDoor + "," + IsUnlockTheDoor + "," + IsSOS + "," + IsWiringForAntiTamper + "," + IsDoor + "," + IsEngine + "," + IsOriginalSirenTriggeringStatus + ",'" + CurrentDate + "','" + HDOP + "','" + altitude + "','" + AD1 + "','" + AD2 + "','" + Odometer + "','" + unixDateStemp + "');";
         connection.query(query, function(err, rows, fields) {
             // console.log(err)
             //     console.log("***************BR00**************")
@@ -678,7 +678,7 @@ global.Command9955 = function(line, Callback) {
                 Speed: Speed,
                 Deviceid: DeviceId,
                 Latitute: Latitude,
-                Longitude: Longtitude,
+                Longitude: Longitude,
                 Direction: Direction,
                 IsRelayToStopTheCar: IsRelayToStopTheCar,
                 IsSirenSound: IsSirenSound,
@@ -714,7 +714,7 @@ global.Command9955 = function(line, Callback) {
 
                                     var CheckPoints = {
                                         latitude: parseFloat(Latitude),
-                                        longitude: parseFloat(Longtitude)
+                                        longitude: parseFloat(Longitude)
                                     }
 
                                     var IsPetInFence = true;
@@ -797,8 +797,8 @@ global.Command9955 = function(line, Callback) {
 
                                         connection.query('UPDATE tblfence set IsInFence=' + IsPetInFence + ' WHERE id=' + rows[j].id, function(err, rowsFence, fields) {
                                             console.log(err)
-                                            var Alarmquery = "INSERT INTO tblalarm (Datetime,Latitude,Longtitude,GPSPositioning,Speed,Direction,Status,DeviceId,AlarmCode,CreatedDate ) VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longtitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + inputoutputSTatus + "', '" + DeviceId + "','" + AlarmCode + "','" + CurrentDate + "');";
-                                            // var Alarmquery = "INSERT INTO tblalarm (Datetime,Latitude,Longtitude,GPSPositioning,Speed,Direction,Status,ReservedSign,ReservedSelection,DeviceId,AlarmCode ) VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longtitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + Status + "', '" + Sign + "', '" + ReserveSection + "', '" + deviceID + "','" + AlarmCode + "');";
+                                            var Alarmquery = "INSERT INTO tblalarm (Datetime,Latitude,Longitude,GPSPositioning,Speed,Direction,Status,DeviceId,AlarmCode,CreatedDate ) VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + inputoutputSTatus + "', '" + DeviceId + "','" + AlarmCode + "','" + CurrentDate + "');";
+                                            // var Alarmquery = "INSERT INTO tblalarm (Datetime,Latitude,Longitude,GPSPositioning,Speed,Direction,Status,ReservedSign,ReservedSelection,DeviceId,AlarmCode ) VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + Status + "', '" + Sign + "', '" + ReserveSection + "', '" + deviceID + "','" + AlarmCode + "');";
                                             connection.query(Alarmquery, function(err1, Alarmrows, fields) {
 
                                                 // var PushNotificationdata = {
@@ -895,7 +895,7 @@ global.Command9999 = function(line, Callback) {
     var CurrentDate = GetCurrentDate();
 
     var Latitude = global.deg_to_lat_long(Lat, LatDirection);
-    var Longtitude = global.deg_to_lat_long(Lan, LanDirection);
+    var Longitude = global.deg_to_lat_long(Lan, LanDirection);
 
     var Status = '0';
     var Sign = '0';
@@ -903,14 +903,14 @@ global.Command9999 = function(line, Callback) {
     var IsAdvanture = false;
 
     // console.log(Latitude)
-    // console.log(Longtitude)
+    // console.log(Longitude)
     // console.log(GPSDateTime)
 
-    var query = "INSERT INTO tblalarm (Datetime,Latitude,Longtitude,GPSPositioning,Speed,Direction,Status,DeviceId,AlarmCode,CreatedDate ) VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longtitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + inputoutputSTatus + "', '" + DeviceId + "','" + AlarmCode + "','" + CurrentDate + "');";
+    var query = "INSERT INTO tblalarm (Datetime,Latitude,Longitude,GPSPositioning,Speed,Direction,Status,DeviceId,AlarmCode,CreatedDate ) VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + inputoutputSTatus + "', '" + DeviceId + "','" + AlarmCode + "','" + CurrentDate + "');";
     connection.query(query, function(err, rows, fields) {
         // console.log("Alarm");
         // console.log(err);
-        // var GPSquery = "INSERT INTO tblpetgps (Datetime,Latitude,Longtitude,GPSPositioning,Speed,Direction,Status,ReservedSign,ReservedSelection,DeviceId,IsAdvanture ) VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longtitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + Status + "', '" + Sign + "', '" + ReserveSection + "', '" + DeviceId + "'," + IsAdvanture + ");";
+        // var GPSquery = "INSERT INTO tblpetgps (Datetime,Latitude,Longitude,GPSPositioning,Speed,Direction,Status,ReservedSign,ReservedSelection,DeviceId,IsAdvanture ) VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + Status + "', '" + Sign + "', '" + ReserveSection + "', '" + DeviceId + "'," + IsAdvanture + ");";
         // connection.query(GPSquery, function(err, rows, fields) {
         //     // console.log("GPS");
         //     // console.log(err);
@@ -977,10 +977,10 @@ global.Command9999 = function(line, Callback) {
     //                 //Speed = maxSpeed;
     //                 // }
 
-    //                 var query = "INSERT INTO tblalarm (Datetime,Latitude,Longtitude,GPSPositioning,Speed,Direction,Status,ReservedSign,ReservedSelection,DeviceId,AlarmCode ) VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longtitude + "', '" + Position + "', '" + maxSpeed + "', '" + Direction + "', '" + Status + "', '" + Sign + "', '" + ReserveSection + "', '" + DeviceId + "','" + alarmcode + "');";
+    //                 var query = "INSERT INTO tblalarm (Datetime,Latitude,Longitude,GPSPositioning,Speed,Direction,Status,ReservedSign,ReservedSelection,DeviceId,AlarmCode ) VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + maxSpeed + "', '" + Direction + "', '" + Status + "', '" + Sign + "', '" + ReserveSection + "', '" + DeviceId + "','" + alarmcode + "');";
     //                 connection.query(query, function(err, rows, fields) {
 
-    //                     var GPSquery = "INSERT INTO tblpetgps (Datetime,Latitude,Longtitude,GPSPositioning,Speed,Direction,Status,ReservedSign,ReservedSelection,DeviceId,IsAdvanture ) VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longtitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + Status + "', '" + Sign + "', '" + ReserveSection + "', '" + DeviceId + "'," + IsAdvanture + ");";
+    //                     var GPSquery = "INSERT INTO tblpetgps (Datetime,Latitude,Longitude,GPSPositioning,Speed,Direction,Status,ReservedSign,ReservedSelection,DeviceId,IsAdvanture ) VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + Status + "', '" + Sign + "', '" + ReserveSection + "', '" + DeviceId + "'," + IsAdvanture + ");";
     //                     connection.query(GPSquery, function(err, rows, fields) {
 
     //                         var objConnection = {
@@ -988,7 +988,7 @@ global.Command9999 = function(line, Callback) {
     //                             Speed: Speed,
     //                             Deviceid: DeviceId,
     //                             Latitute: Latitude,
-    //                             Longitude: Longtitude,
+    //                             Longitude: Longitude,
     //                             Direction: Direction,
     //                         }
     //                         io.sockets.emit('BikeRoute', JSON.stringify(objConnection));
@@ -1080,10 +1080,10 @@ global.Command9999 = function(line, Callback) {
 
     //     function SendVibrationNotification() {
     //         console.log("Call Vibration Notification");
-    //         var query = "INSERT INTO tblalarm (Datetime,Latitude,Longtitude,GPSPositioning,Speed,Direction,Status,ReservedSign,ReservedSelection,DeviceId,AlarmCode ) VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longtitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + Status + "', '" + Sign + "', '" + ReserveSection + "', '" + DeviceId + "','" + alarmcode + "');";
+    //         var query = "INSERT INTO tblalarm (Datetime,Latitude,Longitude,GPSPositioning,Speed,Direction,Status,ReservedSign,ReservedSelection,DeviceId,AlarmCode ) VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + Status + "', '" + Sign + "', '" + ReserveSection + "', '" + DeviceId + "','" + alarmcode + "');";
     //         connection.query(query, function(err, rows, fields) {
 
-    //             var GPSquery = "INSERT INTO tblpetgps (Datetime,Latitude,Longtitude,GPSPositioning,Speed,Direction,Status,ReservedSign,ReservedSelection,DeviceId,IsAdvanture ) VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longtitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + Status + "', '" + Sign + "', '" + ReserveSection + "', '" + DeviceId + "'," + IsAdvanture + ");";
+    //             var GPSquery = "INSERT INTO tblpetgps (Datetime,Latitude,Longitude,GPSPositioning,Speed,Direction,Status,ReservedSign,ReservedSelection,DeviceId,IsAdvanture ) VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + Status + "', '" + Sign + "', '" + ReserveSection + "', '" + DeviceId + "'," + IsAdvanture + ");";
     //             connection.query(GPSquery, function(err, rows, fields) {
 
     //                 var objConnection = {
@@ -1091,7 +1091,7 @@ global.Command9999 = function(line, Callback) {
     //                     Speed: Speed,
     //                     Deviceid: DeviceId,
     //                     Latitute: Latitude,
-    //                     Longitude: Longtitude,
+    //                     Longitude: Longitude,
     //                     Direction: Direction,
     //                 }
     //                 io.sockets.emit('BikeRoute', JSON.stringify(objConnection));
@@ -1158,10 +1158,10 @@ global.Command9999 = function(line, Callback) {
     //     });
 
     //     function SendWirecutNotification() {
-    //         var query = "INSERT INTO tblalarm (Datetime,Latitude,Longtitude,GPSPositioning,Speed,Direction,Status,ReservedSign,ReservedSelection,DeviceId,AlarmCode ) VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longtitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + Status + "', '" + Sign + "', '" + ReserveSection + "', '" + DeviceId + "','" + alarmcode + "');";
+    //         var query = "INSERT INTO tblalarm (Datetime,Latitude,Longitude,GPSPositioning,Speed,Direction,Status,ReservedSign,ReservedSelection,DeviceId,AlarmCode ) VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + Status + "', '" + Sign + "', '" + ReserveSection + "', '" + DeviceId + "','" + alarmcode + "');";
     //         connection.query(query, function(err, rows, fields) {
 
-    //             var GPSquery = "INSERT INTO tblpetgps (Datetime,Latitude,Longtitude,GPSPositioning,Speed,Direction,Status,ReservedSign,ReservedSelection,DeviceId,IsAdvanture ) VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longtitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + Status + "', '" + Sign + "', '" + ReserveSection + "', '" + DeviceId + "'," + IsAdvanture + ");";
+    //             var GPSquery = "INSERT INTO tblpetgps (Datetime,Latitude,Longitude,GPSPositioning,Speed,Direction,Status,ReservedSign,ReservedSelection,DeviceId,IsAdvanture ) VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + Status + "', '" + Sign + "', '" + ReserveSection + "', '" + DeviceId + "'," + IsAdvanture + ");";
     //             connection.query(GPSquery, function(err, rows, fields) {
 
     //                 var objConnection = {
@@ -1169,7 +1169,7 @@ global.Command9999 = function(line, Callback) {
     //                     Speed: Speed,
     //                     Deviceid: DeviceId,
     //                     Latitute: Latitude,
-    //                     Longitude: Longtitude,
+    //                     Longitude: Longitude,
     //                     Direction: Direction,
     //                 }
     //                 io.sockets.emit('BikeRoute', JSON.stringify(objConnection));
@@ -1233,10 +1233,10 @@ global.Command9999 = function(line, Callback) {
     //     });
 
     //     function SendSOSNotification() {
-    //         var query = "INSERT INTO tblalarm (Datetime,Latitude,Longtitude,GPSPositioning,Speed,Direction,Status,ReservedSign,ReservedSelection,DeviceId,AlarmCode ) VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longtitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + Status + "', '" + Sign + "', '" + ReserveSection + "', '" + DeviceId + "','" + alarmcode + "');";
+    //         var query = "INSERT INTO tblalarm (Datetime,Latitude,Longitude,GPSPositioning,Speed,Direction,Status,ReservedSign,ReservedSelection,DeviceId,AlarmCode ) VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + Status + "', '" + Sign + "', '" + ReserveSection + "', '" + DeviceId + "','" + alarmcode + "');";
     //         connection.query(query, function(err, rows, fields) {
 
-    //             var GPSquery = "INSERT INTO tblpetgps (Datetime,Latitude,Longtitude,GPSPositioning,Speed,Direction,Status,ReservedSign,ReservedSelection,DeviceId,IsAdvanture ) VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longtitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + Status + "', '" + Sign + "', '" + ReserveSection + "', '" + DeviceId + "'," + IsAdvanture + ");";
+    //             var GPSquery = "INSERT INTO tblpetgps (Datetime,Latitude,Longitude,GPSPositioning,Speed,Direction,Status,ReservedSign,ReservedSelection,DeviceId,IsAdvanture ) VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + Status + "', '" + Sign + "', '" + ReserveSection + "', '" + DeviceId + "'," + IsAdvanture + ");";
     //             connection.query(GPSquery, function(err, rows, fields) {
 
     //                 var objConnection = {
@@ -1244,7 +1244,7 @@ global.Command9999 = function(line, Callback) {
     //                     Speed: Speed,
     //                     Deviceid: DeviceId,
     //                     Latitute: Latitude,
-    //                     Longitude: Longtitude,
+    //                     Longitude: Longitude,
     //                     Direction: Direction,
     //                 }
     //                 io.sockets.emit('BikeRoute', JSON.stringify(objConnection));
@@ -2938,12 +2938,12 @@ router.get('/UpdateDeviceStatus', function(req, res) {
     // res.json("No Response");
     // var deviceID = '075034498021';
     // var Latitude = '20.834979';
-    // var Longtitude = '73.265247';
+    // var Longitude = '73.265247';
 
     // var objConnection = {
     //     Deviceid: deviceID,
     //     Latitute: Latitude,
-    //     Longitude: Longtitude,
+    //     Longitude: Longitude,
     // }
     // io.sockets.emit('BikeRoute', JSON.stringify(objConnection));
 

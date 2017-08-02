@@ -21,7 +21,7 @@ router.get('/GetAllpetGps', function(req, res) {
     objtask.Date = parseInt(req.query.Time) / 1000;
     objtask.Datetime = req.query.DateTime;
     objtask.Latitude = 3.19871167;
-    objtask.Longtitude = 101.72789667;
+    objtask.Longitude = 101.72789667;
     objtask.GPSPositioning = 'B';
     objtask.Speed = 003;
     objtask.Direction = 000;
@@ -207,9 +207,9 @@ router.post('/ImportPetAdventures', jsonParser, function(req, res) {
                         objPetGPS.Latitude = objData[6];
                     };
                     if (objData[9] == 'W') {
-                        objPetGPS.Longtitude = "-" + objData[8];
+                        objPetGPS.Longitude = "-" + objData[8];
                     } else {
-                        objPetGPS.Longtitude = objData[8];
+                        objPetGPS.Longitude = objData[8];
                     }
                     objPetGPS.GPSPositioning = objData[5];
                     objPetGPS.Speed = objData[11];

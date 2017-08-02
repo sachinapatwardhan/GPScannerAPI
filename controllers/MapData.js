@@ -39,7 +39,7 @@ router.get('/ExportReport', function(req, res) {
         caption: 'Date Time',
         type: 'string'
     }, {
-        caption: 'Latitude/Longtitude',
+        caption: 'Latitude/Longitude',
         type: 'string'
     }, {
         caption: 'Speed',
@@ -66,7 +66,7 @@ router.get('/ExportReport', function(req, res) {
                 var row = [];
                 var Datetime = 'N/A';
                 var longitude = 0.00;
-                var Longtitude = 0.00;
+                var Longitude = 0.00;
                 var Speed = 0.00;
                 var GPSPositioning = 'N/A';
                 var Direction = 0.00;
@@ -80,8 +80,8 @@ router.get('/ExportReport', function(req, res) {
                 if (response[i].Latitude != null && response[i].Latitude != '' && response[i].Latitude != undefined) {
                     Latitude = response[i].Latitude;
                 }
-                if (response[i].Longtitude != null && response[i].Longtitude != '' && response[i].Longtitude != undefined) {
-                    Longtitude = response[i].Longtitude;
+                if (response[i].Longitude != null && response[i].Longitude != '' && response[i].Longitude != undefined) {
+                    Longitude = response[i].Longitude;
                 }
                 if (response[i].GPSPositioning != null && response[i].GPSPositioning != '' && response[i].GPSPositioning != undefined) {
                     GPSPositioning = response[i].GPSPositioning;
@@ -92,7 +92,7 @@ router.get('/ExportReport', function(req, res) {
                 if (response[i].Direction != null && response[i].Direction != '' && response[i].Direction != undefined) {
                     Direction = response[i].Direction;
                 }
-                var latlng = Longtitude + "/" + Longtitude;
+                var latlng = Longitude + "/" + Longitude;
                 row.push(Datetime.toString(), latlng, GPSPositioning.toString(), Speed.toString(), Direction.toString());
                 conf.rows.push(row);
                 GetData(i + 1);
@@ -210,7 +210,7 @@ router.post('/SaveFence', jsonParser, function(req, res) {
 
                         var CheckPoints = {
                             latitude: parseFloat(response.Latitude),
-                            longitude: parseFloat(response.Longtitude)
+                            longitude: parseFloat(response.Longitude)
                         }
 
                         if (objFence.fencedraw == "circle") {
@@ -308,7 +308,7 @@ router.post('/SaveFence', jsonParser, function(req, res) {
                     if (response != null) {
                         var CheckPoints = {
                                 latitude: parseFloat(response.Latitude),
-                                longitude: parseFloat(response.Longtitude)
+                                longitude: parseFloat(response.Longitude)
                             }
                             // var IsPetInFence = true;
 
