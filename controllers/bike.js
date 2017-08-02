@@ -605,11 +605,11 @@ router.get('/GetAllMobilePetByUser', function(req, res) {
                                             for (var k = 0; k < lstGroupDate[j].data.length - 1; k++) {
                                                 var LocaA = {
                                                     latitude: lstGroupDate[j].data[k].Latitude,
-                                                    longitude: lstGroupDate[j].data[k].Longtitude
+                                                    longitude: lstGroupDate[j].data[k].Longitude
                                                 }
                                                 var LocaB = {
                                                     latitude: lstGroupDate[j].data[k + 1].Latitude,
-                                                    longitude: lstGroupDate[j].data[k + 1].Longtitude
+                                                    longitude: lstGroupDate[j].data[k + 1].Longitude
                                                 }
                                                 var dist = geolib.getDistance(LocaA, LocaB);
                                                 IndividualDistance += dist
@@ -716,8 +716,8 @@ router.post('/GetAllNotWorkingBike', jsonParser, function(req, res) {
     } else {
         var Type = "tp.DeviceType != 'M2'";
     }
-    // connection.query("SELECT tp.*, tpg.Latitude,tpg.Longtitude,tpg.MAXDateTime, tpg.Id, tpg.Speed FROM (SELECT DeviceId,Latitude,Longtitude, MAX(Datetime) AS MAXDateTime, Id, Speed FROM tblgpsscanner GROUP BY DeviceId) tpg INNER JOIN tblbike as tp ON tp.deviceid = tpg.DeviceId  where tp.IsWireCut=1 && tp.iduser = "+ req.query.idUser + " && tp.IsDeleted = false", function(err, rows, fields) {
-    connection.query("select  tp.*, tpg.Latitude,tpg.Longtitude,tpg.Datetime, tpg.Id, tpg.Speed  from (select s1.Datetime, s1.Latitude, s1.Longtitude, s1.Id, s1.Speed, s1.DeviceId from tblgpsscanner s1 inner join (select max(Datetime) Datetime, deviceid from tblgpsscanner group by deviceid) s2 on s1.deviceid = s2.deviceid and s1.Datetime = s2.Datetime group by Datetime) tpg INNER JOIN tblbike as tp ON tp.deviceid = tpg.DeviceId  where tp.IsOnline= false && tp.iduser = " + req.query.idUser + " && tp.IsDeleted = false && '" + Type + "';", function(err, rows, fields) {
+    // connection.query("SELECT tp.*, tpg.Latitude,tpg.Longitude,tpg.MAXDateTime, tpg.Id, tpg.Speed FROM (SELECT DeviceId,Latitude,Longitude, MAX(Datetime) AS MAXDateTime, Id, Speed FROM tblgpsscanner GROUP BY DeviceId) tpg INNER JOIN tblbike as tp ON tp.deviceid = tpg.DeviceId  where tp.IsWireCut=1 && tp.iduser = "+ req.query.idUser + " && tp.IsDeleted = false", function(err, rows, fields) {
+    connection.query("select  tp.*, tpg.Latitude,tpg.Longitude,tpg.Datetime, tpg.Id, tpg.Speed  from (select s1.Datetime, s1.Latitude, s1.Longitude, s1.Id, s1.Speed, s1.DeviceId from tblgpsscanner s1 inner join (select max(Datetime) Datetime, deviceid from tblgpsscanner group by deviceid) s2 on s1.deviceid = s2.deviceid and s1.Datetime = s2.Datetime group by Datetime) tpg INNER JOIN tblbike as tp ON tp.deviceid = tpg.DeviceId  where tp.IsOnline= false && tp.iduser = " + req.query.idUser + " && tp.IsDeleted = false && '" + Type + "';", function(err, rows, fields) {
         if (!err) {
             res.json({ success: true, data: rows });
         } else {
@@ -729,7 +729,7 @@ router.post('/GetAllNotWorkingBike', jsonParser, function(req, res) {
 })
 
 router.post('/GetAllWorkingBike', jsonParser, function(req, res) {
-    connection.query("SELECT  tb.id,tb.deviceid,tb.Name,tb.IsOnline, tb.IsACC,tpg.IsEngine, tpg.Latitude,tpg.Longtitude,tpg.Datetime, tpg.Date, tpg.Id, tpg.Speed, tpg.Direction FROM tblvehicle tb INNER JOIN tblgpsdata tpg ON tb.deviceid=tpg.DeviceId INNER JOIN (SELECT DeviceId,MAX(Id) Id FROM tblgpsdata GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId AND tpg.Id = b.Id WHERE iduser=" + req.query.idUser + " and IsDelete=false;", function(err, rows, fields) {
+    connection.query("SELECT  tb.id,tb.deviceid,tb.Name,tb.IsOnline, tb.IsACC,tpg.IsEngine, tpg.Latitude,tpg.Longitude,tpg.Datetime, tpg.Date, tpg.Id, tpg.Speed, tpg.Direction FROM tblvehicle tb INNER JOIN tblgpsdata tpg ON tb.deviceid=tpg.DeviceId INNER JOIN (SELECT DeviceId,MAX(Id) Id FROM tblgpsdata GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId AND tpg.Id = b.Id WHERE iduser=" + req.query.idUser + " and IsDelete=false;", function(err, rows, fields) {
         if (!err) {
             res.json({ success: true, data: rows });
         } else {
@@ -739,7 +739,7 @@ router.post('/GetAllWorkingBike', jsonParser, function(req, res) {
 })
 
 router.get('/GetAllWorkingBikeWebApp', jsonParser, function(req, res) {
-    connection.query("SELECT  tb.*,tpg.IsEngine, tpg.Latitude,tpg.Longtitude,tpg.Datetime, tpg.Date, tpg.Speed, tpg.Direction FROM tblvehicle tb LEFT JOIN tblgpsdata tpg ON tb.deviceid=tpg.DeviceId RIGHT JOIN (SELECT DeviceId,MAX(Id) Id FROM tblgpsdata GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId AND tpg.Id = b.Id WHERE iduser=" + req.query.idUser + " and IsDelete=false group by tb.deviceid;", function(err, rows, fields) {
+    connection.query("SELECT  tb.*,tpg.IsEngine, tpg.Latitude,tpg.Longitude,tpg.Datetime, tpg.Date, tpg.Speed, tpg.Direction FROM tblvehicle tb LEFT JOIN tblgpsdata tpg ON tb.deviceid=tpg.DeviceId RIGHT JOIN (SELECT DeviceId,MAX(Id) Id FROM tblgpsdata GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId AND tpg.Id = b.Id WHERE iduser=" + req.query.idUser + " and IsDelete=false group by tb.deviceid;", function(err, rows, fields) {
         if (!err) {
             res.json({ success: true, data: rows });
         } else {
@@ -755,8 +755,8 @@ router.post('/GetNotWorkingBikeById', jsonParser, function(req, res) {
     } else {
         var Type = "tp.DeviceType != 'M2'";
     }
-    // connection.query("SELECT tp.*, tpg.Latitude,tpg.Longtitude,tpg.MAXDateTime, tpg.Id, tpg.Speed FROM (SELECT DeviceId,Latitude,Longtitude, MAX(Datetime) AS MAXDateTime, Id, Speed FROM tblgpsscanner GROUP BY DeviceId) tpg INNER JOIN tblbike as tp ON tp.deviceid = tpg.DeviceId  where tp.IsWireCut=1 && tp.iduser = "+ req.query.idUser + " && tp.IsDeleted = false", function(err, rows, fields) {
-    connection.query("select  tp.*, tpg.Latitude,tpg.Longtitude,tpg.Datetime, tpg.Id, tpg.Speed  from (select s1.Datetime, s1.Latitude, s1.Longtitude, s1.Id, s1.Speed, s1.DeviceId from tblgpsdata s1 inner join (select max(Datetime) Datetime, deviceid from tblgpsdata group by deviceid) s2 on s1.deviceid = s2.deviceid and s1.Datetime = s2.Datetime group by Datetime) tpg INNER JOIN tblbike as tp ON tp.deviceid = tpg.DeviceId  where tp.IsOnline= false && tp.id = " + req.query.bikeId + " && tp.IsDelete = false && '" + Type + "';", function(err, rows, fields) {
+    // connection.query("SELECT tp.*, tpg.Latitude,tpg.Longitude,tpg.MAXDateTime, tpg.Id, tpg.Speed FROM (SELECT DeviceId,Latitude,Longitude, MAX(Datetime) AS MAXDateTime, Id, Speed FROM tblgpsscanner GROUP BY DeviceId) tpg INNER JOIN tblbike as tp ON tp.deviceid = tpg.DeviceId  where tp.IsWireCut=1 && tp.iduser = "+ req.query.idUser + " && tp.IsDeleted = false", function(err, rows, fields) {
+    connection.query("select  tp.*, tpg.Latitude,tpg.Longitude,tpg.Datetime, tpg.Id, tpg.Speed  from (select s1.Datetime, s1.Latitude, s1.Longitude, s1.Id, s1.Speed, s1.DeviceId from tblgpsdata s1 inner join (select max(Datetime) Datetime, deviceid from tblgpsdata group by deviceid) s2 on s1.deviceid = s2.deviceid and s1.Datetime = s2.Datetime group by Datetime) tpg INNER JOIN tblbike as tp ON tp.deviceid = tpg.DeviceId  where tp.IsOnline= false && tp.id = " + req.query.bikeId + " && tp.IsDelete = false && '" + Type + "';", function(err, rows, fields) {
         if (!err) {
             res.json({ success: true, data: rows });
         } else {
@@ -1600,7 +1600,7 @@ router.get('/GetAllGPSByTimeZoneDate', function(req, res) {
     // var Startdate = req.query.TodayStartDateTime;
     // var Enddate = req.query.TodayEndDateTime;
     // PetGPS.findAll({
-    //         attributes: ['Id', 'Datetime', 'Latitude', 'Longtitude', 'GPSPositioning', 'Speed', 'Direction', 'DeviceId'],
+    //         attributes: ['Id', 'Datetime', 'Latitude', 'Longitude', 'GPSPositioning', 'Speed', 'Direction', 'DeviceId'],
     //         where: { $and: [{ DeviceId: req.query.DeviceId }, { GPSPositioning: 'A' }, { Datetime: { $gte: Startdate } }, { Datetime: { $lte: Enddate } }] },
     //         // where: models.sequelize.where(models.sequelize.fn('date', models.sequelize.col('Datetime')), data),
     //         // where: { $and: [models.sequelize.where(models.sequelize.fn('date', models.sequelize.col('Datetime')), data), { DeviceId: req.query.DeviceId }, { IsAdvanture: true }] },
@@ -1619,7 +1619,7 @@ router.get('/GetAllGPSByTimeZoneDate', function(req, res) {
     var unixEnddate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
 
 
-    var query = "select Id,Datetime, Latitude, Longtitude, GPSPositioning, Speed, Direction, DeviceId,IsEngine, Date from tblgpsdata where deviceid=" + req.query.DeviceId + " and GPSPositioning='A' and Date >= '" + unixStartdate + "' and Date <= '" + unixEnddate + "' order by Datetime;"
+    var query = "select Id,Datetime, Latitude, Longitude, GPSPositioning, Speed, Direction, DeviceId,IsEngine, Date from tblgpsdata where deviceid=" + req.query.DeviceId + " and GPSPositioning='A' and Date >= '" + unixStartdate + "' and Date <= '" + unixEnddate + "' order by Datetime;"
     connection.query(query, function(err, lstGPSData, fields) {
         res.json(lstGPSData);
     });
@@ -1630,7 +1630,7 @@ router.get('/GetAllGPSByTimeZoneDate1', function(req, res) {
     // var Startdate = req.query.TodayStartDateTime;
     // var Enddate = req.query.TodayEndDateTime;
     // PetGPS.findAll({
-    //     attributes: ['Id', 'Datetime', 'Latitude', 'Longtitude', 'GPSPositioning', 'Speed', 'Direction', 'DeviceId'],
+    //     attributes: ['Id', 'Datetime', 'Latitude', 'Longitude', 'GPSPositioning', 'Speed', 'Direction', 'DeviceId'],
     //     where: { $and: [{ DeviceId: req.query.DeviceId }, { GPSPositioning: 'A' }, { Datetime: { $gte: Startdate } }, { Datetime: { $lte: Enddate } }] },
     //     // where: models.sequelize.where(models.sequelize.fn('date', models.sequelize.col('Datetime')), data),
     //     // where: { $and: [models.sequelize.where(models.sequelize.fn('date', models.sequelize.col('Datetime')), data), { DeviceId: req.query.DeviceId }, { IsAdvanture: true }] },
@@ -1648,7 +1648,7 @@ router.get('/GetAllGPSByTimeZoneDate1', function(req, res) {
     console.log(Enddate)
     console.log("###################################################")
 
-    var query = "select Id,Datetime, Latitude, Longtitude, GPSPositioning, Speed, Direction, DeviceId from tblgpsscanner where deviceid=" + req.query.DeviceId + " and GPSPositioning='A' and Datetime >= '" + Startdate + "' and Datetime <= '" + Enddate + "';"
+    var query = "select Id,Datetime, Latitude, Longitude, GPSPositioning, Speed, Direction, DeviceId from tblgpsscanner where deviceid=" + req.query.DeviceId + " and GPSPositioning='A' and Datetime >= '" + Startdate + "' and Datetime <= '" + Enddate + "';"
     connection.query(query, function(err, lstGPSData, fields) {
         res.json(lstGPSData);
     });
@@ -1745,11 +1745,11 @@ router.get('/GetAdvatureInfoByDeviceId', function(req, res) {
                     for (var i = 0; i < objTodayData.data.length - 1; i++) {
                         var LocaA = {
                             latitude: objTodayData.data[i].Latitude,
-                            longitude: objTodayData.data[i].Longtitude
+                            longitude: objTodayData.data[i].Longitude
                         }
                         var LocaB = {
                             latitude: objTodayData.data[i + 1].Latitude,
-                            longitude: objTodayData.data[i + 1].Longtitude
+                            longitude: objTodayData.data[i + 1].Longitude
                         }
                         var dist = geolib.getDistance(LocaA, LocaB);
                         DatewiseTravelledDistance += dist
@@ -1777,11 +1777,11 @@ router.get('/GetAdvatureInfoByDeviceId', function(req, res) {
                     for (var i = 0; i < lstGroupDate[j].data.length - 1; i++) {
                         var LocaA = {
                             latitude: lstGroupDate[j].data[i].Latitude,
-                            longitude: lstGroupDate[j].data[i].Longtitude
+                            longitude: lstGroupDate[j].data[i].Longitude
                         }
                         var LocaB = {
                             latitude: lstGroupDate[j].data[i + 1].Latitude,
-                            longitude: lstGroupDate[j].data[i + 1].Longtitude
+                            longitude: lstGroupDate[j].data[i + 1].Longitude
                         }
                         var dist = geolib.getDistance(LocaA, LocaB);
                         IndividualDistance += dist
@@ -2192,7 +2192,7 @@ router.get('/GetCurrentPetLocation', function(req, res) {
     //         objNewdata.id = 0;
     //         objNewdata.Datetime = response.Datetime;
     //         objNewdata.Latitude = response.Latitude;
-    //         objNewdata.Longtitude = response.Longtitude;
+    //         objNewdata.Longitude = response.Longitude;
     //         objNewdata.GPSPositioning = response.GPSPositioning;
     //         objNewdata.Speed = response.Speed;
     //         objNewdata.Direction = response.Direction;
@@ -2267,7 +2267,7 @@ router.get('/GetCurrentPetLocation', function(req, res) {
                         Datetime: GPSDateTime,
                         GPSPositioning: Position,
                         Latitude: global.deg_to_lat_long(Lat),
-                        Longtitude: global.deg_to_lat_long(Lan),
+                        Longitude: global.deg_to_lat_long(Lan),
                         Speed: Speed,
                         Direction: Direction,
                         Status: Status,
