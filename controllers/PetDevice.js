@@ -18,6 +18,8 @@ router.get('/GetAllGPSDevice', function(req, res) {
     var search = {};
     var search1 = {};
     search1['$and'] = [];
+    var TelSearchflg = false;
+    var SalesAgSearchflg = false;
 
     var IsUserSuperAdmin = false;
     var IsCountryAll = false;
@@ -66,7 +68,14 @@ router.get('/GetAllGPSDevice', function(req, res) {
                                 search1['$or'].push(['tblgpsdevice.CreatedDate like ?', "%" + objSearch + "%"]);
                             } else if (columnName == 'SimNum') {
                                 search1['$or'].push(['tblgpsdevice.SimNum like ?', "%" + objSearch + "%"]);
+                            } else if (columnName == 'tbltelco.Name') {
+                                TelSearchflg = true;
+                                search1['$or'].push(['tbltelco.Name like ?', "%" + objSearch + "%"]);
+                            } else if (columnName == 'tbluserinformation.username') {
+                                SalesAgSearchflg = true;
+                                search1['$or'].push(['tbluserinformation.username like ?', "%" + objSearch + "%"]);
                             }
+
                         };
                     };
                 }
@@ -131,10 +140,10 @@ router.get('/GetAllGPSDevice', function(req, res) {
                         where: search,
                     }, {
                         model: TelCo,
-                        required: false,
+                        required: TelSearchflg,
                     }, {
                         model: User,
-                        required: false,
+                        required: SalesAgSearchflg,
                     }],
                 }).then(function(response) {
                     var response1 = new Object();
@@ -468,10 +477,10 @@ router.get('/GetAllPetbyCountry', function(req, res) {
                         offset: parseInt(objParam.start),
                         limit: parseInt(objParam.length),
                         include: [{
-                                model: User,
-                                required: true
-                            }]
-                            //include: model
+                            model: User,
+                            required: true
+                        }]
+                        //include: model
                     }).then(function(response) {
                         var PetList = [];
                         var response1 = new Object();
