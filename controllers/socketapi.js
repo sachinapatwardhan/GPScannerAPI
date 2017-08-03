@@ -131,6 +131,7 @@ function SendPushNotification(data, UserId, Type, PushNotificationType) {
             function SendNotification(i) {
                 if (i < response.length) {
                     connection.query("SELECT IsSecurity, Type from tbluserinformation where id=" + UserId, function(err, lstUser, fields) {
+                        console.log(lstUser);
                         if (lstUser[0].IsSecurity == true && Type == 'Shop') {
                             var deviceIds = [];
                             deviceIds.push(response[i].PushNotificationId)
@@ -531,6 +532,7 @@ global.Command5001 = function(line, Callback) {
                 Status: true
             }
             io.sockets.emit('BikeDeviceStatus', JSON.stringify(objConnection));
+            io.sockets.emit(DeviceId + 'BikeDeviceStatus', JSON.stringify(objConnection));
         });
 
     });
@@ -695,6 +697,7 @@ global.Command9955 = function(line, Callback) {
 
             if (Position == 'A') {
                 io.sockets.emit('BikeRoute', JSON.stringify(objConnection));
+                io.sockets.emit(deviceID + 'BikeRoute', JSON.stringify(objConnection));
             }
         });
 
@@ -2923,6 +2926,7 @@ router.get('/UpdateDeviceStatus', function(req, res) {
                         Status: ConnectionStatus
                     }
                     io.sockets.emit('BikeDeviceStatus', JSON.stringify(objConnection));
+                    io.sockets.emit(DeviceId + 'BikeDeviceStatus', JSON.stringify(objConnection));
                 });
             } else {
                 res.json("No Response");
@@ -3014,6 +3018,7 @@ var IsOnlineDeviceCheck = schedule.scheduleJob(rule, function() {
                                         Status: false
                                     }
                                     io.sockets.emit('BikeDeviceStatus', JSON.stringify(objConnection));
+                                    io.sockets.emit(objVehicleExistOnline.deviceid + 'BikeDeviceStatus', JSON.stringify(objConnection));
                                     setDeviceStatus(i + 1);
                                 })
                             } else {
@@ -3055,6 +3060,7 @@ var IsOnlineDeviceCheck = schedule.scheduleJob(rule, function() {
                                     Status: false
                                 }
                                 io.sockets.emit('BikeDeviceStatus', JSON.stringify(objConnection));
+                                io.sockets.emit(objVehicleExistOnline.deviceid + 'BikeDeviceStatus', JSON.stringify(objConnection));
                                 setDeviceStatus(i + 1);
                             })
                         } else {
