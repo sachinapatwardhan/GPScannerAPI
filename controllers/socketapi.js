@@ -697,7 +697,7 @@ global.Command9955 = function(line, Callback) {
 
             if (Position == 'A') {
                 io.sockets.emit('BikeRoute', JSON.stringify(objConnection));
-                io.sockets.emit(deviceID + 'BikeRoute', JSON.stringify(objConnection));
+                io.sockets.emit(DeviceId + 'BikeRoute', JSON.stringify(objConnection));
             }
         });
 
