@@ -1366,7 +1366,8 @@ global.Command9901 = function(line, Callback) {
             Datetime: unixDateStemp
         }
 
-        io.sockets.emit('canbusdata', JSON.stringify(objConnection));
+        io.sockets.emit(DeviceId + 'canbusdata', JSON.stringify(objConnection));
+        // io.sockets.emit('canbusdata', JSON.stringify(objConnection));
 
     });
 
@@ -1425,7 +1426,7 @@ global.Command9902 = function(line, Callback) {
             Datetime: unixDateStemp
         }
 
-        io.sockets.emit('drivingdata', JSON.stringify(objConnection));
+        io.sockets.emit(DeviceId + 'drivingdata', JSON.stringify(objConnection));
 
     });
 
