@@ -924,6 +924,7 @@ global.Command9999 = function(line, Callback) {
             AlarmCode: AlarmCode.toString(),
             DeviceId: DeviceId,
             Datetime: GPSDateTime,
+            Date: unixDateStemp,
         }
 
         // if (new Date(GPSDateTime) <= new Date()) {
