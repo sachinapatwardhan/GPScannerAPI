@@ -1343,8 +1343,8 @@ global.Command9901 = function(line, Callback) {
     var CurrentDate = GetCurrentDate();
     var unixDateStemp = Math.floor((new Date()).getTime() / 1000);
 
-    var query = "INSERT INTO tblcanbusdata (DeviceId,Datetime,BatteryVoltage,EngineSpeed,RunningSpeed,ThrottleOpeningWidth,EngineLoad,CoolantTemperature,InstantaneousFuelConsumption,AverageFuelConsumption,DrivingRange,TotalMileage,SingleFuelConsumptionVolume,CurrentErrorCodeNumbers,HarshAccelerationNo,HarshBrakeNo,CreatedDate) " +
-        "VALUES ('" + DeviceId + "', '" + unixDateStemp + "', '" + BatteryVoltage + "', '" + EngineSpeed + "', '" + RunningSpeed + "', '" + ThrottleOpeningWidth + "', '" + EngineLoad + "', '" + CoolantTemperature + "'," + InstantaneousFuelConsumption + "," + AverageFuelConsumption + "," + DrivingRange + "," + TotalMileage + "," + SingleFuelConsumptionVolume + "," + CurrentErrorCodeNumbers + "," + HarshAccelerationNo + "," + HarshBrakeNo + ",'" + CurrentDate + "');";
+    var query = "INSERT INTO tblcanbusdata (DeviceId,Datetime,BatteryVoltage,EngineSpeed,RunningSpeed,ThrottleOpeningWidth,EngineLoad,CoolantTemperature,InstantaneousFuelConsumption,AverageFuelConsumption,DrivingRange,TotalMileage,SingleFuelConsumptionVolume,TotalFuelConsumptionVolume,CurrentErrorCodeNumbers,HarshAccelerationNo,HarshBrakeNo,CreatedDate) " +
+        "VALUES ('" + DeviceId + "', '" + unixDateStemp + "', '" + BatteryVoltage + "', '" + EngineSpeed + "', '" + RunningSpeed + "', '" + ThrottleOpeningWidth + "', '" + EngineLoad + "', '" + CoolantTemperature + "'," + InstantaneousFuelConsumption + "," + AverageFuelConsumption + "," + DrivingRange + "," + TotalMileage + "," + SingleFuelConsumptionVolume + "," + TotalFuelConsumptionVolume + "," + CurrentErrorCodeNumbers + "," + HarshAccelerationNo + "," + HarshBrakeNo + ",'" + CurrentDate + "');";
     connection.query(query, function(err, rows, fields) {
 
         var objConnection = {
