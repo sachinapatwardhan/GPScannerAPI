@@ -32,31 +32,59 @@ router.get('/GetAllGpsData', function(req, res) {
         };
         search['$and'].push(obj);
     }
-    var StartDate = objParam.StartDate;
-    var EndDate = objParam.EndDate;
-    if (StartDate != '' && EndDate != '') {
-        StartDate = convertdateUTCformat(StartDate);
-        EndDate = convertdateUTCformat(EndDate);
+
+    var StartDate = convertdateUTCformat(objParam.StartDate);
+    var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
+
+    var EndDate = convertdateUTCformat(objParam.EndDate);
+    var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
+
+    if (objParam.StartDate != '' && objParam.EndDate != '') {
         var obj = new Object();
-        obj['CreatedDate'] = {
-            $between: [StartDate, EndDate]
+        obj['Date'] = {
+            $between: [unixStartdate, unixEndDate]
         };
         search['$and'].push(obj);
-    } else if (StartDate != null && StartDate != '') {
-        StartDate = convertdateUTCformat(StartDate);
+    } else if (objParam.StartDate != null && objParam.StartDate != '') {
         var obj = new Object();
-        obj['CreatedDate'] = {
-            $gt: StartDate
+        obj['Date'] = {
+            $gt: unixStartdate
         };
         search['$and'].push(obj);
-    } else if (EndDate != null && EndDate != '') {
-        EndDate = convertdateUTCformat(EndDate);
+    } else if (objParam.EndDate != null && objParam.EndDate != '') {
         var obj = new Object();
-        obj['CreatedDate'] = {
-            $lt: EndDate
+        obj['Date'] = {
+            $lt: unixEndDate
         };
         search['$and'].push(obj);
     }
+
+
+    // var StartDate = objParam.StartDate;
+    // var EndDate = objParam.EndDate;
+    // if (StartDate != '' && EndDate != '') {
+    //     StartDate = convertdateUTCformat(StartDate);
+    //     EndDate = convertdateUTCformat(EndDate);
+    //     var obj = new Object();
+    //     obj['CreatedDate'] = {
+    //         $between: [StartDate, EndDate]
+    //     };
+    //     search['$and'].push(obj);
+    // } else if (StartDate != null && StartDate != '') {
+    //     StartDate = convertdateUTCformat(StartDate);
+    //     var obj = new Object();
+    //     obj['CreatedDate'] = {
+    //         $gt: StartDate
+    //     };
+    //     search['$and'].push(obj);
+    // } else if (EndDate != null && EndDate != '') {
+    //     EndDate = convertdateUTCformat(EndDate);
+    //     var obj = new Object();
+    //     obj['CreatedDate'] = {
+    //         $lt: EndDate
+    //     };
+    //     search['$and'].push(obj);
+    // }
     Gps.findAndCountAll({
         where: search,
         order: Orderby,
@@ -115,26 +143,29 @@ router.get('/GetAllAlarm', function(req, res) {
         };
         search['$and'].push(obj2);
     }
-    var StartDate = objParam.StartDate;
-    var EndDate = objParam.EndDate;
-    if (StartDate != '' && EndDate != '') {
-        StartDate = convertdateUTCformat(StartDate);
-        EndDate = convertdateUTCformat(EndDate);
+
+    var StartDate = convertdateUTCformat(objParam.StartDate);
+    var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
+
+    var EndDate = convertdateUTCformat(objParam.EndDate);
+    var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
+
+    if (objParam.StartDate != '' && objParam.EndDate != '') {
         var obj = new Object();
-        obj['CreatedDate'] = {
-            $between: [StartDate, EndDate]
+        obj['Date'] = {
+            $between: [unixStartdate, unixEndDate]
         };
         search['$and'].push(obj);
-    } else if (StartDate != null && StartDate != '') {
+    } else if (objParam.StartDate != null && objParam.StartDate != '') {
         var obj = new Object();
-        obj['CreatedDate'] = {
-            $gt: StartDate
+        obj['Date'] = {
+            $gt: unixStartdate
         };
         search['$and'].push(obj);
-    } else if (EndDate != null && EndDate != '') {
+    } else if (objParam.EndDate != null && objParam.EndDate != '') {
         var obj = new Object();
-        obj['CreatedDate'] = {
-            $lt: EndDate
+        obj['Date'] = {
+            $lt: unixEndDate
         };
         search['$and'].push(obj);
     }
@@ -427,28 +458,28 @@ router.get('/ExportAlarm', function(req, res) {
         };
         search['$and'].push(obj);
     }
-    var StartDate = objParam.StartDate;
-    var EndDate = objParam.EndDate;
-    if (StartDate != '' && EndDate != '' && StartDate != undefined && EndDate != undefined) {
-        StartDate = convertdateUTCformat(StartDate);
-        EndDate = convertdateUTCformat(EndDate);
+    var StartDate = convertdateUTCformat(objParam.StartDate);
+    var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
+
+    var EndDate = convertdateUTCformat(objParam.EndDate);
+    var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
+
+    if (objParam.StartDate != '' && objParam.EndDate != '') {
         var obj = new Object();
-        obj['CreatedDate'] = {
-            $between: [StartDate, EndDate]
+        obj['Date'] = {
+            $between: [unixStartdate, unixEndDate]
         };
         search['$and'].push(obj);
-    } else if (StartDate != null && StartDate != '' && StartDate != undefined) {
-        StartDate = convertdateUTCformat(StartDate);
+    } else if (objParam.StartDate != null && objParam.StartDate != '') {
         var obj = new Object();
-        obj['CreatedDate'] = {
-            $gt: StartDate
+        obj['Date'] = {
+            $gt: unixStartdate
         };
         search['$and'].push(obj);
-    } else if (EndDate != null && EndDate != '' && EndDate != undefined) {
-        EndDate = convertdateUTCformat(EndDate);
+    } else if (objParam.EndDate != null && objParam.EndDate != '') {
         var obj = new Object();
-        obj['CreatedDate'] = {
-            $lt: EndDate
+        obj['Date'] = {
+            $lt: unixEndDate
         };
         search['$and'].push(obj);
     }
@@ -525,7 +556,6 @@ router.get('/ExportAlarm', function(req, res) {
     });
 });
 
-
 function convertdateformat(date1, flg) {
     var date = new Date(date1);
     var firstdayMonth = date.getMonth() + 1;
@@ -563,7 +593,6 @@ function convertdateUTCformat(date1, flg) {
     var firstdaySeconds = date.getUTCSeconds();
     //return ("0000" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("00" + firstdayDay.toString()).slice(-2) + " " + "00:00:00";
     return ("0000" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("00" + firstdayDay.toString()).slice(-2) + " " + ("00" + firstdayHours.toString()).slice(-2) + ':' + ("00" + firstdayMinutes.toString()).slice(-2) + ':' + ("00" + firstdaySeconds.toString()).slice(-2);
-
 }
 
 

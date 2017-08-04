@@ -449,6 +449,33 @@ router.get('/GetAllAlarmData', function(req, res) {
     var search = {};
     search['$and'] = [];
 
+    var StartDate = convertdateUTCformat(StartDate);
+    var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
+
+    var EndDate = convertdateUTCformat(EndDate);
+    var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
+
+    if (objParam.fromDate != '' && objParam.todate != '') {
+        var obj = new Object();
+        obj['Date'] = {
+            $between: [unixStartdate, unixEndDate]
+        };
+        search['$and'].push(obj);
+    } else if (objParam.fromDate != null && objParam.fromDate != '') {
+        var obj = new Object();
+        obj['Date'] = {
+            $gt: unixStartdate
+        };
+        search['$and'].push(obj);
+    } else if (objParam.todate != null && objParam.todate != '') {
+        var obj = new Object();
+        obj['Date'] = {
+            $lt: unixEndDate
+        };
+        search['$and'].push(obj);
+    }
+
+
     if (DeviceID != '' && DeviceID != undefined) {
         var obj = new Object();
         obj['DeviceID'] = {
@@ -457,35 +484,48 @@ router.get('/GetAllAlarmData', function(req, res) {
         };
         search['$and'].push(obj);
     }
-    if (StartDate != undefined && EndDate != undefined && StartDate != '' && EndDate != '') {
-        StartDate = StartDate;
-        EndDate = EndDate;
-        var obj = new Object();
-        obj['Datetime'] = {
-            $between: [StartDate, EndDate]
-        };
-        search['$and'].push(obj);
-    } else if (StartDate != null && StartDate != '' && StartDate != undefined) {
-        StartDate = StartDate;
-        var obj = new Object();
-        obj['Datetime'] = {
-            $gt: StartDate
-        };
-        search['$and'].push(obj);
-    } else if (EndDate != null && EndDate != '' && EndDate != undefined) {
-        EndDate = EndDate;
-        var obj = new Object();
-        obj['Datetime'] = {
-            $lt: EndDate
-        };
-        search['$and'].push(obj);
-    }
-    Alarm.findAll({ where: search, order: 'Datetime desc', limit: 50, offset: offset }).then(function(response) {
+    // if (StartDate != undefined && EndDate != undefined && StartDate != '' && EndDate != '') {
+    //     StartDate = StartDate;
+    //     EndDate = EndDate;
+    //     var obj = new Object();
+    //     obj['Datetime'] = {
+    //         $between: [StartDate, EndDate]
+    //     };
+    //     search['$and'].push(obj);
+    // } else if (StartDate != null && StartDate != '' && StartDate != undefined) {
+    //     StartDate = StartDate;
+    //     var obj = new Object();
+    //     obj['Datetime'] = {
+    //         $gt: StartDate
+    //     };
+    //     search['$and'].push(obj);
+    // } else if (EndDate != null && EndDate != '' && EndDate != undefined) {
+    //     EndDate = EndDate;
+    //     var obj = new Object();
+    //     obj['Datetime'] = {
+    //         $lt: EndDate
+    //     };
+    //     search['$and'].push(obj);
+    // }
+    Alarm.findAll({ where: search, order: 'Date desc', limit: 50, offset: offset }).then(function(response) {
         res.json(response);
     }).catch(function(error) {
         res.json(error);
     })
 })
+
+function convertdateUTCformat(date1, flg) {
+    var date = new Date(date1);
+    var firstdayMonth = date.getUTCMonth() + 1;
+    var firstdayDay = date.getUTCDate();
+    var firstdayYear = date.getUTCFullYear();
+    var firstdayHours = date.getUTCHours();
+    var firstdayMinutes = date.getUTCMinutes();
+    var firstdaySeconds = date.getUTCSeconds();
+    //return ("0000" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("00" + firstdayDay.toString()).slice(-2) + " " + "00:00:00";
+    return ("0000" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("00" + firstdayDay.toString()).slice(-2) + " " + ("00" + firstdayHours.toString()).slice(-2) + ':' + ("00" + firstdayMinutes.toString()).slice(-2) + ':' + ("00" + firstdaySeconds.toString()).slice(-2);
+}
+
 
 //End Pet Alarm
 module.exports = router

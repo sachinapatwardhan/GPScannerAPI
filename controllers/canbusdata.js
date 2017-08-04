@@ -32,31 +32,33 @@ router.get('/GetAllCanbusData', function(req, res) {
         };
         search['$and'].push(obj);
     }
-    var StartDate = objParam.StartDate;
-    var EndDate = objParam.EndDate;
-    if (StartDate != '' && EndDate != '') {
-        StartDate = convertdateUTCformat(StartDate);
-        EndDate = convertdateUTCformat(EndDate);
+
+    var StartDate = convertdateUTCformat(objParam.StartDate);
+    var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
+
+    var EndDate = convertdateUTCformat(objParam.EndDate);
+    var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
+
+    if (objParam.StartDate != '' && objParam.EndDate != '') {
         var obj = new Object();
-        obj['CreatedDate'] = {
-            $between: [StartDate, EndDate]
+        obj['Datetime'] = {
+            $between: [unixStartdate, unixEndDate]
         };
         search['$and'].push(obj);
-    } else if (StartDate != null && StartDate != '') {
-        StartDate = convertdateUTCformat(StartDate);
+    } else if (objParam.StartDate != null && objParam.StartDate != '') {
         var obj = new Object();
-        obj['CreatedDate'] = {
-            $gt: StartDate
+        obj['Datetime'] = {
+            $gt: unixStartdate
         };
         search['$and'].push(obj);
-    } else if (EndDate != null && EndDate != '') {
-        EndDate = convertdateUTCformat(EndDate);
+    } else if (objParam.EndDate != null && objParam.EndDate != '') {
         var obj = new Object();
-        obj['CreatedDate'] = {
-            $lt: EndDate
+        obj['Datetime'] = {
+            $lt: unixEndDate
         };
         search['$and'].push(obj);
     }
+
     CanBus.findAndCountAll({
         where: search,
         order: Orderby,
@@ -149,28 +151,28 @@ router.get('/ExportAllCanbusData', function(req, res) {
         };
         search['$and'].push(obj);
     }
-    var StartDate = objParam.StartDate;
-    var EndDate = objParam.EndDate;
-    if (StartDate != '' && EndDate != '' && StartDate != undefined && EndDate != undefined) {
-        StartDate = convertdateUTCformat(StartDate);
-        EndDate = convertdateUTCformat(EndDate);
+    var StartDate = convertdateUTCformat(objParam.StartDate);
+    var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
+
+    var EndDate = convertdateUTCformat(objParam.EndDate);
+    var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
+
+    if (objParam.StartDate != '' && objParam.EndDate != '') {
         var obj = new Object();
-        obj['CreatedDate'] = {
-            $between: [StartDate, EndDate]
+        obj['Datetime'] = {
+            $between: [unixStartdate, unixEndDate]
         };
         search['$and'].push(obj);
-    } else if (StartDate != null && StartDate != '' && StartDate != undefined) {
-        StartDate = convertdateUTCformat(StartDate);
+    } else if (objParam.StartDate != null && objParam.StartDate != '') {
         var obj = new Object();
-        obj['CreatedDate'] = {
-            $gt: StartDate
+        obj['Datetime'] = {
+            $gt: unixStartdate
         };
         search['$and'].push(obj);
-    } else if (EndDate != null && EndDate != '' && EndDate != undefined) {
-        EndDate = convertdateUTCformat(EndDate);
+    } else if (objParam.EndDate != null && objParam.EndDate != '') {
         var obj = new Object();
-        obj['CreatedDate'] = {
-            $lt: EndDate
+        obj['Datetime'] = {
+            $lt: unixEndDate
         };
         search['$and'].push(obj);
     }
@@ -307,28 +309,28 @@ router.get('/GetAllDrivingBehavior', function(req, res) {
         };
         search['$and'].push(obj);
     }
-    var StartDate = objParam.StartDate;
-    var EndDate = objParam.EndDate;
-    if (StartDate != '' && EndDate != '') {
-        StartDate = convertdateUTCformat(StartDate);
-        EndDate = convertdateUTCformat(EndDate);
+    var StartDate = convertdateUTCformat(objParam.StartDate);
+    var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
+
+    var EndDate = convertdateUTCformat(objParam.EndDate);
+    var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
+
+    if (objParam.StartDate != '' && objParam.EndDate != '') {
         var obj = new Object();
-        obj['CreatedDate'] = {
-            $between: [StartDate, EndDate]
+        obj['Datetime'] = {
+            $between: [unixStartdate, unixEndDate]
         };
         search['$and'].push(obj);
-    } else if (StartDate != null && StartDate != '') {
-        StartDate = convertdateUTCformat(StartDate);
+    } else if (objParam.StartDate != null && objParam.StartDate != '') {
         var obj = new Object();
-        obj['CreatedDate'] = {
-            $gt: StartDate
+        obj['Datetime'] = {
+            $gt: unixStartdate
         };
         search['$and'].push(obj);
-    } else if (EndDate != null && EndDate != '') {
-        EndDate = convertdateUTCformat(EndDate);
+    } else if (objParam.EndDate != null && objParam.EndDate != '') {
         var obj = new Object();
-        obj['CreatedDate'] = {
-            $lt: EndDate
+        obj['Datetime'] = {
+            $lt: unixEndDate
         };
         search['$and'].push(obj);
     }
@@ -406,28 +408,28 @@ router.get('/ExportAllDrivingData', function(req, res) {
         };
         search['$and'].push(obj);
     }
-    var StartDate = objParam.StartDate;
-    var EndDate = objParam.EndDate;
-    if (StartDate != '' && EndDate != '' && StartDate != undefined && EndDate != undefined) {
-        StartDate = convertdateUTCformat(StartDate);
-        EndDate = convertdateUTCformat(EndDate);
+    var StartDate = convertdateUTCformat(objParam.StartDate);
+    var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
+
+    var EndDate = convertdateUTCformat(objParam.EndDate);
+    var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
+
+    if (objParam.StartDate != '' && objParam.EndDate != '') {
         var obj = new Object();
-        obj['CreatedDate'] = {
-            $between: [StartDate, EndDate]
+        obj['Datetime'] = {
+            $between: [unixStartdate, unixEndDate]
         };
         search['$and'].push(obj);
-    } else if (StartDate != null && StartDate != '' && StartDate != undefined) {
-        StartDate = convertdateUTCformat(StartDate);
+    } else if (objParam.StartDate != null && objParam.StartDate != '') {
         var obj = new Object();
-        obj['CreatedDate'] = {
-            $gt: StartDate
+        obj['Datetime'] = {
+            $gt: unixStartdate
         };
         search['$and'].push(obj);
-    } else if (EndDate != null && EndDate != '' && EndDate != undefined) {
-        EndDate = convertdateUTCformat(EndDate);
+    } else if (objParam.EndDate != null && objParam.EndDate != '') {
         var obj = new Object();
-        obj['CreatedDate'] = {
-            $lt: EndDate
+        obj['Datetime'] = {
+            $lt: unixEndDate
         };
         search['$and'].push(obj);
     }
