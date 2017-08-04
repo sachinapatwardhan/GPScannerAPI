@@ -196,7 +196,7 @@ router.get('/GetVehicleAlarmByUser', function(req, res) {
             search += " Where tp.DeviceId = '" + req.query.DeviceId + "'";
         }
     }
-    var query = "select tp.Id,tp.CreatedDate,tp.Datetime,tp.DeviceId,tp.Speed,tp.AlarmCode, tpg.id,tpg.Name from tblalarm tp inner join tblvehicle tpg";
+    var query = "select tp.Id,tp.CreatedDate,tp.Datetime,tp.Date,tp.DeviceId,tp.Speed,tp.AlarmCode, tpg.id,tpg.Name from tblalarm tp inner join tblvehicle tpg";
     query += search;
 
     var limit = 10;

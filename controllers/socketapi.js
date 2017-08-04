@@ -797,10 +797,10 @@ global.Command9955 = function(line, Callback) {
                                                 message = objBike.Name + ' is in Fence.';
                                             }
                                         }
-
+                                        console.log(unixDateStemp);
                                         connection.query('UPDATE tblfence set IsInFence=' + IsPetInFence + ' WHERE id=' + rows[j].id, function(err, rowsFence, fields) {
                                             console.log(err)
-                                            var Alarmquery = "INSERT INTO tblalarm (Datetime,Latitude,Longitude,GPSPositioning,Speed,Direction,Status,DeviceId,AlarmCode,CreatedDate ) VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + inputoutputSTatus + "', '" + DeviceId + "','" + AlarmCode + "','" + CurrentDate + "');";
+                                            var Alarmquery = "INSERT INTO tblalarm (Datetime, Date, Latitude,Longitude,GPSPositioning,Speed,Direction,Status,DeviceId,AlarmCode,CreatedDate ) VALUES ('" + GPSDateTime + "', '" + unixDateStemp + "' '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + inputoutputSTatus + "', '" + DeviceId + "','" + AlarmCode + "','" + CurrentDate + "');";
                                             // var Alarmquery = "INSERT INTO tblalarm (Datetime,Latitude,Longitude,GPSPositioning,Speed,Direction,Status,ReservedSign,ReservedSelection,DeviceId,AlarmCode ) VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + Status + "', '" + Sign + "', '" + ReserveSection + "', '" + deviceID + "','" + AlarmCode + "');";
                                             connection.query(Alarmquery, function(err1, Alarmrows, fields) {
 
@@ -896,7 +896,8 @@ global.Command9999 = function(line, Callback) {
     var GPSDateTime = year + "-" + month + "-" + day + " " + hour + ":" + min + ":" + sec;
     var GPSDate = year + "-" + month + "-" + day;
     var CurrentDate = GetCurrentDate();
-
+    var convertDate = convertdateformat(GPSDateTime);
+    var unixDateStemp = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
     var Latitude = global.deg_to_lat_long(Lat, LatDirection);
     var Longitude = global.deg_to_lat_long(Lan, LanDirection);
 
@@ -909,7 +910,7 @@ global.Command9999 = function(line, Callback) {
     // console.log(Longitude)
     // console.log(GPSDateTime)
 
-    var query = "INSERT INTO tblalarm (Datetime,Latitude,Longitude,GPSPositioning,Speed,Direction,Status,DeviceId,AlarmCode,CreatedDate ) VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + inputoutputSTatus + "', '" + DeviceId + "','" + AlarmCode + "','" + CurrentDate + "');";
+    var query = "INSERT INTO tblalarm (Datetime, Date, Latitude,Longitude,GPSPositioning,Speed,Direction,Status,DeviceId,AlarmCode,CreatedDate ) VALUES ('" + GPSDateTime + "', '" + unixDateStemp + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + inputoutputSTatus + "', '" + DeviceId + "','" + AlarmCode + "','" + CurrentDate + "');";
     connection.query(query, function(err, rows, fields) {
         // console.log("Alarm");
         // console.log(err);

@@ -47,6 +47,10 @@ module.exports = function(sequelize, DataTypes) {
     Datetime: {
       type: DataTypes.DATE,
       allowNull: true
+    },
+    Date: {
+      type: DataTypes.BIGINT,
+      allowNull: true
     }
   }, {
     tableName: 'tblalarm'
