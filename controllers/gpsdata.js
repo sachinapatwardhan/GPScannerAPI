@@ -3,6 +3,7 @@ var User = models.tbluserinformation;
 var Gps = models.tblgpsdata;
 var GpsDevice = models.tblgpsdevice;
 var Alarm = models.tblalarm;
+var Bike = models.tblvehicle;
 //gpsdata
 router.get('/GetAllGpsData', function(req, res) {
     var objParam = req.query;
@@ -665,6 +666,140 @@ function AlarmCodedata() {
     return ResponseAlarm;
 
 }
+
+//get speedreport
+
+router.get('/GetAllvehicleByUser', function(req, res) {
+    Bike.findAll({
+        where: {
+            idUser: req.query.idUser
+        }
+    }).then(function(resbike) {
+        res.json(resbike);
+    }).catch(function(error) {
+        res.json(error);
+    })
+})
+
+router.get('/GetAllSpeedDataReport', function(req, res) {
+    var objParam = req.query;
+    var WhereCondition = " Where Bike.idUser= " + req.query.idUser;
+
+    if (objParam.StartDate != '' && objParam.EndDate != '') {
+        var StartDate = convertdateUTCformat(objParam.StartDate);
+        var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
+        var EndDate = convertdateUTCformat(objParam.EndDate);
+        var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
+        WhereCondition += " And Gps.Date between '" + unixStartdate + "' And '" + unixEndDate + "'";
+
+    } else if (objParam.StartDate != null && objParam.StartDate != '') {
+        var StartDate = convertdateUTCformat(objParam.StartDate);
+        var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
+        WhereCondition += " And Gps.Date >='" + unixStartdate + "'";
+    } else if (objParam.EndDate != null && objParam.EndDate != '') {
+        var EndDate = convertdateUTCformat(objParam.EndDate);
+        var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
+        WhereCondition += " And Gps.Date <='" + unixEndDate + "'";
+
+    }
+    if (objParam.Speed != null && objParam.Speed != undefined && objParam.Speed != '') {
+        WhereCondition += " And Gps.Speed >= " + objParam.Speed;
+    }
+    if (objParam.DeviceId != null && objParam.DeviceId != undefined && objParam.DeviceId != '') {
+        WhereCondition += " And Gps.DeviceId = " + objParam.DeviceId;
+    }
+    var query = "SELECT User.username,Bike.MaxSpeed,Bike.Name,Bike.IsOnline,Gps.* FROM gpsscanner.tblvehicle  AS Bike left join  tblgpsdata AS Gps on Gps.DeviceId = Bike.deviceid left join  tbluserinformation AS User on Bike.iduser = User.id " + WhereCondition + " order by Gps.Date Desc";
+
+    console.log("**************", query)
+    connection.query(query, function(err, response, fields) {
+        console.log(err)
+        res.json(response)
+    });
+})
+
+// Export
+
+router.get('/ExportAllSpeedDataReport', function(req, res) {
+
+    var conf = {};
+    conf.name = "Sheet1";
+    conf.cols = [{
+        caption: 'Assest Name',
+        type: 'string'
+    }, {
+        caption: 'DateTime',
+        type: 'string'
+    }, {
+        caption: 'Speed',
+        type: 'string'
+    }, ];
+
+
+    var objParam = req.query;
+    var WhereCondition = " Where Bike.idUser= " + req.query.idUser;
+
+    if (objParam.StartDate != '' && objParam.EndDate != '') {
+        var StartDate = convertdateUTCformat(objParam.StartDate);
+        var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
+        var EndDate = convertdateUTCformat(objParam.EndDate);
+        var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
+        WhereCondition += " And Gps.Date between '" + unixStartdate + "' And '" + unixEndDate + "'";
+
+    } else if (objParam.StartDate != null && objParam.StartDate != '') {
+        var StartDate = convertdateUTCformat(objParam.StartDate);
+        var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
+        WhereCondition += " And Gps.Date >='" + unixStartdate + "'";
+    } else if (objParam.EndDate != null && objParam.EndDate != '') {
+        var EndDate = convertdateUTCformat(objParam.EndDate);
+        var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
+        WhereCondition += " And Gps.Date <='" + unixEndDate + "'";
+
+    }
+    if (objParam.Speed != null && objParam.Speed != undefined && objParam.Speed != '') {
+        WhereCondition += " And Gps.Speed >= " + objParam.Speed;
+    }
+    if (objParam.DeviceId != null && objParam.DeviceId != undefined && objParam.DeviceId != '') {
+        WhereCondition += " And Gps.DeviceId = " + objParam.DeviceId;
+    }
+
+
+    var query = "SELECT User.username,Bike.MaxSpeed,Bike.Name,Bike.IsOnline,Gps.* FROM gpsscanner.tblvehicle  AS Bike left join  tblgpsdata AS Gps on Gps.DeviceId = Bike.deviceid left join  tbluserinformation AS User on Bike.iduser = User.id " + WhereCondition + " order by Gps.Date Desc";
+    connection.query(query, function(err, response, fields) {
+        conf.rows = [];
+        var Name = '';
+        var DisplayDate = '';
+        var Speed = '';
+
+        GetSpeedData(0);
+
+        function GetSpeedData(i) {
+            if (i < response.length) {
+                var row = [];
+                if (response[i].Name != null && response[i].Name != '' && response[i].Name != undefined) {
+                    Name = response[i].Name;
+                }
+
+                if (response[i].Date != null && response[i].Date != '' && response[i].Date != undefined) {
+                    var Dates = new Date(response[i].Date * 1000);
+                    DisplayDate = moment(Dates).format('DD-MM-YYYY hh:mm:ss a');
+                }
+                if (response[i].Speed != null && response[i].Speed != '' && response[i].Speed != undefined) {
+                    Speed = response[i].Speed;
+                }
+                row.push(Name, DisplayDate, Speed);
+                conf.rows.push(row);
+                GetSpeedData(i + 1);
+            } else {
+                var result = nodeExcel.execute(conf);
+                res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+                res.setHeader("Content-Disposition", "attachment; filename=SpeedReport.xlsx");
+                res.end(result, 'binary');
+            }
+
+        }
+    });
+})
+
 
 module.exports = router;
 //End of Tables
