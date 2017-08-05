@@ -456,6 +456,7 @@ app.use('/canbusdata', require('./controllers/canbusdata'))
 app.use('/telco', require('./controllers/telco'))
 app.use('/MapData', require('./controllers/MapData'))
 app.use('/homepage', require('./controllers/homepage'))
+app.use('/Report', require('./controllers/Report'));
 
 //socket API End
 
