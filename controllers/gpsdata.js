@@ -5,6 +5,7 @@ var GpsDevice = models.tblgpsdevice;
 var Alarm = models.tblalarm;
 var Bike = models.tblvehicle;
 //gpsdata
+
 router.get('/GetAllGpsData', function(req, res) {
     var objParam = req.query;
     var objColumns = objParam.columns;
@@ -712,8 +713,11 @@ router.get('/GetAllSpeedDataReport', function(req, res) {
 
     console.log("**************", query)
     connection.query(query, function(err, response, fields) {
-        console.log(err)
-        res.json(response)
+        if (!err) {
+            res.json(response)
+        } else {
+            res.json([])
+        }
     });
 })
 
@@ -784,7 +788,7 @@ router.get('/ExportAllSpeedDataReport', function(req, res) {
                     DisplayDate = moment(Dates).format('DD-MM-YYYY hh:mm:ss a');
                 }
                 if (response[i].Speed != null && response[i].Speed != '' && response[i].Speed != undefined) {
-                    Speed = response[i].Speed;
+                    Speed = parseFloat(response[i].Speed).toFixed(2);
                 }
                 row.push(Name, DisplayDate, Speed);
                 conf.rows.push(row);
@@ -801,5 +805,234 @@ router.get('/ExportAllSpeedDataReport', function(req, res) {
 })
 
 
+//Get Working Hour report 
+
+router.get('/GetAllWoringHourForReport', function(req, res) {
+    var objParam = req.query;
+    var WhereCondition = " Where Bike.idUser= " + req.query.idUser;
+
+    if (objParam.StartDate != '' && objParam.EndDate != '') {
+        var StartDate = convertdateUTCformat(objParam.StartDate);
+        var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
+        var EndDate = convertdateUTCformat(objParam.EndDate);
+        var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
+        WhereCondition += " And Gps.Date between '" + unixStartdate + "' And '" + unixEndDate + "'";
+
+    } else if (objParam.StartDate != null && objParam.StartDate != '') {
+        var StartDate = convertdateUTCformat(objParam.StartDate);
+        var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
+        WhereCondition += " And Gps.Date >='" + unixStartdate + "'";
+    } else if (objParam.EndDate != null && objParam.EndDate != '') {
+        var EndDate = convertdateUTCformat(objParam.EndDate);
+        var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
+        WhereCondition += " And Gps.Date <='" + unixEndDate + "'";
+
+    }
+    if (objParam.DeviceId != null && objParam.DeviceId != undefined && objParam.DeviceId != '') {
+        WhereCondition += " And Gps.DeviceId = " + objParam.DeviceId;
+    }
+
+    var query = "select " +
+        "Min(Date) AS StartDate, " +
+        "Max(Date) AS EndDate, " +
+        "Min(Speed) AS MinSpeed, " +
+        "Max(Speed) AS MaxSpeed, " +
+        "AVG(Speed) AS AVGSpeed, " +
+        "Bike.Name AS BikeName, " +
+        "SUBSTRING_INDEX(GROUP_CONCAT(CAST(Latitude AS CHAR) ORDER BY Date), ',', 1 ) as StartLatitude, " +
+        "SUBSTRING_INDEX(GROUP_CONCAT(CAST(Longitude AS CHAR) ORDER BY Date), ',', 1 ) as StartLongitude, " +
+        "SUBSTRING_INDEX(GROUP_CONCAT(CAST(Latitude AS CHAR) ORDER BY Date DESC), ',', 1 ) as EndLatitude, " +
+        "SUBSTRING_INDEX(GROUP_CONCAT(CAST(Longitude AS CHAR) ORDER BY Date DESC), ',', 1 ) as EndLongitude, " +
+        "gps.*" +
+        "from tblvehicle  As Bike " +
+        "inner  join tblgpsdata as gps " +
+        "on " +
+        "gps.DeviceId = Bike.deviceid " +
+        WhereCondition +
+        " Group by gps.DeviceId " +
+
+        " order by gps.Date Desc";
+    connection.query(query, function(err, response, fields) {
+        console.log("=================>", response.length)
+        if (!err) {
+            res.json(response)
+        } else {
+            res.json([])
+        }
+    });
+})
+
+//export Working Hour
+router.get('/ExportAllWoringHourForReport', function(req, res) {
+    var conf = {};
+    conf.name = "Sheet1";
+    conf.cols = [{
+            caption: 'Assest Name',
+            type: 'string'
+        }, {
+            caption: 'StartDate',
+            type: 'string'
+        }, {
+            caption: 'EndDate',
+            type: 'string'
+        },
+        {
+            caption: 'Start Time',
+            type: 'string'
+        },
+        {
+            caption: 'End Time',
+            type: 'string'
+        },
+        {
+            caption: 'Start Latitude',
+            type: 'string'
+        },
+        {
+            caption: 'Start Longitude',
+            type: 'string'
+        },
+        {
+            caption: 'End Latitude',
+            type: 'string'
+        },
+        {
+            caption: 'End Longitude',
+            type: 'string'
+        },
+        {
+            caption: 'Minimum Speed',
+            type: 'string'
+        },
+        {
+            caption: 'Maximum Speed',
+            type: 'string'
+        },
+        {
+            caption: 'Avg Speed',
+            type: 'string'
+        },
+    ];
+
+
+    var objParam = req.query;
+    var WhereCondition = " Where Bike.idUser= " + req.query.idUser;
+
+    if (objParam.StartDate != '' && objParam.EndDate != '') {
+        var StartDate = convertdateUTCformat(objParam.StartDate);
+        var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
+        var EndDate = convertdateUTCformat(objParam.EndDate);
+        var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
+        WhereCondition += " And Gps.Date between '" + unixStartdate + "' And '" + unixEndDate + "'";
+
+    } else if (objParam.StartDate != null && objParam.StartDate != '') {
+        var StartDate = convertdateUTCformat(objParam.StartDate);
+        var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
+        WhereCondition += " And Gps.Date >='" + unixStartdate + "'";
+    } else if (objParam.EndDate != null && objParam.EndDate != '') {
+        var EndDate = convertdateUTCformat(objParam.EndDate);
+        var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
+        WhereCondition += " And Gps.Date <='" + unixEndDate + "'";
+
+    }
+    if (objParam.DeviceId != null && objParam.DeviceId != undefined && objParam.DeviceId != '') {
+        WhereCondition += " And Gps.DeviceId = " + objParam.DeviceId;
+    }
+
+    var query = "select " +
+        "Min(Date) AS StartDate, " +
+        "Max(Date) AS EndDate, " +
+        "Min(Speed) AS MinSpeed, " +
+        "Max(Speed) AS MaxSpeed, " +
+        "AVG(Speed) AS AVGSpeed, " +
+        "Bike.Name AS BikeName, " +
+        "SUBSTRING_INDEX(GROUP_CONCAT(CAST(Latitude AS CHAR) ORDER BY Date), ',', 1 ) as StartLatitude, " +
+        "SUBSTRING_INDEX(GROUP_CONCAT(CAST(Longitude AS CHAR) ORDER BY Date), ',', 1 ) as StartLongitude, " +
+        "SUBSTRING_INDEX(GROUP_CONCAT(CAST(Latitude AS CHAR) ORDER BY Date DESC), ',', 1 ) as EndLatitude, " +
+        "SUBSTRING_INDEX(GROUP_CONCAT(CAST(Longitude AS CHAR) ORDER BY Date DESC), ',', 1 ) as EndLongitude, " +
+        "gps.*" +
+        "from tblvehicle  As Bike " +
+        "inner  join tblgpsdata as gps " +
+        "on " +
+        "gps.DeviceId = Bike.deviceid " +
+        WhereCondition +
+        " Group by gps.DeviceId " +
+
+        " order by gps.Date Desc";
+    connection.query(query, function(err, response, fields) {
+        conf.rows = [];
+        var BikeName = '';
+        var DisplayStartDate = '';
+        var DisplayEndDate = '';
+        var DisplayStartTime = '';
+        var DisplayEndTime = '';
+        var StartLatitude = '';
+        var StartLongitude = '';
+        var MinSpeed = '';
+        var MaxSpeed = '';
+        var AVGSpeed = '';
+        var EndLatitude = '';
+        var EndLongitude = '';
+
+        GetData(0);
+
+        function GetData(i) {
+            if (i < response.length) {
+                var row = [];
+                if (response[i].BikeName != null && response[i].BikeName != '' && response[i].BikeName != undefined) {
+                    BikeName = response[i].BikeName;
+                }
+
+                if (response[i].StartDate != null && response[i].StartDate != '' && response[i].StartDate != undefined) {
+                    var Dates = new Date(response[i].StartDate * 1000);
+                    DisplayStartDate = moment(Dates).format('DD-MM-YYYY');
+                }
+                if (response[i].EndDate != null && response[i].EndDate != '' && response[i].EndDate != undefined) {
+                    var Datess = new Date(response[i].EndDate * 1000);
+                    DisplayEndDate = moment(Datess).format('DD-MM-YYYY');
+                }
+
+                if (response[i].StartDate != null && response[i].StartDate != '' && response[i].StartDate != undefined) {
+                    var Dates = new Date(response[i].StartDate * 1000);
+                    DisplayStartTime = moment(Dates).format('hh:mm:ss a');
+                }
+                if (response[i].EndDate != null && response[i].EndDate != '' && response[i].EndDate != undefined) {
+                    var Datess = new Date(response[i].EndDate * 1000);
+                    DisplayEndTime = moment(Datess).format('hh:mm:ss a');
+                }
+                if (response[i].StartLatitude != null && response[i].StartLatitude != '' && response[i].StartLatitude != undefined) {
+                    StartLatitude = response[i].StartLatitude;
+                }
+                if (response[i].StartLongitude != null && response[i].StartLongitude != '' && response[i].StartLongitude != undefined) {
+                    StartLongitude = response[i].StartLongitude;
+                }
+                if (response[i].EndLatitude != null && response[i].EndLatitude != '' && response[i].EndLatitude != undefined) {
+                    EndLatitude = response[i].EndLatitude;
+                }
+                if (response[i].EndLongitude != null && response[i].EndLongitude != '' && response[i].EndLongitude != undefined) {
+                    EndLongitude = response[i].EndLongitude;
+                }
+                if (response[i].MinSpeed != null && response[i].MinSpeed != '' && response[i].MinSpeed != undefined) {
+                    MinSpeed = parseFloat(response[i].MinSpeed).toFixed(2);
+                }
+                if (response[i].MaxSpeed != null && response[i].MaxSpeed != '' && response[i].MaxSpeed != undefined) {
+                    MaxSpeed = parseFloat(response[i].MaxSpeed).toFixed(2);
+                }
+                if (response[i].AVGSpeed != null && response[i].AVGSpeed != '' && response[i].AVGSpeed != undefined) {
+                    AVGSpeed = parseFloat(response[i].AVGSpeed).toFixed(2);
+                }
+                row.push(BikeName, DisplayStartDate, DisplayEndDate, DisplayStartTime, DisplayEndTime, StartLatitude, StartLongitude, EndLatitude, EndLongitude, MinSpeed, MaxSpeed, AVGSpeed);
+                conf.rows.push(row);
+                GetData(i + 1);
+            } else {
+                var result = nodeExcel.execute(conf);
+                res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+                res.setHeader("Content-Disposition", "attachment; filename=WorkingHourReport.xlsx");
+                res.end(result, 'binary');
+            }
+
+        }
+    });
+})
 module.exports = router;
 //End of Tables
