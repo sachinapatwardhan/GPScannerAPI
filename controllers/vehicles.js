@@ -6,6 +6,7 @@ var Vehicle = models.tblvehicle;
 var UserInRole = models.tbluserinrole;
 var DrivingData = models.tbldrivingdata;
 var GPSData = models.tblgpsdata;
+var Alarm = models.tblalarm;
 //End of Tables
 
 router.get('/GetAllDynamicVehicle', function(req, res) {
@@ -311,8 +312,102 @@ router.get('/GetVehicleCurrentLocation', function(req, res) {
     })
 });
 
+router.get('/GetAllFenceInAndOutData', function(req, res) {
+    var objParam = req.query;
+    var Orderby = 'Date DESC';
+    var search = "";
+    // var StartDate = convertdateformatForUnix(objParam.StartDate);
+    // console.log(StartDate);
+    var unixStartdate = new Date(objParam.StartDate).getTime() / 1000;
+
+    // var EndDate = convertdateformatForUnix(objParam.EndDate);
+    // console.log(EndDate);
+    var unixEndDate = new Date(objParam.EndDate).getTime() / 1000;
+
+    if (objParam.DeviceId != null && objParam.DeviceId != 'All' && objParam.DeviceId != undefined) {
+        if (search != "") {
+            search += " And tblalarm.DeviceId = " + objParam.DeviceId;
+        } else {
+            search += " Where tblalarm.DeviceId = " + objParam.DeviceId;
+        }
+    }
+
+    if (objParam.StartDate != null && objParam.StartDate != '' && objParam.StartDate != undefined) {
+        if (search != "") {
+            search += " And tblalarm.Date >= '" + unixStartdate + "'";
+        } else {
+            search += " Where tblalarm.Date >= '" + unixStartdate + "'";
+        }
+    }
+
+    if (objParam.EndDate != null && objParam.EndDate != '' && objParam.EndDate != undefined) {
+        if (search != "") {
+            search += " And tblalarm.Date <= '" + unixEndDate + "'";
+        } else {
+            search += " Where tblalarm.Date <= '" + unixEndDate + "'";
+        }
+    }
+
+    if (search != "") {
+        search += " And tblalarm.AlarmCode IN ('06', '66')";
+    } else {
+        search += " Where tblalarm.AlarmCode IN ('06', '66')";
+    }
+
+    var query = "Select tblalarm.* , tblvehicle.iduser, tblvehicle.Name, tblvehicle.IsOnline from tblalarm left join tblvehicle On tblvehicle.deviceid = tblalarm.DeviceId " + search;
+
+    connection.query(query, function(err, response) {
+        if (response != undefined) {
+            res.json(response);
+        } else {
+            var response1 = new Object()
+            res.json(response1);
+        }
+    })
+
+    // // var AlarmCode = objParam.AlarmCode;
+
+
+
+    // if (objParam.StartDate != '' && objParam.EndDate != '') {
+    //     var obj = new Object();
+    //     obj['Date'] = {
+    //         $between: [unixStartdate, unixEndDate]
+    //     };
+    //     search['$and'].push(obj);
+    // } else if (objParam.StartDate != null && objParam.StartDate != '') {
+    //     var obj = new Object();
+    //     obj['Date'] = {
+    //         $gt: unixStartdate
+    //     };
+    //     search['$and'].push(obj);
+    // } else if (objParam.EndDate != null && objParam.EndDate != '') {
+    //     var obj = new Object();
+    //     obj['Date'] = {
+    //         $lt: unixEndDate
+    //     };
+    //     search['$and'].push(obj);
+    // }
+
+    // Alarm.findAndCountAll({
+    //     where: search,
+    //     order: Orderby,
+    //     // offset: parseInt(objParam.start),
+    //     // limit: parseInt(objParam.length),
+    // }).then(function(response) {
+    //     // var response1 = new Object();
+    //     // response1.draw = objParam.draw;
+    //     // response1.recordsTotal = response.count;
+    //     // response1.recordsFiltered = response.count;
+    //     // response1.data = response.rows;
+    //     res.json(response);
+    // }).catch(function(error) {
+    //     res.json(error);
+    // })
+})
+
 function convertdateformatForUnix(date1) {
-    var date = new Date(date1);
+    var date = date1;
     var firstdayMonth = date.getMonth() + 1;
     var firstdayDay = date.getDate();
     var firstdayYear = date.getFullYear();
@@ -320,7 +415,7 @@ function convertdateformatForUnix(date1) {
     var firstdayMinutes = date.getMinutes();
     var firstdaySeconds = date.getSeconds();
 
-    return ("00" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("0000" + firstdayDay.toString()).slice(-2) + " " + ("00" + firstdayHours.toString()).slice(-2) + ':' + ("00" + firstdayMinutes.toString()).slice(-2) + ':' + ("00" + firstdaySeconds.toString()).slice(-2);
+    return ("0000" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("00" + firstdayDay.toString()).slice(-2) + " " + ("00" + firstdayHours.toString()).slice(-2) + ':' + ("00" + firstdayMinutes.toString()).slice(-2) + ':' + ("00" + firstdaySeconds.toString()).slice(-2);
 
 }
 
