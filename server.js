@@ -24,6 +24,18 @@ global.moment = require('moment');
 global.crc = require('crc');
 global.net = require('net');
 
+global.NodeGeocoder = require('node-geocoder');
+var options = {
+    provider: 'google',
+
+    // Optional depending on the providers
+    httpAdapter: 'https', // Default
+    apiKey: 'AIzaSyAzzv0uzTJsDnsxVoBKYg1xNn8bCBrMErM', // for Mapquest, OpenCage, Google Premier
+    formatter: null // 'gpx', 'string', ...
+};
+global.geocoder = NodeGeocoder(options);
+
+
 global.MysqlHost = '192.168.1.209';
 global.Mysqluser = 'di';
 global.Mysqlpassword = 'di123##';
