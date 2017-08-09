@@ -527,9 +527,14 @@ router.get('/ExportEngineReport', function(req, res) {
                             lstEngine.push(response[k]);
                             COuntEngineOff = 0;
                             COuntEngineOn = COuntEngineOn + 1;
-                            FilterArray(k + 1);
+                            setTimeout(function() {
+                                FilterArray(k + 1);
+                            }, 10)
+
                         } else {
-                            FilterArray(k + 1);
+                            setTimeout(function() {
+                                FilterArray(k + 1);
+                            }, 10)
                             COuntEngineOff = 0;
                             COuntEngineOn = COuntEngineOn + 1;
                         }
@@ -538,11 +543,15 @@ router.get('/ExportEngineReport', function(req, res) {
                             lstEngine.push(response[k]);
                             COuntEngineOn = 0;
                             COuntEngineOff = COuntEngineOff + 1;
-                            FilterArray(k + 1);
+                            setTimeout(function() {
+                                FilterArray(k + 1);
+                            }, 10)
                         } else {
                             COuntEngineOn = 0;
                             COuntEngineOff = COuntEngineOff + 1;
-                            FilterArray(k + 1);
+                            setTimeout(function() {
+                                FilterArray(k + 1);
+                            }, 10)
                         }
 
                     }
@@ -603,7 +612,10 @@ router.get('/ExportEngineReport', function(req, res) {
 
                         row.push(Name.toString(), Status.toString(), ContinueTime.toString(), StartTime.toString(), EndTime.toString(), Mileage.toString());
                         conf.rows.push(row);
-                        GetData(i + 1);
+
+                        setTimeout(function() {
+                            GetData(i + 1);
+                        }, 10)
                     } else {
                         var result = nodeExcel.execute(conf);
                         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
