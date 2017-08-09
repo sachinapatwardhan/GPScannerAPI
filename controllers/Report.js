@@ -180,10 +180,14 @@ router.get('/ExportDetailTripReport', function(req, res) {
                         if (response[i].Longitude != null && response[i].Longitude != '' && response[i].Longitude != undefined) {
                             Longitude = response[i].Longitude;
                         }
-
-                        if (res.length > 0) {
-                            Address = res[0].formattedAddress;
-                            row.push(Name.toString(), TIme.toString(), Address.toString(), DeviceStatus.toString(), AssetStatus.toString(), Speed, Fuleper, Fulelett, Mileage, Temp, GPSSignal.toString(), Direction, Latitude, Longitude);
+                        if (err || res == null) {
+                            if (res.length > 0) {
+                                Address = res[0].formattedAddress;
+                                row.push(Name.toString(), TIme.toString(), Address.toString(), DeviceStatus.toString(), AssetStatus.toString(), Speed, Fuleper, Fulelett, Mileage, Temp, GPSSignal.toString(), Direction, Latitude, Longitude);
+                            } else {
+                                Address = "N/A";
+                                row.push(Name.toString(), TIme.toString(), Address.toString(), DeviceStatus.toString(), AssetStatus.toString(), Speed, Fuleper, Fulelett, Mileage, Temp, GPSSignal.toString(), Direction, Latitude, Longitude);
+                            }
                         } else {
                             Address = "N/A";
                             row.push(Name.toString(), TIme.toString(), Address.toString(), DeviceStatus.toString(), AssetStatus.toString(), Speed, Fuleper, Fulelett, Mileage, Temp, GPSSignal.toString(), Direction, Latitude, Longitude);
