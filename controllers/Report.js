@@ -98,6 +98,7 @@ router.get('/ExportDetailTripReport', function(req, res) {
 
 
     var query = "select tblgpsdata.*,tblvehicle.Name from tblgpsdata left join tblvehicle on tblgpsdata.deviceid = tblvehicle.deviceid Where tblvehicle.iduser=" + req.query.idUser + " and tblgpsdata.GPSPositioning='A' and tblgpsdata.Date >= '" + unixStartdate + "' and tblgpsdata.Date <= '" + unixEnddate + "'" + wherecondition + " order by Datetime;"
+    console.log(query);
     connection.query(query, function(err, response) {
         conf.rows = [];
         for (var i = 0; i < response.length; i++) {
@@ -129,61 +130,128 @@ router.get('/ExportDetailTripReport', function(req, res) {
                 var Latitude = 0.00;
                 var Longitude = 0.00;
 
-                if (response[i].Date != null && response[i].Date != '' && response[i].Date != undefined) {
-                    // Datetime = dateformat(response[i].Datetime, 2);
-                    TIme = momentz.utc(new Date(response[i].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a')
-                }
-                if (response[i].Name != null && response[i].Name != '' && response[i].Name != undefined) {
-                    Name = response[i].Name;
-                }
-                if (response[i].Address != null && response[i].Address != '' && response[i].Address != undefined) {
-                    Address = response[i].Address;
-                }
+                if (response[i].Latitude != undefined && response[i].Latitude != null && response[i].Latitude != '' && response[i].Longitude != undefined && response[i].Longitude != null && response[i].Longitude != '') {
+                    geocoder.reverse({ lat: response[i].Latitude, lon: response[i].Longitude }, function(err, res) {
+                        if (response[i].Date != null && response[i].Date != '' && response[i].Date != undefined) {
+                            // Datetime = dateformat(response[i].Datetime, 2);
+                            TIme = momentz.utc(new Date(response[i].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a')
+                        }
+                        if (response[i].Name != null && response[i].Name != '' && response[i].Name != undefined) {
+                            Name = response[i].Name;
+                        }
 
-                if (response[i].DeviceStatus != null && response[i].DeviceStatus != '' && response[i].DeviceStatus != undefined) {
-                    DeviceStatus = response[i].DeviceStatus;
-                }
+                        if (response[i].DeviceStatus != null && response[i].DeviceStatus != '' && response[i].DeviceStatus != undefined) {
+                            DeviceStatus = response[i].DeviceStatus;
+                        }
 
-                if (response[i].IsEngine != null && response[i].IsEngine != '' && response[i].IsEngine != undefined) {
-                    AssetStatus = response[i].IsEngine;
-                }
+                        if (response[i].IsEngine != null && response[i].IsEngine != '' && response[i].IsEngine != undefined) {
+                            AssetStatus = response[i].IsEngine;
+                        }
 
-                if (response[i].Speed != null && response[i].Speed != '' && response[i].Speed != undefined) {
-                    Speed = parseFloat(response[i].Speed).toFixed(2);
-                }
+                        if (response[i].Speed != null && response[i].Speed != '' && response[i].Speed != undefined) {
+                            Speed = parseFloat(response[i].Speed).toFixed(2);
+                        }
 
-                if (response[i].Fuleper != null && response[i].Fuleper != '' && response[i].Fuleper != undefined) {
-                    Fuleper = parseFloat(response[i].Fuleper).toFixed(2);
-                }
-                if (response[i].Fulelett != null && response[i].Fulelett != '' && response[i].Fulelett != undefined) {
-                    Fulelett = parseFloat(response[i].Fulelett).toFixed(2);
-                }
+                        if (response[i].Fuleper != null && response[i].Fuleper != '' && response[i].Fuleper != undefined) {
+                            Fuleper = parseFloat(response[i].Fuleper).toFixed(2);
+                        }
+                        if (response[i].Fulelett != null && response[i].Fulelett != '' && response[i].Fulelett != undefined) {
+                            Fulelett = parseFloat(response[i].Fulelett).toFixed(2);
+                        }
 
 
-                if (response[i].Mileage != null && response[i].Mileage != '' && response[i].Mileage != undefined) {
-                    Mileage = parseFloat(response[i].Mileage).toFixed(2);
-                }
-                if (response[i].Temp != null && response[i].Temp != '' && response[i].Temp != undefined) {
-                    Temp = parseFloat(response[i].Temp).toFixed(2);
-                }
+                        if (response[i].Mileage != null && response[i].Mileage != '' && response[i].Mileage != undefined) {
+                            Mileage = parseFloat(response[i].Mileage).toFixed(2);
+                        }
+                        if (response[i].Temp != null && response[i].Temp != '' && response[i].Temp != undefined) {
+                            Temp = parseFloat(response[i].Temp).toFixed(2);
+                        }
 
-                if (response[i].GPSSignal != null && response[i].GPSSignal != '' && response[i].GPSSignal != undefined) {
-                    GPSSignal = parseFloat(response[i].GPSSignal).toFixed(2);
-                }
+                        if (response[i].GPSSignal != null && response[i].GPSSignal != '' && response[i].GPSSignal != undefined) {
+                            GPSSignal = parseFloat(response[i].GPSSignal).toFixed(2);
+                        }
 
-                if (response[i].Direction != null && response[i].Direction != '' && response[i].Direction != undefined) {
-                    Direction = response[i].Direction;
+                        if (response[i].Direction != null && response[i].Direction != '' && response[i].Direction != undefined) {
+                            Direction = response[i].Direction;
+                        }
+                        if (response[i].Latitude != null && response[i].Latitude != '' && response[i].Latitude != undefined) {
+                            Latitude = response[i].Latitude;
+                        }
+                        if (response[i].Longitude != null && response[i].Longitude != '' && response[i].Longitude != undefined) {
+                            Longitude = response[i].Longitude;
+                        }
+
+                        if (res.length > 0) {
+                            Address = res[0].formattedAddress;
+                            row.push(Name.toString(), TIme.toString(), Address.toString(), DeviceStatus.toString(), AssetStatus.toString(), Speed, Fuleper, Fulelett, Mileage, Temp, GPSSignal.toString(), Direction, Latitude, Longitude);
+                        } else {
+                            Address = "N/A";
+                            row.push(Name.toString(), TIme.toString(), Address.toString(), DeviceStatus.toString(), AssetStatus.toString(), Speed, Fuleper, Fulelett, Mileage, Temp, GPSSignal.toString(), Direction, Latitude, Longitude);
+                        }
+                        conf.rows.push(row);
+                        GetData(i + 1);
+                    })
+                } else {
+                    if (response[i].Date != null && response[i].Date != '' && response[i].Date != undefined) {
+                        // Datetime = dateformat(response[i].Datetime, 2);
+                        TIme = momentz.utc(new Date(response[i].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a')
+                    }
+                    if (response[i].Name != null && response[i].Name != '' && response[i].Name != undefined) {
+                        Name = response[i].Name;
+                    }
+                    if (response[i].Address != null && response[i].Address != '' && response[i].Address != undefined) {
+                        Address = response[i].Address;
+                    }
+
+                    if (response[i].DeviceStatus != null && response[i].DeviceStatus != '' && response[i].DeviceStatus != undefined) {
+                        DeviceStatus = response[i].DeviceStatus;
+                    }
+
+                    if (response[i].IsEngine != null && response[i].IsEngine != '' && response[i].IsEngine != undefined) {
+                        AssetStatus = response[i].IsEngine;
+                    }
+
+                    if (response[i].Speed != null && response[i].Speed != '' && response[i].Speed != undefined) {
+                        Speed = parseFloat(response[i].Speed).toFixed(2);
+                    }
+
+                    if (response[i].Fuleper != null && response[i].Fuleper != '' && response[i].Fuleper != undefined) {
+                        Fuleper = parseFloat(response[i].Fuleper).toFixed(2);
+                    }
+                    if (response[i].Fulelett != null && response[i].Fulelett != '' && response[i].Fulelett != undefined) {
+                        Fulelett = parseFloat(response[i].Fulelett).toFixed(2);
+                    }
+
+
+                    if (response[i].Mileage != null && response[i].Mileage != '' && response[i].Mileage != undefined) {
+                        Mileage = parseFloat(response[i].Mileage).toFixed(2);
+                    }
+                    if (response[i].Temp != null && response[i].Temp != '' && response[i].Temp != undefined) {
+                        Temp = parseFloat(response[i].Temp).toFixed(2);
+                    }
+
+                    if (response[i].GPSSignal != null && response[i].GPSSignal != '' && response[i].GPSSignal != undefined) {
+                        GPSSignal = parseFloat(response[i].GPSSignal).toFixed(2);
+                    }
+
+                    if (response[i].Direction != null && response[i].Direction != '' && response[i].Direction != undefined) {
+                        Direction = response[i].Direction;
+                    }
+                    if (response[i].Latitude != null && response[i].Latitude != '' && response[i].Latitude != undefined) {
+                        Latitude = response[i].Latitude;
+                    }
+                    if (response[i].Longitude != null && response[i].Longitude != '' && response[i].Longitude != undefined) {
+                        Longitude = response[i].Longitude;
+                    }
+                    row.push(Name.toString(), TIme.toString(), Address.toString(), DeviceStatus.toString(), AssetStatus.toString(), Speed, Fuleper, Fulelett, Mileage, Temp, GPSSignal.toString(), Direction, Latitude, Longitude);
+                    conf.rows.push(row);
+                    GetData(i + 1);
                 }
-                if (response[i].Latitude != null && response[i].Latitude != '' && response[i].Latitude != undefined) {
-                    Latitude = response[i].Latitude;
-                }
-                if (response[i].Longitude != null && response[i].Longitude != '' && response[i].Longitude != undefined) {
-                    Longitude = response[i].Longitude;
-                }
+                /*console.log(Name.toString(), TIme.toString(), Address.toString(), DeviceStatus.toString(), AssetStatus.toString(), Speed, Fuleper, Fulelett, Mileage, Temp, GPSSignal.toString(), Direction, Latitude, Longitude);
 
                 row.push(Name.toString(), TIme.toString(), Address.toString(), DeviceStatus.toString(), AssetStatus.toString(), Speed, Fuleper, Fulelett, Mileage, Temp, GPSSignal.toString(), Direction, Latitude, Longitude);
                 conf.rows.push(row);
-                GetData(i + 1);
+                GetData(i + 1);*/
             } else {
                 var result = nodeExcel.execute(conf);
                 res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
@@ -194,6 +262,8 @@ router.get('/ExportDetailTripReport', function(req, res) {
 
     })
 })
+
+
 
 router.get('/GetAllFenceInAndOutData', function(req, res) {
     var objParam = req.query;
@@ -927,6 +997,364 @@ router.get('/ExportLastPositionDataByUserId', function(req, res) {
     }
 });
 /*================ LastPosition Report End====================*/
+/*-------------------------Parking Report Start-----------------------*/
+
+router.get('/GetAllParkingData', function(req, res) {
+
+    wherecondition = '';
+    if (req.query.DeviceId != 'All' && req.query.DeviceId != '-1' && req.query.DeviceId != null) {
+        wherecondition = ' and tblgpsdata.deviceid=' + req.query.DeviceId;
+    }
+
+    var Startdate = req.query.TodayStartDateTime;
+    var Enddate = req.query.TodayEndDateTime;
+
+    var convertDate = convertdateformatForUnix(Startdate);
+    var unixStartdate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
+
+    var convertDate = convertdateformatForUnix(Enddate);
+    var unixEnddate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
+
+
+    var query = "select tblgpsdata.*,tblvehicle.Name from tblgpsdata inner join tblvehicle on tblgpsdata.deviceid = tblvehicle.deviceid Where tblvehicle.iduser=" + req.query.idUser + " and tblgpsdata.GPSPositioning='A' and tblgpsdata.Date >= '" + unixStartdate + "' and tblgpsdata.Date <= '" + unixEnddate + "'" + wherecondition + ' order by tblgpsdata.Date asc' + ";"
+    console.log(query);
+    connection.query(query, function(err, response, fields) {
+
+        if (response.length > 0) {
+
+
+            var groups = u.groupBy(response, function(o) {
+                return o.DeviceId;
+            });
+
+            var lstGroup = u.map(groups, function(group) {
+
+                return {
+                    data: group
+                }
+            });
+            var l = 0;
+            var COuntEngineOff = 0;
+            var Array = [];
+            var StartDate = '';
+            var EndDate = '';
+            for (var i = 0; i < lstGroup.length; i++) {
+                COuntEngineOff = 0;
+                if (lstGroup[i].data.length > 0) {
+                    for (var k = 0; k < lstGroup[i].data.length; k++) {
+                        if (lstGroup[i].data[k].IsEngine == 0) {
+                            // console.log(lstGroup[i].data[k].Id)
+                            if (COuntEngineOff == 0) {
+                                var obj = new Object();
+                                obj.Latitude = lstGroup[i].data[k].Latitude;
+                                obj.Longitude = lstGroup[i].data[k].Longitude;
+                                obj.DeviceId = lstGroup[i].data[k].DeviceId;
+                                obj.Name = lstGroup[i].data[k].Name;
+                                obj.Id = lstGroup[i].data[k].Id;
+                                obj.StartTime = momentz.utc(new Date(lstGroup[i].data[k].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
+                                StartDate = new Date(lstGroup[i].data[k].Date * 1000);
+                                COuntEngineOff = COuntEngineOff + 1;
+                            } else {
+                                obj.EndTime = momentz.utc(new Date(lstGroup[i].data[k].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
+                                obj.EndId = lstGroup[i].data[k].Id;
+                                EndDate = new Date(lstGroup[i].data[k].Date * 1000);
+                                obj.ParkingTime = timeDifference(StartDate, EndDate);
+
+                            }
+                        } else {
+                            if (COuntEngineOff != 0) {
+                                if (obj.EndTime == null || obj.EndTime == undefined || obj.EndTime == '') {
+                                    obj.EndTime = momentz.utc(new Date(lstGroup[i].data[k - 1].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
+                                    obj.EndId = lstGroup[i].data[k - 1].Id;
+                                    EndDate = new Date(lstGroup[i].data[k - 1].Date * 1000);
+                                    obj.ParkingTime = timeDifference(StartDate, EndDate);
+                                }
+                                Array.push(obj);
+                            }
+                            COuntEngineOff = 0;
+                        }
+
+                        /*   if (lstGroup[i].data[k].IsEngine == 1) {
+                               if (COuntEngineOff != 0) {
+
+                                   obj.EndTime = momentz.utc(new Date(lstGroup[i].data[k-1].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
+                                   obj.EndId = lstGroup[i].data[k - 1].Id;
+                                   EndDate = new Date(lstGroup[i].data[k - 1].Date * 1000);
+                                   obj.ParkingTime = timeDifference(StartDate, EndDate);
+                                   Array.push(obj);
+                                   COuntEngineOff = 0;
+                               }
+                           } else {
+                               if (COuntEngineOff == 0) {
+                                   var obj = new Object();
+                                   obj.Latitude = lstGroup[i].data[k].Latitude;
+                                   obj.Longitude = lstGroup[i].data[k].Longitude;
+                                   obj.DeviceId = lstGroup[i].data[k].DeviceId;
+                                   obj.Name = lstGroup[i].data[k].Name;
+                                   obj.Id = lstGroup[i].data[k].Id;
+                                   obj.StartTime = momentz.utc(new Date(lstGroup[i].data[k].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
+                                   StartDate = new Date(lstGroup[i].data[k].Date * 1000);
+
+                               }
+                               COuntEngineOff = COuntEngineOff + 1;
+                           }*/
+                    }
+
+                    if (COuntEngineOff != 0) {
+                        if (obj.EndTime == null || obj.EndTime == undefined || obj.EndTime == '') {
+                            obj.EndTime = obj.StartTime
+                            EndDate = StartDate;
+                            obj.ParkingTime = timeDifference(StartDate, EndDate);
+                        }
+                        Array.push(obj);
+                    }
+                }
+            }
+            res.json(Array);
+        } else {
+            res.json(RecordNotFound);
+        }
+    });
+});
+
+router.get('/ExportParkingReport', function(req, res) {
+
+    var conf = {};
+    conf.name = "sheet1";
+    conf.cols = [{
+            caption: 'Asset Name',
+            type: 'string'
+        }, {
+            caption: 'StartTime',
+            type: 'string'
+        }, {
+            caption: 'EndTime',
+            type: 'string'
+        }, {
+            caption: 'Parking Time',
+            type: 'string'
+        }, {
+            caption: 'Address',
+            type: 'string'
+        }, {
+            caption: 'Latitude',
+            type: 'number'
+        },
+        {
+            caption: 'Longitude',
+            type: 'number'
+        }
+    ];
+
+
+
+    var wherecondition = '';
+    if (req.query.DeviceId != 'All' && req.query.DeviceId != '-1' && req.query.DeviceId != null) {
+        wherecondition = ' and tblgpsdata.deviceid=' + req.query.DeviceId;
+    }
+    console.log(req.query);
+    var Startdate = req.query.StartDate;
+    var Enddate = req.query.EndDate;
+
+    var convertDate = convertdateformatForUnix(Startdate);
+    var unixStartdate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
+
+    var convertDate = convertdateformatForUnix(Enddate);
+    var unixEnddate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
+
+
+
+    var query = "select tblgpsdata.*,tblvehicle.Name from tblgpsdata left join tblvehicle on tblgpsdata.deviceid = tblvehicle.deviceid Where tblvehicle.iduser=" + req.query.idUser + " and tblgpsdata.GPSPositioning='A' and tblgpsdata.Date >= '" + unixStartdate + "' and tblgpsdata.Date <= '" + unixEnddate + "'" + wherecondition + ' order by tblgpsdata.Date ASC' + ";"
+    console.log(query);
+    connection.query(query, function(err, response, fields) {
+        var Array = [];
+        conf.rows = [];
+        if (response.length > 0) {
+
+
+            var groups = u.groupBy(response, function(o) {
+                return o.DeviceId;
+            });
+
+            var lstGroup = u.map(groups, function(group) {
+
+                return {
+                    data: group
+                }
+            });
+            var l = 0;
+            var COuntEngineOff = 0;
+
+            var StartDate = '';
+            var EndDate = '';
+            for (var i = 0; i < lstGroup.length; i++) {
+                COuntEngineOff = 0;
+                if (lstGroup[i].data.length > 0) {
+                    for (var k = 0; k < lstGroup[i].data.length; k++) {
+                        if (lstGroup[i].data[k].IsEngine == 0) {
+                            if (COuntEngineOff == 0) {
+                                var obj = new Object();
+                                obj.Latitude = lstGroup[i].data[k].Latitude;
+                                obj.Longitude = lstGroup[i].data[k].Longitude;
+                                obj.DeviceId = lstGroup[i].data[k].DeviceId;
+                                obj.Name = lstGroup[i].data[k].Name;
+                                obj.Id = lstGroup[i].data[k].Id;
+                                obj.StartTime = momentz.utc(new Date(lstGroup[i].data[k].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
+                                StartDate = new Date(lstGroup[i].data[k].Date * 1000);
+                                COuntEngineOff = COuntEngineOff + 1;
+                            } else {
+                                obj.EndTime = momentz.utc(new Date(lstGroup[i].data[k].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
+                                obj.EndId = lstGroup[i].data[k].Id;
+                                EndDate = new Date(lstGroup[i].data[k].Date * 1000);
+                                obj.ParkingTime = timeDifference(StartDate, EndDate);
+                            }
+                        } else {
+                            if (COuntEngineOff != 0) {
+                                if (obj.EndTime == null || obj.EndTime == undefined || obj.EndTime == '') {
+                                    obj.EndTime = momentz.utc(new Date(lstGroup[i].data[k - 1].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
+                                    obj.EndId = lstGroup[i].data[k - 1].Id;
+                                    EndDate = new Date(lstGroup[i].data[k - 1].Date * 1000);
+                                    obj.ParkingTime = timeDifference(StartDate, EndDate);
+                                }
+                                Array.push(obj);
+                            }
+                            COuntEngineOff = 0;
+                        }
+
+                        /* if (lstGroup[i].data[k].IsEngine == 1) {
+                             if (COuntEngineOff != 0) {
+                                 obj.Latitude = lstGroup[i].data[k - 1].Latitude;
+                                 obj.Longitude = lstGroup[i].data[k - 1].Longitude;
+                                 obj.DeviceId = lstGroup[i].data[k - 1].DeviceId;
+                                 obj.Name = lstGroup[i].data[k - 1].Name;
+                                 obj.Id = lstGroup[i].data[k - 1].Id;
+                                 obj.StartTime = momentz.utc(new Date(lstGroup[i].data[k - 1].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
+                                 StartDate = new Date(lstGroup[i].data[k - 1].Date * 1000);
+                                 obj.ParkingTime = timeDifference(StartDate, EndDate);
+
+                                 Array.push(obj);
+                                 COuntEngineOff = 0;
+                             }
+                         } else {
+                             if (COuntEngineOff == 0) {
+                                 var obj = new Object();
+                                 obj.EndTime = momentz.utc(new Date(lstGroup[i].data[k].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
+                                 obj.EndId = lstGroup[i].data[k].Id;
+                                 EndDate = new Date(lstGroup[i].data[k].Date * 1000);
+                             }
+                             COuntEngineOff = COuntEngineOff + 1;
+                         }*/
+                    }
+                    if (COuntEngineOff != 0) {
+                        if (obj.EndTime == null || obj.EndTime == undefined || obj.EndTime == '') {
+                            obj.EndTime = obj.StartTime
+                            EndDate = StartDate;
+                            obj.ParkingTime = timeDifference(StartDate, EndDate);
+                        }
+                        Array.push(obj);
+                    }
+                }
+            }
+
+        }
+        GetData(0);
+
+
+        function GetData(i) {
+            if (i < Array.length) {
+                var row = [];
+                var Name = 'N/A';
+                var StartTime = 'N/A';
+                var EndTime = 'N/A';
+                var Address = 'N/A';
+                var ParkingTime = 'N/A';
+                var Direction = 0.00;
+                var Latitude = 0.00;
+                var Longitude = 0.00;
+
+                if (Array[i].Latitude != undefined && Array[i].Latitude != null && Array[i].Latitude != '' && Array[i].Longitude != undefined && Array[i].Longitude != null && response[i].Longitude != '') {
+                    geocoder.reverse({ lat: Array[i].Latitude, lon: Array[i].Longitude }, function(err, res) {
+                        if (Array[i].StartTime != null && Array[i].StartTime != '' && Array[i].StartTime != undefined) {
+
+                            // Datetime = dateformat(Array[i].Datetime, 2);
+                            StartTime = Array[i].StartTime;
+                        }
+
+                        if (Array[i].EndTime != null && Array[i].EndTime != '' && Array[i].EndTime != undefined) {
+                            // Datetime = dateformat(Array[i].Datetime, 2);
+                            EndTime = Array[i].EndTime;
+                        }
+
+                        if (Array[i].Name != null && Array[i].Name != '' && Array[i].Name != undefined) {
+                            Name = Array[i].Name;
+                        }
+
+                        if (Array[i].ParkingTime != null && Array[i].ParkingTime != '' && Array[i].ParkingTime != undefined) {
+                            ParkingTime = Array[i].ParkingTime;
+                        }
+                        if (Array[i].Latitude != null && Array[i].Latitude != '' && Array[i].Latitude != undefined) {
+                            Latitude = Array[i].Latitude;
+                        }
+                        if (Array[i].Longitude != null && Array[i].Longitude != '' && Array[i].Longitude != undefined) {
+                            Longitude = Array[i].Longitude;
+                        }
+                        if (res.length > 0) {
+                            Address = res[0].formattedAddress;
+                            row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address.toString(), Latitude, Longitude);
+                        } else {
+                            Address = "N/A";
+                            row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address.toString(), Latitude, Longitude);
+                        }
+                        conf.rows.push(row);
+                        GetData(i + 1);
+
+
+                    })
+                } else {
+                    if (Array[i].StartTime != null && Array[i].StartTime != '' && Array[i].StartTime != undefined) {
+
+                        // Datetime = dateformat(Array[i].Datetime, 2);
+                        StartTime = Array[i].StartTime;
+                    }
+
+                    if (Array[i].EndTime != null && Array[i].EndTime != '' && Array[i].EndTime != undefined) {
+                        // Datetime = dateformat(Array[i].Datetime, 2);
+                        EndTime = Array[i].EndTime;
+                    }
+
+                    if (Array[i].Name != null && Array[i].Name != '' && Array[i].Name != undefined) {
+                        Name = Array[i].Name;
+                    }
+                    if (Array[i].Address != null && Array[i].Address != '' && Array[i].Address != undefined) {
+                        Address = Array[i].Address;
+                    }
+
+                    if (Array[i].ParkingTime != null && Array[i].ParkingTime != '' && Array[i].ParkingTime != undefined) {
+                        ParkingTime = Array[i].ParkingTime;
+                    }
+                    if (Array[i].Latitude != null && Array[i].Latitude != '' && Array[i].Latitude != undefined) {
+                        Latitude = Array[i].Latitude;
+                    }
+                    if (Array[i].Longitude != null && Array[i].Longitude != '' && Array[i].Longitude != undefined) {
+                        Longitude = Array[i].Longitude;
+                    }
+                    row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address.toString(), Latitude, Longitude);
+                    conf.rows.push(row);
+                    GetData(i + 1);
+                }
+
+            } else {
+                var result = nodeExcel.execute(conf);
+                res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+                res.setHeader("Content-Disposition", "attachment; filename=TrackDetail.xlsx");
+                res.end(result, 'binary');
+            }
+        }
+
+    })
+})
+
+/*-------------------------Parking Report End-----------------------*/
 
 function convertdateformatForUnix(date1) {
     var date = new Date(date1);
@@ -977,5 +1405,35 @@ function distance(lat1, lon1, lat2, lon2) {
         (1 - c((lon2 - lon1) * p)) / 2;
     return 12742 * Math.asin(Math.sqrt(a)); // 2 * R; R = 6371 km
 }
+
+
+function timeDifference(Start, End, flg) {
+
+    var one_day = 1000 * 60 * 60 * 24;
+    date1 = new Date(Start);
+    date2 = new Date(End);
+    var date1_ms = date1.getTime();
+    var date2_ms = date2.getTime();
+
+    var difference_ms = date2_ms - date1_ms;
+    difference_ms = difference_ms / 1000;
+    var seconds = Math.floor(difference_ms % 60);
+    difference_ms = difference_ms / 60;
+    var minutes = Math.floor(difference_ms % 60);
+    difference_ms = difference_ms / 60;
+    var hours = Math.floor(difference_ms % 24);
+    var days = Math.floor(difference_ms / 24);
+    if (flg == 'h') {
+        return hours;
+    } else if (flg == 'm') {
+        return minutes;
+    } else if (flg == 's') {
+        return seconds;
+    } else {
+        return days + ' days, ' + hours + ' hours, ' + minutes + ' minutes, and ' + seconds + ' seconds';
+    }
+
+}
+
 
 module.exports = router
