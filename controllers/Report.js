@@ -650,7 +650,7 @@ router.get('/GetAllVehicleLastPositionByUserIdWebApp', jsonParser, function(req,
         }
     }
 
-    connection.query("SELECT  tb.*,tpg.IsEngine,tpg.IsDoor, tpg.Latitude,tpg.Longitude,tpg.Datetime, tpg.Date, tpg.Speed, tpg.Direction FROM tblvehicle tb Inner JOIN tblgpsdata tpg ON tb.deviceid=tpg.DeviceId INNER JOIN (SELECT DeviceId, MAX(Datetime) as maxDate FROM (SELECT DeviceId, Datetime FROM tblgpsdata " + WhereCondition + "ORDER BY Datetime DESC) d GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId AND tpg.Datetime = b.maxDate WHERE iduser=" + req.query.UserId + " and IsDelete=false group by tb.deviceid;", function(err, rows, fields) {
+    connection.query("SELECT  tb.*,tpg.IsEngine,tpg.IsDoor, tpg.Latitude,tpg.Longitude,tpg.Datetime, tpg.Date, tpg.Speed, tpg.Direction FROM tblvehicle tb Inner JOIN tblgpsdata tpg ON tb.deviceid=tpg.DeviceId INNER JOIN (SELECT DeviceId, MAX(Datetime) as maxDate FROM (SELECT DeviceId, Datetime FROM tblgpsdata " + WhereCondition + "ORDER BY Datetime DESC) d GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId AND tpg.Datetime = b.maxDate WHERE iduser=" + req.query.UserId + " and IsDelete=false group by tb.deviceid order by Name;", function(err, rows, fields) {
         if (!err) {
             res.json({ success: true, data: rows });
         } else {
@@ -735,7 +735,7 @@ router.get('/ExportLastPositionDataByUserId', function(req, res) {
             WhereCondition = WhereCondition + 'and Datetime<="' + EndDate1 + '" ';
         }
     }
-    connection.query("SELECT  tb.*,tpg.IsEngine,tpg.IsDoor, tpg.Latitude,tpg.Longitude,tpg.Datetime, tpg.Date, tpg.Speed, tpg.Direction FROM tblvehicle tb Inner JOIN tblgpsdata tpg ON tb.deviceid=tpg.DeviceId INNER JOIN (SELECT DeviceId, MAX(Datetime) as maxDate FROM (SELECT DeviceId, Datetime FROM tblgpsdata " + WhereCondition + "ORDER BY Datetime DESC) d GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId AND tpg.Datetime = b.maxDate WHERE iduser=" + req.query.UserId + " and IsDelete=false group by tb.deviceid;", function(err, rows, fields) {
+    connection.query("SELECT  tb.*,tpg.IsEngine,tpg.IsDoor, tpg.Latitude,tpg.Longitude,tpg.Datetime, tpg.Date, tpg.Speed, tpg.Direction FROM tblvehicle tb Inner JOIN tblgpsdata tpg ON tb.deviceid=tpg.DeviceId INNER JOIN (SELECT DeviceId, MAX(Datetime) as maxDate FROM (SELECT DeviceId, Datetime FROM tblgpsdata " + WhereCondition + "ORDER BY Datetime DESC) d GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId AND tpg.Datetime = b.maxDate WHERE iduser=" + req.query.UserId + " and IsDelete=false group by tb.deviceid order by Name;", function(err, rows, fields) {
         if (!err) {
             var ListPostionData = rows;
             ExportData(ListPostionData)
