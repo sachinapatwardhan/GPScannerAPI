@@ -944,7 +944,7 @@ function convertdateformatForUnix(date1) {
 
 function calcDateDiff(date1, date2) {
     // var l = moment.duration(date1.diff(date2, 'milliseconds'));
-    var l = moment.duration(moment(date1, "DD/MM/YYYY HH:mm:ss").diff(moment(date2, "DD/MM/YYYY HH:mm:ss")), 'milliseconds');
+    var l = moment.duration(moment(date1, "DD/MM/YYYY HH:mm:ss a").diff(moment(date2, "DD/MM/YYYY HH:mm:ss a")), 'milliseconds');
     var diff = l.asMilliseconds();
     var difference_ms = diff;
     difference_ms = difference_ms / 1000;
