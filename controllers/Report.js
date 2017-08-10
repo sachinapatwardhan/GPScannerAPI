@@ -1355,6 +1355,7 @@ router.get('/ExportParkingReport', function(req, res) {
 /*-------------------------Parking Report End-----------------------*/
 router.get('/GetAllDailyStatDate', function(req, res) {
     wherecondition = '';
+    wherecondition1 = '';
     if (req.query.DeviceId != 'All' && req.query.DeviceId != '-1' && req.query.DeviceId != null) {
         wherecondition = ' and tblgpsdata.deviceid=' + req.query.DeviceId;
         wherecondition1 = ' and tblalarm.deviceid=' + req.query.DeviceId;
