@@ -666,6 +666,10 @@ router.get('/ExportEngineReport', function(req, res) {
                                 ContinueTime = calcDateDiff(EndTime, StartTime);
                                 // Datetime = dateformat(response[i].Datetime, 2);
                             }
+                            if (lstEngine[i].Latitude != undefined && lstEngine[i].Latitude != null && lstEngine[i].Latitude != '' && lstEngine[i].Longitude != undefined && lstEngine[i].Longitude != null && lstEngine[i].Longitude != '') {
+                                DatewiseTravelledDistance = distance(parseFloat(lstEngine[i].Latitude), parseFloat(lstEngine[i].Longitude), parseFloat(lstEngine[i + 1].Latitude), parseFloat(lstEngine[i + 1].Longitude))
+                                Mileage = parseFloat(DatewiseTravelledDistance).toFixed(2);
+                            }
 
                         } else {
                             if (lstEngine[i].Date != null && lstEngine[i].Date != '' && lstEngine[i].Date != undefined) {
@@ -673,15 +677,8 @@ router.get('/ExportEngineReport', function(req, res) {
                                 EndTime = moment(new Date(response[response.length - 1].Date * 1000)).format('DD-MM-YYYY hh:mm:ss a');
                                 ContinueTime = calcDateDiff(EndTime, StartTime);
                             }
-                        }
-                        if (lstEngine[i].Latitude != undefined && lstEngine[i].Latitude != null && lstEngine[i].Latitude != '' && lstEngine[i].Longitude != undefined && lstEngine[i].Longitude != null && lstEngine[i].Longitude != '') {
-                            if (i != 0) {
-                                DatewiseTravelledDistance = distance(parseFloat(lstEngine[i - 1].Latitude), parseFloat(lstEngine[i - 1].Longitude), parseFloat(lstEngine[i].Latitude), parseFloat(lstEngine[i].Longitude))
-                                Mileage = parseFloat(DatewiseTravelledDistance).toFixed(2);
-                            } else {
-                                DatewiseTravelledDistance = 0;
-                                Mileage = parseFloat(DatewiseTravelledDistance).toFixed(2);
-                            }
+                            DatewiseTravelledDistance = 0;
+                            Mileage = parseFloat(DatewiseTravelledDistance).toFixed(2);
                         }
 
                         row.push(Name.toString(), Status.toString(), ContinueTime.toString(), StartTime.toString(), EndTime.toString(), Mileage.toString());
