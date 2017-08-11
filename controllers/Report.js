@@ -515,7 +515,7 @@ router.get('/GetAllEngineData', function(req, res) {
 
     var query = "SELECT tblgpsdata.Id, tblgpsdata.Datetime, tblgpsdata.Date, tblgpsdata.Latitude, tblgpsdata.Longitude, tblgpsdata.DeviceId, tblgpsdata.IsEngine, tblgpsdata.Speed, tblvehicle.Name, tblvehicle.iduser FROM tblgpsdata LEFT JOIN tblvehicle ON tblvehicle.deviceid = tblgpsdata.DeviceId " + search;
     query += Orderby;
-    console.log(query);
+    // console.log(query);
     connection.query(query, function(err, response) {
         if (response != undefined) {
             res.json(response);
@@ -1017,7 +1017,7 @@ router.get('/GetAllParkingData', function(req, res) {
 
 
     var query = "select tblgpsdata.*,tblvehicle.Name from tblgpsdata inner join tblvehicle on tblgpsdata.deviceid = tblvehicle.deviceid Where tblvehicle.iduser=" + req.query.idUser + " and tblgpsdata.GPSPositioning='A' and tblgpsdata.Date >= '" + unixStartdate + "' and tblgpsdata.Date <= '" + unixEnddate + "'" + wherecondition + ' order by tblgpsdata.Date asc' + ";"
-    console.log(query);
+        // console.log(query);
     connection.query(query, function(err, response, fields) {
 
         if (response.length > 0) {
@@ -1374,7 +1374,7 @@ router.get('/GetAllDailyStatDate', function(req, res) {
 
     connection.query(query, function(err, response, fields) {
         var query1 = "select tblalarm.*,tblvehicle.deviceid from tblalarm left join tblvehicle on tblalarm.deviceid = tblvehicle.deviceid Where tblvehicle.iduser=" + req.query.idUser + "  and tblalarm.Date >= '" + unixStartdate + "' and tblalarm.Date <= '" + unixEnddate + "'" + wherecondition1 + ";"
-        console.log(query1);
+            //console.log(query1);
         connection.query(query1, function(alarmerr, alarmresponse, alarmfields) {
 
             if (response.length > 0) {
