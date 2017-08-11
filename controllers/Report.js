@@ -1407,10 +1407,8 @@ router.get('/GetAllDailyStatDate', function(req, res) {
                  });*/
                 var groups = u.groupBy(response, function(value) {
                     if (req.query.TimeZone) {
-                        console.log("if...");
                         return value.DeviceId + '#' + momentz.utc(value.Date * 1000).tz(req.query.TimeZone).format('DD-MM-YYYY')
                     } else {
-                        console.log("else...");
                         return value.DeviceId + '#' + momentz.utc(value.Date * 1000).format('DD-MM-YYYY')
                     }
                     //momentz.utc(value.Datetime).format('DD-MM-YYYY');
@@ -1419,7 +1417,7 @@ router.get('/GetAllDailyStatDate', function(req, res) {
                 var lstGroup = u.map(groups, function(group) {
                     return {
                         DeviceId: group[0].DeviceId,
-                        Datetime: group[0].Datetime,
+                        Datetime: group[0].Date,
                         data: group // u.pluck(group, 'Data'),
                             // Direction: u.pluck(group, 'Direction')
                     }
