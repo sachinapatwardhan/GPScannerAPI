@@ -258,7 +258,7 @@ router.get('/ExportDetailTripReport', function(req, res) {
             } else {
                 var result = nodeExcel.execute(conf);
                 res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-                res.setHeader("Content-Disposition", "attachment; filename=TrackDetail.xlsx");
+                res.setHeader("Content-Disposition", "attachment; filename=DetailTripReport.xlsx");
                 res.end(result, 'binary');
             }
         }
@@ -1344,7 +1344,7 @@ router.get('/ExportParkingReport', function(req, res) {
             } else {
                 var result = nodeExcel.execute(conf);
                 res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-                res.setHeader("Content-Disposition", "attachment; filename=TrackDetail.xlsx");
+                res.setHeader("Content-Disposition", "attachment; filename=ParkingReport.xlsx");
                 res.end(result, 'binary');
             }
         }
