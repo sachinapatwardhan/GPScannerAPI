@@ -1296,9 +1296,14 @@ router.get('/ExportParkingReport', function(req, res) {
                         if (Array[i].Longitude != null && Array[i].Longitude != '' && Array[i].Longitude != undefined) {
                             Longitude = Array[i].Longitude;
                         }
-                        if (res.length > 0) {
-                            Address = res[0].formattedAddress;
-                            row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address.toString(), Latitude, Longitude);
+                        if (err || res == null) {
+                            if (res.length > 0) {
+                                Address = res[0].formattedAddress;
+                                row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address.toString(), Latitude, Longitude);
+                            } else {
+                                Address = "N/A";
+                                row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address.toString(), Latitude, Longitude);
+                            }
                         } else {
                             Address = "N/A";
                             row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address.toString(), Latitude, Longitude);
