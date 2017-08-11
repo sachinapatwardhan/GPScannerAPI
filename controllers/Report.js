@@ -130,7 +130,7 @@ router.get('/ExportDetailTripReport', function(req, res) {
                 var Longitude = 0.00;
 
                 if (response[i].Latitude != undefined && response[i].Latitude != null && response[i].Latitude != '' && response[i].Longitude != undefined && response[i].Longitude != null && response[i].Longitude != '') {
-                    geocoder.reverse({ lat: response[i].Latitude, lon: response[i].Longitude }, function(err, res) {
+                    geocoder.reverse({ lat: response[i].Latitude, lon: response[i].Longitude }, function(err, resAddress) {
                         if (response[i].Date != null && response[i].Date != '' && response[i].Date != undefined) {
                             // Datetime = dateformat(response[i].Datetime, 2);
                             TIme = momentz.utc(new Date(response[i].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a')
@@ -179,9 +179,11 @@ router.get('/ExportDetailTripReport', function(req, res) {
                         if (response[i].Longitude != null && response[i].Longitude != '' && response[i].Longitude != undefined) {
                             Longitude = response[i].Longitude;
                         }
-                        if (err || res == null) {
-                            if (res.length > 0) {
-                                Address = res[0].formattedAddress;
+                        // console.log(resAddress)
+                        // console.log(err)
+                        if (err == null && resAddress != null) {
+                            if (resAddress.length > 0) {
+                                Address = resAddress[0].formattedAddress;
                                 row.push(Name.toString(), TIme.toString(), Address.toString(), DeviceStatus.toString(), AssetStatus.toString(), Speed, Fuleper, Fulelett, Mileage, Temp, GPSSignal.toString(), Direction, Latitude, Longitude);
                             } else {
                                 Address = "N/A";
