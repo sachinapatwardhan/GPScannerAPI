@@ -1972,7 +1972,6 @@ router.get('/ExportDailyStatReport', function(req, res) {
                     }
 
                 }
-                console.log("len@@.....", Array.length);
 
 
 
@@ -1984,8 +1983,6 @@ router.get('/ExportDailyStatReport', function(req, res) {
 
 
                     if (i < Array.length) {
-                        console.log("@@@@@@@@...........", i);
-
                         var row = [];
                         var Name = 'N/A';
                         var Date = 'N/A';
