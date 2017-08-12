@@ -741,12 +741,17 @@ router.get('/GetAllVehicleLastPositionByUserIdWebApp', jsonParser, function(req,
             WhereCondition = WhereCondition + 'and Datetime<="' + EndDate + '" ';
         }
     }
-
-    connection.query("SELECT  tb.*,tpg.IsEngine,tpg.IsDoor, tpg.Latitude,tpg.Longitude,tpg.Datetime, tpg.Date, tpg.Speed, tpg.Direction FROM tblvehicle tb Inner JOIN tblgpsdata tpg ON tb.deviceid=tpg.DeviceId INNER JOIN (SELECT DeviceId, MAX(Datetime) as maxDate FROM (SELECT DeviceId, Datetime FROM tblgpsdata " + WhereCondition + "ORDER BY Datetime DESC) d GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId AND tpg.Datetime = b.maxDate WHERE iduser=" + req.query.UserId + " and IsDelete=false group by tb.deviceid order by Name;", function(err, rows, fields) {
+    var query = "SELECT  tb.*,tpg.IsEngine,tpg.IsDoor, tpg.Latitude,tpg.Longitude,tpg.Datetime, tpg.Date, tpg.Speed, tpg.Direction FROM tblvehicle tb Inner JOIN tblgpsdata tpg ON tb.deviceid=tpg.DeviceId INNER JOIN (SELECT DeviceId, MAX(Datetime) as maxDate FROM (SELECT DeviceId, Datetime FROM tblgpsdata " + WhereCondition + "ORDER BY Datetime DESC) d GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId AND tpg.Datetime = b.maxDate WHERE iduser=" + req.query.UserId + " and IsDelete=false group by tb.deviceid order by Name LIMIT " + req.query.length + " OFFSET " + req.query.start + ";"
+    var count = "SELECT count(*) FROM tblvehicle tb Inner JOIN tblgpsdata tpg ON tb.deviceid=tpg.DeviceId INNER JOIN (SELECT DeviceId, MAX(Datetime) as maxDate FROM (SELECT DeviceId, Datetime FROM tblgpsdata " + WhereCondition + "ORDER BY Datetime DESC) d GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId AND tpg.Datetime = b.maxDate WHERE iduser=" + req.query.UserId + " and IsDelete=false group by tb.deviceid;";
+    connection.query(query, function(err, rows, fields) {
         if (!err) {
-            res.json({ success: true, data: rows });
+            connection.query(count, function(error, count, fields) {
+                console.log(count.length)
+                res.json({ success: true, data: rows, Totalrecord: count.length });
+            })
+
         } else {
-            res.json({ success: false, data: [] });
+            res.json({ success: false, data: [], Totalrecord: 0 });
         }
     })
 });
