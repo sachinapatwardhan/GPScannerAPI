@@ -51,31 +51,36 @@ router.get('/ExportDetailTripReport', function(req, res) {
         }, {
             caption: 'Address',
             type: 'string'
-        }, {
-            caption: 'Device Status',
-            type: 'string'
-        }, {
+        },
+        /*{
+                   caption: 'Device Status',
+                   type: 'string'
+               },*/
+        {
             caption: 'Asset Status',
             type: 'string'
         }, {
             caption: 'Speed(km/h)',
             type: 'number'
-        }, {
-            caption: 'Fule(%)',
-            type: 'number'
-        }, {
-            caption: 'Fule(L)',
-            type: 'number'
-        }, {
-            caption: 'Mileage(km)',
-            type: 'number'
-        }, {
-            caption: 'Temp.(&#8451;)',
-            type: 'number'
-        }, {
-            caption: 'GPS Signal',
-            type: 'string'
-        }, {
+        },
+        /* {
+                    caption: 'Fule(%)',
+                    type: 'number'
+                }, {
+                    caption: 'Fule(L)',
+                    type: 'number'
+                }, {
+                    caption: 'Mileage(km)',
+                    type: 'number'
+                }, {
+                    caption: 'Temp.',
+                    type: 'number'
+                }, {
+                    caption: 'GPS Signal',
+                    type: 'string'
+                }
+        , */
+        {
             caption: 'Direction',
             type: 'number'
         }, {
@@ -190,14 +195,14 @@ router.get('/ExportDetailTripReport', function(req, res) {
                         if (err == null && resAddress != null) {
                             if (resAddress.length > 0) {
                                 Address = resAddress[0].formattedAddress;
-                                row.push(Name.toString(), TIme.toString(), Address.toString(), DeviceStatus.toString(), AssetStatus.toString(), Speed, Fuleper, Fulelett, Mileage, Temp, GPSSignal.toString(), Direction, Latitude, Longitude);
+                                row.push(Name.toString(), TIme.toString(), Address.toString(), /*DeviceStatus.toString(),*/ AssetStatus.toString(), Speed, /*Fuleper, Fulelett, Mileage, Temp, GPSSignal.toString(),*/ Direction, Latitude, Longitude);
                             } else {
                                 Address = "N/A";
-                                row.push(Name.toString(), TIme.toString(), Address.toString(), DeviceStatus.toString(), AssetStatus.toString(), Speed, Fuleper, Fulelett, Mileage, Temp, GPSSignal.toString(), Direction, Latitude, Longitude);
+                                row.push(Name.toString(), TIme.toString(), Address.toString(), /*DeviceStatus.toString(),*/ AssetStatus.toString(), Speed, /*Fuleper, Fulelett, Mileage, Temp, GPSSignal.toString(),*/ Direction, Latitude, Longitude);
                             }
                         } else {
                             Address = "N/A";
-                            row.push(Name.toString(), TIme.toString(), Address.toString(), DeviceStatus.toString(), AssetStatus.toString(), Speed, Fuleper, Fulelett, Mileage, Temp, GPSSignal.toString(), Direction, Latitude, Longitude);
+                            row.push(Name.toString(), TIme.toString(), Address.toString(), /*DeviceStatus.toString(),*/ AssetStatus.toString(), Speed, /*Fuleper, Fulelett, Mileage, Temp, GPSSignal.toString(),*/ Direction, Latitude, Longitude);
                         }
                         conf.rows.push(row);
                         GetData(i + 1);
@@ -254,7 +259,7 @@ router.get('/ExportDetailTripReport', function(req, res) {
                     if (response[i].Longitude != null && response[i].Longitude != '' && response[i].Longitude != undefined) {
                         Longitude = response[i].Longitude;
                     }
-                    row.push(Name.toString(), TIme.toString(), Address.toString(), DeviceStatus.toString(), AssetStatus.toString(), Speed, Fuleper, Fulelett, Mileage, Temp, GPSSignal.toString(), Direction, Latitude, Longitude);
+                    row.push(Name.toString(), TIme.toString(), Address.toString(), /*DeviceStatus.toString(),*/ AssetStatus.toString(), Speed, /*Fuleper, Fulelett, Mileage, Temp, GPSSignal.toString(),*/ Direction, Latitude, Longitude);
                     conf.rows.push(row);
                     GetData(i + 1);
                 }
