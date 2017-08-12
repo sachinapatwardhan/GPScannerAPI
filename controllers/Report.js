@@ -1030,7 +1030,7 @@ router.get('/GetAllParkingData', function(req, res) {
 
 
     var query = "select tblgpsdata.*,tblvehicle.Name from tblgpsdata inner join tblvehicle on tblgpsdata.deviceid = tblvehicle.deviceid Where tblvehicle.iduser=" + req.query.idUser + " and tblgpsdata.GPSPositioning='A' and tblgpsdata.Date >= '" + unixStartdate + "' and tblgpsdata.Date <= '" + unixEnddate + "'" + wherecondition + ' order by tblgpsdata.Date asc' + ";"
-    // console.log(query);
+        // console.log(query);
     connection.query(query, function(err, response, fields) {
 
         if (response.length > 0) {
@@ -1625,12 +1625,12 @@ router.get('/GetAllDailyStatDate', function(req, res) {
                     }
                 }
 
-
-                var response1 = new Object();
-                response1.lstGroup = lstGroup;
-                response1.Array = Array;
-                response1.alarmresponse = alarmresponse;
-                res.json(response1);
+                /*
+                                var response1 = new Object();
+                                response1.lstGroup = lstGroup;
+                                response1.Array = Array;
+                                response1.alarmresponse = alarmresponse;*/
+                res.json(Array);
             } else {
                 res.json(RecordNotFound);
             }
