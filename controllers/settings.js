@@ -112,6 +112,26 @@ router.get('/GetTaxSettingByName', function(req, res) {
     })
 })
 
+router.get('/GetAllSettingByNamelist', function(req, res) {
+    var lstAllSettingsName = req.query.TaxSettingName.split(',');
+    var objsearch = new Object();
+
+    objsearch["$or"] = [];
+    for (var i = 0; i < lstAllSettingsName.length; i++) {
+        if (lstAllSettingsName[i] != '') {
+            objsearch["$or"].push({ Name: lstAllSettingsName[i].trim() })
+        }
+    }
+    TaxSetting.findAll({ where: objsearch }).then(function(response) {
+        res.json(response);
+        // if (response != null) {
+        //     res.json({ success: true, message: "Record found...", data: response });
+        // } else {
+        //     res.json({ success: false, message: "Record not found...", data: response });
+        // }
+    })
+})
+
 router.get('/GetSettingByName', function(req, res) {
     TaxSetting.findAll({ where: { Name: { $like: '%' + req.query.SettingName + '%' } } }).then(function(response) {
         res.json(response);
