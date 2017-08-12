@@ -14,7 +14,7 @@ var FacebookPostData = models.tblfacebookpostdata;
 
 router.post('/Subscribe', jsonParser, function(req, res) {
     objPushNotification = req.body;
-
+    console.log(objPushNotification)
     PushNotification.findOne({
         where: {
             udid: objPushNotification.udid,
@@ -97,7 +97,7 @@ router.get('/UpdateUserIdByUdId', function(req, res) {
     objHeader = req.headers;
     var token = getToken(objHeader);
     if (token) {
-        var decoded = jwt.decode(token, TokenKey); 
+        var decoded = jwt.decode(token, TokenKey);
 
         User.findOne({
             where: {
