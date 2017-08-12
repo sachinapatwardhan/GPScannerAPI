@@ -204,7 +204,7 @@ router.get('/ExportDetailTripReport', function(req, res) {
                     //     }
                     // } else {
                     // Address = "N/A";
-                    row.push(Name.toString(), TIme.toString(), DeviceStatus.toString(), AssetStatus.toString(), Speed, Fuleper, Fulelett, Mileage, Temp, GPSSignal.toString(), Direction, Latitude, Longitude);
+                    row.push(Name.toString(), TIme.toString(), /*DeviceStatus.toString(),*/ AssetStatus.toString(), Speed, Fuleper, Fulelett, Mileage, Temp, GPSSignal.toString(), Direction, Latitude, Longitude);
                     // }
                     conf.rows.push(row);
                     GetData(i + 1);
