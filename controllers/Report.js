@@ -48,14 +48,15 @@ router.get('/ExportDetailTripReport', function(req, res) {
         }, {
             caption: 'Time',
             type: 'string'
-        }, {
-            caption: 'Address',
-            type: 'string'
         },
-        /*{
-                   caption: 'Device Status',
-                   type: 'string'
-               },*/
+        // {
+        //     caption: 'Address',
+        //     type: 'string'
+        // },
+        // {
+        //     caption: 'Device Status',
+        //     type: 'string'
+        // },
         {
             caption: 'Asset Status',
             type: 'string'
@@ -129,7 +130,7 @@ router.get('/ExportDetailTripReport', function(req, res) {
                 var row = [];
                 var Name = 'N/A';
                 var TIme = 'N/A';
-                var Address = 'N/A';
+                // var Address = 'N/A';
                 var DeviceStatus = 'N/A';
                 var AssetStatus = 'N/A';
                 var Speed = 0.00;
@@ -143,70 +144,71 @@ router.get('/ExportDetailTripReport', function(req, res) {
                 var Longitude = 0.00;
 
                 if (response[i].Latitude != undefined && response[i].Latitude != null && response[i].Latitude != '' && response[i].Longitude != undefined && response[i].Longitude != null && response[i].Longitude != '') {
-                    geocoder.reverse({ lat: response[i].Latitude, lon: response[i].Longitude }, function(err, resAddress) {
-                        if (response[i].Date != null && response[i].Date != '' && response[i].Date != undefined) {
-                            // Datetime = dateformat(response[i].Datetime, 2);
-                            TIme = momentz.utc(new Date(response[i].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a')
-                        }
-                        if (response[i].Name != null && response[i].Name != '' && response[i].Name != undefined) {
-                            Name = response[i].Name;
-                        }
+                    // geocoder.reverse({ lat: response[i].Latitude, lon: response[i].Longitude }, function(err, resAddress) {
+                    if (response[i].Date != null && response[i].Date != '' && response[i].Date != undefined) {
+                        // Datetime = dateformat(response[i].Datetime, 2);
+                        TIme = momentz.utc(new Date(response[i].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a')
+                    }
+                    if (response[i].Name != null && response[i].Name != '' && response[i].Name != undefined) {
+                        Name = response[i].Name;
+                    }
 
-                        if (response[i].DeviceStatus != null && response[i].DeviceStatus != '' && response[i].DeviceStatus != undefined) {
-                            DeviceStatus = response[i].DeviceStatus;
-                        }
+                    if (response[i].DeviceStatus != null && response[i].DeviceStatus != '' && response[i].DeviceStatus != undefined) {
+                        DeviceStatus = response[i].DeviceStatus;
+                    }
 
-                        if (response[i].IsEngine != null && response[i].IsEngine != '' && response[i].IsEngine != undefined) {
-                            AssetStatus = response[i].IsEngine;
-                        }
+                    if (response[i].IsEngine != null && response[i].IsEngine != '' && response[i].IsEngine != undefined) {
+                        AssetStatus = response[i].IsEngine;
+                    }
 
-                        if (response[i].Speed != null && response[i].Speed != '' && response[i].Speed != undefined) {
-                            Speed = parseFloat(response[i].Speed).toFixed(2);
-                        }
+                    if (response[i].Speed != null && response[i].Speed != '' && response[i].Speed != undefined) {
+                        Speed = parseFloat(response[i].Speed).toFixed(2);
+                    }
 
-                        if (response[i].Fuleper != null && response[i].Fuleper != '' && response[i].Fuleper != undefined) {
-                            Fuleper = parseFloat(response[i].Fuleper).toFixed(2);
-                        }
-                        if (response[i].Fulelett != null && response[i].Fulelett != '' && response[i].Fulelett != undefined) {
-                            Fulelett = parseFloat(response[i].Fulelett).toFixed(2);
-                        }
+                    if (response[i].Fuleper != null && response[i].Fuleper != '' && response[i].Fuleper != undefined) {
+                        Fuleper = parseFloat(response[i].Fuleper).toFixed(2);
+                    }
+                    if (response[i].Fulelett != null && response[i].Fulelett != '' && response[i].Fulelett != undefined) {
+                        Fulelett = parseFloat(response[i].Fulelett).toFixed(2);
+                    }
 
 
-                        if (response[i].Mileage != null && response[i].Mileage != '' && response[i].Mileage != undefined) {
-                            Mileage = parseFloat(response[i].Mileage).toFixed(2);
-                        }
-                        if (response[i].Temp != null && response[i].Temp != '' && response[i].Temp != undefined) {
-                            Temp = parseFloat(response[i].Temp).toFixed(2);
-                        }
+                    if (response[i].Mileage != null && response[i].Mileage != '' && response[i].Mileage != undefined) {
+                        Mileage = parseFloat(response[i].Mileage).toFixed(2);
+                    }
+                    if (response[i].Temp != null && response[i].Temp != '' && response[i].Temp != undefined) {
+                        Temp = parseFloat(response[i].Temp).toFixed(2);
+                    }
 
-                        if (response[i].GPSSignal != null && response[i].GPSSignal != '' && response[i].GPSSignal != undefined) {
-                            GPSSignal = parseFloat(response[i].GPSSignal).toFixed(2);
-                        }
+                    if (response[i].GPSSignal != null && response[i].GPSSignal != '' && response[i].GPSSignal != undefined) {
+                        GPSSignal = parseFloat(response[i].GPSSignal).toFixed(2);
+                    }
 
-                        if (response[i].Direction != null && response[i].Direction != '' && response[i].Direction != undefined) {
-                            Direction = response[i].Direction;
-                        }
-                        if (response[i].Latitude != null && response[i].Latitude != '' && response[i].Latitude != undefined) {
-                            Latitude = response[i].Latitude;
-                        }
-                        if (response[i].Longitude != null && response[i].Longitude != '' && response[i].Longitude != undefined) {
-                            Longitude = response[i].Longitude;
-                        }
-                        if (err == null && resAddress != null) {
-                            if (resAddress.length > 0) {
-                                Address = resAddress[0].formattedAddress;
-                                row.push(Name.toString(), TIme.toString(), Address.toString(), /*DeviceStatus.toString(),*/ AssetStatus.toString(), Speed, /*Fuleper, Fulelett, Mileage, Temp, GPSSignal.toString(),*/ Direction, Latitude, Longitude);
-                            } else {
-                                Address = "N/A";
-                                row.push(Name.toString(), TIme.toString(), Address.toString(), /*DeviceStatus.toString(),*/ AssetStatus.toString(), Speed, /*Fuleper, Fulelett, Mileage, Temp, GPSSignal.toString(),*/ Direction, Latitude, Longitude);
-                            }
-                        } else {
-                            Address = "N/A";
-                            row.push(Name.toString(), TIme.toString(), Address.toString(), /*DeviceStatus.toString(),*/ AssetStatus.toString(), Speed, /*Fuleper, Fulelett, Mileage, Temp, GPSSignal.toString(),*/ Direction, Latitude, Longitude);
-                        }
-                        conf.rows.push(row);
-                        GetData(i + 1);
-                    })
+                    if (response[i].Direction != null && response[i].Direction != '' && response[i].Direction != undefined) {
+                        Direction = response[i].Direction;
+                    }
+                    if (response[i].Latitude != null && response[i].Latitude != '' && response[i].Latitude != undefined) {
+                        Latitude = response[i].Latitude;
+                    }
+                    if (response[i].Longitude != null && response[i].Longitude != '' && response[i].Longitude != undefined) {
+                        Longitude = response[i].Longitude;
+                    }
+
+                    // if (err == null && resAddress != null) {
+                    //     if (resAddress.length > 0) {
+                    //         Address = resAddress[0].formattedAddress;
+                    //         row.push(Name.toString(), TIme.toString(), Address.toString(), DeviceStatus.toString(), AssetStatus.toString(), Speed, Fuleper, Fulelett, Mileage, Temp, GPSSignal.toString(), Direction, Latitude, Longitude);
+                    //     } else {
+                    //         Address = "N/A";
+                    //         row.push(Name.toString(), TIme.toString(), Address.toString(), DeviceStatus.toString(), AssetStatus.toString(), Speed, Fuleper, Fulelett, Mileage, Temp, GPSSignal.toString(), Direction, Latitude, Longitude);
+                    //     }
+                    // } else {
+                    // Address = "N/A";
+                    row.push(Name.toString(), TIme.toString(), DeviceStatus.toString(), AssetStatus.toString(), Speed, Fuleper, Fulelett, Mileage, Temp, GPSSignal.toString(), Direction, Latitude, Longitude);
+                    // }
+                    conf.rows.push(row);
+                    GetData(i + 1);
+                    // })
                 } else {
                     if (response[i].Date != null && response[i].Date != '' && response[i].Date != undefined) {
                         // Datetime = dateformat(response[i].Datetime, 2);
@@ -259,7 +261,7 @@ router.get('/ExportDetailTripReport', function(req, res) {
                     if (response[i].Longitude != null && response[i].Longitude != '' && response[i].Longitude != undefined) {
                         Longitude = response[i].Longitude;
                     }
-                    row.push(Name.toString(), TIme.toString(), Address.toString(), /*DeviceStatus.toString(),*/ AssetStatus.toString(), Speed, /*Fuleper, Fulelett, Mileage, Temp, GPSSignal.toString(),*/ Direction, Latitude, Longitude);
+                    row.push(Name.toString(), TIme.toString(), /*DeviceStatus.toString(),*/ AssetStatus.toString(), Speed, /*Fuleper, Fulelett, Mileage, Temp, GPSSignal.toString(),*/ Direction, Latitude, Longitude);
                     conf.rows.push(row);
                     GetData(i + 1);
                 }
@@ -287,11 +289,11 @@ router.get('/GetAllFenceInAndOutData', function(req, res) {
     var Orderby = 'Order By Date DESC';
     var search = "";
     // var StartDate = convertdateformatForUnix(objParam.StartDate);
-    // console.log(StartDate);
+
     var unixStartdate = new Date(objParam.StartDate).getTime() / 1000;
 
     // var EndDate = convertdateformatForUnix(objParam.EndDate);
-    // console.log(EndDate);
+
     var unixEndDate = new Date(objParam.EndDate).getTime() / 1000;
 
     if (objParam.DeviceId != null && objParam.DeviceId != 'All' && objParam.DeviceId != undefined) {
@@ -333,7 +335,7 @@ router.get('/GetAllFenceInAndOutData', function(req, res) {
     var query = "Select tblalarm.* , tblvehicle.iduser, tblvehicle.Name, tblvehicle.IsOnline from tblalarm left join tblvehicle On tblvehicle.deviceid = tblalarm.DeviceId " + search + Orderby + " LIMIT " + req.query.length + " OFFSET " + req.query.start + ";";
     var count = "Select count(*) As Totalrecord from tblalarm left join tblvehicle On tblvehicle.deviceid = tblalarm.DeviceId " + search + ";";
     connection.query(query, function(err, response) {
-        
+
         if (response != undefined) {
             connection.query(count, function(err1, countdata) {
                 var obj = new Object();
@@ -353,30 +355,32 @@ router.get('/GetAllFenceInAndOutData', function(req, res) {
 
 router.get('/ExportFenceReport', function(req, res) {
     var objParam = req.query;
-    // console.log(objParam);
+
     var conf = {};
     conf.name = "sheet1";
     conf.cols = [{
-        caption: 'Asset Name',
-        type: 'string'
-    }, {
-        caption: 'Time',
-        type: 'string'
-    }, {
-        caption: 'Fence Status',
-        type: 'string'
-    }, {
-        caption: 'Address',
-        type: 'string'
-    }];
+            caption: 'Asset Name',
+            type: 'string'
+        }, {
+            caption: 'Time',
+            type: 'string'
+        }, {
+            caption: 'Fence Status',
+            type: 'string'
+        },
+        //  {
+        //     caption: 'Address',
+        //     type: 'string'
+        // }
+    ];
     var Orderby = 'Order By Date DESC';
     var search = "";
     // var StartDate = convertdateformatForUnix(objParam.StartDate);
-    // console.log(StartDate);
+
     var unixStartdate = new Date(objParam.StartDate).getTime() / 1000;
 
     // var EndDate = convertdateformatForUnix(objParam.EndDate);
-    // console.log(EndDate);
+
     var unixEndDate = new Date(objParam.EndDate).getTime() / 1000;
 
     if (objParam.DeviceId != null && objParam.DeviceId != 'All' && objParam.DeviceId != undefined) {
@@ -416,7 +420,7 @@ router.get('/ExportFenceReport', function(req, res) {
     }
 
     var query = "Select tblalarm.* , tblvehicle.iduser, tblvehicle.Name, tblvehicle.IsOnline from tblalarm left join tblvehicle On tblvehicle.deviceid = tblalarm.DeviceId " + search + Orderby;
-    // console.log(query);
+
     connection.query(query, function(err, response) {
         if (response != undefined) {
             conf.rows = [];
@@ -431,36 +435,36 @@ router.get('/ExportFenceReport', function(req, res) {
                     var FenceStatus = 'N/A';
 
                     if (response[i].Latitude != undefined && response[i].Latitude != null && response[i].Latitude != '' && response[i].Longitude != undefined && response[i].Longitude != null && response[i].Longitude != '') {
-                        geocoder.reverse({ lat: response[i].Latitude, lon: response[i].Longitude }, function(err, res) {
-                            if (response[i].Date != null && response[i].Date != '' && response[i].Date != undefined) {
-                                // Datetime = dateformat(response[i].Datetime, 2);
-                                TIme = momentz.utc(new Date(response[i].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a')
-                            }
+                        // geocoder.reverse({ lat: response[i].Latitude, lon: response[i].Longitude }, function(err, res) {
+                        if (response[i].Date != null && response[i].Date != '' && response[i].Date != undefined) {
+                            // Datetime = dateformat(response[i].Datetime, 2);
+                            TIme = momentz.utc(new Date(response[i].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a')
+                        }
 
-                            if (response[i].Name != null && response[i].Name != '' && response[i].Name != undefined) {
-                                Name = response[i].Name;
-                            }
+                        if (response[i].Name != null && response[i].Name != '' && response[i].Name != undefined) {
+                            Name = response[i].Name;
+                        }
 
-                            if (response[i].AlarmCode != null && response[i].AlarmCode != '' && response[i].AlarmCode != undefined) {
-                                if (response[i].AlarmCode == '06') {
-                                    FenceStatus = 'Fence In';
-                                } else {
-                                    FenceStatus = 'Fence Out';
-                                }
-                            }
-
-                            if (res.length > 0) {
-                                Address = res[0].formattedAddress;
-                                row.push(Name.toString(), TIme.toString(), FenceStatus.toString(), Address.toString());
-                                conf.rows.push(row);
+                        if (response[i].AlarmCode != null && response[i].AlarmCode != '' && response[i].AlarmCode != undefined) {
+                            if (response[i].AlarmCode == '06') {
+                                FenceStatus = 'Fence In';
                             } else {
-                                Address = "N/A";
-                                row.push(Name.toString(), TIme.toString(), FenceStatus.toString(), Address.toString());
-                                conf.rows.push(row);
+                                FenceStatus = 'Fence Out';
                             }
-                            // console.log(conf.rows);
-                            GetData(i + 1);
-                        })
+                        }
+
+                        // if (res.length > 0) {
+                        //     Address = res[0].formattedAddress;
+                        //     row.push(Name.toString(), TIme.toString(), FenceStatus.toString(), Address.toString());
+                        //     conf.rows.push(row);
+                        // } else {
+                        //     Address = "N/A";
+                        row.push(Name.toString(), TIme.toString(), FenceStatus.toString());
+                        conf.rows.push(row);
+                        // }
+
+                        GetData(i + 1);
+                        // })
 
                     } else {
                         if (response[i].Date != null && response[i].Date != '' && response[i].Date != undefined) {
@@ -480,8 +484,8 @@ router.get('/ExportFenceReport', function(req, res) {
                             }
                         }
 
-                        Address = "N/A";
-                        row.push(Name.toString(), TIme.toString(), FenceStatus.toString(), Address.toString());
+                        // Address = "N/A";
+                        row.push(Name.toString(), TIme.toString(), FenceStatus.toString());
                         conf.rows.push(row);
                         GetData(i + 1);
                     }
@@ -537,7 +541,7 @@ router.get('/GetAllEngineData', function(req, res) {
 
     var query = "SELECT tblgpsdata.Id, tblgpsdata.Datetime, tblgpsdata.Date, tblgpsdata.Latitude, tblgpsdata.Longitude, tblgpsdata.DeviceId, tblgpsdata.IsEngine, tblgpsdata.Speed, tblvehicle.Name, tblvehicle.iduser FROM tblgpsdata LEFT JOIN tblvehicle ON tblvehicle.deviceid = tblgpsdata.DeviceId " + search;
     query += Orderby;
-    // console.log(query);
+
     connection.query(query, function(err, response) {
         if (response != undefined) {
             res.json(response);
@@ -550,7 +554,7 @@ router.get('/GetAllEngineData', function(req, res) {
 
 router.get('/ExportEngineReport', function(req, res) {
     var objParam = req.query;
-    // console.log(objParam);
+
     var conf = {};
     conf.name = "sheet1";
     conf.cols = [{
@@ -732,33 +736,39 @@ router.get('/GetAllVehicleLastPositionByUserIdWebApp', jsonParser, function(req,
     if (StartDate != '' && EndDate != '') {
         StartDate = momentz(StartDate).format('YYYY-MM-DD HH:mm:ss');
         EndDate = momentz(EndDate).format('YYYY-MM-DD HH:mm:ss');
+        var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
+        var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
 
         if (WhereCondition == '') {
-            WhereCondition = 'where Datetime>="' + StartDate + '" and Datetime<="' + EndDate + '" ';
+            WhereCondition = 'where Date>="' + unixStartdate + '" and Date<="' + unixEndDate + '" ';
         } else {
-            WhereCondition = WhereCondition + 'and Datetime>="' + StartDate + '" and Datetime<="' + EndDate + '" ';
+            WhereCondition = WhereCondition + 'and Date>="' + StartDate + '" and Date<="' + EndDate + '" ';
         }
     } else if (StartDate != null && StartDate != '') {
         StartDate = momentz(StartDate).format('YYYY-MM-DD HH:mm:ss');
+        var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
         if (WhereCondition == '') {
-            WhereCondition = 'where Datetime>="' + StartDate + '" ';
+            WhereCondition = 'where Date>="' + unixStartdate + '" ';
         } else {
-            WhereCondition = WhereCondition + 'and Datetime>="' + StartDate + '" ';
+            WhereCondition = WhereCondition + 'and Date>="' + unixStartdate + '" ';
         }
     } else if (EndDate != null && EndDate != '') {
         EndDate = momentz(EndDate).format('YYYY-MM-DD HH:mm:ss');
+        var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
         if (WhereCondition == '') {
-            WhereCondition = 'where Datetime<="' + EndDate + '" ';
+            WhereCondition = 'where Date<="' + unixEndDate + '" ';
         } else {
-            WhereCondition = WhereCondition + 'and Datetime<="' + EndDate + '" ';
+            WhereCondition = WhereCondition + 'and Date<="' + unixEndDate + '" ';
         }
     }
-    var query = "SELECT  tb.*,tpg.IsEngine,tpg.IsDoor, tpg.Latitude,tpg.Longitude,tpg.Datetime, tpg.Date, tpg.Speed, tpg.Direction FROM tblvehicle tb Inner JOIN tblgpsdata tpg ON tb.deviceid=tpg.DeviceId INNER JOIN (SELECT DeviceId, MAX(Datetime) as maxDate FROM (SELECT DeviceId, Datetime FROM tblgpsdata " + WhereCondition + "ORDER BY Datetime DESC) d GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId AND tpg.Datetime = b.maxDate WHERE iduser=" + req.query.UserId + " and IsDelete=false group by tb.deviceid order by Name LIMIT " + req.query.length + " OFFSET " + req.query.start + ";"
-    var count = "SELECT count(*) FROM tblvehicle tb Inner JOIN tblgpsdata tpg ON tb.deviceid=tpg.DeviceId INNER JOIN (SELECT DeviceId, MAX(Datetime) as maxDate FROM (SELECT DeviceId, Datetime FROM tblgpsdata " + WhereCondition + "ORDER BY Datetime DESC) d GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId AND tpg.Datetime = b.maxDate WHERE iduser=" + req.query.UserId + " and IsDelete=false group by tb.deviceid;";
+    var query = "SELECT  tb.*,tpg.IsEngine,tpg.IsDoor, tpg.Latitude,tpg.Longitude,tpg.Datetime, tpg.Date, tpg.Speed, tpg.Direction FROM tblvehicle tb Inner JOIN tblgpsdata tpg ON tb.deviceid=tpg.DeviceId INNER JOIN (SELECT DeviceId, MAX(Date) as maxDate FROM (SELECT DeviceId, Date FROM tblgpsdata " + WhereCondition + "ORDER BY Date DESC) d GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId AND tpg.Date = b.maxDate WHERE iduser=" + req.query.UserId + " and IsDelete=false group by tb.deviceid order by Name LIMIT " + req.query.length + " OFFSET " + req.query.start + ";"
+    var count = "SELECT count(*) FROM tblvehicle tb Inner JOIN tblgpsdata tpg ON tb.deviceid=tpg.DeviceId INNER JOIN (SELECT DeviceId, MAX(Date) as maxDate FROM (SELECT DeviceId, Date FROM tblgpsdata " + WhereCondition + "ORDER BY Date DESC) d GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId AND tpg.Date = b.maxDate WHERE iduser=" + req.query.UserId + " and IsDelete=false group by tb.deviceid;";
     connection.query(query, function(err, rows, fields) {
         if (!err) {
+            for (var i = 0; i < rows.length; i++) {
+                rows[i].Time = momentz.utc(rows[i].Date * 1000).format('DD-MM-YYYY HH:mm:ss')
+            }
             connection.query(count, function(error, count, fields) {
-                console.log(count.length)
                 res.json({ success: true, data: rows, Totalrecord: count.length });
             })
 
@@ -777,39 +787,42 @@ router.get('/ExportLastPositionDataByUserId', function(req, res) {
     conf.cols = [];
     conf.rows = [];
     conf.cols = [{
-        caption: 'Assest Name',
-        type: 'string'
-    }, {
-        caption: 'Device Id',
-        type: 'string'
-    }, {
-        caption: 'Time',
-        type: 'string'
-    }, {
-        caption: 'Address',
-        type: 'string'
-    }, {
-        caption: 'Device Status',
-        type: 'string'
-    }, {
-        caption: 'Engine',
-        type: 'string'
-    }, {
-        caption: 'Door',
-        type: 'string'
-    }, {
-        caption: 'Speed',
-        type: 'string'
-    }, {
-        caption: 'Latitude',
-        type: 'string'
-    }, {
-        caption: 'Longitude',
-        type: 'string'
-    }, {
-        caption: 'Direction',
-        type: 'string'
-    }];
+            caption: 'Assest Name',
+            type: 'string'
+        }, {
+            caption: 'Device Id',
+            type: 'string'
+        }, {
+            caption: 'Time',
+            type: 'string'
+        },
+        // {
+        //     caption: 'Address',
+        //     type: 'string'
+        // }, 
+        {
+            caption: 'Device Status',
+            type: 'string'
+        }, {
+            caption: 'Engine',
+            type: 'string'
+        }, {
+            caption: 'Door',
+            type: 'string'
+        }, {
+            caption: 'Speed',
+            type: 'string'
+        }, {
+            caption: 'Latitude',
+            type: 'string'
+        }, {
+            caption: 'Longitude',
+            type: 'string'
+        }, {
+            caption: 'Direction',
+            type: 'string'
+        }
+    ];
 
     var WhereCondition = '';
     var StartDate = req.query.StartDate;
@@ -820,32 +833,38 @@ router.get('/ExportLastPositionDataByUserId', function(req, res) {
         EndDate = new Date(EndDate);
         var StartDate1 = momentz.utc(StartDate).format('YYYY-MM-DD HH:mm:ss');
         var EndDate1 = momentz.utc(EndDate).format('YYYY-MM-DD HH:mm:ss');
-
+        var unixStartdate = new Date(StartDate1.replace(' ', 'T')).getTime() / 1000;
+        var unixEndDate = new Date(EndDate1.replace(' ', 'T')).getTime() / 1000;
 
         if (WhereCondition == '') {
-            WhereCondition = 'where Datetime>="' + StartDate1 + '" and Datetime<="' + EndDate1 + '" ';
+            WhereCondition = 'where Date>="' + unixStartdate + '" and Date<="' + unixEndDate + '" ';
         } else {
-            WhereCondition = WhereCondition + 'and Datetime>="' + StartDate1 + '" and Datetime<="' + EndDate1 + '" ';
+            WhereCondition = WhereCondition + 'and Date>="' + unixStartdate + '" and Date<="' + unixEndDate + '" ';
         }
     } else if (StartDate != null && StartDate != '') {
         StartDate = new Date(StartDate);
         var StartDate1 = momentz.utc(StartDate).format('YYYY-MM-DD HH:mm:ss');
+        var unixStartdate = new Date(StartDate1.replace(' ', 'T')).getTime() / 1000;
         if (WhereCondition == '') {
-            WhereCondition = 'where Datetime>="' + StartDate1 + '" ';
+            WhereCondition = 'where Date>="' + unixStartdate + '" ';
         } else {
-            WhereCondition = WhereCondition + 'and Datetime>="' + StartDate1 + '" ';
+            WhereCondition = WhereCondition + 'and Date>="' + unixStartdate + '" ';
         }
     } else if (EndDate != null && EndDate != '') {
         EndDate = new Date(EndDate);
         var EndDate1 = momentz.utc(EndDate).format('YYYY-MM-DD HH:mm:ss');
+        var unixEndDate = new Date(EndDate1.replace(' ', 'T')).getTime() / 1000;
         if (WhereCondition == '') {
-            WhereCondition = 'where Datetime<="' + EndDate1 + '" ';
+            WhereCondition = 'where Date<="' + unixEndDate + '" ';
         } else {
-            WhereCondition = WhereCondition + 'and Datetime<="' + EndDate1 + '" ';
+            WhereCondition = WhereCondition + 'and Date<="' + unixEndDate + '" ';
         }
     }
-    connection.query("SELECT  tb.*,tpg.IsEngine,tpg.IsDoor, tpg.Latitude,tpg.Longitude,tpg.Datetime, tpg.Date, tpg.Speed, tpg.Direction FROM tblvehicle tb Inner JOIN tblgpsdata tpg ON tb.deviceid=tpg.DeviceId INNER JOIN (SELECT DeviceId, MAX(Datetime) as maxDate FROM (SELECT DeviceId, Datetime FROM tblgpsdata " + WhereCondition + "ORDER BY Datetime DESC) d GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId AND tpg.Datetime = b.maxDate WHERE iduser=" + req.query.UserId + " and IsDelete=false group by tb.deviceid order by Name;", function(err, rows, fields) {
+    connection.query("SELECT  tb.*,tpg.IsEngine,tpg.IsDoor, tpg.Latitude,tpg.Longitude,tpg.Datetime, tpg.Date, tpg.Speed, tpg.Direction FROM tblvehicle tb Inner JOIN tblgpsdata tpg ON tb.deviceid=tpg.DeviceId INNER JOIN (SELECT DeviceId, MAX(Date) as maxDate FROM (SELECT DeviceId, Date FROM tblgpsdata " + WhereCondition + "ORDER BY Date DESC) d GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId AND tpg.Date = b.maxDate WHERE iduser=" + req.query.UserId + " and IsDelete=false group by tb.deviceid order by Name;", function(err, rows, fields) {
         if (!err) {
+            for (var i = 0; i < rows.length; i++) {
+                rows[i].Date = momentz.utc(rows[i].Date * 1000).format('DD-MM-YYYY HH:mm:ss')
+            }
             var ListPostionData = rows;
             ExportData(ListPostionData)
         } else {
@@ -859,86 +878,85 @@ router.get('/ExportLastPositionDataByUserId', function(req, res) {
             if (i < ListPostionData.length) {
 
                 if (ListPostionData[i].Latitude != undefined && ListPostionData[i].Latitude != null && ListPostionData[i].Latitude != '' && ListPostionData[i].Longitude != undefined && ListPostionData[i].Longitude != null && ListPostionData[i].Longitude != '') {
-                    // var Address = '';
-                    geocoder.reverse({ lat: ListPostionData[i].Latitude, lon: ListPostionData[i].Longitude }, function(err, res) {
-                        if (ListPostionData[i].Name != undefined && ListPostionData[i].Name != null && ListPostionData[i].Name != '') {
-                            var AssestName = ListPostionData[i].Name.toString();
-                        } else {
-                            var AssestName = "N/A";
-                        }
+                    // geocoder.reverse({ lat: ListPostionData[i].Latitude, lon: ListPostionData[i].Longitude }, function(err, res) {
+                    if (ListPostionData[i].Name != undefined && ListPostionData[i].Name != null && ListPostionData[i].Name != '') {
+                        var AssestName = ListPostionData[i].Name.toString();
+                    } else {
+                        var AssestName = "N/A";
+                    }
 
-                        if (ListPostionData[i].deviceid != undefined && ListPostionData[i].deviceid != null && ListPostionData[i].deviceid != '') {
-                            var DeviceId = ListPostionData[i].deviceid.toString();
-                        } else {
-                            var DeviceId = "N/A";
-                        }
+                    if (ListPostionData[i].deviceid != undefined && ListPostionData[i].deviceid != null && ListPostionData[i].deviceid != '') {
+                        var DeviceId = ListPostionData[i].deviceid.toString();
+                    } else {
+                        var DeviceId = "N/A";
+                    }
 
-                        if (ListPostionData[i].Datetime != undefined && ListPostionData[i].Datetime != null && ListPostionData[i].Datetime != '') {
-                            var Time = momentz(ListPostionData[i].Datetime).format('YYYY-MM-DD HH:mm:ss').toString();
-                        } else {
-                            var Time = "N/A";
-                        }
+                    if (ListPostionData[i].Date != undefined && ListPostionData[i].Date != null && ListPostionData[i].Date != '') {
+                        var Time = ListPostionData[i].Date;
+                    } else {
+                        var Time = "N/A";
+                    }
 
-                        if (ListPostionData[i].IsOnline != undefined && ListPostionData[i].IsOnline != null && ListPostionData[i].IsOnline != '') {
-                            var DeviceStatus = ListPostionData[i].IsOnline.toString();
-                        } else {
-                            var DeviceStatus = "0";
-                        }
+                    if (ListPostionData[i].IsOnline != undefined && ListPostionData[i].IsOnline != null && ListPostionData[i].IsOnline != '') {
+                        var DeviceStatus = ListPostionData[i].IsOnline.toString();
+                    } else {
+                        var DeviceStatus = "0";
+                    }
 
-                        if (ListPostionData[i].IsEngine != undefined && ListPostionData[i].IsEngine != null && ListPostionData[i].IsEngine != '') {
-                            if (ListPostionData[i].IsEngine == 1) {
-                                var Engine = "ON";
-                            } else {
-                                var Engine = "OFF";
-                            }
+                    if (ListPostionData[i].IsEngine != undefined && ListPostionData[i].IsEngine != null && ListPostionData[i].IsEngine != '') {
+                        if (ListPostionData[i].IsEngine == 1) {
+                            var Engine = "ON";
                         } else {
                             var Engine = "OFF";
                         }
+                    } else {
+                        var Engine = "OFF";
+                    }
 
-                        if (ListPostionData[i].IsDoor != undefined && ListPostionData[i].IsDoor != null && ListPostionData[i].IsDoor != '') {
-                            if (ListPostionData[i].IsDoor == 1) {
-                                var Door = "Open";
-                            } else {
-                                var Door = "Close";
-                            }
+                    if (ListPostionData[i].IsDoor != undefined && ListPostionData[i].IsDoor != null && ListPostionData[i].IsDoor != '') {
+                        if (ListPostionData[i].IsDoor == 1) {
+                            var Door = "Open";
                         } else {
                             var Door = "Close";
                         }
+                    } else {
+                        var Door = "Close";
+                    }
 
-                        if (ListPostionData[i].Speed != undefined && ListPostionData[i].Speed != null && ListPostionData[i].Speed != '') {
-                            var Speed = ListPostionData[i].Speed.toString();
-                        } else {
-                            var Speed = "0";
-                        }
+                    if (ListPostionData[i].Speed != undefined && ListPostionData[i].Speed != null && ListPostionData[i].Speed != '') {
+                        var Speed = ListPostionData[i].Speed.toString();
+                    } else {
+                        var Speed = "0";
+                    }
 
-                        if (ListPostionData[i].Latitude != undefined && ListPostionData[i].Latitude != null && ListPostionData[i].Latitude != '') {
-                            var Latitude = ListPostionData[i].Latitude.toString();
-                        } else {
-                            var Latitude = "0";
-                        }
+                    if (ListPostionData[i].Latitude != undefined && ListPostionData[i].Latitude != null && ListPostionData[i].Latitude != '') {
+                        var Latitude = ListPostionData[i].Latitude.toString();
+                    } else {
+                        var Latitude = "0";
+                    }
 
-                        if (ListPostionData[i].Longitude != undefined && ListPostionData[i].Longitude != null && ListPostionData[i].Longitude != '') {
-                            var Longitude = ListPostionData[i].Longitude.toString();
-                        } else {
-                            var Longitude = "0";
-                        }
+                    if (ListPostionData[i].Longitude != undefined && ListPostionData[i].Longitude != null && ListPostionData[i].Longitude != '') {
+                        var Longitude = ListPostionData[i].Longitude.toString();
+                    } else {
+                        var Longitude = "0";
+                    }
 
-                        if (ListPostionData[i].Direction != undefined && ListPostionData[i].Direction != null && ListPostionData[i].Direction != '') {
-                            var Direction = ListPostionData[i].Direction.toString();
-                        } else {
-                            var Direction = "0";
-                        }
+                    if (ListPostionData[i].Direction != undefined && ListPostionData[i].Direction != null && ListPostionData[i].Direction != '') {
+                        var Direction = ListPostionData[i].Direction.toString();
+                    } else {
+                        var Direction = "0";
+                    }
 
-                        if (res.length > 0) {
-                            var Address = res[0].formattedAddress;
-                            conf.rows.push([AssestName, DeviceId, Time, Address, DeviceStatus, Engine, Door, Speed, Latitude, Longitude, Direction]);
-                        } else {
-                            var Address = "N/A";
-                            conf.rows.push([AssestName, DeviceId, Time, Address, DeviceStatus, Engine, Door, Speed, Latitude, Longitude, Direction]);
-                        }
-                        AddList(i + 1);
+                    if (res.length > 0) {
+                        // var Address = res[0].formattedAddress;
+                        conf.rows.push([AssestName, DeviceId, Time, DeviceStatus, Engine, Door, Speed, Latitude, Longitude, Direction]);
+                    } else {
+                        // var Address = "N/A";
+                        conf.rows.push([AssestName, DeviceId, Time, DeviceStatus, Engine, Door, Speed, Latitude, Longitude, Direction]);
+                    }
+                    AddList(i + 1);
 
-                    });
+                    // });
 
                 } else {
                     if (ListPostionData[i].Name != undefined && ListPostionData[i].Name != null && ListPostionData[i].Name != '') {
@@ -1008,8 +1026,8 @@ router.get('/ExportLastPositionDataByUserId', function(req, res) {
                     } else {
                         var Direction = "0";
                     }
-                    var Address = "N/A";
-                    conf.rows.push([AssestName, DeviceId, Time, Address, DeviceStatus, Engine, Door, Speed, Latitude, Longitude, Direction]);
+                    // var Address = "N/A";
+                    conf.rows.push([AssestName, DeviceId, Time, DeviceStatus, Engine, Door, Speed, Latitude, Longitude, Direction]);
                     AddList(i + 1);
                 }
             } else {
@@ -1044,7 +1062,7 @@ router.get('/GetAllParkingData', function(req, res) {
 
 
     var query = "select tblgpsdata.*,tblvehicle.Name from tblgpsdata inner join tblvehicle on tblgpsdata.deviceid = tblvehicle.deviceid Where tblvehicle.iduser=" + req.query.idUser + " and tblgpsdata.Date >= '" + unixStartdate + "' and tblgpsdata.Date <= '" + unixEnddate + "'" + wherecondition + ' order by tblgpsdata.Date asc' + ";"
-        // console.log(query);
+
     connection.query(query, function(err, response, fields) {
 
         if (response.length > 0) {
@@ -1070,7 +1088,7 @@ router.get('/GetAllParkingData', function(req, res) {
                 if (lstGroup[i].data.length > 0) {
                     for (var k = 0; k < lstGroup[i].data.length; k++) {
                         if (lstGroup[i].data[k].IsEngine == 0) {
-                            // console.log(lstGroup[i].data[k].Id)
+
                             if (COuntEngineOff == 0) {
                                 var obj = new Object();
                                 obj.Latitude = lstGroup[i].data[k].Latitude;
@@ -1133,10 +1151,12 @@ router.get('/ExportParkingReport', function(req, res) {
         }, {
             caption: 'Parking Time',
             type: 'string'
-        }, {
-            caption: 'Address',
-            type: 'string'
-        }, {
+        },
+        //  {
+        //     caption: 'Address',
+        //     type: 'string'
+        // },
+        {
             caption: 'Latitude',
             type: 'number'
         },
@@ -1241,55 +1261,53 @@ router.get('/ExportParkingReport', function(req, res) {
                 var Name = 'N/A';
                 var StartTime = 'N/A';
                 var EndTime = 'N/A';
-                var Address = 'N/A';
+                // var Address = 'N/A';
                 var ParkingTime = 'N/A';
                 var Direction = 0.00;
                 var Latitude = 0.00;
                 var Longitude = 0.00;
 
                 if (Array[i].Latitude != undefined && Array[i].Latitude != null && Array[i].Latitude != '' && Array[i].Longitude != undefined && Array[i].Longitude != null && response[i].Longitude != '') {
-                    geocoder.reverse({ lat: Array[i].Latitude, lon: Array[i].Longitude }, function(err, res) {
-                        if (Array[i].StartTime != null && Array[i].StartTime != '' && Array[i].StartTime != undefined) {
+                    // geocoder.reverse({ lat: Array[i].Latitude, lon: Array[i].Longitude }, function(err, res) {
+                    if (Array[i].StartTime != null && Array[i].StartTime != '' && Array[i].StartTime != undefined) {
 
-                            // Datetime = dateformat(Array[i].Datetime, 2);
-                            StartTime = Array[i].StartTime;
-                        }
+                        // Datetime = dateformat(Array[i].Datetime, 2);
+                        StartTime = Array[i].StartTime;
+                    }
 
-                        if (Array[i].EndTime != null && Array[i].EndTime != '' && Array[i].EndTime != undefined) {
-                            // Datetime = dateformat(Array[i].Datetime, 2);
-                            EndTime = Array[i].EndTime;
-                        }
+                    if (Array[i].EndTime != null && Array[i].EndTime != '' && Array[i].EndTime != undefined) {
+                        // Datetime = dateformat(Array[i].Datetime, 2);
+                        EndTime = Array[i].EndTime;
+                    }
 
-                        if (Array[i].Name != null && Array[i].Name != '' && Array[i].Name != undefined) {
-                            Name = Array[i].Name;
-                        }
+                    if (Array[i].Name != null && Array[i].Name != '' && Array[i].Name != undefined) {
+                        Name = Array[i].Name;
+                    }
 
-                        if (Array[i].ParkingTime != null && Array[i].ParkingTime != '' && Array[i].ParkingTime != undefined) {
-                            ParkingTime = Array[i].ParkingTime;
-                        }
-                        if (Array[i].Latitude != null && Array[i].Latitude != '' && Array[i].Latitude != undefined) {
-                            Latitude = Array[i].Latitude;
-                        }
-                        if (Array[i].Longitude != null && Array[i].Longitude != '' && Array[i].Longitude != undefined) {
-                            Longitude = Array[i].Longitude;
-                        }
-                        if (err || res == null) {
-                            if (res.length > 0) {
-                                Address = res[0].formattedAddress;
-                                row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address.toString(), Latitude, Longitude);
-                            } else {
-                                Address = "N/A";
-                                row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address.toString(), Latitude, Longitude);
-                            }
-                        } else {
-                            Address = "N/A";
-                            row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address.toString(), Latitude, Longitude);
-                        }
-                        conf.rows.push(row);
-                        GetData(i + 1);
-
-
-                    })
+                    if (Array[i].ParkingTime != null && Array[i].ParkingTime != '' && Array[i].ParkingTime != undefined) {
+                        ParkingTime = Array[i].ParkingTime;
+                    }
+                    if (Array[i].Latitude != null && Array[i].Latitude != '' && Array[i].Latitude != undefined) {
+                        Latitude = Array[i].Latitude;
+                    }
+                    if (Array[i].Longitude != null && Array[i].Longitude != '' && Array[i].Longitude != undefined) {
+                        Longitude = Array[i].Longitude;
+                    }
+                    // if (err || res == null) {
+                    //     if (res.length > 0) {
+                    //         Address = res[0].formattedAddress;
+                    //         row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address.toString(), Latitude, Longitude);
+                    //     } else {
+                    //         Address = "N/A";
+                    //         row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address.toString(), Latitude, Longitude);
+                    //     }
+                    // } else {
+                    // Address = "N/A";
+                    row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Latitude, Longitude);
+                    // }
+                    conf.rows.push(row);
+                    GetData(i + 1);
+                    // })
                 } else {
                     if (Array[i].StartTime != null && Array[i].StartTime != '' && Array[i].StartTime != undefined) {
 
@@ -1318,7 +1336,7 @@ router.get('/ExportParkingReport', function(req, res) {
                     if (Array[i].Longitude != null && Array[i].Longitude != '' && Array[i].Longitude != undefined) {
                         Longitude = Array[i].Longitude;
                     }
-                    row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address.toString(), Latitude, Longitude);
+                    row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Latitude, Longitude);
                     conf.rows.push(row);
                     GetData(i + 1);
                 }

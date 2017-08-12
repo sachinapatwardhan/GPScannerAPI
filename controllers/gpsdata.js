@@ -714,11 +714,9 @@ router.get('/GetAllSpeedDataReport', function(req, res) {
     }
     var query = "SELECT User.username,Bike.MaxSpeed,Bike.Name,Bike.IsOnline,Gps.* FROM tblvehicle  AS Bike left join  tblgpsdata AS Gps on Gps.DeviceId = Bike.deviceid left join  tbluserinformation AS User on Bike.iduser = User.id " + WhereCondition + " order by Gps.Date Desc LIMIT " + req.query.length + " OFFSET " + req.query.start + ";";
     var count = "SELECT count(*) AS Totalrecord FROM tblvehicle  AS Bike left join  tblgpsdata AS Gps on Gps.DeviceId = Bike.deviceid left join  tbluserinformation AS User on Bike.iduser = User.id " + WhereCondition + ";";
-    console.log(query)
     connection.query(query, function(err, response, fields) {
         if (!err) {
             connection.query(count, function(err1, response1, fields) {
-                console.log(err)
                 var obj = new Object();
                 obj.data = response;
                 obj.Totalrecord = response1[0].Totalrecord;
@@ -1006,7 +1004,6 @@ router.get('/ExportAllWoringHourForReport', function(req, res) {
 
         var EngingEndTime = '';
         GetData(0);
-        console.log(response1)
 
         function GetData(i) {
             if (i < response1.length) {
@@ -1123,7 +1120,6 @@ router.get('/GetAllEngineidleReport', function(req, res) {
         " order by gps.DeviceId,gps.Date";
 
     connection.query(query, function(err, response, fields) {
-        console.log(response)
 
         if (response.length > 0) {
 
@@ -1222,7 +1218,6 @@ router.get('/GetAllDriverReport', function(req, res) {
     if (objParam.DeviceId != null && objParam.DeviceId != undefined && objParam.DeviceId != '') {
         WhereCondition += " And gps.DeviceId = " + objParam.DeviceId;
     }
-    console.log(WhereCondition)
     //WhereCondition += " And Gps.DeviceId = 075034901552";
     // WhereCondition += " And Gps.IsEngine = false";
     var query = "select " +
@@ -1235,7 +1230,6 @@ router.get('/GetAllDriverReport', function(req, res) {
         " order by gps.Date Asc";
 
     connection.query(query, function(err, response, fields) {
-        console.log(err)
         if (response.length > 0) {
             res.json(response);
         } else {
@@ -1263,14 +1257,16 @@ router.get('/ExportDriverReport', function(req, res) {
         {
             caption: 'Driving Time',
             type: 'string'
-        }, {
-            caption: 'Start Address',
-            type: 'string'
         },
+        //  {
+        //     caption: 'Start Address',
+        //     type: 'string'
+        // },
+        // {
+        //     caption: 'End Address',
+        //     type: 'string'
+        // },
         {
-            caption: 'End Address',
-            type: 'string'
-        }, {
             caption: 'Locate Number',
             type: 'string'
         }, {
@@ -1337,7 +1333,7 @@ router.get('/ExportDriverReport', function(req, res) {
     if (objParam.DeviceId != null && objParam.DeviceId != undefined && objParam.DeviceId != '') {
         WhereCondition += " And gps.DeviceId = " + objParam.DeviceId;
     }
-    console.log(WhereCondition)
+
     //WhereCondition += " And Gps.DeviceId = 075034901552";
     // WhereCondition += " And Gps.IsEngine = false";
     var query = "select " +
@@ -1350,7 +1346,6 @@ router.get('/ExportDriverReport', function(req, res) {
         " order by gps.Date Asc";
 
     connection.query(query, function(err, response, fields) {
-        console.log("*******************", err)
         conf.rows = [];
         if (response.length > 0) {
             var groups = u.groupBy(response, function(o) {
@@ -1471,8 +1466,8 @@ router.get('/ExportDriverReport', function(req, res) {
             var DrivingStartTime = '';
             var EndDrivingTime = '';
             var DrivingTime = '';
-            var StartAddress = 'No Address Found';
-            var EndAddress = 'No Address Found';
+            // var StartAddress = 'No Address Found';
+            // var EndAddress = 'No Address Found';
             var LocateNumber = '';
             var Speed6090 = '';
             var Speed90130 = '';
@@ -1540,30 +1535,28 @@ router.get('/ExportDriverReport', function(req, res) {
                     if (Array[i].EndLatitude != null && Array[i].EndLatitude != '' && Array[i].EndLatitude != undefined) {
                         EndLatitude = Array[i].EndLatitude.toString();
                     }
-                    if (Array[i].StartLatitude != null && Array[i].StartLatitude != '' && Array[i].StartLatitude != undefined && Array[i].StartLongitude != null && Array[i].StartLongitude != '' && Array[i].StartLongitude != undefined) {
-                        getGeocodeGenrate(Array[i].StartLatitude, Array[i].StartLongitude, function(Address) {
-                            StartAddress = Address;
-                            if (Array[i].EndLatitude != null && Array[i].EndLatitude != '' && Array[i].EndLatitude != undefined && Array[i].EndLongitude != null && Array[i].EndLongitude != '' && Array[i].EndLongitude != undefined) {
-                                getGeocodeGenrate(Array[i].EndLatitude, Array[i].EndLongitude, function(Address) {
-                                    EndAddress = Address;
-                                    row.push(Name, DrivingStartTime, EndDrivingTime, DrivingTime, StartAddress, EndAddress, LocateNumber, Speed6090, Speed90130, Over130, MaxSpeed, avgSpeed, StartSpeed, EndSpeed, StartLongitude, StartLatitude, EndLongitude, EndLatitude);
-                                    conf.rows.push(row);
-                                    GetDrivingData(i + 1);
-                                })
-                            } else {
-                                row.push(Name, DrivingStartTime, EndDrivingTime, DrivingTime, StartAddress, EndAddress, LocateNumber, Speed6090, Speed90130, Over130, MaxSpeed, avgSpeed, StartSpeed, EndSpeed, StartLongitude, StartLatitude, EndLongitude, EndLatitude);
-                                conf.rows.push(row);
-                                GetDrivingData(i + 1);
-                            }
+                    // if (Array[i].StartLatitude != null && Array[i].StartLatitude != '' && Array[i].StartLatitude != undefined && Array[i].StartLongitude != null && Array[i].StartLongitude != '' && Array[i].StartLongitude != undefined) {
+                    //     getGeocodeGenrate(Array[i].StartLatitude, Array[i].StartLongitude, function(Address) {
+                    //         StartAddress = Address;
+                    //         if (Array[i].EndLatitude != null && Array[i].EndLatitude != '' && Array[i].EndLatitude != undefined && Array[i].EndLongitude != null && Array[i].EndLongitude != '' && Array[i].EndLongitude != undefined) {
+                    //             getGeocodeGenrate(Array[i].EndLatitude, Array[i].EndLongitude, function(Address) {
+                    //                 EndAddress = Address;
+                    //                 row.push(Name, DrivingStartTime, EndDrivingTime, DrivingTime, StartAddress, EndAddress, LocateNumber, Speed6090, Speed90130, Over130, MaxSpeed, avgSpeed, StartSpeed, EndSpeed, StartLongitude, StartLatitude, EndLongitude, EndLatitude);
+                    //                 conf.rows.push(row);
+                    //                 GetDrivingData(i + 1);
+                    //             })
+                    //         } else {
+                    //             row.push(Name, DrivingStartTime, EndDrivingTime, DrivingTime, StartAddress, EndAddress, LocateNumber, Speed6090, Speed90130, Over130, MaxSpeed, avgSpeed, StartSpeed, EndSpeed, StartLongitude, StartLatitude, EndLongitude, EndLatitude);
+                    //             conf.rows.push(row);
+                    //             GetDrivingData(i + 1);
+                    //         }
 
-                        });
-                    } else {
-                        row.push(Name, DrivingStartTime, EndDrivingTime, DrivingTime, StartAddress, EndAddress, LocateNumber, Speed6090, Speed90130, Over130, MaxSpeed, avgSpeed, StartSpeed, EndSpeed, StartLongitude, StartLatitude, EndLongitude, EndLatitude);
-                        conf.rows.push(row);
-                        GetDrivingData(i + 1);
-                    }
-
-
+                    //     });
+                    // } else {
+                    row.push(Name, DrivingStartTime, EndDrivingTime, DrivingTime, LocateNumber, Speed6090, Speed90130, Over130, MaxSpeed, avgSpeed, StartSpeed, EndSpeed, StartLongitude, StartLatitude, EndLongitude, EndLatitude);
+                    conf.rows.push(row);
+                    GetDrivingData(i + 1);
+                    // }
                 } else {
                     var result = nodeExcel.execute(conf);
                     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
