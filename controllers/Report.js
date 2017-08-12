@@ -330,13 +330,22 @@ router.get('/GetAllFenceInAndOutData', function(req, res) {
         search += " Where tblalarm.AlarmCode IN ('06', '66')";
     }
 
-    var query = "Select tblalarm.* , tblvehicle.iduser, tblvehicle.Name, tblvehicle.IsOnline from tblalarm left join tblvehicle On tblvehicle.deviceid = tblalarm.DeviceId " + search + Orderby;
-
+    var query = "Select tblalarm.* , tblvehicle.iduser, tblvehicle.Name, tblvehicle.IsOnline from tblalarm left join tblvehicle On tblvehicle.deviceid = tblalarm.DeviceId " + search + Orderby + " LIMIT " + req.query.length + " OFFSET " + req.query.start + ";";
+    var count = "Select count(*) As Totalrecord from tblalarm left join tblvehicle On tblvehicle.deviceid = tblalarm.DeviceId " + search + ";";
     connection.query(query, function(err, response) {
+        
         if (response != undefined) {
-            res.json(response);
+            connection.query(count, function(err1, countdata) {
+                var obj = new Object();
+                obj.data = response;
+                obj.Totalrecord = countdata[0].Totalrecord;
+                res.json(obj);
+            })
+
         } else {
             var response1 = new Object()
+            response1.data = [];
+            response1.Totalrecord = 0;
             res.json(response1);
         }
     })
