@@ -850,7 +850,7 @@ router.get('/GetAllWoringHourForReport', function(req, res) {
         "on " +
         "gps.DeviceId = Bike.deviceid " +
         WhereCondition +
-        " order by gps.DeviceId,gps.Date Asc";
+        " order by gps.Date Asc";
     connection.query(query, function(err, response, fields) {
         if (!err) {
             res.json(response)
@@ -928,7 +928,7 @@ router.get('/ExportAllWoringHourForReport', function(req, res) {
         "on " +
         "gps.DeviceId = Bike.deviceid " +
         WhereCondition +
-        " order by gps.DeviceId,gps.Date Asc";
+        " order by gps.Date Asc";
     connection.query(query, function(err, response, fields) {
         var DeviceId = null;
         var response1 = [];
