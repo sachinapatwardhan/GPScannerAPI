@@ -23,10 +23,18 @@ router.get('/GetAllGPSByTimeZoneDate', function(req, res) {
         orderby = ' ' + req.query.orderby;
     }
 
-    var query = "select tblgpsdata.*,tblvehicle.Name from tblgpsdata left join tblvehicle on tblgpsdata.deviceid = tblvehicle.deviceid Where tblvehicle.iduser=" + req.query.idUser + " and tblgpsdata.Date >= '" + unixStartdate + "' and tblgpsdata.Date <= '" + unixEnddate + "'" + wherecondition + orderby + ";"
-
+    var query = "select tblgpsdata.*,tblvehicle.Name from tblgpsdata left join tblvehicle on tblgpsdata.deviceid = tblvehicle.deviceid Where tblvehicle.iduser=" + req.query.idUser + " and tblgpsdata.Date >= '" + unixStartdate + "' and tblgpsdata.Date <= '" + unixEnddate + "'" + wherecondition + orderby + " LIMIT " + req.query.length + " OFFSET " + req.query.start + ";"
+    var Count = "select count(*) AS Totalrecord from tblgpsdata left join tblvehicle on tblgpsdata.deviceid = tblvehicle.deviceid Where tblvehicle.iduser=" + req.query.idUser + " and tblgpsdata.GPSPositioning='A' and tblgpsdata.Date >= '" + unixStartdate + "' and tblgpsdata.Date <= '" + unixEnddate + "'" + wherecondition + ";"
     connection.query(query, function(err, lstGPSData, fields) {
-        res.json(lstGPSData);
+        if (!err) {
+            connection.query(Count, function(err1, res1, fields) {
+                var object = new Object();
+                object.data = lstGPSData;
+                object.Totalrecord = res1[0].Totalrecord;
+                res.json(object);
+            })
+
+        }
     });
 });
 
@@ -1019,7 +1027,7 @@ router.get('/GetAllParkingData', function(req, res) {
 
 
     var query = "select tblgpsdata.*,tblvehicle.Name from tblgpsdata inner join tblvehicle on tblgpsdata.deviceid = tblvehicle.deviceid Where tblvehicle.iduser=" + req.query.idUser + " and tblgpsdata.GPSPositioning='A' and tblgpsdata.Date >= '" + unixStartdate + "' and tblgpsdata.Date <= '" + unixEnddate + "'" + wherecondition + ' order by tblgpsdata.Date asc' + ";"
-        // console.log(query);
+    // console.log(query);
     connection.query(query, function(err, response, fields) {
 
         if (response.length > 0) {
@@ -1381,7 +1389,7 @@ router.get('/GetAllDailyStatDate', function(req, res) {
     console.log(query);
     connection.query(query, function(err, response, fields) {
         var query1 = "select tblalarm.*,tblvehicle.deviceid from tblalarm left join tblvehicle on tblalarm.deviceid = tblvehicle.deviceid Where tblvehicle.iduser=" + req.query.idUser + "  and tblalarm.Date >= '" + unixStartdate + "' and tblalarm.Date <= '" + unixEnddate + "'" + wherecondition1 + ";"
-            //console.log(query1);
+        //console.log(query1);
         connection.query(query1, function(alarmerr, alarmresponse, alarmfields) {
 
             if (response.length > 0) {
@@ -1419,7 +1427,7 @@ router.get('/GetAllDailyStatDate', function(req, res) {
                         DeviceId: group[0].DeviceId,
                         Datetime: group[0].Date,
                         data: group // u.pluck(group, 'Data'),
-                            // Direction: u.pluck(group, 'Direction')
+                        // Direction: u.pluck(group, 'Direction')
                     }
                 });
 

@@ -712,14 +712,25 @@ router.get('/GetAllSpeedDataReport', function(req, res) {
     if (objParam.DeviceId != null && objParam.DeviceId != undefined && objParam.DeviceId != '') {
         WhereCondition += " And Gps.DeviceId = " + objParam.DeviceId;
     }
-    var query = "SELECT User.username,Bike.MaxSpeed,Bike.Name,Bike.IsOnline,Gps.* FROM tblvehicle  AS Bike left join  tblgpsdata AS Gps on Gps.DeviceId = Bike.deviceid left join  tbluserinformation AS User on Bike.iduser = User.id " + WhereCondition + " order by Gps.Date Desc";
-
-    console.log("**************", query)
+    var query = "SELECT User.username,Bike.MaxSpeed,Bike.Name,Bike.IsOnline,Gps.* FROM tblvehicle  AS Bike left join  tblgpsdata AS Gps on Gps.DeviceId = Bike.deviceid left join  tbluserinformation AS User on Bike.iduser = User.id " + WhereCondition + " order by Gps.Date Desc LIMIT " + req.query.length + " OFFSET " + req.query.start + ";";
+    var count = "SELECT count(*) AS Totalrecord FROM tblvehicle  AS Bike left join  tblgpsdata AS Gps on Gps.DeviceId = Bike.deviceid left join  tbluserinformation AS User on Bike.iduser = User.id " + WhereCondition + ";";
+    console.log(query)
     connection.query(query, function(err, response, fields) {
         if (!err) {
-            res.json(response)
+            connection.query(count, function(err1, response1, fields) {
+                console.log(err)
+                var obj = new Object();
+                obj.data = response;
+                obj.Totalrecord = response1[0].Totalrecord;
+                res.json(obj);
+            })
+
         } else {
-            res.json([])
+            var obj = new Object();
+            obj.data = [];
+            obj.Totalrecord = 0;
+            res.json(obj);
+
         }
     });
 })
