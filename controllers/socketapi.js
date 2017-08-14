@@ -143,7 +143,7 @@ function SendPushNotification(data, UserId) {
                     var objData = clone(data);
                     if (response[i].Platform == 'ios') {
                         objData.title = data.message;
-                        objData.message = data.title;
+                        objData.message = data.message;
                         if (objData.Fence == 'FenceIn') {
                             PushNotificationSettings.apn.defaultData.sound = 'fencein.caf';
                         } else if (objData.Fence == 'FenceOut') {
