@@ -63,12 +63,14 @@ function SendIOSPushNotification(DeviceId) {
     var UserId = 0;
     var data = {
         title: 'Alert',
-        message: "Puppy is out of Fence",
-        Fence: 'Fence',
+        message: '9787 is out of Home Fence.',
+        Fence: 'Default',
         otherfields: {
-            deviceid: "488990008090",
-            PetId: "1",
-            PetName: "Puppy"
+            deviceid: '123456',
+            Id: 1,
+            VehicleName: '9787',
+            AlarmCode: '6',
+            Type: 'Alarm'
         }
     };
 
@@ -76,7 +78,7 @@ function SendIOSPushNotification(DeviceId) {
 
     //PushNotificationSettings.apn.defaultData.sound = 'jinglebellssms.caf';
 
-    var objPushNotificationSend = new PushNotifications(OwnerPushNotificationSettings);
+    var objPushNotificationSend = new PushNotifications(PushNotificationSettings);
 
     function SendNotification(i) {
         // if (i < response.length) {
@@ -123,87 +125,53 @@ function clone(obj) {
     return copy;
 }
 
-function SendPushNotification(data, UserId, Type, PushNotificationType) {
+function SendPushNotification(data, UserId) {
     // var deviceIds = [];
-    connection.query("SELECT PushNotificationId,Platform from tblpushnotification where iduser=" + UserId + " and UserType='" + Type + "' group by PushNotificationId, Platform", function(err, response, fields) {
+    connection.query("SELECT PushNotificationId,Platform from tblpushnotification where iduser=" + UserId + " group by PushNotificationId, Platform", function(err, response, fields) {
         if (!err && response.length > 0) {
             // PushNotification.findAll({ where: { iduser: UserId } }).then(function(response) {
             function SendNotification(i) {
                 if (i < response.length) {
-                    connection.query("SELECT IsSecurity, Type from tbluserinformation where id=" + UserId, function(err, lstUser, fields) {
-                        console.log(lstUser);
-                        if (lstUser[0].IsSecurity == true && Type == 'Shop') {
-                            var deviceIds = [];
-                            deviceIds.push(response[i].PushNotificationId)
-                                //SendNotification(i + 1);
-                                // } else {
-                                // console.log(deviceIds)
-                            var objData = clone(data);
-                            if (response[i].Platform == 'ios') {
-                                objData.title = data.message;
-                                objData.message = data.title;
-                                if (objData.Fence == 'Fence') {
-                                    PushNotificationSettings.apn.defaultData.sound = 'jinglebellssms.caf';
-                                } else {
-                                    PushNotificationSettings.apn.defaultData.sound = 'default';
-                                };
-                            };
-                            // console.log(response[i].Platform + "_______________________________________________________")
-                            // console.log(objData)
-                            objData.priority = 'high';
-                            var objPushNotificationSend = new PushNotifications(PushNotificationSettings);
-                            if (deviceIds.length > 0) {
 
-                                objPushNotificationSend.send(deviceIds, objData, function(result) {
-                                    // console.log(result);
-                                    SendNotification(i + 1);
-                                });
-                            } else {
-                                SendNotification(i + 1);
-                            };
+                    // connection.query("SELECT * from tblsetting where Name ='" + PushNotificationType + "' ", function(err, lstSetting, fields) {
+                    //     if (lstSetting[0].Value == 1) {
+                    var deviceIds = [];
+                    deviceIds.push(response[i].PushNotificationId)
+                        //SendNotification(i + 1);
+                        // } else {
+                        // console.log(deviceIds)
+                    var objData = clone(data);
+                    if (response[i].Platform == 'ios') {
+                        objData.title = data.message;
+                        objData.message = data.title;
+                        if (objData.Fence == 'FenceIn') {
+                            PushNotificationSettings.apn.defaultData.sound = 'fencein.caf';
+                        } else if (objData.Fence == 'FenceOut') {
+                            PushNotificationSettings.apn.defaultData.sound = 'fenceout.caf';
                         } else {
-                            if (Type == 'Owner') {
-                                connection.query("SELECT * from tblsetting where Name ='" + PushNotificationType + "' ", function(err, lstSetting, fields) {
-                                    if (lstSetting[0].Value == 1) {
-                                        var deviceIds = [];
-                                        deviceIds.push(response[i].PushNotificationId)
-                                            //SendNotification(i + 1);
-                                            // } else {
-                                            // console.log(deviceIds)
-                                        var objData = clone(data);
-                                        if (response[i].Platform == 'ios') {
-                                            objData.title = data.message;
-                                            objData.message = data.title;
-                                            if (objData.Fence == 'FenceIn') {
-                                                OwnerPushNotificationSettings.apn.defaultData.sound = 'fencein.caf';
-                                            } else if (objData.Fence == 'FenceOut') {
-                                                OwnerPushNotificationSettings.apn.defaultData.sound = 'fenceout.caf';
-                                            } else {
-                                                OwnerPushNotificationSettings.apn.defaultData.sound = 'default';
-                                            };
-                                        };
-                                        // console.log(response[i].Platform + "_______________________________________________________")
-                                        // console.log(objData)
-                                        objData.priority = 'high';
-                                        var objPushNotificationSend = new PushNotifications(OwnerPushNotificationSettings);
-                                        if (deviceIds.length > 0) {
+                            PushNotificationSettings.apn.defaultData.sound = 'default';
+                        };
+                    };
+                    // console.log(response[i].Platform + "_______________________________________________________")
+                    // console.log(objData)
+                    objData.priority = 'high';
+                    var objPushNotificationSend = new PushNotifications(PushNotificationSettings);
+                    if (deviceIds.length > 0) {
 
-                                            objPushNotificationSend.send(deviceIds, objData, function(result) {
-                                                // console.log(result);
-                                                SendNotification(i + 1);
-                                            });
-                                        } else {
-                                            SendNotification(i + 1);
-                                        };
-                                    } else {
-                                        SendNotification(i + 1);
-                                    }
-                                });
-                            } else {
-                                SendNotification(i + 1);
-                            }
-                        }
-                    });
+                        objPushNotificationSend.send(deviceIds, objData, function(result) {
+                            // console.log(result);
+                            SendNotification(i + 1);
+                        });
+                    } else {
+                        SendNotification(i + 1);
+                    };
+                    //     } else {
+                    //         SendNotification(i + 1);
+                    //     }
+                    // });
+
+
+
                 }
             }
             SendNotification(0)
@@ -705,7 +673,7 @@ global.Command9955 = function(line, Callback) {
             if (!err && rows.length > 0) {
                 connection.query("SELECT * from tblvehicle where deviceid=" + DeviceId + " and IsDelete=false", function(err, Bikerows, fields) {
                     if (!err && Bikerows.length > 0) {
-                        var objBike = Bikerows[0];
+                        var objVehicle = Bikerows[0];
                         if (Position == 'A') {
 
                             function checkFence(j) {
@@ -780,21 +748,21 @@ global.Command9955 = function(line, Callback) {
                                     // console.log("Fence Current State = " + IsPetInFence)
                                     if (IsPetInFence != rows[j].IsInFence && rows[j].IsFenceOnline) {
                                         var AlarmCode = '6';
-                                        var message = '';
+                                        var Message = '';
 
                                         if (IsPetInFence == false) {
                                             AlarmCode = '66';
                                             if (rows[j].name != null && rows[j].name != '' && rows[j].name != undefined) {
-                                                message = objBike.Name + ' is out of ' + rows[j].name + ' Fence.';
+                                                Message = objVehicle.Name + ' is out of ' + rows[j].name + ' Fence.';
                                             } else {
-                                                message = objBike.Name + ' is out of Fence.';
+                                                Message = objVehicle.Name + ' is out of Fence.';
                                             }
                                         } else {
                                             AlarmCode = '6';
                                             if (rows[j].name != null && rows[j].name != '' && rows[j].name != undefined) {
-                                                message = objBike.Name + ' is in ' + rows[j].name + ' Fence.';
+                                                Message = objVehicle.Name + ' is in ' + rows[j].name + ' Fence.';
                                             } else {
-                                                message = objBike.Name + ' is in Fence.';
+                                                Message = objVehicle.Name + ' is in Fence.';
                                             }
                                         }
                                         console.log(unixDateStemp);
@@ -804,22 +772,32 @@ global.Command9955 = function(line, Callback) {
                                             // var Alarmquery = "INSERT INTO tblalarm (Datetime,Latitude,Longitude,GPSPositioning,Speed,Direction,Status,ReservedSign,ReservedSelection,DeviceId,AlarmCode ) VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + Status + "', '" + Sign + "', '" + ReserveSection + "', '" + deviceID + "','" + AlarmCode + "');";
                                             connection.query(Alarmquery, function(err1, Alarmrows, fields) {
 
-                                                // var PushNotificationdata = {
-                                                //     title: 'Fence',
-                                                //     message: message,
-                                                //     Fence: 'Default',
-                                                //     otherfields: {
-                                                //         deviceid: deviceID,
-                                                //         PetId: objBike.id,
-                                                //         PetName: objBike.Name
-                                                //     }
-                                                // };
-                                                // if (rows[j].IsPetInFence == false) {
-                                                //     PushNotificationdata.Fence = 'FenceIn';
-                                                // } else {
-                                                //     PushNotificationdata.Fence = 'FenceOut';
-                                                // }
-                                                // SendPushNotification(PushNotificationdata, objBike.iduser, 'Owner', 'OwnerFencePushNotification');
+                                                var PushNotificationdata = {
+                                                    title: 'Alert',
+                                                    message: Message,
+                                                    Fence: 'Default',
+                                                    otherfields: {
+                                                        deviceid: DeviceId,
+                                                        Id: objVehicle.id,
+                                                        VehicleName: objVehicle.Name,
+                                                        AlarmCode: AlarmCode,
+                                                        Type: 'Alarm'
+                                                    }
+                                                };
+                                                SendPushNotification(PushNotificationdata, objVehicle.iduser);
+
+                                                var objConnection = {
+                                                    AlarmCode: AlarmCode.toString(),
+                                                    DeviceId: DeviceId,
+                                                    Datetime: GPSDateTime,
+                                                    Date: unixDateStemp,
+                                                    IdUser: objVehicle.iduser,
+                                                    Name: objVehicle.Name
+                                                }
+
+
+                                                io.sockets.emit('DeviceAlarm', JSON.stringify(objConnection));
+                                                io.sockets.emit(objVehicle.iduser + 'DeviceAlarm', JSON.stringify(objConnection));
                                                 checkFence(j + 1);
                                             });
                                         });
@@ -993,16 +971,73 @@ global.Command9999 = function(line, Callback) {
         //     // console.log(err);
         // });
 
-        var objConnection = {
-            AlarmCode: AlarmCode.toString(),
-            DeviceId: DeviceId,
-            Datetime: GPSDateTime,
-            Date: unixDateStemp,
-        }
+        connection.query("SELECT * from tblvehicle where deviceid=" + DeviceId + " and IsDelete=false", function(err, lstVehicle, fields) {
+            if (!err && lstVehicle.length > 0) {
+                var objVehicle = lstVehicle[0];
+                var Message = "";
 
-        // if (new Date(GPSDateTime) <= new Date()) {
-        io.sockets.emit('DeviceAlarm', JSON.stringify(objConnection));
-        // }
+                if (AlarmCode == '04') {
+                    Message = 'Vehicle ' + objVehicle.Name + ' Engine ON alert! Please check!';
+                } else if (AlarmCode == '03') {
+                    Message = 'Vehicle ' + objVehicle.Name + ' Door Open alert! Please check!';
+                } else if (AlarmCode == '10') {
+                    Message = 'Vehicle ' + objVehicle.Name + ' Low Bettry alert! Please check!';
+                } else if (AlarmCode == '11') {
+                    Message = 'Vehicle ' + objVehicle.Name + ' Max Speed alert! Please check!';
+                } else if (AlarmCode == '12') {
+                    Message = 'Vehicle ' + objVehicle.Name + ' Movement alert! Please check!';
+                } else if (AlarmCode == '30') {
+                    Message = 'Vehicle ' + objVehicle.Name + ' Vibration alert! Please check!';
+                } else if (AlarmCode == '50') {
+                    Message = 'Vehicle ' + objVehicle.Name + ' External Power Cut alert! Please check!';
+                } else if (AlarmCode == '05') {
+                    Message = 'Vehicle ' + objVehicle.Name + ' Original Triggering alert! Please check!';
+                } else if (AlarmCode == '02') {
+                    Message = 'Vehicle ' + objVehicle.Name + ' Line Broken alert! Please check!';
+                } else if (AlarmCode == '52') {
+                    Message = 'Vehicle ' + objVehicle.Name + ' Veer Report alert! Please check!';
+                } else if (AlarmCode == '60') {
+                    Message = 'Vehicle ' + objVehicle.Name + ' Fuel Driving alert! Please check!';
+                } else if (AlarmCode == '71') {
+                    Message = 'Vehicle ' + objVehicle.Name + ' Crash alert! Please check!';
+                } else if (AlarmCode == '72') {
+                    Message = 'Vehicle ' + objVehicle.Name + ' Acceleration alert! Please check!';
+                } else if (AlarmCode == '81') {
+                    Message = 'Vehicle ' + objVehicle.Name + ' Fuel Loss alert! Please check!';
+                }
+
+                var PushNotificationdata = {
+                    title: 'Alert',
+                    message: Message,
+                    Fence: 'Default',
+                    otherfields: {
+                        deviceid: DeviceId,
+                        Id: objVehicle.id,
+                        VehicleName: objVehicle.Name,
+                        AlarmCode: AlarmCode,
+                        Type: 'Alarm'
+                    }
+                };
+                SendPushNotification(PushNotificationdata, objVehicle.iduser);
+
+
+                var objConnection = {
+                    AlarmCode: AlarmCode.toString(),
+                    DeviceId: DeviceId,
+                    Datetime: GPSDateTime,
+                    Date: unixDateStemp,
+                    IdUser: objVehicle.iduser,
+                    Name: objVehicle.Name
+                }
+
+                // if (new Date(GPSDateTime) <= new Date()) {
+                io.sockets.emit('DeviceAlarm', JSON.stringify(objConnection));
+                io.sockets.emit(objVehicle.iduser + 'DeviceAlarm', JSON.stringify(objConnection));
+                // }
+            }
+        });
+
+
     });
 
 
@@ -3075,18 +3110,18 @@ var IsOnlineDeviceCheck = schedule.scheduleJob(rule, function() {
                                 objVehicleExistOnline.updateAttributes({ IsOnline: false }).then(function(resUpdate) {
 
                                     if (objVehicleExistOnline.IsDelete == false) {
-                                        var PushNotificationdata = {
-                                            title: 'Alert',
-                                            message: 'Vehicle ' + objVehicleExistOnline.Name + ' Device offline alert! Please check!',
-                                            Fence: 'Default',
-                                            otherfields: {
-                                                deviceid: objVehicleExistOnline.deviceid,
-                                                Id: objVehicleExistOnline.id,
-                                                Name: objVehicleExistOnline.Name
-                                            }
-                                        };
+                                        // var PushNotificationdata = {
+                                        //     title: 'Alert',
+                                        //     message: 'Vehicle ' + objVehicleExistOnline.Name + ' Device offline alert! Please check!',
+                                        //     Fence: 'Default',
+                                        //     otherfields: {
+                                        //         deviceid: objVehicleExistOnline.deviceid,
+                                        //         Id: objVehicleExistOnline.id,
+                                        //         Name: objVehicleExistOnline.Name
+                                        //     }
+                                        // };
 
-                                        SendPushNotification(PushNotificationdata, objVehicleExistOnline.iduser, 'Owner', 'OwnerDeviceStatusPushNotification');
+                                        // SendPushNotification(PushNotificationdata, objVehicleExistOnline.iduser, 'Owner', 'OwnerDeviceStatusPushNotification');
                                     }
                                     var objConnection = {
                                         DeviceId: objVehicleExistOnline.deviceid,
@@ -3114,21 +3149,21 @@ var IsOnlineDeviceCheck = schedule.scheduleJob(rule, function() {
                         if (objVehicleExistOnline && objVehicleExistOnline.IsOnline) {
                             objVehicleExistOnline.updateAttributes({ IsOnline: false }).then(function(resUpdate) {
                                 if (objVehicleExistOnline.IsDelete == false) {
-                                    var PushNotificationdata = {
-                                        title: 'Alert',
-                                        message: 'Vehicle ' + objVehicleExistOnline.Name + ' Device offline alert! Please check!',
-                                        Fence: 'Default',
-                                        otherfields: {
-                                            deviceid: objVehicleExistOnline.deviceid,
-                                            Id: objVehicleExistOnline.id,
-                                            Name: objVehicleExistOnline.Name
-                                        }
-                                    };
-                                    if (objVehicleExistOnline.DeviceType == 'M2') {
-                                        SendPushNotification(PushNotificationdata, objVehicleExistOnline.iduser, 'Shop', null);
-                                    } else {
-                                        SendPushNotification(PushNotificationdata, objVehicleExistOnline.iduser, 'Owner', 'OwnerDeviceStatusPushNotification');
-                                    }
+                                    // var PushNotificationdata = {
+                                    //     title: 'Alert',
+                                    //     message: 'Vehicle ' + objVehicleExistOnline.Name + ' Device offline alert! Please check!',
+                                    //     Fence: 'Default',
+                                    //     otherfields: {
+                                    //         deviceid: objVehicleExistOnline.deviceid,
+                                    //         Id: objVehicleExistOnline.id,
+                                    //         Name: objVehicleExistOnline.Name
+                                    //     }
+                                    // };
+                                    // if (objVehicleExistOnline.DeviceType == 'M2') {
+                                    //     SendPushNotification(PushNotificationdata, objVehicleExistOnline.iduser, 'Shop', null);
+                                    // } else {
+                                    //     SendPushNotification(PushNotificationdata, objVehicleExistOnline.iduser, 'Owner', 'OwnerDeviceStatusPushNotification');
+                                    // }
                                 }
                                 var objConnection = {
                                     DeviceId: objVehicleExistOnline.deviceid,
