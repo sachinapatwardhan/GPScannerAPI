@@ -63,10 +63,10 @@ global.RoutePath = "http://localhost:7100/";
 global.PushNotifications = require('node-pushnotifications');
 
 // var setting = models.tblsetting;
-
+//Local
 global.PushNotificationSettings = {
     gcm: {
-        id: 'AIzaSyBXEIP3zuw_zKeu3MMnRXL9V9J_QBuns3k', // PUT YOUR GCM SERVER API KEY,
+        id: 'AIzaSyBA2iHOVEC3eg8CwGtneLsb3gJxXVfgfB0', // PUT YOUR GCM SERVER API KEY,
         msgcnt: 1,
         dataDefaults: {
             delayWhileIdle: false,
@@ -87,43 +87,10 @@ global.PushNotificationSettings = {
         options: {
             // cert: __dirname + "/../certs/pettorwayIOS.p12", // {Buffer|String} The filename of the connection certificate to load from disk, or a Buffer/String containing the certificate data. (Defaults to: cert.pem)
             // passphrase: "pettorway"
-            cert: __dirname + "/certs/Pettorwaycert.pem",
-            key: __dirname + "/certs/Pettorwaykey.pem",
-            // cert: __dirname + "/certs/PFcert.pem",
-            // key: __dirname + "/certs/PFkey.pem",
-            // production: true
-            // key: __dirname + "/../certs/pettorwayIOS.p12"
-        }
-    },
-};
-
-global.OwnerPushNotificationSettings = {
-    gcm: {
-        id: 'AIzaSyBXEIP3zuw_zKeu3MMnRXL9V9J_QBuns3k', // PUT YOUR GCM SERVER API KEY,
-        msgcnt: 1,
-        dataDefaults: {
-            delayWhileIdle: false,
-            timeToLive: 4 * 7 * 24 * 3600, // 4 weeks
-            retries: 4,
-            sound: 'img/bell.mp3'
-        },
-        // Custom GCM request options https://github.com/ToothlessGear/node-gcm#custom-gcm-request-options
-        options: {},
-    },
-    apn: {
-        gateway: 'gateway.sandbox.push.apple.com',
-        badge: 1,
-        defaultData: {
-            expiry: 4 * 7 * 24 * 3600, // 4 weeks
-            sound: 'bass.caf'
-        },
-        options: {
-            // cert: __dirname + "/../certs/pettorwayIOS.p12", // {Buffer|String} The filename of the connection certificate to load from disk, or a Buffer/String containing the certificate data. (Defaults to: cert.pem)
-            // passphrase: "pettorway"
-            cert: __dirname + "/certs/Ownercertd.pem",
-            key: __dirname + "/certs/Ownerkeyd.pem",
-            // cert: __dirname + "/certs/Ownercertp.pem",
-            // key: __dirname + "/certs/Ownerkeyp.pem",
+            cert: __dirname + "/certs/certdevelopment.pem",
+            key: __dirname + "/certs/keyDevelopment.pem",
+            // cert: __dirname + "/certs/certProduction.pem",
+            // key: __dirname + "/certs/keyProduction.pem",
             // production: true
             // key: __dirname + "/../certs/pettorwayIOS.p12"
         }
@@ -131,9 +98,10 @@ global.OwnerPushNotificationSettings = {
 };
 
 //Live
+
 // global.PushNotificationSettings = {
 //     gcm: {
-//         id: 'AIzaSyBXEIP3zuw_zKeu3MMnRXL9V9J_QBuns3k', // PUT YOUR GCM SERVER API KEY,
+//         id: 'AIzaSyBA2iHOVEC3eg8CwGtneLsb3gJxXVfgfB0', // PUT YOUR GCM SERVER API KEY,
 //         msgcnt: 1,
 //         dataDefaults: {
 //             delayWhileIdle: false,
@@ -154,43 +122,10 @@ global.OwnerPushNotificationSettings = {
 //         options: {
 //             // cert: __dirname + "/../certs/pettorwayIOS.p12", // {Buffer|String} The filename of the connection certificate to load from disk, or a Buffer/String containing the certificate data. (Defaults to: cert.pem)
 //             // passphrase: "pettorway"
-//             // cert: __dirname + "/certs/Pettorwaycert.pem",
-//             // key: __dirname + "/certs/Pettorwaykey.pem",
-//             cert: __dirname + "/certs/PFcert.pem",
-//             key: __dirname + "/certs/PFkey.pem",
-//             production: true
-//                 // key: __dirname + "/../certs/pettorwayIOS.p12"
-//         }
-//     },
-// };
-
-// global.OwnerPushNotificationSettings = {
-//     gcm: {
-//         id: 'AIzaSyBXEIP3zuw_zKeu3MMnRXL9V9J_QBuns3k', // PUT YOUR GCM SERVER API KEY,
-//         msgcnt: 1,
-//         dataDefaults: {
-//             delayWhileIdle: false,
-//             timeToLive: 4 * 7 * 24 * 3600, // 4 weeks
-//             retries: 4,
-//             sound: 'img/bell.mp3'
-//         },
-//         // Custom GCM request options https://github.com/ToothlessGear/node-gcm#custom-gcm-request-options
-//         options: {},
-//     },
-//     apn: {
-//         //gateway: 'gateway.sandbox.push.apple.com',
-//         badge: 1,
-//         defaultData: {
-//             expiry: 4 * 7 * 24 * 3600, // 4 weeks
-//             sound: 'bass.caf'
-//         },
-//         options: {
-//             // cert: __dirname + "/../certs/pettorwayIOS.p12", // {Buffer|String} The filename of the connection certificate to load from disk, or a Buffer/String containing the certificate data. (Defaults to: cert.pem)
-//             // passphrase: "pettorway"
-//             //cert: __dirname + "/certs/Ownercertd.pem",
-//             //key: __dirname + "/certs/Ownerkeyd.pem",
-//              cert: __dirname + "/certs/Ownercertp.pem",
-//              key: __dirname + "/certs/Ownerkeyp.pem",
+//             //cert: __dirname + "/certs/certdevelopment.pem",
+//             //key: __dirname + "/certs/keyDevelopment.pem",
+//              cert: __dirname + "/certs/certProduction.pem",
+//              key: __dirname + "/certs/keyProduction.pem",
 //              production: true
 //             // key: __dirname + "/../certs/pettorwayIOS.p12"
 //         }
