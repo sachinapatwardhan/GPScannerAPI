@@ -1705,24 +1705,25 @@ router.get('/ExportDailyStatReport', function(req, res) {
         }, {
             caption: 'Engine On Time',
             type: 'String'
-        }, {
-            caption: 'Door Open Number',
-            type: 'number'
-        }, {
-            caption: 'Door Open Time',
-            type: 'String'
-        }, {
-            caption: 'Shock Number',
-            type: 'number'
         },
-        {
-            caption: 'Shock Time',
-            type: 'String'
-        },
-        {
-            caption: 'Engine On Number',
-            type: 'number'
-        }
+        /*{
+                   caption: 'Door Open Number',
+                   type: 'number'
+               }, {
+                   caption: 'Door Open Time',
+                   type: 'String'
+               }, {
+                   caption: 'Shock Number',
+                   type: 'number'
+               },
+               {
+                   caption: 'Shock Time',
+                   type: 'String'
+               },
+               {
+                   caption: 'Engine On Number',
+                   type: 'number'
+               }*/
     ];
 
 
@@ -2118,7 +2119,7 @@ router.get('/ExportDailyStatReport', function(req, res) {
                         }
 
 
-                        row.push(Name, Date, DrivingTime, ParkingTime, LocateNumber, InvalidLocation, Mileage, AverageSpeed, AlarmNumber, EnginOnTime, DoorOpenNumber, DoorOpenTime, ShockNumber, ShockTime, EngineOnNumber);
+                        row.push(Name, Date, DrivingTime, ParkingTime, LocateNumber, InvalidLocation, Mileage, AverageSpeed, AlarmNumber, EnginOnTime /*, DoorOpenNumber, DoorOpenTime, ShockNumber, ShockTime, EngineOnNumber*/ );
                         conf.rows.push(row);
                         GetData(i + 1);
 
