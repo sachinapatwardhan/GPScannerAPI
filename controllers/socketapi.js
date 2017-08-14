@@ -800,7 +800,7 @@ global.Command9955 = function(line, Callback) {
                                         console.log(unixDateStemp);
                                         connection.query('UPDATE tblfence set IsInFence=' + IsPetInFence + ' WHERE id=' + rows[j].id, function(err, rowsFence, fields) {
                                             console.log(err)
-                                            var Alarmquery = "INSERT INTO tblalarm (Datetime, Date, Latitude,Longitude,GPSPositioning,Speed,Direction,Status,DeviceId,AlarmCode,CreatedDate ) VALUES ('" + GPSDateTime + "', '" + unixDateStemp + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + inputoutputSTatus + "', '" + DeviceId + "','" + AlarmCode + "','" + CurrentDate + "');";
+                                            var Alarmquery = "INSERT INTO tblalarm (Datetime, Date, Latitude,Longitude,GPSPositioning,Speed,Direction,Status,DeviceId,AlarmCode,CreatedDate,FenceName ) VALUES ('" + GPSDateTime + "', '" + unixDateStemp + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + inputoutputSTatus + "', '" + DeviceId + "','" + AlarmCode + "','" + CurrentDate + "','" + rows[j].name + "');";
                                             // var Alarmquery = "INSERT INTO tblalarm (Datetime,Latitude,Longitude,GPSPositioning,Speed,Direction,Status,ReservedSign,ReservedSelection,DeviceId,AlarmCode ) VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + Status + "', '" + Sign + "', '" + ReserveSection + "', '" + deviceID + "','" + AlarmCode + "');";
                                             connection.query(Alarmquery, function(err1, Alarmrows, fields) {
 
@@ -831,6 +831,79 @@ global.Command9955 = function(line, Callback) {
                                 }
                             }
                             checkFence(0);
+                        }
+                    }
+                });
+            };
+        });
+
+        connection.query("SELECT * from tblfavoriteplace where DeviceId=" + DeviceId, function(err, rows, fields) {
+            if (!err && rows.length > 0) {
+                connection.query("SELECT * from tblvehicle where deviceid=" + DeviceId + " and IsDelete=false", function(err, Bikerows, fields) {
+                    if (!err && Bikerows.length > 0) {
+                        var objBike = Bikerows[0];
+                        if (Position == 'A') {
+                            function checkFavorite(j) {
+                                if (j < rows.length) {
+                                    rows[j].IsInFavoritePlace = true;
+                                    var response = rows[j];
+
+                                    // var response = rows[0];
+
+                                    var CheckPoints = {
+                                        latitude: parseFloat(Latitude),
+                                        longitude: parseFloat(Longitude)
+                                    }
+
+                                    var IsInFavoritePlace = true;
+
+                                    // if (response.fencedraw == "circle") {
+                                    var CircleCenterPoints = {
+                                        latitude: parseFloat(response.Latitude),
+                                        longitude: parseFloat(response.Longitude)
+                                    }
+                                    var CircleRadius = parseFloat(response.Range);
+                                    IsInFavoritePlace = geolib.isPointInCircle(CheckPoints, CircleCenterPoints, CircleRadius)
+                                        // }
+
+                                    // console.log("Fence Last State = " + objBike.IsInFence)
+                                    // console.log("Fence Current State = " + IsPetInFence)
+                                    if (IsInFavoritePlace != rows[j].IsInFavoritePlace && rows[j].IsInFavoritePlace) {
+                                        var Code = '0';
+                                        var message = '';
+
+                                        if (IsInFavoritePlace == false) {
+                                            AlarmCode = '1';
+                                            if (rows[j].Name != null && rows[j].Name != '' && rows[j].Name != undefined) {
+                                                message = objBike.Name + ' is out of ' + rows[j].Name + ' Favorite Place.';
+                                            } else {
+                                                message = objBike.Name + ' is out of Favorite Place.';
+                                            }
+                                        } else {
+                                            AlarmCode = '0';
+                                            if (rows[j].Name != null && rows[j].Name != '' && rows[j].Name != undefined) {
+                                                message = objBike.Name + ' is in ' + rows[j].Name + ' Favorite Place.';
+                                            } else {
+                                                message = objBike.Name + ' is in Favorite Place.';
+                                            }
+                                        }
+                                        console.log(unixDateStemp);
+                                        connection.query('UPDATE tblfavoriteplace set IsInFavoritePlace=' + IsInFavoritePlace + ' WHERE id=' + rows[j].id, function(err, rowsFavorite, fields) {
+                                            console.log(err)
+                                            var query = "INSERT INTO tblfavoriteinout (Datetime, Date, Latitude,Longitude,GPSPositioning,Speed,Direction,Status,DeviceId,Code,CreatedDate ) VALUES ('" + GPSDateTime + "', '" + unixDateStemp + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + inputoutputSTatus + "', '" + DeviceId + "','" + Code + "','" + CurrentDate + "');";
+                                            // var Alarmquery = "INSERT INTO tblalarm (Datetime,Latitude,Longitude,GPSPositioning,Speed,Direction,Status,ReservedSign,ReservedSelection,DeviceId,AlarmCode ) VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + Status + "', '" + Sign + "', '" + ReserveSection + "', '" + deviceID + "','" + AlarmCode + "');";
+                                            connection.query(query, function(err1, Favrows, fields) {
+                                                checkFavorite(j + 1);
+                                            });
+                                        });
+                                    } else {
+                                        checkFavorite(j + 1);
+                                    }
+                                } else {
+
+                                }
+                            }
+                            checkFavorite(0);
                         }
                     }
                 });

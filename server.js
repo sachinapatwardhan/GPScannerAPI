@@ -389,6 +389,7 @@ app.use('/vehicles', require('./controllers/vehicles'))
 app.use('/pettracking', require('./controllers/petTracking'))
 
 app.use('/petalarm', require('./controllers/petAlarm'))
+app.use('/favoriteplace', require('./controllers/favoriteplace'))
     //app.use('/petFeedback', require('./controllers/petFeedback'))
     //app.use('/petshop', require('./controllers/petShop'))
 
