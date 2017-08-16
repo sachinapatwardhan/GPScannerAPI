@@ -8,6 +8,7 @@ var TaxSetting = models.tblsetting;
 // var FacebookPostData = models.tblfacebookpostdata;
 var HandShake = models.tblhandshake;
 var Vehicle = models.tblvehicle;
+var GPSData = models.tblgpsdata;
 
 var momentz = require('moment-timezone');
 
@@ -571,21 +572,6 @@ global.Command9955 = function(line, Callback) {
         var query = "INSERT INTO tblgpsdata (Datetime,Latitude,Longitude,GPSPositioning,Speed,Direction,Status,DeviceId,IsRelayToStopTheCar,IsSirenSound,IsUserDefined,IsLockTheDoor,IsUnlockTheDoor,IsSOS,IsWiringForAntiTamper,IsDoor,IsEngine,IsOriginalSirenTriggeringStatus,CreatedDate,HDOP,Altitude,AD1,AD2,OdoMeter,Date ) " +
             "VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + inputoutputSTatus + "', '" + DeviceId + "'," + IsRelayToStopTheCar + "," + IsSirenSound + "," + IsUserDefined + "," + IsLockTheDoor + "," + IsUnlockTheDoor + "," + IsSOS + "," + IsWiringForAntiTamper + "," + IsDoor + "," + IsEngine + "," + IsOriginalSirenTriggeringStatus + ",'" + CurrentDate + "','" + HDOP + "','" + altitude + "','" + AD1 + "','" + AD2 + "','" + Odometer + "','" + unixDateStemp + "');";
         connection.query(query, function(err, rows, fields) {
-            // console.log(err)
-            //     console.log("***************BR00**************")
-            //     console.log(err)
-            //     console.log("*****************************")
-            //     var code = "BR00";
-            //     if (line.indexOf('BP04') > 0) {
-            //         code = "BP04";
-            //     }
-
-            //     // var ResponceQuery = "INSERT INTO tblapisresponse (Code,Response,Datetime) VALUES ('" + code + "', 'No Response', '" + CurrentDate + "');";
-            //     // connection.query(ResponceQuery, function(err, rows1, fields) {
-            //     console.log("End Function", new Date())
-            //     Callback("No Response");
-            //     strResponce = "No Response";
-            //     //});
 
             var objConnection = {
                 Position: Position,
@@ -613,6 +599,7 @@ global.Command9955 = function(line, Callback) {
             }
         });
 
+        //Fence
         connection.query("SELECT * from tblfence where deviceId=" + DeviceId, function(err, rows, fields) {
             if (!err && rows.length > 0) {
                 connection.query("SELECT * from tblvehicle where deviceid=" + DeviceId + " and IsDelete=false", function(err, Bikerows, fields) {
@@ -758,7 +745,7 @@ global.Command9955 = function(line, Callback) {
                 });
             };
         });
-
+        //Favorite place
         connection.query("SELECT * from tblfavoriteplace where DeviceId=" + DeviceId, function(err, rows, fields) {
             if (!err && rows.length > 0) {
                 connection.query("SELECT * from tblvehicle where deviceid=" + DeviceId + " and IsDelete=false", function(err, Bikerows, fields) {
@@ -830,6 +817,31 @@ global.Command9955 = function(line, Callback) {
                     }
                 });
             };
+        });
+
+        //check Arm settings
+        connection.query("SELECT * from tblvehicle where deviceid=" + DeviceId + " and IsDelete=false", function(err, Bikerows, fields) {
+            if (!err) {
+                if (Bikerows.length > 0) {
+                    if (Bikerows[0].Arm == 2) {
+                        var checkEngine = 0;
+                        var ArmStatus = 1;
+                        if (IsEngine == true) {
+                            checkEngine = 1;
+                            ArmStatus = 0;
+                        }
+                        if (checkEngine == Bikerows[0].LastArmSetting) {
+                            var obj = new Object();
+                            obj.DeviceId = DeviceId;
+                            obj.Arm = 2;
+                            obj.ArmStatus = ArmStatus;
+                            SetArmSettings(obj, function(data) {
+
+                            })
+                        }
+                    }
+                }
+            }
         });
 
     } catch (ex) {
@@ -1626,8 +1638,59 @@ router.get('/SetArmSettings', function(req, res) {
     //GetLookAtMeDP3110a0f
     //Test Device 075034699503
     var DeviceId = req.query.DeviceId;
-    var Arm = ('00' + decimalToHexString(parseInt(req.query.Arm))).slice(-2);
+    if (req.query.Arm == '2' || req.query.Arm == 2) {
+        var obj = new Object();
+        obj.DeviceId = DeviceId;
+        obj.Arm = req.query.Arm;
 
+        connection.query("Update tblvehicle set Arm=" + obj.Arm + " where deviceid=" + DeviceId, function(err, rows, fields) {
+            var Startdate = new Date();
+
+            var convertDate = convertdateformatForUnix(Startdate);
+            var unixStartdate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
+            // var unixStartdate = Startdate.getTime() / 1000;
+
+            GPSData.findOne({
+                where: {
+                    DeviceId: DeviceId,
+                    Date: { $lte: unixStartdate }
+                },
+                order: 'Date DESC'
+            }).then(function(response) {
+                if (response != null) {
+                    if (response.IsEngine == 1) {
+                        obj.ArmStatus = 0;
+                    } else {
+                        obj.ArmStatus = 1;
+                    }
+                    SetArmSettings(obj, function(data) {});
+                    res.json({ success: true, message: 'Arm Settings Save Successfully.' });
+
+                } else {
+                    res.json({ success: true, message: 'Arm Settings Save Successfully.' });
+                }
+            })
+
+        });
+
+    } else {
+        var obj = new Object();
+        obj.DeviceId = DeviceId;
+        obj.Arm = req.query.Arm;
+        obj.ArmStatus = req.query.Arm;
+        SetArmSettings(obj, function(data) {
+            res.json(data);
+        })
+    }
+
+
+})
+
+//Set Arm Settings
+global.SetArmSettings = function(objdata, Callback) {
+
+    var Arm = ('00' + decimalToHexString(parseInt(objdata.ArmStatus))).slice(-2);
+    var DeviceId = objdata.DeviceId;
     var Data = "40400012" + DeviceId + "4116" + Arm;
     Data = Data + CalculateCRCbyHex(Data) + '0D0A';
 
@@ -1637,21 +1700,13 @@ router.get('/SetArmSettings', function(req, res) {
     client.connect(SocketPort, SocketIPAddress, function() {
         // console.log('G-Sensor send to ' + DeviceId);
         client.write(Data, 'hex');
-        // client.setTimeout(30000, function() {
-        //     if (Sendflag == false) {
-        //         Sendflag = true;
-        //         res.json({ success: false, message: 'Device not connected. Try after 5 minute.' });
-        //         client.destroy();
-        //     };
-
-        // });
 
         client.setTimeout(30000, function() {
             if (Sendflag == false) {
                 Sendflag = true;
 
                 client.destroy();
-                res.json({ success: false, message: 'Device not connected. Try after 5 minute.' });
+                Callback({ success: false, message: 'Device not connected. Try after 5 minute.' });
                 // SendGSensorCommand(i + 1);
             };
 
@@ -1665,22 +1720,21 @@ router.get('/SetArmSettings', function(req, res) {
                 console.log('Received: ' + line);
                 var StatusCode = line.substring(26, 28);
                 Sendflag = true;
-                // SuccessDevice = SuccessDevice + 1;
-                // res.json(objNavigation);
+
                 client.destroy(); // kill client after server's response
                 if (StatusCode == '01') {
-                    connection.query("Update tblvehicle set Arm=" + req.query.Arm + " where deviceid=" + DeviceId, function(err, rows, fields) {
-                        res.json({ success: true, message: 'Arm Settings Save Successfully.' });
+                    connection.query("Update tblvehicle set Arm=" + objdata.Arm + ", LastArmSetting=" + objdata.ArmStatus + " where deviceid=" + DeviceId, function(err, rows, fields) {
+                        Callback({ success: true, message: 'Arm Settings Save Successfully.' });
                     });
                 } else {
-                    res.json({ success: false, message: 'Arm Settings could not save. Try again later.' });
+                    Callback({ success: false, message: 'Arm Settings could not save. Try again later.' });
                 }
 
             } else {
                 Sendflag = true;
 
                 client.destroy();
-                res.json({ success: false, message: 'Arm Settings could not save. Try again later.' });
+                Callback({ success: false, message: 'Arm Settings could not save. Try again later.' });
                 // SendGSensorCommand(i + 1);
             }
         };
@@ -1691,9 +1745,7 @@ router.get('/SetArmSettings', function(req, res) {
     client.on('close', function() {
         console.log('Connection closed');
     });
-
-
-})
+}
 
 //Set GPRS Interval Settings When Car in Stop
 router.get('/SetGPRSIntervalStopCar', function(req, res) {
@@ -2555,6 +2607,19 @@ function convertdateformat(date1) {
     var firstdaySeconds = date.getSeconds();
 
     return ("0000" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("0000" + firstdayDay.toString()).slice(-2) + " " + ("00" + firstdayHours.toString()).slice(-2) + ':' + ("00" + firstdayMinutes.toString()).slice(-2) + ':' + ("00" + firstdaySeconds.toString()).slice(-2);
+
+}
+
+function convertdateformatForUnix(date1) {
+    var date = new Date(date1);
+    var firstdayMonth = date.getMonth() + 1;
+    var firstdayDay = date.getDate();
+    var firstdayYear = date.getFullYear();
+    var firstdayHours = date.getHours();
+    var firstdayMinutes = date.getMinutes();
+    var firstdaySeconds = date.getSeconds();
+
+    return ("00" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("0000" + firstdayDay.toString()).slice(-2) + " " + ("00" + firstdayHours.toString()).slice(-2) + ':' + ("00" + firstdayMinutes.toString()).slice(-2) + ':' + ("00" + firstdaySeconds.toString()).slice(-2);
 
 }
 
