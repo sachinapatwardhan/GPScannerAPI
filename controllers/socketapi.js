@@ -108,14 +108,6 @@ router.get('/SendIOSPush', function(req, res) {
     res.send("Done")
 })
 
-router.get('/TestQuery', function(req, res) {
-    connection.query("SELECT PushNotificationId,Platform from tblpushnotification where iduser=1 group by PushNotificationId, Platform", function(err, response, fields) {
-        console.log(err)
-        console.log(response.length)
-        res.json(response)
-    });
-})
-
 function clone(obj) {
     if (null == obj || "object" != typeof obj) return obj;
     var copy = obj.constructor();
@@ -196,60 +188,6 @@ function GetCurrentDate() {
     return ("0000" + year.toString()).slice(-4) + "-" + ("00" + month.toString()).slice(-2) + "-" + ("00" + day.toString()).slice(-2) + " " + ("00" + hour.toString()).slice(-2) + ":" + ("00" + min.toString()).slice(-2) + ":" + ("00" + sec.toString()).slice(-2);
 }
 
-// var ServerConnectionrule = new schedule.RecurrenceRule();
-// //rule.dayOfWeek = [0, new schedule.Range(4, 6)];
-// // rule.hour = 10;
-// rule.minute = 1;
-// rule.second = 0;
-function sendServerDisconnectMail() {
-
-    TaxSetting.findOne({ where: { Name: 'SocketCheckMail', Value: '1' } }).then(function(response) {
-        //console.log(response)
-        if (response) {
-            var mail = {
-                from: 'pmt@bugzstudio.com',
-                to: 'pmt@bugzstudio.com;soham.patel@bugzstudio.com',
-                //to: 'soham.patel@bugzstudio.com',
-                subject: 'Pettorway Socket Server Disconnected',
-                text: 'Dear Bugzstudio Team,\n\n Your Pettorway Socket Server is not Responding. Please Restart it. \n Thank you. \n\n Pettorway'
-            };
-            transporter.sendMail(mail, function(error, response) {
-
-            });
-        };
-
-    });
-}
-
-function CheckServerLoadIncreaseMail() {
-    var Currentdatetime = new Date();
-    console.log("Call Datetime = " + Currentdatetime);
-    var query = "select Id,Datetime, Latitude, Longitude, GPSPositioning, Speed, Direction, DeviceId from tblpetgps where deviceid=075034498153 and GPSPositioning='A' and Datetime >= '2017-07-03 18:30:00' and Datetime <= '2017-07-04 18:29:59';"
-    connection.query(query, function(err, lstGPSData, fields) {
-        //console.log(response)
-        var Responsedatetime = new Date();
-        console.log("Response Datetime = " + Responsedatetime);
-        var ResponseTime = (Responsedatetime - Currentdatetime);
-        console.log("Response Time = " + ResponseTime)
-        if (ResponseTime > 5000) {
-            var mail = {
-                from: 'pmt@bugzstudio.com',
-                to: 'pmt@bugzstudio.com;soham.patel@bugzstudio.com',
-                //to: 'soham.patel@bugzstudio.com',
-                subject: 'Pettorway API load time > 5sec',
-                text: 'Dear Bugzstudio Team,\n\n Your GPSINA GPS data get taking greater then 5sec. Please Check it. \n Thank you. \n\n'
-            };
-            transporter.sendMail(mail, function(error, response) {
-
-            });
-        }
-
-    });
-}
-
-var ServerConnectionCheck = schedule.scheduleJob('* * 9 * * *', function() {
-    // CheckServerLoadIncreaseMail();
-});
 
 //Calculate CRC
 // global.CalculateCRCbyHex = function(hex) {
@@ -443,6 +381,7 @@ function customPassword() {
 
 //5000 - Login
 router.get('/Command5000', function(req, res) {
+
     var line = req.query.Code;
     console.log("Login = " + line);
 
@@ -471,39 +410,44 @@ router.get('/Command5000', function(req, res) {
         }
     })
 
+
 })
 
 //Command5001 - Heartbeat Command
 global.Command5001 = function(line, Callback) {
     console.log("HandShak = " + line);
-    //Server Reconnet If Disconneted
-    if (connection.state == 'disconnected') {
-        global.connection = mysql.createConnection({
-            host: MysqlHost,
-            user: Mysqluser,
-            password: Mysqlpassword,
-            database: Mysqldatabase
+    try {
+        //Server Reconnet If Disconneted
+        if (connection.state == 'disconnected') {
+            global.connection = mysql.createConnection({
+                host: MysqlHost,
+                user: Mysqluser,
+                password: Mysqlpassword,
+                database: Mysqldatabase
+            });
+        }
+
+        var DeviceId = line.substring(8, 22);
+
+        var CurrentDate = GetCurrentDate();
+
+        //tblPetgps Entry
+        var query = "INSERT INTO tblhandshake (DeviceId,Datetime ) VALUES ('" + DeviceId + "', '" + CurrentDate + "');";
+        connection.query(query, function(err, rows, fields) {
+
+            connection.query("Update tblvehicle set HandshakDatetime='" + CurrentDate + "',IsOnline=true where deviceid=" + DeviceId, function(err, rows1, fields) {
+                var objConnection = {
+                    DeviceId: DeviceId,
+                    Status: true
+                }
+                io.sockets.emit('BikeDeviceStatus', JSON.stringify(objConnection));
+                io.sockets.emit(DeviceId + 'BikeDeviceStatus', JSON.stringify(objConnection));
+            });
+
         });
+    } catch (ex) {
+        console.log("Error Heartbeat Data = " + line);
     }
-
-    var DeviceId = line.substring(8, 22);
-
-    var CurrentDate = GetCurrentDate();
-
-    //tblPetgps Entry
-    var query = "INSERT INTO tblhandshake (DeviceId,Datetime ) VALUES ('" + DeviceId + "', '" + CurrentDate + "');";
-    connection.query(query, function(err, rows, fields) {
-
-        connection.query("Update tblvehicle set HandshakDatetime='" + CurrentDate + "',IsOnline=true where deviceid=" + DeviceId, function(err, rows1, fields) {
-            var objConnection = {
-                DeviceId: DeviceId,
-                Status: true
-            }
-            io.sockets.emit('BikeDeviceStatus', JSON.stringify(objConnection));
-            io.sockets.emit(DeviceId + 'BikeDeviceStatus', JSON.stringify(objConnection));
-        });
-
-    });
 };
 
 //Command9955 - GPS Command
@@ -897,648 +841,284 @@ global.Command9955 = function(line, Callback) {
 //Command9999 - Alarm Command
 global.Command9999 = function(line, Callback) {
     console.log("Alarm Data = " + line);
-    //Server Reconnet If Disconneted
-    if (connection.state == 'disconnected') {
-        global.connection = mysql.createConnection({
-            host: MysqlHost,
-            user: Mysqluser,
-            password: Mysqlpassword,
-            database: Mysqldatabase
-        });
-    }
-    // var line = req.query.Code;
-    // console.log("muyyyyy", line);
-    var DeviceId = line.substring(8, 22);
-    var AlarmCode = line.substring(26, 28);
-    var GPSData = hex2a(line.substring(28, (line.length - 8)));
-    var lstGPSAllData = GPSData.split('|');
+    try {
+        //Server Reconnet If Disconneted
+        if (connection.state == 'disconnected') {
+            global.connection = mysql.createConnection({
+                host: MysqlHost,
+                user: Mysqluser,
+                password: Mysqlpassword,
+                database: Mysqldatabase
+            });
+        }
+        // var line = req.query.Code;
+        // console.log("muyyyyy", line);
+        var DeviceId = line.substring(8, 22);
+        var AlarmCode = line.substring(26, 28);
+        var GPSData = hex2a(line.substring(28, (line.length - 8)));
+        var lstGPSAllData = GPSData.split('|');
 
-    var lstLocationData = lstGPSAllData[0].split(',');
-
-
-    var Date1 = lstLocationData[8];
-    var Position = lstLocationData[1];
-    var Lat = lstLocationData[2];
-    var LatDirection = lstLocationData[3];
-    var Lan = lstLocationData[4];
-    var LanDirection = lstLocationData[5];
-    var Speed = (parseFloat(lstLocationData[6]) * 1.852);
-    var Time = lstLocationData[0];
-    var Direction = lstLocationData[7];
-
-    var HDOP = lstGPSAllData[1];
-    var altitude = lstGPSAllData[2];
-    var inputoutputSTatus = lstGPSAllData[3];
-    var lstAD = lstGPSAllData[4].split(',')
-    var AD1 = lstAD[0];
-    var AD2 = lstAD[2];
-    var Odometer = lstGPSAllData[5];
-    var RFID = lstGPSAllData[6];
+        var lstLocationData = lstGPSAllData[0].split(',');
 
 
-    var day = parseInt(Date1.substring(0, 2));
-    var month = parseInt(Date1.substring(2, 4));
-    var year = parseInt("20" + Date1.substring(4, 6));
-    var hour = parseInt(Time.substring(0, 2));
-    var min = parseInt(Time.substring(2, 4));
-    var sec = parseInt(Time.substring(4, 6));
+        var Date1 = lstLocationData[8];
+        var Position = lstLocationData[1];
+        var Lat = lstLocationData[2];
+        var LatDirection = lstLocationData[3];
+        var Lan = lstLocationData[4];
+        var LanDirection = lstLocationData[5];
+        var Speed = (parseFloat(lstLocationData[6]) * 1.852);
+        var Time = lstLocationData[0];
+        var Direction = lstLocationData[7];
 
-    // // var GPSDateTime = Date.UTC(year, month, day, hour, min, sec);
-    var GPSDateTime = year + "-" + month + "-" + day + " " + hour + ":" + min + ":" + sec;
-    var GPSDate = year + "-" + month + "-" + day;
-    var CurrentDate = GetCurrentDate();
-    var convertDate = convertdateformat(GPSDateTime);
-    var unixDateStemp = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
-    var Latitude = global.deg_to_lat_long(Lat, LatDirection);
-    var Longitude = global.deg_to_lat_long(Lan, LanDirection);
+        var HDOP = lstGPSAllData[1];
+        var altitude = lstGPSAllData[2];
+        var inputoutputSTatus = lstGPSAllData[3];
+        var lstAD = lstGPSAllData[4].split(',')
+        var AD1 = lstAD[0];
+        var AD2 = lstAD[2];
+        var Odometer = lstGPSAllData[5];
+        var RFID = lstGPSAllData[6];
 
-    var Status = '0';
-    var Sign = '0';
-    var ReserveSection = '0';
-    var IsAdvanture = false;
 
-    // console.log(Latitude)
-    // console.log(Longitude)
-    // console.log(GPSDateTime)
+        var day = parseInt(Date1.substring(0, 2));
+        var month = parseInt(Date1.substring(2, 4));
+        var year = parseInt("20" + Date1.substring(4, 6));
+        var hour = parseInt(Time.substring(0, 2));
+        var min = parseInt(Time.substring(2, 4));
+        var sec = parseInt(Time.substring(4, 6));
 
-    var query = "INSERT INTO tblalarm (Datetime, Date, Latitude,Longitude,GPSPositioning,Speed,Direction,Status,DeviceId,AlarmCode,CreatedDate ) VALUES ('" + GPSDateTime + "', '" + unixDateStemp + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + inputoutputSTatus + "', '" + DeviceId + "','" + AlarmCode + "','" + CurrentDate + "');";
-    connection.query(query, function(err, rows, fields) {
-        // console.log("Alarm");
-        // console.log(err);
-        // var GPSquery = "INSERT INTO tblpetgps (Datetime,Latitude,Longitude,GPSPositioning,Speed,Direction,Status,ReservedSign,ReservedSelection,DeviceId,IsAdvanture ) VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + Status + "', '" + Sign + "', '" + ReserveSection + "', '" + DeviceId + "'," + IsAdvanture + ");";
-        // connection.query(GPSquery, function(err, rows, fields) {
-        //     // console.log("GPS");
-        //     // console.log(err);
-        // });
+        // // var GPSDateTime = Date.UTC(year, month, day, hour, min, sec);
+        var GPSDateTime = year + "-" + month + "-" + day + " " + hour + ":" + min + ":" + sec;
+        var GPSDate = year + "-" + month + "-" + day;
+        var CurrentDate = GetCurrentDate();
+        var convertDate = convertdateformat(GPSDateTime);
+        var unixDateStemp = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
+        var Latitude = global.deg_to_lat_long(Lat, LatDirection);
+        var Longitude = global.deg_to_lat_long(Lan, LanDirection);
 
-        connection.query("SELECT * from tblvehicle where deviceid=" + DeviceId + " and IsDelete=false", function(err, lstVehicle, fields) {
-            if (!err && lstVehicle.length > 0) {
-                var objVehicle = lstVehicle[0];
-                var Message = "";
+        var Status = '0';
+        var Sign = '0';
+        var ReserveSection = '0';
+        var IsAdvanture = false;
 
-                if (AlarmCode == '04') {
-                    Message = 'Vehicle ' + objVehicle.Name + ' Engine ON alert! Please check!';
-                } else if (AlarmCode == '03') {
-                    Message = 'Vehicle ' + objVehicle.Name + ' Door Open alert! Please check!';
-                } else if (AlarmCode == '10') {
-                    Message = 'Vehicle ' + objVehicle.Name + ' Low Bettry alert! Please check!';
-                } else if (AlarmCode == '11') {
-                    Message = 'Vehicle ' + objVehicle.Name + ' Max Speed alert! Please check!';
-                } else if (AlarmCode == '12') {
-                    Message = 'Vehicle ' + objVehicle.Name + ' Movement alert! Please check!';
-                } else if (AlarmCode == '30') {
-                    Message = 'Vehicle ' + objVehicle.Name + ' Vibration alert! Please check!';
-                } else if (AlarmCode == '50') {
-                    Message = 'Vehicle ' + objVehicle.Name + ' External Power Cut alert! Please check!';
-                } else if (AlarmCode == '05') {
-                    Message = 'Vehicle ' + objVehicle.Name + ' Original Triggering alert! Please check!';
-                } else if (AlarmCode == '02') {
-                    Message = 'Vehicle ' + objVehicle.Name + ' Line Broken alert! Please check!';
-                } else if (AlarmCode == '52') {
-                    Message = 'Vehicle ' + objVehicle.Name + ' Veer Report alert! Please check!';
-                } else if (AlarmCode == '60') {
-                    Message = 'Vehicle ' + objVehicle.Name + ' Fuel Driving alert! Please check!';
-                } else if (AlarmCode == '71') {
-                    Message = 'Vehicle ' + objVehicle.Name + ' Crash alert! Please check!';
-                } else if (AlarmCode == '72') {
-                    Message = 'Vehicle ' + objVehicle.Name + ' Acceleration alert! Please check!';
-                } else if (AlarmCode == '81') {
-                    Message = 'Vehicle ' + objVehicle.Name + ' Fuel Loss alert! Please check!';
-                }
+        // console.log(Latitude)
+        // console.log(Longitude)
+        // console.log(GPSDateTime)
 
-                var PushNotificationdata = {
-                    title: 'Alert',
-                    message: Message,
-                    Fence: 'Default',
-                    otherfields: {
-                        deviceid: DeviceId,
-                        Id: objVehicle.id,
-                        VehicleName: objVehicle.Name,
-                        AlarmCode: AlarmCode,
-                        Type: 'Alarm'
+        var query = "INSERT INTO tblalarm (Datetime, Date, Latitude,Longitude,GPSPositioning,Speed,Direction,Status,DeviceId,AlarmCode,CreatedDate ) VALUES ('" + GPSDateTime + "', '" + unixDateStemp + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + inputoutputSTatus + "', '" + DeviceId + "','" + AlarmCode + "','" + CurrentDate + "');";
+        connection.query(query, function(err, rows, fields) {
+
+
+            connection.query("SELECT * from tblvehicle where deviceid=" + DeviceId + " and IsDelete=false", function(err, lstVehicle, fields) {
+                if (!err && lstVehicle.length > 0) {
+                    var objVehicle = lstVehicle[0];
+                    var Message = "";
+
+                    if (AlarmCode == '04') {
+                        Message = 'Vehicle ' + objVehicle.Name + ' Engine ON alert! Please check!';
+                    } else if (AlarmCode == '03') {
+                        Message = 'Vehicle ' + objVehicle.Name + ' Door Open alert! Please check!';
+                    } else if (AlarmCode == '10') {
+                        Message = 'Vehicle ' + objVehicle.Name + ' Low Bettry alert! Please check!';
+                    } else if (AlarmCode == '11') {
+                        Message = 'Vehicle ' + objVehicle.Name + ' Max Speed alert! Please check!';
+                    } else if (AlarmCode == '12') {
+                        Message = 'Vehicle ' + objVehicle.Name + ' Movement alert! Please check!';
+                    } else if (AlarmCode == '30') {
+                        Message = 'Vehicle ' + objVehicle.Name + ' Vibration alert! Please check!';
+                    } else if (AlarmCode == '50') {
+                        Message = 'Vehicle ' + objVehicle.Name + ' External Power Cut alert! Please check!';
+                    } else if (AlarmCode == '05') {
+                        Message = 'Vehicle ' + objVehicle.Name + ' Original Triggering alert! Please check!';
+                    } else if (AlarmCode == '02') {
+                        Message = 'Vehicle ' + objVehicle.Name + ' Line Broken alert! Please check!';
+                    } else if (AlarmCode == '52') {
+                        Message = 'Vehicle ' + objVehicle.Name + ' Veer Report alert! Please check!';
+                    } else if (AlarmCode == '60') {
+                        Message = 'Vehicle ' + objVehicle.Name + ' Fuel Driving alert! Please check!';
+                    } else if (AlarmCode == '71') {
+                        Message = 'Vehicle ' + objVehicle.Name + ' Crash alert! Please check!';
+                    } else if (AlarmCode == '72') {
+                        Message = 'Vehicle ' + objVehicle.Name + ' Acceleration alert! Please check!';
+                    } else if (AlarmCode == '81') {
+                        Message = 'Vehicle ' + objVehicle.Name + ' Fuel Loss alert! Please check!';
                     }
-                };
-                SendPushNotification(PushNotificationdata, objVehicle.iduser);
+
+                    var PushNotificationdata = {
+                        title: 'Alert',
+                        message: Message,
+                        Fence: 'Default',
+                        otherfields: {
+                            deviceid: DeviceId,
+                            Id: objVehicle.id,
+                            VehicleName: objVehicle.Name,
+                            AlarmCode: AlarmCode,
+                            Type: 'Alarm'
+                        }
+                    };
+                    SendPushNotification(PushNotificationdata, objVehicle.iduser);
 
 
-                var objConnection = {
-                    AlarmCode: AlarmCode.toString(),
-                    DeviceId: DeviceId,
-                    Datetime: GPSDateTime,
-                    Date: unixDateStemp,
-                    IdUser: objVehicle.iduser,
-                    Name: objVehicle.Name
+                    var objConnection = {
+                        AlarmCode: AlarmCode.toString(),
+                        DeviceId: DeviceId,
+                        Datetime: GPSDateTime,
+                        Date: unixDateStemp,
+                        IdUser: objVehicle.iduser,
+                        Name: objVehicle.Name
+                    }
+
+                    // if (new Date(GPSDateTime) <= new Date()) {
+                    io.sockets.emit('DeviceAlarm', JSON.stringify(objConnection));
+                    io.sockets.emit(objVehicle.iduser + 'DeviceAlarm', JSON.stringify(objConnection));
+                    // }
                 }
+            });
 
-                // if (new Date(GPSDateTime) <= new Date()) {
-                io.sockets.emit('DeviceAlarm', JSON.stringify(objConnection));
-                io.sockets.emit(objVehicle.iduser + 'DeviceAlarm', JSON.stringify(objConnection));
-                // }
-            }
+
         });
 
-
-    });
-
-
-    // if (AlarmCode.toString() == "11" && Position == 'A') {
-
-
-    //     var prevDatetime = new Date(GPSDateTime);
-    //     var OneMinPrevDatetime = new Date(GPSDateTime);
-    //     var PreDate = convertdateformat(prevDatetime);
-    //     var OneMinPreDate = convertdateformat(OneMinPrevDatetime.setMinutes(OneMinPrevDatetime.getMinutes() - 1));
-    //     var newDate = convertdateformat(prevDatetime.setMinutes(prevDatetime.getMinutes() - 30));
-    //     connection.query("SELECT * from tblalarm where Datetime >'" + newDate + "' and AlarmCode = '11' and DeviceId='" + DeviceId + "' order by Id desc", function(err, PetGpsDetailrows, fields) {
-    //         if (!err && PetGpsDetailrows.length > 0) {
-    //             var oldDate = convertdateformat(PetGpsDetailrows[0].Datetime);
-    //             connection.query("SELECT * from tblpetgps where Datetime >'" + oldDate + "' and Datetime <'" + PreDate + "' and DeviceId='" + DeviceId + "' and GPSPositioning = 'A' ORDER BY Id DESC", function(err, PetGpsrows, fields) {
-    //                 if (PetGpsrows.length == 0) {
-    //                     // flgIsMaxSpeedNotification = true;
-    //                     // SendMaxSpeedAlarm();
-    //                     connection.query("SELECT * from tblalarm where Datetime >'" + OneMinPreDate + "' and AlarmCode = '11' and DeviceId='" + DeviceId + "' order by Id desc", function(err, PetGpsOneMinDetailrows, fields) {
-    //                         if (PetGpsOneMinDetailrows.length == 0) {
-    //                             SendMaxSpeedAlarm();
-    //                         } else {
-    //                             res.json(strResponce);
-    //                         }
-    //                     });
-    //                 } else {
-    //                     res.json(strResponce);
-    //                 }
-    //             });
-    //         } else {
-    //             // flgIsMaxSpeedNotification = true;
-    //             SendMaxSpeedAlarm();
-    //         }
-    //     });
-
-    //     function SendMaxSpeedAlarm() {
-    //         console.log("Call Max Speed Notification");
-    //         connection.query("SELECT user.MaxSpeed as UserMaxSpeed, bike.* from tbluserinformation as user inner join tblbike as bike where user.id = bike.iduser and deviceid=" + DeviceId, function(err, Userrows, fields) {
-    //             if (!err && Userrows.length > 0) {
-    //                 var objUser = Userrows[0];
-    //                 var maxSpeed = 0;
-    //                 if (objUser.MaxSpeed != null && objUser.MaxSpeed != undefined) {
-    //                     maxSpeed = parseFloat(objUser.MaxSpeed);
-    //                 } else {
-    //                     maxSpeed = parseFloat(objUser.UserMaxSpeed);
-    //                 }
-
-    //                 var deviceSpeed = parseFloat(Speed);
-    //                 //if (deviceSpeed > maxSpeed) {
-    //                 //Speed = maxSpeed;
-    //                 // }
-
-    //                 var query = "INSERT INTO tblalarm (Datetime,Latitude,Longitude,GPSPositioning,Speed,Direction,Status,ReservedSign,ReservedSelection,DeviceId,AlarmCode ) VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + maxSpeed + "', '" + Direction + "', '" + Status + "', '" + Sign + "', '" + ReserveSection + "', '" + DeviceId + "','" + alarmcode + "');";
-    //                 connection.query(query, function(err, rows, fields) {
-
-    //                     var GPSquery = "INSERT INTO tblpetgps (Datetime,Latitude,Longitude,GPSPositioning,Speed,Direction,Status,ReservedSign,ReservedSelection,DeviceId,IsAdvanture ) VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + Status + "', '" + Sign + "', '" + ReserveSection + "', '" + DeviceId + "'," + IsAdvanture + ");";
-    //                     connection.query(GPSquery, function(err, rows, fields) {
-
-    //                         var objConnection = {
-    //                             Position: Position,
-    //                             Speed: Speed,
-    //                             Deviceid: DeviceId,
-    //                             Latitude: Latitude,
-    //                             Longitude: Longitude,
-    //                             Direction: Direction,
-    //                         }
-    //                         io.sockets.emit('BikeRoute', JSON.stringify(objConnection));
-
-    //                         // connection.query("Update tblbike set IsWireCut=true where deviceid=" + DeviceId, function (err1, rows, fields) {
-
-    //                         //     if (!err) {
-    //                         connection.query("SELECT * from tblbike where deviceid=" + DeviceId + " and IsDelete=false", function(err, Petrows, fields) {
-    //                             if (!err && Petrows.length > 0) {
-    //                                 var objPet = Petrows[0];
-
-    //                                 // if (flgIsMaxSpeedNotification == true) {
-    //                                 console.log(objPet.IsDelete.toString('hex'));
-    //                                 if (objPet.IsDelete.toString('hex') == '00') {
-    //                                     var PushNotificationdata = {
-    //                                         title: 'Alert',
-    //                                         message: 'Vehicle ' + objPet.Name + 'Max Speed alert! Please check!',
-    //                                         Fence: 'Default',
-    //                                         otherfields: {
-    //                                             deviceid: DeviceId,
-    //                                             PetId: objPet.id,
-    //                                             PetName: objPet.Name
-    //                                         }
-    //                                     };
-    //                                     SendPushNotification(PushNotificationdata, objPet.iduser, 'Owner', 'OwnerMaxSpeedPushNotification');
-    //                                 }
-    //                                 // }
-
-    //                                 var objConnection = {
-    //                                     AlarmCode: alarmcode.toString(),
-    //                                     DeviceId: DeviceId,
-    //                                     Datetime: GPSDateTime,
-    //                                     IdUser: objPet.iduser,
-    //                                     Name: objPet.Name
-    //                                 }
-    //                                 if (new Date(GPSDateTime) <= new Date()) {
-    //                                     io.sockets.emit('DeviceAlarm', JSON.stringify(objConnection));
-    //                                 }
-    //                             }
-    //                         });
-    //                         //     }
-    //                         // });
-
-    //                         //tblapisresponse Entry
-    //                         var ResponceQuery = "INSERT INTO tblapisresponse (Code,Response,Datetime) VALUES ('BO01', '" + strResponce + "', '" + CurrentDate + "');";
-    //                         connection.query(ResponceQuery, function(err, rows2, fields) {
-
-    //                         });
-
-    //                     });
-    //                 });
-    //             }
-    //         })
-    //     }
-    // } else if (alarmcode.toString() == "30") {
-
-
-    //     var prevDatetime = new Date(GPSDateTime);
-    //     var OneMinPrevDatetime = new Date(GPSDateTime);
-    //     var PreDate = convertdateformat(prevDatetime);
-    //     var OneMinPreDate = convertdateformat(OneMinPrevDatetime.setMinutes(OneMinPrevDatetime.getMinutes() - 1));
-    //     var newDate = convertdateformat(prevDatetime.setMinutes(prevDatetime.getMinutes() - 30));
-    //     connection.query("SELECT * from tblalarm where Datetime >'" + newDate + "' and AlarmCode = '30' and DeviceId='" + DeviceId + "' order by Id desc", function(err, PetGpsDetailrows, fields) {
-    //         if (!err && PetGpsDetailrows.length > 0) {
-    //             var oldDate = convertdateformat(PetGpsDetailrows[0].Datetime);
-    //             console.log("Old Date = " + oldDate)
-    //             console.log("Previous Date = " + PreDate)
-    //             console.log("Previous Date = " + newDate)
-    //             connection.query("SELECT * from tblpetgps where Datetime >'" + oldDate + "' and Datetime <'" + PreDate + "' and DeviceId='" + DeviceId + "' and GPSPositioning = 'A' ORDER BY Id DESC", function(err, PetGpsrows, fields) {
-    //                 if (PetGpsrows.length == 0) {
-    //                     // flgIsNotification = true;
-    //                     // SendVibrationNotification();
-    //                     connection.query("SELECT * from tblalarm where Datetime >'" + OneMinPreDate + "' and AlarmCode = '30' and DeviceId='" + DeviceId + "' order by Id desc", function(err, PetGpsOneMinDetailrows, fields) {
-    //                         if (PetGpsOneMinDetailrows.length == 0) {
-    //                             SendVibrationNotification();
-    //                         } else {
-    //                             res.json(strResponce);
-    //                         }
-    //                     });
-    //                 } else {
-    //                     res.json(strResponce);
-    //                 }
-    //             });
-    //         } else {
-    //             // flgIsNotification = true;
-    //             SendVibrationNotification();
-    //         }
-    //     });
-
-    //     function SendVibrationNotification() {
-    //         console.log("Call Vibration Notification");
-    //         var query = "INSERT INTO tblalarm (Datetime,Latitude,Longitude,GPSPositioning,Speed,Direction,Status,ReservedSign,ReservedSelection,DeviceId,AlarmCode ) VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + Status + "', '" + Sign + "', '" + ReserveSection + "', '" + DeviceId + "','" + alarmcode + "');";
-    //         connection.query(query, function(err, rows, fields) {
-
-    //             var GPSquery = "INSERT INTO tblpetgps (Datetime,Latitude,Longitude,GPSPositioning,Speed,Direction,Status,ReservedSign,ReservedSelection,DeviceId,IsAdvanture ) VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + Status + "', '" + Sign + "', '" + ReserveSection + "', '" + DeviceId + "'," + IsAdvanture + ");";
-    //             connection.query(GPSquery, function(err, rows, fields) {
-
-    //                 var objConnection = {
-    //                     Position: Position,
-    //                     Speed: Speed,
-    //                     Deviceid: DeviceId,
-    //                     Latitude: Latitude,
-    //                     Longitude: Longitude,
-    //                     Direction: Direction,
-    //                 }
-    //                 io.sockets.emit('BikeRoute', JSON.stringify(objConnection));
-
-    //                 // connection.query("Update tblbike set IsWireCut=true where deviceid=" + DeviceId, function (err1, rows, fields) {
-
-    //                 // if (!err) {
-    //                 connection.query("SELECT * from tblbike where deviceid=" + DeviceId + " and IsDelete=false", function(err, Petrows, fields) {
-    //                     if (!err && Petrows.length > 0) {
-
-    //                         var objPet = Petrows[0];
-    //                         // if (flgIsNotification == true) {
-    //                         console.log(objPet.IsDelete.toString('hex'));
-    //                         if (objPet.IsDelete.toString('hex') == '00') {
-    //                             var PushNotificationdata = {
-    //                                 title: 'Alert',
-    //                                 message: 'Vehicle ' + objPet.Name + ' Vibrating alert! Please check!',
-    //                                 Fence: 'Default',
-    //                                 otherfields: {
-    //                                     deviceid: DeviceId,
-    //                                     PetId: objPet.id,
-    //                                     PetName: objPet.Name
-    //                                 }
-    //                             };
-    //                             SendPushNotification(PushNotificationdata, objPet.iduser, 'Owner', 'OwnerVibrationPushNotification');
-    //                         }
-    //                         // }
-
-    //                         var objConnection = {
-    //                             AlarmCode: alarmcode.toString(),
-    //                             DeviceId: DeviceId,
-    //                             Datetime: GPSDateTime,
-    //                             IdUser: objPet.iduser,
-    //                             Name: objPet.Name
-    //                         }
-    //                         if (new Date(GPSDateTime) <= new Date()) {
-    //                             io.sockets.emit('DeviceAlarm', JSON.stringify(objConnection));
-    //                         }
-    //                     }
-    //                 });
-    //                 // }
-    //                 // });
-
-    //                 //tblapisresponse Entry
-    //                 var ResponceQuery = "INSERT INTO tblapisresponse (Code,Response,Datetime) VALUES ('BO01', '" + strResponce + "', '" + CurrentDate + "');";
-    //                 connection.query(ResponceQuery, function(err, rows2, fields) {
-
-    //                 });
-
-    //             });
-    //         });
-    //     }
-    // } else if (alarmcode.toString() == "02") {
-    //     var prevDatetime = new Date(GPSDateTime);
-    //     var OneMinPrevDatetime = new Date(GPSDateTime);
-    //     var OneMinPreDate = convertdateformat(OneMinPrevDatetime.setMinutes(OneMinPrevDatetime.getMinutes() - 1));
-
-    //     connection.query("SELECT * from tblalarm where Datetime >'" + OneMinPreDate + "' and AlarmCode = '02' and DeviceId='" + DeviceId + "' order by Id desc", function(err, PetGpsOneMinDetailrows, fields) {
-    //         if (PetGpsOneMinDetailrows.length == 0) {
-    //             SendWirecutNotification();
-    //         } else {
-    //             res.json(strResponce);
-    //         }
-    //     });
-
-    //     function SendWirecutNotification() {
-    //         var query = "INSERT INTO tblalarm (Datetime,Latitude,Longitude,GPSPositioning,Speed,Direction,Status,ReservedSign,ReservedSelection,DeviceId,AlarmCode ) VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + Status + "', '" + Sign + "', '" + ReserveSection + "', '" + DeviceId + "','" + alarmcode + "');";
-    //         connection.query(query, function(err, rows, fields) {
-
-    //             var GPSquery = "INSERT INTO tblpetgps (Datetime,Latitude,Longitude,GPSPositioning,Speed,Direction,Status,ReservedSign,ReservedSelection,DeviceId,IsAdvanture ) VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + Status + "', '" + Sign + "', '" + ReserveSection + "', '" + DeviceId + "'," + IsAdvanture + ");";
-    //             connection.query(GPSquery, function(err, rows, fields) {
-
-    //                 var objConnection = {
-    //                     Position: Position,
-    //                     Speed: Speed,
-    //                     Deviceid: DeviceId,
-    //                     Latitude: Latitude,
-    //                     Longitude: Longitude,
-    //                     Direction: Direction,
-    //                 }
-    //                 io.sockets.emit('BikeRoute', JSON.stringify(objConnection));
-
-    //                 // connection.query("Update tblbike set IsWireCut=true where deviceid=" + DeviceId, function (err1, rows, fields) {
-
-    //                 // if (!err) {
-    //                 connection.query("SELECT * from tblbike where deviceid=" + DeviceId + " and IsDelete=false", function(err, Petrows, fields) {
-    //                     if (!err && Petrows.length > 0) {
-    //                         var objPet = Petrows[0];
-    //                         console.log(objPet.IsDelete.toString('hex'));
-    //                         if (objPet.IsDelete.toString('hex') == '00') {
-    //                             var PushNotificationdata = {
-    //                                 title: 'Alert',
-    //                                 message: 'Vehicle ' + objPet.Name + ' Wire Cut alert! Please check!',
-    //                                 // Fence: 'Default',
-    //                                 Fence: 'FenceIn',
-    //                                 otherfields: {
-    //                                     deviceid: DeviceId,
-    //                                     PetId: objPet.id,
-    //                                     PetName: objPet.Name
-    //                                 }
-    //                             };
-    //                             SendPushNotification(PushNotificationdata, objPet.iduser, 'Owner', 'OwnerWireCutPushNotification');
-    //                         }
-    //                         var objConnection = {
-    //                             AlarmCode: alarmcode.toString(),
-    //                             DeviceId: DeviceId,
-    //                             Datetime: GPSDateTime,
-    //                             IdUser: objPet.iduser,
-    //                             Name: objPet.Name
-    //                         }
-    //                         if (new Date(GPSDateTime) <= new Date()) {
-    //                             io.sockets.emit('DeviceAlarm', JSON.stringify(objConnection));
-    //                         }
-    //                     }
-    //                 });
-    //                 // }
-    //                 // });
-
-    //                 //tblapisresponse Entry
-    //                 var ResponceQuery = "INSERT INTO tblapisresponse (Code,Response,Datetime) VALUES ('BO01', '" + strResponce + "', '" + CurrentDate + "');";
-    //                 connection.query(ResponceQuery, function(err, rows2, fields) {
-
-    //                 });
-
-    //             });
-    //         });
-    //     }
-    // } else if (alarmcode.toString() == "01") {
-    //     var prevDatetime = new Date(GPSDateTime);
-    //     var OneMinPrevDatetime = new Date(GPSDateTime);
-    //     var OneMinPreDate = convertdateformat(OneMinPrevDatetime.setMinutes(OneMinPrevDatetime.getMinutes() - 1));
-
-    //     connection.query("SELECT * from tblalarm where Datetime >'" + OneMinPreDate + "' and AlarmCode = '01' and DeviceId='" + DeviceId + "' order by Id desc", function(err, PetGpsOneMinDetailrows, fields) {
-    //         if (PetGpsOneMinDetailrows.length == 0) {
-    //             SendSOSNotification();
-    //         } else {
-    //             res.json(strResponce);
-    //         }
-    //     });
-
-    //     function SendSOSNotification() {
-    //         var query = "INSERT INTO tblalarm (Datetime,Latitude,Longitude,GPSPositioning,Speed,Direction,Status,ReservedSign,ReservedSelection,DeviceId,AlarmCode ) VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + Status + "', '" + Sign + "', '" + ReserveSection + "', '" + DeviceId + "','" + alarmcode + "');";
-    //         connection.query(query, function(err, rows, fields) {
-
-    //             var GPSquery = "INSERT INTO tblpetgps (Datetime,Latitude,Longitude,GPSPositioning,Speed,Direction,Status,ReservedSign,ReservedSelection,DeviceId,IsAdvanture ) VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + Status + "', '" + Sign + "', '" + ReserveSection + "', '" + DeviceId + "'," + IsAdvanture + ");";
-    //             connection.query(GPSquery, function(err, rows, fields) {
-
-    //                 var objConnection = {
-    //                     Position: Position,
-    //                     Speed: Speed,
-    //                     Deviceid: DeviceId,
-    //                     Latitude: Latitude,
-    //                     Longitude: Longitude,
-    //                     Direction: Direction,
-    //                 }
-    //                 io.sockets.emit('BikeRoute', JSON.stringify(objConnection));
-
-    //                 // connection.query("Update tblbike set IsWireCut=true where deviceid=" + DeviceId, function (err1, rows, fields) {
-
-    //                 // if (!err) {
-    //                 connection.query("SELECT * from tblbike where deviceid=" + DeviceId + " and IsDelete=false", function(err, Petrows, fields) {
-    //                     if (!err && Petrows.length > 0) {
-    //                         var objPet = Petrows[0];
-    //                         console.log(objPet.IsDelete.toString('hex'));
-    //                         if (objPet.IsDelete.toString('hex') == '00') {
-    //                             var PushNotificationdata = {
-    //                                 title: 'Alert',
-    //                                 message: 'Vehicle ' + objPet.Name + ' SOS alert! Please check!',
-    //                                 // Fence: 'Default',
-    //                                 Fence: 'FenceIn',
-    //                                 otherfields: {
-    //                                     deviceid: DeviceId,
-    //                                     PetId: objPet.id,
-    //                                     PetName: objPet.Name
-    //                                 }
-    //                             };
-    //                             SendPushNotification(PushNotificationdata, objPet.iduser, 'Owner', 'OwnerSOSPushNotification');
-    //                         }
-    //                         var objConnection = {
-    //                             AlarmCode: alarmcode.toString(),
-    //                             DeviceId: DeviceId,
-    //                             Datetime: GPSDateTime,
-    //                             IdUser: objPet.iduser,
-    //                             Name: objPet.Name
-    //                         }
-    //                         if (new Date(GPSDateTime) <= new Date()) {
-    //                             io.sockets.emit('DeviceAlarm', JSON.stringify(objConnection));
-    //                         }
-    //                     }
-    //                 });
-    //                 // }
-    //                 // });
-
-    //                 //tblapisresponse Entry
-    //                 var ResponceQuery = "INSERT INTO tblapisresponse (Code,Response,Datetime) VALUES ('BO01', '" + strResponce + "', '" + CurrentDate + "');";
-    //                 connection.query(ResponceQuery, function(err, rows2, fields) {
-
-    //                 });
-
-    //             });
-    //         });
-    //     }
-    // } else {
-
-    // }
+    } catch (ex) {
+        console.log("Error Alarm Data = " + line);
+    }
 };
 
 //Command9901 - CAN-BUS Command
 global.Command9901 = function(line, Callback) {
     console.log("CAN-BUS Data = " + line);
-    //Server Reconnet If Disconneted
-    if (connection.state == 'disconnected') {
-        global.connection = mysql.createConnection({
-            host: MysqlHost,
-            user: Mysqluser,
-            password: Mysqlpassword,
-            database: Mysqldatabase
-        });
-    }
-
-    var DeviceId = line.substring(8, 22);
-
-    var CANBUSData = hex2a(line.substring(26, (line.length - 8)));
-
-    var lstCANBUSAllData = CANBUSData.split(',');
-
-
-    var BatteryVoltage = lstCANBUSAllData[0];
-    var EngineSpeed = lstCANBUSAllData[1];
-    var RunningSpeed = lstCANBUSAllData[2];
-    var ThrottleOpeningWidth = lstCANBUSAllData[3];
-    var EngineLoad = lstCANBUSAllData[4];
-    var CoolantTemperature = lstCANBUSAllData[5];
-    var InstantaneousFuelConsumption = lstCANBUSAllData[6];
-    var AverageFuelConsumption = lstCANBUSAllData[7];
-    var DrivingRange = lstCANBUSAllData[8];
-    var TotalMileage = lstCANBUSAllData[9];
-    var SingleFuelConsumptionVolume = lstCANBUSAllData[10];
-    var TotalFuelConsumptionVolume = lstCANBUSAllData[11];
-    var CurrentErrorCodeNumbers = lstCANBUSAllData[12];
-    var HarshAccelerationNo = lstCANBUSAllData[13];
-    var HarshBrakeNo = lstCANBUSAllData[14];
-
-
-    var CurrentDate = GetCurrentDate();
-    var unixDateStemp = Math.floor((new Date()).getTime() / 1000);
-
-    var query = "INSERT INTO tblcanbusdata (DeviceId,Datetime,BatteryVoltage,EngineSpeed,RunningSpeed,ThrottleOpeningWidth,EngineLoad,CoolantTemperature,InstantaneousFuelConsumption,AverageFuelConsumption,DrivingRange,TotalMileage,SingleFuelConsumptionVolume,TotalFuelConsumptionVolume,CurrentErrorCodeNumbers,HarshAccelerationNo,HarshBrakeNo,CreatedDate) " +
-        "VALUES ('" + DeviceId + "', '" + unixDateStemp + "', '" + BatteryVoltage + "', '" + EngineSpeed + "', '" + RunningSpeed + "', '" + ThrottleOpeningWidth + "', '" + EngineLoad + "', '" + CoolantTemperature + "'," + InstantaneousFuelConsumption + "," + AverageFuelConsumption + "," + DrivingRange + "," + TotalMileage + "," + SingleFuelConsumptionVolume + "," + TotalFuelConsumptionVolume + "," + CurrentErrorCodeNumbers + "," + HarshAccelerationNo + "," + HarshBrakeNo + ",'" + CurrentDate + "');";
-    connection.query(query, function(err, rows, fields) {
-
-        var objConnection = {
-            DeviceId: DeviceId,
-            BatteryVoltage: BatteryVoltage,
-            EngineSpeed: EngineSpeed,
-            RunningSpeed: RunningSpeed,
-            ThrottleOpeningWidth: ThrottleOpeningWidth,
-            EngineLoad: EngineLoad,
-            CoolantTemperature: CoolantTemperature,
-            InstantaneousFuelConsumption: InstantaneousFuelConsumption,
-            AverageFuelConsumption: AverageFuelConsumption,
-            DrivingRange: DrivingRange,
-            TotalMileage: TotalMileage,
-            SingleFuelConsumptionVolume: SingleFuelConsumptionVolume,
-            TotalFuelConsumptionVolume: TotalFuelConsumptionVolume,
-            CurrentErrorCodeNumbers: CurrentErrorCodeNumbers,
-            HarshAccelerationNo: HarshAccelerationNo,
-            HarshBrakeNo: HarshBrakeNo,
-            Datetime: unixDateStemp
+    try {
+        //Server Reconnet If Disconneted
+        if (connection.state == 'disconnected') {
+            global.connection = mysql.createConnection({
+                host: MysqlHost,
+                user: Mysqluser,
+                password: Mysqlpassword,
+                database: Mysqldatabase
+            });
         }
 
-        io.sockets.emit(DeviceId + 'canbusdata', JSON.stringify(objConnection));
-        // io.sockets.emit('canbusdata', JSON.stringify(objConnection));
+        var DeviceId = line.substring(8, 22);
 
-    });
+        var CANBUSData = hex2a(line.substring(26, (line.length - 8)));
+
+        var lstCANBUSAllData = CANBUSData.split(',');
+
+
+        var BatteryVoltage = lstCANBUSAllData[0];
+        var EngineSpeed = lstCANBUSAllData[1];
+        var RunningSpeed = lstCANBUSAllData[2];
+        var ThrottleOpeningWidth = lstCANBUSAllData[3];
+        var EngineLoad = lstCANBUSAllData[4];
+        var CoolantTemperature = lstCANBUSAllData[5];
+        var InstantaneousFuelConsumption = lstCANBUSAllData[6];
+        var AverageFuelConsumption = lstCANBUSAllData[7];
+        var DrivingRange = lstCANBUSAllData[8];
+        var TotalMileage = lstCANBUSAllData[9];
+        var SingleFuelConsumptionVolume = lstCANBUSAllData[10];
+        var TotalFuelConsumptionVolume = lstCANBUSAllData[11];
+        var CurrentErrorCodeNumbers = lstCANBUSAllData[12];
+        var HarshAccelerationNo = lstCANBUSAllData[13];
+        var HarshBrakeNo = lstCANBUSAllData[14];
+
+
+        var CurrentDate = GetCurrentDate();
+        var unixDateStemp = Math.floor((new Date()).getTime() / 1000);
+
+        var query = "INSERT INTO tblcanbusdata (DeviceId,Datetime,BatteryVoltage,EngineSpeed,RunningSpeed,ThrottleOpeningWidth,EngineLoad,CoolantTemperature,InstantaneousFuelConsumption,AverageFuelConsumption,DrivingRange,TotalMileage,SingleFuelConsumptionVolume,TotalFuelConsumptionVolume,CurrentErrorCodeNumbers,HarshAccelerationNo,HarshBrakeNo,CreatedDate) " +
+            "VALUES ('" + DeviceId + "', '" + unixDateStemp + "', '" + BatteryVoltage + "', '" + EngineSpeed + "', '" + RunningSpeed + "', '" + ThrottleOpeningWidth + "', '" + EngineLoad + "', '" + CoolantTemperature + "'," + InstantaneousFuelConsumption + "," + AverageFuelConsumption + "," + DrivingRange + "," + TotalMileage + "," + SingleFuelConsumptionVolume + "," + TotalFuelConsumptionVolume + "," + CurrentErrorCodeNumbers + "," + HarshAccelerationNo + "," + HarshBrakeNo + ",'" + CurrentDate + "');";
+        connection.query(query, function(err, rows, fields) {
+
+            var objConnection = {
+                DeviceId: DeviceId,
+                BatteryVoltage: BatteryVoltage,
+                EngineSpeed: EngineSpeed,
+                RunningSpeed: RunningSpeed,
+                ThrottleOpeningWidth: ThrottleOpeningWidth,
+                EngineLoad: EngineLoad,
+                CoolantTemperature: CoolantTemperature,
+                InstantaneousFuelConsumption: InstantaneousFuelConsumption,
+                AverageFuelConsumption: AverageFuelConsumption,
+                DrivingRange: DrivingRange,
+                TotalMileage: TotalMileage,
+                SingleFuelConsumptionVolume: SingleFuelConsumptionVolume,
+                TotalFuelConsumptionVolume: TotalFuelConsumptionVolume,
+                CurrentErrorCodeNumbers: CurrentErrorCodeNumbers,
+                HarshAccelerationNo: HarshAccelerationNo,
+                HarshBrakeNo: HarshBrakeNo,
+                Datetime: unixDateStemp
+            }
+
+            io.sockets.emit(DeviceId + 'canbusdata', JSON.stringify(objConnection));
+            // io.sockets.emit('canbusdata', JSON.stringify(objConnection));
+
+        });
+    } catch (ex) {
+        console.log("Error Canbus Data = " + line);
+    }
 
 };
 
 //Command9902 -  Driving Behavior Command
 global.Command9902 = function(line, Callback) {
     console.log("Driving Data = " + line);
-    //Server Reconnet If Disconneted
-    if (connection.state == 'disconnected') {
-        global.connection = mysql.createConnection({
-            host: MysqlHost,
-            user: Mysqluser,
-            password: Mysqlpassword,
-            database: Mysqldatabase
-        });
-    }
-
-    var DeviceId = line.substring(8, 22);
-
-    var DrivingData = hex2a(line.substring(26, (line.length - 8)));
-
-    var lstDrivingAllData = DrivingData.split(',');
-
-
-    var TotalIgnition = lstDrivingAllData[0];
-    var TotalDrivingTime = lstDrivingAllData[1];
-    var TotalIdlingTime = lstDrivingAllData[2];
-    var AverageHotStartTime = lstDrivingAllData[3];
-    var AverageSpeed = lstDrivingAllData[4];
-    var HistoryHighestSpeed = lstDrivingAllData[5];
-    var HistoryHighestRotation = lstDrivingAllData[6];
-    var TotalHarshAcceleration = lstDrivingAllData[7];
-    var TotalHarshBrake = lstDrivingAllData[8];
-
-
-
-    var CurrentDate = GetCurrentDate();
-    var unixDateStemp = Math.floor((new Date()).getTime() / 1000);
-
-    var query = "INSERT INTO tbldrivingdata (DeviceId,Datetime,TotalIgnition,TotalDrivingTime,TotalIdlingTime,AverageHotStartTime,AverageSpeed,HistoryHighestSpeed,HistoryHighestRotation,TotalHarshAcceleration,TotalHarshBrake,CreatedDate) " +
-        "VALUES ('" + DeviceId + "', '" + unixDateStemp + "', '" + TotalIgnition + "', '" + TotalDrivingTime + "', '" + TotalIdlingTime + "', '" + AverageHotStartTime + "', '" + AverageSpeed + "', '" + HistoryHighestSpeed + "'," + HistoryHighestRotation + "," + TotalHarshAcceleration + "," + TotalHarshBrake + ",'" + CurrentDate + "');";
-    connection.query(query, function(err, rows, fields) {
-
-        var objConnection = {
-            DeviceId: DeviceId,
-            TotalIgnition: TotalIgnition,
-            TotalDrivingTime: TotalDrivingTime,
-            TotalIdlingTime: TotalIdlingTime,
-            AverageHotStartTime: AverageHotStartTime,
-            AverageSpeed: AverageSpeed,
-            HistoryHighestSpeed: HistoryHighestSpeed,
-            HistoryHighestRotation: HistoryHighestRotation,
-            TotalHarshAcceleration: TotalHarshAcceleration,
-            TotalHarshBrake: TotalHarshBrake,
-            Datetime: unixDateStemp
+    try {
+        //Server Reconnet If Disconneted
+        if (connection.state == 'disconnected') {
+            global.connection = mysql.createConnection({
+                host: MysqlHost,
+                user: Mysqluser,
+                password: Mysqlpassword,
+                database: Mysqldatabase
+            });
         }
 
-        io.sockets.emit(DeviceId + 'drivingdata', JSON.stringify(objConnection));
+        var DeviceId = line.substring(8, 22);
 
-    });
+        var DrivingData = hex2a(line.substring(26, (line.length - 8)));
+
+        var lstDrivingAllData = DrivingData.split(',');
+
+
+        var TotalIgnition = lstDrivingAllData[0];
+        var TotalDrivingTime = lstDrivingAllData[1];
+        var TotalIdlingTime = lstDrivingAllData[2];
+        var AverageHotStartTime = lstDrivingAllData[3];
+        var AverageSpeed = lstDrivingAllData[4];
+        var HistoryHighestSpeed = lstDrivingAllData[5];
+        var HistoryHighestRotation = lstDrivingAllData[6];
+        var TotalHarshAcceleration = lstDrivingAllData[7];
+        var TotalHarshBrake = lstDrivingAllData[8];
+
+
+
+        var CurrentDate = GetCurrentDate();
+        var unixDateStemp = Math.floor((new Date()).getTime() / 1000);
+
+        var query = "INSERT INTO tbldrivingdata (DeviceId,Datetime,TotalIgnition,TotalDrivingTime,TotalIdlingTime,AverageHotStartTime,AverageSpeed,HistoryHighestSpeed,HistoryHighestRotation,TotalHarshAcceleration,TotalHarshBrake,CreatedDate) " +
+            "VALUES ('" + DeviceId + "', '" + unixDateStemp + "', '" + TotalIgnition + "', '" + TotalDrivingTime + "', '" + TotalIdlingTime + "', '" + AverageHotStartTime + "', '" + AverageSpeed + "', '" + HistoryHighestSpeed + "'," + HistoryHighestRotation + "," + TotalHarshAcceleration + "," + TotalHarshBrake + ",'" + CurrentDate + "');";
+        connection.query(query, function(err, rows, fields) {
+
+            var objConnection = {
+                DeviceId: DeviceId,
+                TotalIgnition: TotalIgnition,
+                TotalDrivingTime: TotalDrivingTime,
+                TotalIdlingTime: TotalIdlingTime,
+                AverageHotStartTime: AverageHotStartTime,
+                AverageSpeed: AverageSpeed,
+                HistoryHighestSpeed: HistoryHighestSpeed,
+                HistoryHighestRotation: HistoryHighestRotation,
+                TotalHarshAcceleration: TotalHarshAcceleration,
+                TotalHarshBrake: TotalHarshBrake,
+                Datetime: unixDateStemp
+            }
+
+            io.sockets.emit(DeviceId + 'drivingdata', JSON.stringify(objConnection));
+
+        });
+    } catch (ex) {
+        console.log("Error Driving Data = " + line);
+    }
 
 };
 
