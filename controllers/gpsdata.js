@@ -877,6 +877,14 @@ router.get('/ExportAllWoringHourForReport', function(req, res) {
             type: 'string'
         },
         {
+            caption: 'Average Speed',
+            type: 'number'
+        },
+        {
+            caption: 'Highest Speed',
+            type: 'number'
+        }
+        /*{
             caption: 'Start Time',
             type: 'string'
         },
@@ -891,7 +899,7 @@ router.get('/ExportAllWoringHourForReport', function(req, res) {
         {
             caption: 'End Work',
             type: 'string'
-        },
+        },*/
     ];
 
 
@@ -945,11 +953,21 @@ router.get('/ExportAllWoringHourForReport', function(req, res) {
             var lstEngineOn = [];
             var lstEngineOff = [];
             var SumTolalMilage = 0.00;
+            $scope.Speed = 0.00;
+            objEngine.HighestSpeed = 0.00;
+            $scope.totalrecord = 0;
             for (var k = 0; k < lstGroup[i].data.length; k++) {
                 if ((k) != 0) {
                     SumTolalMilage += parseFloat(distance(parseFloat(lstGroup[i].data[k - 1].Latitude), parseFloat(lstGroup[i].data[k - 1].Longitude), parseFloat(lstGroup[i].data[k].Latitude), parseFloat(lstGroup[i].data[k].Longitude)));
                 }
                 if (lstGroup[i].data[k].IsEngine) {
+                    if (parseFloat(lstGroup[i].data[k].Speed) > 1) {
+                        if (objEngine.HighestSpeed < parseFloat(lstGroup[i].data[k].Speed)) {
+                            objEngine.HighestSpeed = parseFloat(lstGroup[i].data[k].Speed);
+                        }
+                        $scope.Speed = $scope.Speed + parseFloat(lstGroup[i].data[k].Speed);
+                        $scope.totalrecord = $scope.totalrecord + 1;
+                    }
                     lstEngineOn.push(lstGroup[i].data[k])
                 } else {
                     lstEngineOff.push(lstGroup[i].data[k]);
@@ -989,6 +1007,9 @@ router.get('/ExportAllWoringHourForReport', function(req, res) {
                     // objEngine.NonWorkingTolalMilage = distance(parseFloat(objEngine.PStartLatitude), parseFloat(objEngine.PStartLongitude), parseFloat(objEngine.PEndLatitude), parseFloat(objEngine.PEndLongitude));
                 }
             }
+            if ($scope.Speed > 1) {
+                objEngine.AverageSpeed = $scope.Speed / $scope.totalrecord;
+            }
             objEngine.TolalMilage = SumTolalMilage;
             response1.push(objEngine);
 
@@ -1001,7 +1022,8 @@ router.get('/ExportAllWoringHourForReport', function(req, res) {
         var EngineStartStartDate = '';
         var EngineStartEndDate = '';
         var EngingStartTime = '';
-
+        var AveargeSpeed = 0;
+        var HighestSpeed = 0;
         var EngingEndTime = '';
         GetData(0);
 
@@ -1020,7 +1042,7 @@ router.get('/ExportAllWoringHourForReport', function(req, res) {
                 if (response1[i].TolalMilage != null && response1[i].TolalMilage != '' && response1[i].TolalMilage != undefined) {
                     Distance = response1[i].TolalMilage;
                 }
-                if (response1[i].StartDate != null && response1[i].StartDate != '' && response1[i].StartDate != undefined) {
+                /*if (response1[i].StartDate != null && response1[i].StartDate != '' && response1[i].StartDate != undefined) {
                     EngineStartStartDate = response1[i].StartDate;
                 }
                 if (response1[i].StartTime != null && response1[i].StartTime != '' && response1[i].StartTime != undefined) {
@@ -1031,8 +1053,14 @@ router.get('/ExportAllWoringHourForReport', function(req, res) {
                 }
                 if (response1[i].EndTime != null && response1[i].EndTime != '' && response1[i].EndTime != undefined) {
                     EngingEndTime = response1[i].EndTime;
+                }*/
+                if (response1[i].AveargeSpeed != null && response1[i].AveargeSpeed != '' && response1[i].AveargeSpeed != undefined) {
+                    AveargeSpeed = response1[i].AveargeSpeed;
                 }
-                row.push(BikeName, DrivingTime, ParkingTime, Distance, EngineStartStartDate, EngineStartEndDate, EngingStartTime, EngingEndTime);
+                if (response1[i].HighestSpeed != null && response1[i].HighestSpeed != '' && response1[i].HighestSpeed != undefined) {
+                    HighestSpeed = response1[i].HighestSpeed;
+                }
+                row.push(BikeName, DrivingTime, ParkingTime, Distance, AveargeSpeed, HighestSpeed /*EngineStartStartDate, EngineStartEndDate, EngingStartTime, EngingEndTime*/ );
                 conf.rows.push(row);
                 GetData(i + 1);
             } else {
