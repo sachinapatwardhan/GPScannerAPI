@@ -74,8 +74,9 @@ router.get('/GetAllGPSDevice', function(req, res) {
                             } else if (columnName == 'tbluserinformation.username') {
                                 SalesAgSearchflg = true;
                                 search1['$or'].push(['tbluserinformation.username like ?', "%" + objSearch + "%"]);
+                            } else if (columnName == 'ExpiryDate') {
+                                search1['$or'].push(['tblgpsdevice.ExpiryDate like ?', "%" + objSearch + "%"]);
                             }
-
                         };
                     };
                 }
@@ -573,6 +574,34 @@ router.post('/SaveGPSDevice', jsonParser, function(req, res) {
         res.json(InvalidToken);
     }
 });
+
+router.get('/UpdateStatus', function(req, res) {
+    objHeader = req.headers;
+    if (req.query.ExpiryDate == null) {
+        req.query.ExpiryDate = null;
+    }
+    //Set parameters for user permission
+    req.query['tablename'] = req.headers['x-requested-with'];
+    var token = getToken(objHeader);
+    if (token) {
+        GPSDevice.findOne({
+            where: {
+                id: req.query.id,
+            }
+        }).then(function(ObjExist) {
+            if (ObjExist) {
+                ObjExist.updateAttributes({
+                    IsActive: req.query.IsActive,
+                    ExpiryDate: req.query.ExpiryDate,
+                }).then(function(response) {
+                    if (response) {
+                        res.json({ success: true, message: "Tracker Status Updated successfully", data: response });
+                    }
+                })
+            }
+        })
+    }
+})
 
 router.post('/uploadExcelDevice', function(req, res) {
     var form = new formidable.IncomingForm();
