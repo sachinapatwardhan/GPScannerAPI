@@ -343,6 +343,24 @@ router.get('/GetAllGPSByTimeZoneDate', function(req, res) {
     });
 });
 
+router.get('/GetAllGPSByTimeZoneDateWithV', function(req, res) {
+
+    var Startdate = req.query.TodayStartDateTime;
+    var Enddate = req.query.TodayEndDateTime;
+
+    var convertDate = convertdateformatForUnix(Startdate);
+    var unixStartdate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
+
+    var convertDate = convertdateformatForUnix(Enddate);
+    var unixEnddate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
+
+
+    var query = "select Datetime, Latitude, Longitude, GPSPositioning, Speed, Direction, DeviceId,IsEngine, Date from tblgpsdata where deviceid=" + req.query.DeviceId + " and Date >= '" + unixStartdate + "' and Date <= '" + unixEnddate + "' order by Date;"
+    connection.query(query, function(err, lstGPSData, fields) {
+        res.json(lstGPSData);
+    });
+});
+
 function ConvertDateFormat(today) {
     console.log(today)
     var year = today.getUTCFullYear();
