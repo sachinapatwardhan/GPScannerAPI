@@ -190,7 +190,7 @@ router.get('/GetVehicleCurrentLocation', function(req, res) {
 });
 
 router.get('/GetAllGPSDate', function(req, res) {
-    var AppTimeZone = req.query.AppTimeZone;
+    var AppTimeZone = req.query.TimeZone;
     if (AppTimeZone != null && AppTimeZone != undefined && AppTimeZone != '') {
         var todaydata = new Date();
         var todaydata4 = new Date();
@@ -257,7 +257,7 @@ router.get('/GetAllGPSDate', function(req, res) {
 });
 
 router.get('/GetAllGPSDateByDate', function(req, res) {
-    var AppTimeZone = req.query.AppTimeZone;
+    var AppTimeZone = req.query.TimeZone;
     if (AppTimeZone != null && AppTimeZone != undefined && AppTimeZone != '') {
         var Startdate = req.query.StartDateTime;
         var StartUnixTime = null;
