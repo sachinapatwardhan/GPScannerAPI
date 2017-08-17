@@ -362,6 +362,9 @@ router.get('/ExportFenceReport', function(req, res) {
             caption: 'Asset Name',
             type: 'string'
         }, {
+            caption: 'Fence Name',
+            type: 'string'
+        }, {
             caption: 'Time',
             type: 'string'
         }, {
@@ -433,6 +436,7 @@ router.get('/ExportFenceReport', function(req, res) {
                     var TIme = 'N/A';
                     var Address = 'N/A';
                     var FenceStatus = 'N/A';
+                    var FenceName = 'N/A';
 
                     if (response[i].Latitude != undefined && response[i].Latitude != null && response[i].Latitude != '' && response[i].Longitude != undefined && response[i].Longitude != null && response[i].Longitude != '') {
                         // geocoder.reverse({ lat: response[i].Latitude, lon: response[i].Longitude }, function(err, res) {
@@ -443,6 +447,9 @@ router.get('/ExportFenceReport', function(req, res) {
 
                         if (response[i].Name != null && response[i].Name != '' && response[i].Name != undefined) {
                             Name = response[i].Name;
+                        }
+                        if (response[i].FenceName != null && response[i].FenceName != '' && response[i].FenceName != undefined) {
+                            FenceName = response[i].FenceName;
                         }
 
                         if (response[i].AlarmCode != null && response[i].AlarmCode != '' && response[i].AlarmCode != undefined) {
@@ -459,7 +466,7 @@ router.get('/ExportFenceReport', function(req, res) {
                         //     conf.rows.push(row);
                         // } else {
                         //     Address = "N/A";
-                        row.push(Name.toString(), TIme.toString(), FenceStatus.toString());
+                        row.push(Name.toString(), FenceName.toString(), TIme.toString(), FenceStatus.toString());
                         conf.rows.push(row);
                         // }
 
@@ -485,7 +492,7 @@ router.get('/ExportFenceReport', function(req, res) {
                         }
 
                         // Address = "N/A";
-                        row.push(Name.toString(), TIme.toString(), FenceStatus.toString());
+                        row.push(Name.toString(), FenceName.toString(), TIme.toString(), FenceStatus.toString());
                         conf.rows.push(row);
                         GetData(i + 1);
                     }
