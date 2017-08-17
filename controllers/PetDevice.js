@@ -577,8 +577,14 @@ router.post('/SaveGPSDevice', jsonParser, function(req, res) {
 
 router.get('/UpdateStatus', function(req, res) {
     objHeader = req.headers;
-    if (req.query.ExpiryDate == null) {
-        req.query.ExpiryDate = null;
+    var ExpiryDate = null;
+    if (req.query.IsActive == 1) {
+        var d = new Date();
+        var year = d.getFullYear();
+        var month = d.getMonth();
+        var day = d.getDate();
+        var c = new Date(year + 1, month, day)
+        ExpiryDate = c;
     }
     //Set parameters for user permission
     req.query['tablename'] = req.headers['x-requested-with'];
@@ -592,7 +598,7 @@ router.get('/UpdateStatus', function(req, res) {
             if (ObjExist) {
                 ObjExist.updateAttributes({
                     IsActive: req.query.IsActive,
-                    ExpiryDate: req.query.ExpiryDate,
+                    ExpiryDate: ExpiryDate,
                 }).then(function(response) {
                     if (response) {
                         res.json({ success: true, message: "Tracker Status Updated successfully", data: response });
