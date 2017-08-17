@@ -59,6 +59,15 @@ module.exports = function(sequelize, DataTypes) {
         model: 'tbluserinformation',
         key: 'id'
       }
+    },
+    IsActive: {
+      type: DataTypes.INTEGER(2),
+      allowNull: true,
+      defaultValue: '0'
+    },
+    ExpiryDate: {
+      type: DataTypes.DATE,
+      allowNull: true
     }
   }, {
     tableName: 'tblgpsdevice'
