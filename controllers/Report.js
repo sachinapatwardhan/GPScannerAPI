@@ -1095,15 +1095,15 @@ router.get('/GetAllParkingData', function(req, res) {
                 if (lstGroup[i].data.length > 0) {
                     for (var k = 0; k < lstGroup[i].data.length; k++) {
                         if (lstGroup[i].data[k].IsEngine == 0) {
-                            if (k != 0 && momentz.utc(new Date(lstGroup[i].data[k - 1].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY') != momentz.utc(new Date(lstGroup[i].data[k].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY')) {
-                                if (obj.EndTime == null || obj.EndTime == undefined || obj.EndTime == '') {
-                                    obj.EndTime = obj.StartTime
-                                    EndDate = StartDate;
-                                    obj.ParkingTime = timeDifference(StartDate, EndDate);
-                                }
-                                Array.push(obj);
-                                COuntEngineOff = 0;
-                            }
+                            /* if (k != 0 && momentz.utc(new Date(lstGroup[i].data[k - 1].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY') != momentz.utc(new Date(lstGroup[i].data[k].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY')) {
+                                 if (obj.EndTime == null || obj.EndTime == undefined || obj.EndTime == '') {
+                                     obj.EndTime = obj.StartTime
+                                     EndDate = StartDate;
+                                     obj.ParkingTime = timeDifference(StartDate, EndDate);
+                                 }
+                                 Array.push(obj);
+                                 COuntEngineOff = 0;
+                             }*/
                             if (COuntEngineOff == 0) {
                                 var obj = new Object();
                                 obj.Latitude = lstGroup[i].data[k].Latitude;
@@ -1225,7 +1225,7 @@ router.get('/ExportParkingReport', function(req, res) {
                 if (lstGroup[i].data.length > 0) {
                     for (var k = 0; k < lstGroup[i].data.length; k++) {
                         if (lstGroup[i].data[k].IsEngine == 0) {
-                            if (k != 0 && momentz.utc(new Date(lstGroup[i].data[k - 1].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY') != momentz.utc(new Date(lstGroup[i].data[k].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY')) {
+                            /*if (k != 0 && momentz.utc(new Date(lstGroup[i].data[k - 1].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY') != momentz.utc(new Date(lstGroup[i].data[k].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY')) {
                                 if (obj.EndTime == null || obj.EndTime == undefined || obj.EndTime == '') {
                                     obj.EndTime = obj.StartTime
                                     EndDate = StartDate;
@@ -1234,7 +1234,7 @@ router.get('/ExportParkingReport', function(req, res) {
                                 Array.push(obj);
                                 COuntEngineOff = 0;
                             }
-
+*/
                             if (COuntEngineOff == 0) {
                                 var obj = new Object();
                                 obj.Latitude = lstGroup[i].data[k].Latitude;
