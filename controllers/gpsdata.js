@@ -948,7 +948,7 @@ router.get('/ExportAllWoringHourForReport', function(req, res) {
                 data: group
             }
         });
-        for (var i = 0; i < lstGroup.length; i++) {
+        /*for (var i = 0; i < lstGroup.length; i++) {
             var objEngine = new Object();
             var lstEngineOn = [];
             var lstEngineOff = [];
@@ -1013,7 +1013,319 @@ router.get('/ExportAllWoringHourForReport', function(req, res) {
             objEngine.TolalMilage = SumTolalMilage;
             response1.push(objEngine);
 
+        }*/
+
+        var l = 0;
+        var COuntEngineOff = 0;
+        var COuntEngineON = 0;
+        var CountDriving = 0;
+        var Array = [];
+        var StartDate = '';
+        var EndDate = '';
+        var EngineOnStartDate = '';
+        var EngineOnEndDate = '';
+        var DrivingStartTime = '';
+        var DrivingEndTime = '';
+        var Speed = 0.0;
+        //   var lstGroup = [];
+        var m = 0;
+
+        for (var i = 0; i < lstGroup.length; i++) {
+            COuntEngineOff = 0;
+            COuntEngineON = 0;
+            CountDriving = 0;
+
+            if (lstGroup[i].data.length > 0) {
+                var obj = new Object();
+                var hours = 0;
+                var minutes = 0;
+                var seconds = 0;
+                var EngineOnhours = 0;
+                var EngineOnminutes = 0;
+                var EngineOnseconds = 0;
+                var Drivinghours = 0;
+                var Drivingminutes = 0;
+                var Drivingseconds = 0;
+                DrivingStartTime = '';
+                DrivingEndTime = '';
+                StartDate = '';
+                EndDate = '';
+                EngineOnStartDate = '';
+                EngineOnEndDate = '';
+                Speed = 0.0;
+                var SpeedCo = 0;
+                obj.DeviceId = lstGroup[i].data[0].deviceid;
+                obj.BikeName = lstGroup[i].data[0].Name;
+                obj.Date = moment(moment.utc(new Date(lstGroup[i].data[0].Date * 1000)).toDate()).format('DD-MM-YYYY');
+                //obj.Date = momentz.utc(new Date(lstGroup[i].data[0].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY');
+                obj.InvalidLocation = 0;
+                obj.Mileage = 0.0;
+                obj.AlarmNumber = 0;
+                obj.HighestSpeed = 0;
+                obj.TolalMilage = 0;
+                for (var k = 0; k < lstGroup[i].data.length; k++) {
+                    if (k != 0 && moment(moment.utc(new Date(lstGroup[i].data[k - 1].Date * 1000)).toDate()).format('DD-MM-YYYY') != moment(moment.utc(new Date(lstGroup[i].data[k].Date * 1000)).toDate()).format('DD-MM-YYYY')) {
+                        if (CountDriving != 0) {
+                            if (DrivingEndTime == '') {
+                                Drivinghours = Drivinghours + 0;
+                                Drivingminutes = Drivingminutes + 0;
+                                Drivingseconds = Drivingseconds + 0;
+                            } else {
+                                Drivinghours = Drivinghours + timeDifference(DrivingStartTime, DrivingEndTime, 'h');
+                                Drivingminutes = Drivingminutes + timeDifference(DrivingStartTime, DrivingEndTime, 'm');
+                                Drivingseconds = Drivingseconds + timeDifference(DrivingStartTime, DrivingEndTime, 's');
+
+                                if (Drivingseconds > 60) {
+                                    Drivingseconds = Drivingseconds - 60
+                                    Drivingminutes = Drivingminutes + 1;
+                                }
+                                if (Drivingminutes > 60) {
+                                    Drivingminutes = Drivingminutes - 60;
+                                    Drivinghours = Drivinghours + 1;
+                                }
+                            }
+                            CountDriving = 0;
+                        }
+
+                        if (COuntEngineOff != 0) {
+                            if (EndDate == '') {
+                                hours = hours + 0;
+                                minutes = minutes + 0;
+                                seconds = seconds + 0;
+                            } else {
+                                hours = hours + timeDifference(StartDate, EndDate, 'h');
+                                minutes = minutes + timeDifference(StartDate, EndDate, 'm');
+                                seconds = seconds + timeDifference(StartDate, EndDate, 's');
+                                if (seconds > 60) {
+                                    seconds = seconds - 60;
+                                    minutes = minutes + 1;
+                                }
+                                if (minutes > 60) {
+                                    minutes = minutes - 60;
+                                    hours = hours + 1
+                                }
+                            }
+                            COuntEngineOff = 0;
+                        }
+                    }
+
+                    if ((k) != 0) {
+
+                        obj.TolalMilage += parseFloat(distance(parseFloat(lstGroup[i].data[k - 1].Latitude), parseFloat(lstGroup[i].data[k - 1].Longitude), parseFloat(lstGroup[i].data[k].Latitude), parseFloat(lstGroup[i].data[k].Longitude)));
+                    }
+                    //------ Count Invalid Location--------//
+                    if (lstGroup[i].data[k].GPSPositioning != 'A') {
+                        obj.InvalidLocation = obj.InvalidLocation + 1;
+                    }
+                    //--------Count Locate Number----------//
+                    if (k == 0) { obj.LocateNumber = 1; } else {
+                        obj.Mileage = obj.Mileage + distance(parseFloat(lstGroup[i].data[k - 1].Latitude), parseFloat(lstGroup[i].data[k - 1].Longitude), parseFloat(lstGroup[i].data[k].Latitude), parseFloat(lstGroup[i].data[k].Longitude))
+                        if (lstGroup[i].data[k].Latitude != lstGroup[i].data[k - 1].Latitude || lstGroup[i].data[k].Latitude != lstGroup[i].data[k - 1].Latitude) {
+                            obj.LocateNumber = obj.LocateNumber + 1;
+                        }
+                    }
+                    //-----------Add Speed--------------//
+                    if (lstGroup[i].data[k].Speed > 1 && lstGroup[i].data[k].IsEngine == 1) {
+                        Speed = Speed + parseFloat(lstGroup[i].data[k].Speed);
+                        SpeedCo = SpeedCo + 1;
+                        if (obj.HighestSpeed < parseFloat(lstGroup[i].data[k].Speed)) {
+                            obj.HighestSpeed = parseFloat(lstGroup[i].data[k].Speed);
+                        }
+                    }
+
+                    if (lstGroup[i].data[k].IsEngine == 1) {
+
+                        if (COuntEngineOff != 0) {
+                            if (EndDate == null || EndDate == undefined || EndDate == '') {} else {
+                                hours = hours + timeDifference(StartDate, EndDate, 'h');
+                                minutes = minutes + timeDifference(StartDate, EndDate, 'm');
+                                seconds = seconds + timeDifference(StartDate, EndDate, 's');
+                                if (seconds > 60) {
+                                    seconds = seconds - 60;
+                                    minutes = minutes + 1;
+                                }
+                                if (minutes > 60) {
+                                    minutes = minutes - 60;
+                                    hours = hours + 1
+                                }
+                            }
+                            COuntEngineOff = 0;
+                            EndDate = '';
+                        }
+                        //---------Engine On Time--------//
+                        if (COuntEngineON == 0) {
+                            EngineOnEndDate = '';
+                            EngineOnStartDate = new Date(lstGroup[i].data[k].Date * 1000);
+                            COuntEngineON = COuntEngineON + 1;
+                        } else {
+                            EngineOnEndDate = new Date(lstGroup[i].data[k].Date * 1000);
+                        }
+
+                        //-------- Driving Time----------//
+                        if (CountDriving == 0 && lstGroup[i].data[k].Speed > 1) {
+                            DrivingEndTime = '';
+                            DrivingStartTime = new Date(lstGroup[i].data[k].Date * 1000);
+                            CountDriving = CountDriving + 1;
+
+                        } else if (CountDriving != 0 && lstGroup[i].data[k].Speed > 1) {
+                            DrivingEndTime = new Date(lstGroup[i].data[k].Date * 1000);
+                        }
+                        if (CountDriving != 0 && lstGroup[i].data[k].Speed < 1) {
+                            if (DrivingEndTime != '') {
+
+                                Drivinghours = Drivinghours + timeDifference(DrivingStartTime, DrivingEndTime, 'h');
+                                Drivingminutes = Drivingminutes + timeDifference(DrivingStartTime, DrivingEndTime, 'm');
+                                Drivingseconds = Drivingseconds + timeDifference(DrivingStartTime, DrivingEndTime, 's');
+
+                                if (Drivingseconds > 60) {
+                                    Drivingseconds = Drivingseconds - 60
+                                    Drivingminutes = Drivingminutes + 1;
+                                }
+                                if (Drivingminutes > 60) {
+                                    Drivingminutes = Drivingminutes - 60;
+                                    Drivinghours = Drivinghours + 1;
+                                }
+                            }
+
+                            CountDriving = 0;
+                        }
+
+                    } else if (lstGroup[i].data[k].IsEngine == 0) {
+
+                        if (COuntEngineON != 0) {
+                            if (EngineOnEndDate == null || EngineOnEndDate == undefined || EngineOnEndDate == '') {} else {
+                                EngineOnhours = EngineOnhours + timeDifference(EngineOnStartDate, EngineOnEndDate, 'h');
+                                EngineOnminutes = EngineOnminutes + timeDifference(EngineOnStartDate, EngineOnEndDate, 'm');
+                                EngineOnseconds = EngineOnseconds + timeDifference(EngineOnStartDate, EngineOnEndDate, 's');
+                                if (EngineOnseconds > 60) {
+                                    EngineOnseconds = EngineOnseconds - 60
+                                    EngineOnminutes = EngineOnminutes + 1;
+                                }
+                                if (EngineOnminutes > 60) {
+                                    EngineOnminutes = EngineOnminutes - 60;
+                                    EngineOnhours = EngineOnhours + 1;
+                                }
+                            }
+                            COuntEngineON = 0;
+
+                            if (CountDriving != 0) {
+                                if (DrivingEndTime == null || DrivingEndTime == undefined || DrivingEndTime == '') {} else {
+                                    Drivinghours = Drivinghours + timeDifference(DrivingStartTime, DrivingEndTime, 'h');
+                                    Drivingminutes = Drivingminutes + timeDifference(DrivingStartTime, DrivingEndTime, 'm');
+                                    Drivingseconds = Drivingseconds + timeDifference(DrivingStartTime, DrivingEndTime, 's');
+
+                                    if (Drivingseconds > 60) {
+                                        Drivingseconds = Drivingseconds - 60
+                                        Drivingminutes = Drivingminutes + 1;
+                                    }
+                                    if (Drivingminutes > 60) {
+                                        Drivingminutes = Drivingminutes - 60;
+                                        Drivinghours = Drivinghours + 1;
+                                    }
+                                }
+                                CountDriving = 0;
+                            }
+                        }
+
+                        //------ Engine Off Time ---------------------//
+                        if (COuntEngineOff == 0) {
+                            obj.parkinStartid = lstGroup[i].data[k].Id;
+                            obj.DeviceId = lstGroup[i].data[k].DeviceId;
+                            obj.ParkingTime = 0;
+                            StartDate = new Date(lstGroup[i].data[k].Date * 1000);
+                            COuntEngineOff = COuntEngineOff + 1;
+                        } else {
+                            obj.parkinEndid = lstGroup[i].data[k].Id;
+                            EndDate = new Date(lstGroup[i].data[k].Date * 1000);
+                        }
+                    }
+
+                }
+
+                if (COuntEngineON == 0 && COuntEngineOff == 0) {
+                    obj.ParkingTime = hours + ' hours, ' + minutes + ' minutes, and ' + seconds + ' seconds';
+                    obj.DrivingTime = EngineOnhours + ' hours, ' + EngineOnminutes + ' minutes, and ' + EngineOnseconds + ' seconds';
+                    Array.push(obj);
+
+                } else {
+                    if (COuntEngineON != 0) {
+                        if (EngineOnEndDate == '') {
+                            EngineOnhours = EngineOnhours + 0;
+                            EngineOnminutes = EngineOnminutes + 0;
+                            EngineOnseconds = EngineOnseconds + 0;
+                        } else {
+                            EngineOnhours = EngineOnhours + timeDifference(EngineOnStartDate, EngineOnEndDate, 'h');
+                            EngineOnminutes = EngineOnminutes + timeDifference(EngineOnStartDate, EngineOnEndDate, 'm');
+                            EngineOnseconds = EngineOnseconds + timeDifference(EngineOnStartDate, EngineOnEndDate, 's');
+                            if (EngineOnseconds > 60) {
+                                EngineOnseconds = EngineOnseconds - 60
+                                EngineOnminutes = EngineOnminutes + 1;
+                            }
+                            if (EngineOnminutes > 60) {
+                                EngineOnminutes = EngineOnminutes - 60;
+                                EngineOnhours = EngineOnhours + 1;
+                            }
+                        }
+                    }
+
+                    if (CountDriving != 0) {
+                        if (DrivingEndTime == '') {
+                            Drivinghours = Drivinghours + 0;
+                            Drivingminutes = Drivingminutes + 0;
+                            Drivingseconds = Drivingseconds + 0;
+                        } else {
+                            Drivinghours = Drivinghours + timeDifference(DrivingStartTime, DrivingEndTime, 'h');
+                            Drivingminutes = Drivingminutes + timeDifference(DrivingStartTime, DrivingEndTime, 'm');
+                            Drivingseconds = Drivingseconds + timeDifference(DrivingStartTime, DrivingEndTime, 's');
+
+                            if (Drivingseconds > 60) {
+                                Drivingseconds = Drivingseconds - 60
+                                Drivingminutes = Drivingminutes + 1;
+                            }
+                            if (Drivingminutes > 60) {
+                                Drivingminutes = Drivingminutes - 60;
+                                Drivinghours = Drivinghours + 1;
+                            }
+                        }
+                    }
+
+                    if (COuntEngineOff != 0) {
+                        if (EndDate == '') {
+                            hours = hours + 0;
+                            minutes = minutes + 0;
+                            seconds = seconds + 0;
+                        } else {
+                            hours = hours + timeDifference(StartDate, EndDate, 'h');
+                            minutes = minutes + timeDifference(StartDate, EndDate, 'm');
+                            seconds = seconds + timeDifference(StartDate, EndDate, 's');
+                            if (seconds > 60) {
+                                seconds = seconds - 60;
+                                minutes = minutes + 1;
+                            }
+                            if (minutes > 60) {
+                                minutes = minutes - 60;
+                                hours = hours + 1
+                            }
+                        }
+
+                    }
+                    //-----------------Average Speed-----------------/
+                    if (SpeedCo > 0) {
+                        obj.AverageSpeed = Speed / SpeedCo;
+                    } else {
+                        obj.AverageSpeed = 0
+                    }
+
+                    obj.ParkingTime = hours + ' hours, ' + minutes + ' minutes, and ' + seconds + ' seconds';
+                    obj.EnginOnTime = EngineOnhours + ' hours, ' + EngineOnminutes + ' minutes, and ' + EngineOnseconds + ' seconds';
+                    obj.DrivingTime = Drivinghours + ' hours, ' + Drivingminutes + ' minutes, and ' + Drivingseconds + ' seconds';
+
+                    Array.push(obj);
+                }
+            }
         }
+        response1 = Array;
+
         conf.rows = [];
         var BikeName = '';
         var DrivingTime = '';
@@ -1616,5 +1928,32 @@ function getGeocodeGenrate(lat, long, callback) {
 }
 
 
+function timeDifference(Start, End, flg) {
+
+    var one_day = 1000 * 60 * 60 * 24;
+    date1 = new Date(Start);
+    date2 = new Date(End);
+    var date1_ms = date1.getTime();
+    var date2_ms = date2.getTime();
+
+    var difference_ms = date2_ms - date1_ms;
+    difference_ms = difference_ms / 1000;
+    var seconds = Math.floor(difference_ms % 60);
+    difference_ms = difference_ms / 60;
+    var minutes = Math.floor(difference_ms % 60);
+    difference_ms = difference_ms / 60;
+    var hours = Math.floor(difference_ms % 24);
+    var days = Math.floor(difference_ms / 24);
+    if (flg == 'h') {
+        return hours;
+    } else if (flg == 'm') {
+        return minutes;
+    } else if (flg == 's') {
+        return seconds;
+    } else {
+        return days + ' days, ' + hours + ' hours, ' + minutes + ' minutes, and ' + seconds + ' seconds';
+    }
+
+}
 module.exports = router;
 //End of Tables
