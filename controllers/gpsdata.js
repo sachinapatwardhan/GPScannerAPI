@@ -1064,50 +1064,50 @@ router.get('/ExportAllWoringHourForReport', function(req, res) {
                 obj.HighestSpeed = 0;
                 obj.TolalMilage = 0;
                 for (var k = 0; k < lstGroup[i].data.length; k++) {
-                    if (k != 0 && moment(moment.utc(new Date(lstGroup[i].data[k - 1].Date * 1000)).toDate()).format('DD-MM-YYYY') != moment(moment.utc(new Date(lstGroup[i].data[k].Date * 1000)).toDate()).format('DD-MM-YYYY')) {
-                        if (CountDriving != 0) {
-                            if (DrivingEndTime == '') {
-                                Drivinghours = Drivinghours + 0;
-                                Drivingminutes = Drivingminutes + 0;
-                                Drivingseconds = Drivingseconds + 0;
-                            } else {
-                                Drivinghours = Drivinghours + timeDifference(DrivingStartTime, DrivingEndTime, 'h');
-                                Drivingminutes = Drivingminutes + timeDifference(DrivingStartTime, DrivingEndTime, 'm');
-                                Drivingseconds = Drivingseconds + timeDifference(DrivingStartTime, DrivingEndTime, 's');
+                    /* if (k != 0 && moment(moment.utc(new Date(lstGroup[i].data[k - 1].Date * 1000)).toDate()).format('DD-MM-YYYY') != moment(moment.utc(new Date(lstGroup[i].data[k].Date * 1000)).toDate()).format('DD-MM-YYYY')) {
+                         if (CountDriving != 0) {
+                             if (DrivingEndTime == '') {
+                                 Drivinghours = Drivinghours + 0;
+                                 Drivingminutes = Drivingminutes + 0;
+                                 Drivingseconds = Drivingseconds + 0;
+                             } else {
+                                 Drivinghours = Drivinghours + timeDifference(DrivingStartTime, DrivingEndTime, 'h');
+                                 Drivingminutes = Drivingminutes + timeDifference(DrivingStartTime, DrivingEndTime, 'm');
+                                 Drivingseconds = Drivingseconds + timeDifference(DrivingStartTime, DrivingEndTime, 's');
 
-                                if (Drivingseconds > 60) {
-                                    Drivingseconds = Drivingseconds - 60
-                                    Drivingminutes = Drivingminutes + 1;
-                                }
-                                if (Drivingminutes > 60) {
-                                    Drivingminutes = Drivingminutes - 60;
-                                    Drivinghours = Drivinghours + 1;
-                                }
-                            }
-                            CountDriving = 0;
-                        }
+                                 if (Drivingseconds > 60) {
+                                     Drivingseconds = Drivingseconds - 60
+                                     Drivingminutes = Drivingminutes + 1;
+                                 }
+                                 if (Drivingminutes > 60) {
+                                     Drivingminutes = Drivingminutes - 60;
+                                     Drivinghours = Drivinghours + 1;
+                                 }
+                             }
+                             CountDriving = 0;
+                         }
 
-                        if (COuntEngineOff != 0) {
-                            if (EndDate == '') {
-                                hours = hours + 0;
-                                minutes = minutes + 0;
-                                seconds = seconds + 0;
-                            } else {
-                                hours = hours + timeDifference(StartDate, EndDate, 'h');
-                                minutes = minutes + timeDifference(StartDate, EndDate, 'm');
-                                seconds = seconds + timeDifference(StartDate, EndDate, 's');
-                                if (seconds > 60) {
-                                    seconds = seconds - 60;
-                                    minutes = minutes + 1;
-                                }
-                                if (minutes > 60) {
-                                    minutes = minutes - 60;
-                                    hours = hours + 1
-                                }
-                            }
-                            COuntEngineOff = 0;
-                        }
-                    }
+                         if (COuntEngineOff != 0) {
+                             if (EndDate == '') {
+                                 hours = hours + 0;
+                                 minutes = minutes + 0;
+                                 seconds = seconds + 0;
+                             } else {
+                                 hours = hours + timeDifference(StartDate, EndDate, 'h');
+                                 minutes = minutes + timeDifference(StartDate, EndDate, 'm');
+                                 seconds = seconds + timeDifference(StartDate, EndDate, 's');
+                                 if (seconds > 60) {
+                                     seconds = seconds - 60;
+                                     minutes = minutes + 1;
+                                 }
+                                 if (minutes > 60) {
+                                     minutes = minutes - 60;
+                                     hours = hours + 1
+                                 }
+                             }
+                             COuntEngineOff = 0;
+                         }
+                     }*/
 
                     if ((k) != 0) {
 
