@@ -8,7 +8,6 @@ var momentz = require('moment-timezone');
 //gpsdata
 
 router.get('/GetAllGpsData', function(req, res) {
-
     var objParam = req.query;
     var objColumns = objParam.columns;
     var objOrderBy = objParam.order;
@@ -41,7 +40,6 @@ router.get('/GetAllGpsData', function(req, res) {
 
     var EndDate = convertdateUTCformat(objParam.EndDate);
     var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
-    console.log(unixStartdate, "-@@-", unixEndDate)
     if (objParam.StartDate != '' && objParam.EndDate != '') {
         var obj = new Object();
         obj['Date'] = {
@@ -146,7 +144,7 @@ router.get('/GetAllAlarm', function(req, res) {
         };
         search['$and'].push(obj2);
     }
-    console.log(req.query)
+
     var StartDate = convertdateUTCformat(objParam.StartDate);
     var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
 
@@ -190,7 +188,6 @@ router.get('/GetAllAlarm', function(req, res) {
 })
 
 router.get('/GetAllGpsDevice', function(req, res) {
-
     GpsDevice.findAll().then(function(response) {
         res.json(response);
     }).catch(function(err) {
@@ -278,7 +275,6 @@ router.get('/ExportAllGpsData', function(req, res) {
 
     var EndDate = convertdateUTCformat(objParam.EndDate);
     var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
-    console.log(unixStartdate, "-@-", unixEndDate)
     search['$and'] = [];
     var DeviceId = objParam.DeviceId;
     if (DeviceId != null && DeviceId != '' && DeviceId != undefined && DeviceId != "All") {
