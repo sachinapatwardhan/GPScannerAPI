@@ -205,7 +205,8 @@ router.get('/ExportDetailTripReport', function(req, res) {
                 //     }
                 // } else {
                 // Address = "N/A";
-                row.push(Name.toString(), TIme.toString(), /*DeviceStatus.toString(),*/ AssetStatus.toString(), Speed, Fuleper, Fulelett, Mileage, Temp, GPSSignal.toString(), Direction, Latitude, Longitude);
+                // row.push(Name.toString(), TIme.toString(), /*DeviceStatus.toString(),*/ AssetStatus.toString(), Speed, Fuleper, Fulelett, Mileage, Temp, GPSSignal.toString(), Direction, Latitude, Longitude);
+                row.push(Name.toString(), TIme.toString(), AssetStatus.toString(), Speed, Direction, Latitude, Longitude);
                 // }
                 conf.rows.push(row);
                 // GetData(i + 1);
@@ -262,7 +263,8 @@ router.get('/ExportDetailTripReport', function(req, res) {
                 if (response[i].Longitude != null && response[i].Longitude != '' && response[i].Longitude != undefined) {
                     Longitude = response[i].Longitude;
                 }
-                row.push(Name.toString(), TIme.toString(), /*DeviceStatus.toString(),*/ AssetStatus.toString(), Speed, /*Fuleper, Fulelett, Mileage, Temp, GPSSignal.toString(),*/ Direction, Latitude, Longitude);
+                // row.push(Name.toString(), TIme.toString(), /*DeviceStatus.toString(),*/ AssetStatus.toString(), Speed, /*Fuleper, Fulelett, Mileage, Temp, GPSSignal.toString(),*/ Direction, Latitude, Longitude);
+                row.push(Name.toString(), TIme.toString(), AssetStatus.toString(), Speed, Direction, Latitude, Longitude);
                 conf.rows.push(row);
                 // GetData(i + 1);
             }
