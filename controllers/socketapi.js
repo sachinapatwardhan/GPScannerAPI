@@ -493,7 +493,9 @@ global.Command9955 = function(line, Callback) {
         var AD2 = lstAD[2];
         var Odometer = lstGPSAllData[5];
         var RFID = lstGPSAllData[6];
-
+        if (AD2 == undefined) {
+            AD2 = 0;
+        }
 
         var day = parseInt(Date1.substring(0, 2));
         var month = parseInt(Date1.substring(2, 4));
@@ -570,17 +572,18 @@ global.Command9955 = function(line, Callback) {
         //check <5 min time difference then only store data otherwise neglect
         var systemtime = new Date();
         var DeviceTime = new Date(GPSDateTime + " UTC");
-        console.log(systemtime)
-        console.log(DeviceTime)
+        // console.log(systemtime)
+        // console.log(DeviceTime)
         var timediffernce = parseInt((DeviceTime - systemtime) / 1000);
         console.log("Time Diff = " + timediffernce)
+
         if (timediffernce <= 3600) {
 
             // //Insert data in gps
             var query = "INSERT INTO tblgpsdata (Datetime,Latitude,Longitude,GPSPositioning,Speed,Direction,Status,DeviceId,IsRelayToStopTheCar,IsSirenSound,IsUserDefined,IsLockTheDoor,IsUnlockTheDoor,IsSOS,IsWiringForAntiTamper,IsDoor,IsEngine,IsOriginalSirenTriggeringStatus,CreatedDate,HDOP,Altitude,AD1,AD2,OdoMeter,Date ) " +
                 "VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + inputoutputSTatus + "', '" + DeviceId + "'," + IsRelayToStopTheCar + "," + IsSirenSound + "," + IsUserDefined + "," + IsLockTheDoor + "," + IsUnlockTheDoor + "," + IsSOS + "," + IsWiringForAntiTamper + "," + IsDoor + "," + IsEngine + "," + IsOriginalSirenTriggeringStatus + ",'" + CurrentDate + "','" + HDOP + "','" + altitude + "','" + AD1 + "','" + AD2 + "','" + Odometer + "','" + unixDateStemp + "');";
             connection.query(query, function(err, rows, fields) {
-
+                // console.log(err);
                 var objConnection = {
                     Position: Position,
                     Speed: Speed,
