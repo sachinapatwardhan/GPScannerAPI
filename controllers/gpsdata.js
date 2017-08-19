@@ -8,6 +8,7 @@ var momentz = require('moment-timezone');
 //gpsdata
 
 router.get('/GetAllGpsData', function(req, res) {
+
     var objParam = req.query;
     var objColumns = objParam.columns;
     var objOrderBy = objParam.order;
@@ -40,6 +41,7 @@ router.get('/GetAllGpsData', function(req, res) {
 
     var EndDate = convertdateUTCformat(objParam.EndDate);
     var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
+    console.log(unixStartdate, "-@@-", unixEndDate)
     if (objParam.StartDate != '' && objParam.EndDate != '') {
         var obj = new Object();
         obj['Date'] = {
@@ -144,7 +146,7 @@ router.get('/GetAllAlarm', function(req, res) {
         };
         search['$and'].push(obj2);
     }
-
+    console.log(req.query)
     var StartDate = convertdateUTCformat(objParam.StartDate);
     var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
 
@@ -188,6 +190,7 @@ router.get('/GetAllAlarm', function(req, res) {
 })
 
 router.get('/GetAllGpsDevice', function(req, res) {
+
     GpsDevice.findAll().then(function(response) {
         res.json(response);
     }).catch(function(err) {
@@ -275,7 +278,16 @@ router.get('/ExportAllGpsData', function(req, res) {
 
     var EndDate = convertdateUTCformat(objParam.EndDate);
     var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
+    console.log(unixStartdate, "-@-", unixEndDate)
     search['$and'] = [];
+    var DeviceId = objParam.DeviceId;
+    if (DeviceId != null && DeviceId != '' && DeviceId != undefined && DeviceId != "All") {
+        var obj = new Object();
+        obj['DeviceId'] = {
+            $eq: DeviceId
+        };
+        search['$and'].push(obj);
+    }
     if (objParam.StartDate != '' && objParam.EndDate != '') {
         var obj = new Object();
         obj['Date'] = {
@@ -413,6 +425,9 @@ router.get('/ExportAlarm', function(req, res) {
     var conf = {};
     conf.name = "Sheet1";
     conf.cols = [{
+        caption: 'Date Time',
+        type: 'string'
+    }, {
         caption: 'AlarmCode',
         type: 'string'
     }, {
@@ -440,17 +455,41 @@ router.get('/ExportAlarm', function(req, res) {
     var objParam = req.query;
     var Orderby = 'CreatedDate asc';
     var search = {};
-
-
+    console.log(req.query)
     search['$and'] = [];
     var DeviceId = objParam.DeviceId;
-    if (DeviceId != null && DeviceId != '' && DeviceId != undefined) {
+    if (DeviceId != null && DeviceId != '' && DeviceId != undefined && DeviceId != "All") {
         var obj = new Object();
         obj['DeviceId'] = {
             $eq: DeviceId
         };
         search['$and'].push(obj);
     }
+    var StartDate = convertdateUTCformat(objParam.StartDate);
+    var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
+
+    var EndDate = convertdateUTCformat(objParam.EndDate);
+    var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
+
+    /*if (objParam.StartDate != '' && objParam.EndDate != '') {
+        var obj = new Object();
+        obj['Date'] = {
+            $between: [unixStartdate, unixEndDate]
+        };
+        search['$and'].push(obj);
+    } else if (objParam.StartDate != null && objParam.StartDate != '') {
+        var obj = new Object();
+        obj['Date'] = {
+            $gt: unixStartdate
+        };
+        search['$and'].push(obj);
+    } else if (objParam.EndDate != null && objParam.EndDate != '') {
+        var obj = new Object();
+        obj['Date'] = {
+            $lt: unixEndDate
+        };
+        search['$and'].push(obj);
+    }*/
     var StartDate = convertdateUTCformat(objParam.StartDate);
     var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
 
@@ -478,7 +517,7 @@ router.get('/ExportAlarm', function(req, res) {
     }
     var AlarmCode = objParam.AlarmCode;
 
-    if (AlarmCode != null && AlarmCode != undefined && AlarmCode != '') {
+    if (AlarmCode != null && AlarmCode != undefined && AlarmCode != '' && AlarmCode != "All") {
         var obj = new Object();
         obj['AlarmCode'] = {
             $eq: AlarmCode
@@ -498,11 +537,17 @@ router.get('/ExportAlarm', function(req, res) {
         var GPSPositioning = '';
         var Status = '';
         var CreatedDate = '';
+        var DisplayDate = '';
         GetAlarmData(0);
 
         function GetAlarmData(i) {
             if (i < response.length) {
                 var row = [];
+                if (response[i].Date != null && response[i].Date != '' && response[i].Date != undefined) {
+                    var Dates = new Date(response[i].Date * 1000);
+                    DisplayDate = moment(Dates).format('DD-MM-YYYY hh:mm:ss a');
+                }
+
                 if (response[i].AlarmCode != null && response[i].AlarmCode != '' && response[i].AlarmCode != undefined) {
                     var list = AlarmCodedata();
                     var obj = u.findWhere(list, { AlarmCode: response[i].AlarmCode });
@@ -535,7 +580,7 @@ router.get('/ExportAlarm', function(req, res) {
                 }
 
 
-                row.push(AlarmCode, DeviceId, Latitude, Longitude, GPSPositioning, Status, CreatedDate);
+                row.push(DisplayDate, AlarmCode, DeviceId, Latitude, Longitude, GPSPositioning, Status, CreatedDate);
                 conf.rows.push(row);
                 GetAlarmData(i + 1);
             } else {
