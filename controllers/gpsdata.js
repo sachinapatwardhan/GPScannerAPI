@@ -1036,6 +1036,9 @@ router.get('/ExportAllWoringHourForReport', function(req, res) {
                 IsDriving = 0;
                 TotalDrivingtime = TotalDrivingtime + calcDateDiffCalInSec(moment(group.length - 1), moment(group[DrivingStartPosition].Date));
             }
+            if (TotalSpeedRecord == 0) {
+                TotalSpeedRecord = 1;
+            }
 
             var TotalDrivingTimeDisplay = calhrminsecfromsec(TotalDrivingtime);
             var TotalParkingTimeDisplay = calhrminsecfromsec(TotalParkingtime);
