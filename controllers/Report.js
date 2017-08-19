@@ -421,13 +421,12 @@ router.get('/ExportFenceReport', function(req, res) {
     }
 
     if (search != "") {
-        search += " And tblalarm.AlarmCode IN ('06', '66')";
+        search += " And tblalarm.AlarmCode IN ('6', '66')";
     } else {
-        search += " Where tblalarm.AlarmCode IN ('06', '66')";
+        search += " Where tblalarm.AlarmCode IN ('6', '66')";
     }
 
     var query = "Select tblalarm.* , tblvehicle.iduser, tblvehicle.Name, tblvehicle.IsOnline from tblalarm left join tblvehicle On tblvehicle.deviceid = tblalarm.DeviceId " + search + Orderby;
-
     connection.query(query, function(err, response) {
         if (response != undefined) {
             conf.rows = [];
