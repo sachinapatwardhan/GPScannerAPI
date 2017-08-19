@@ -35,13 +35,11 @@ router.get('/GetAllGpsData', function(req, res) {
         };
         search['$and'].push(obj);
     }
-
     var StartDate = convertdateUTCformat(objParam.StartDate);
     var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
 
     var EndDate = convertdateUTCformat(objParam.EndDate);
     var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
-
     if (objParam.StartDate != '' && objParam.EndDate != '') {
         var obj = new Object();
         obj['Date'] = {
@@ -269,43 +267,35 @@ router.get('/ExportAllGpsData', function(req, res) {
 
     var objParam = req.query;
     var Orderby = 'CreatedDate asc';
+
     var search = {};
 
+    var StartDate = convertdateUTCformat(objParam.StartDate);
+    var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
 
+    var EndDate = convertdateUTCformat(objParam.EndDate);
+    var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
     search['$and'] = [];
-    var DeviceId = objParam.DeviceId;
-    if (DeviceId != null && DeviceId != '' && DeviceId != undefined) {
+    if (objParam.StartDate != '' && objParam.EndDate != '') {
         var obj = new Object();
-        obj['DeviceId'] = {
-            $eq: DeviceId
+        obj['Date'] = {
+            $between: [unixStartdate, unixEndDate]
+        };
+        search['$and'].push(obj);
+    } else if (objParam.StartDate != null && objParam.StartDate != '') {
+        var obj = new Object();
+        obj['Date'] = {
+            $gt: unixStartdate
+        };
+        search['$and'].push(obj);
+    } else if (objParam.EndDate != null && objParam.EndDate != '') {
+        var obj = new Object();
+        obj['Date'] = {
+            $lt: unixEndDate
         };
         search['$and'].push(obj);
     }
-    var StartDate = objParam.StartDate;
-    var EndDate = objParam.EndDate;
-    if (StartDate != '' && EndDate != '' && StartDate != undefined && EndDate != undefined) {
-        StartDate = convertdateUTCformat(StartDate);
-        EndDate = convertdateUTCformat(EndDate);
-        var obj = new Object();
-        obj['CreatedDate'] = {
-            $between: [StartDate, EndDate]
-        };
-        search['$and'].push(obj);
-    } else if (StartDate != null && StartDate != '' && StartDate != undefined) {
-        StartDate = convertdateUTCformat(StartDate);
-        var obj = new Object();
-        obj['CreatedDate'] = {
-            $gt: StartDate
-        };
-        search['$and'].push(obj);
-    } else if (EndDate != null && EndDate != '' && EndDate != undefined) {
-        EndDate = convertdateUTCformat(EndDate);
-        var obj = new Object();
-        obj['CreatedDate'] = {
-            $lt: EndDate
-        };
-        search['$and'].push(obj);
-    }
+
 
     Gps.findAll({
         where: search,
