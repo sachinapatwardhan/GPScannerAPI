@@ -1280,8 +1280,11 @@ router.get('/ExportParkingReport', function(req, res) {
             }
 
         }
+        if (Array.length > 0) {
+            var data = u.sortBy(Array, function(num) { return num.StartTime }).reverse();
+            Array = data;
+        }
         GetData(0);
-
 
         function GetData(i) {
             if (i < Array.length) {
