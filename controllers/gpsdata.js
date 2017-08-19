@@ -411,7 +411,7 @@ router.get('/ExportAllGpsData', function(req, res) {
             } else {
                 var result = nodeExcel.execute(conf);
                 res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-                res.setHeader("Content-Disposition", "attachment; filename=GpdData.xlsx");
+                res.setHeader("Content-Disposition", "attachment; filename=GPSData.xlsx");
                 res.end(result, 'binary');
             }
 
