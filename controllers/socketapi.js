@@ -451,12 +451,6 @@ global.Command5001 = function(line, Callback) {
     }
 };
 
-var systemtime = new Date();
-var DeviceTime = new Date("2017-08-19 04:57:00 UTC");
-console.log(systemtime)
-console.log(DeviceTime)
-console.log(parseInt((DeviceTime - systemtime) / 1000))
-
 //Command9955 - GPS Command
 global.Command9955 = function(line, Callback) {
     console.log("GPS Data = " + line);
@@ -576,9 +570,11 @@ global.Command9955 = function(line, Callback) {
         //check <5 min time difference then only store data otherwise neglect
         var systemtime = new Date();
         var DeviceTime = new Date(GPSDateTime + " UTC");
-
+        console.log(systemtime)
+        console.log(DeviceTime)
         var timediffernce = parseInt((DeviceTime - systemtime) / 1000);
-        if (timediffernce <= 300) {
+        console.log("Time Diff = " + timediffernce)
+        if (timediffernce <= 3600) {
 
             // //Insert data in gps
             var query = "INSERT INTO tblgpsdata (Datetime,Latitude,Longitude,GPSPositioning,Speed,Direction,Status,DeviceId,IsRelayToStopTheCar,IsSirenSound,IsUserDefined,IsLockTheDoor,IsUnlockTheDoor,IsSOS,IsWiringForAntiTamper,IsDoor,IsEngine,IsOriginalSirenTriggeringStatus,CreatedDate,HDOP,Altitude,AD1,AD2,OdoMeter,Date ) " +

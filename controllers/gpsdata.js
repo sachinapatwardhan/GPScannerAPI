@@ -873,7 +873,7 @@ router.get('/GetAllWoringHourForReport', function(req, res) {
     }
     // WhereCondition += " And Gps.IsEngine = false";
     var query = "select " +
-        "gps.*,Bike.*" +
+        "gps.DeviceId,gps.Date,gps.Speed,gps.IsEngine,gps.Latitude,gps.Longitude,gps.GPSPositioning,Bike.Name,Bike.id,Bike.deviceid " +
         "from tblvehicle  As Bike " +
         "inner  join tblgpsdata as gps " +
         "on " +
