@@ -882,7 +882,91 @@ router.get('/GetAllWoringHourForReport', function(req, res) {
         " order by gps.Date Asc";
     connection.query(query, function(err, response, fields) {
         if (!err) {
-            res.json(response)
+            // res.json(response)
+            var GroupByDevice = u.groupBy(response, function(data) { return data.DeviceId; });
+
+            var lstGroup = u.map(GroupByDevice, function(group, DeviceId) {
+                var IsDriving = 0;
+                var DrivingStartPosition = 0;
+                var TotalDrivingtime = 0;
+                var IsParking = 0;
+                var ParkingStartPosition = 0;
+                var TotalParkingtime = 0;
+                var TotalSpeed = 0;
+                var TotalSpeedRecord = 0;
+                var HighestSpeed = 0;
+                var TotalMileage = 0;
+                for (var i = 0; i < group.length; i++) {
+                    group[i].Date = new Date(group[i].Date * 1000);
+
+                    if (group[i].GPSPositioning == "A" && group[i].IsEngine == true) {
+                        if (HighestSpeed < parseFloat(group[i].Speed)) {
+                            HighestSpeed = parseFloat(group[i].Speed);
+                        }
+                    }
+                    if (group[i].IsEngine == true) {
+                        if ((i + 1) < group.length) {
+                            TotalMileage = TotalMileage + parseFloat(distance(parseFloat(group[i].Latitude), parseFloat(group[i].Longitude), parseFloat(group[i + 1].Latitude), parseFloat(group[i + 1].Longitude)))
+                        }
+                    }
+                    if (group[i].IsEngine == true && parseFloat(group[i].Speed) > 1) {
+                        if (IsDriving == 0) {
+                            DrivingStartPosition = i;
+                        }
+                        IsDriving = 1;
+                        if (IsParking == 1) {
+                            IsParking = 0;
+                            TotalParkingtime = TotalParkingtime + calcDateDiffCalInSec(moment(group[i].Date), moment(group[ParkingStartPosition].Date));
+                        }
+
+                        if (group[i].GPSPositioning == "A") {
+                            TotalSpeed = TotalSpeed + parseFloat(group[i].Speed);
+                            TotalSpeedRecord = TotalSpeedRecord + 1;
+                        }
+
+                    } else {
+                        if (IsDriving == 1) {
+                            IsDriving = 0;
+                            TotalDrivingtime = TotalDrivingtime + calcDateDiffCalInSec(moment(group[i].Date), moment(group[DrivingStartPosition].Date));
+                        }
+
+                        if (IsParking == 0) {
+                            ParkingStartPosition = i;
+                        }
+                        IsParking = 1;
+                        // console.log(ParkingStartPosition)
+                    }
+                }
+
+                if (IsParking == 1) {
+                    IsParking = 0;
+                    TotalParkingtime = TotalParkingtime + calcDateDiffCalInSec(moment(group[group.length - 1].Date), moment(group[ParkingStartPosition].Date));
+                }
+
+                if (IsDriving == 1) {
+                    IsDriving = 0;
+                    TotalDrivingtime = TotalDrivingtime + calcDateDiffCalInSec(moment(group.length - 1), moment(group[DrivingStartPosition].Date));
+                }
+                if (TotalSpeedRecord == 0) {
+                    TotalSpeedRecord = 1;
+                }
+
+                var TotalDrivingTimeDisplay = calhrminsecfromsec(TotalDrivingtime);
+                var TotalParkingTimeDisplay = calhrminsecfromsec(TotalParkingtime);
+                var AverageSpeed = (TotalSpeed / TotalSpeedRecord).toFixed(2);
+
+                return {
+                    // data: group,
+                    Name: group[0].Name,
+                    DeviceId: DeviceId,
+                    DrivingTime: TotalDrivingTimeDisplay,
+                    Parkingtime: TotalParkingTimeDisplay,
+                    AverageSpeed: AverageSpeed + " km/h",
+                    HighestSpeed: HighestSpeed.toFixed(2) + " km/h",
+                    TotalMileage: TotalMileage.toFixed(2) + " km"
+                }
+            });
+            res.json(lstGroup)
         } else {
             res.json([])
         }
