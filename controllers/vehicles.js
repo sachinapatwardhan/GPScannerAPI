@@ -25,6 +25,7 @@ router.get('/GetAllDynamicVehicle', function(req, res) {
         search = search + 'vehicle.deviceid like "%' + objSearch + '%" or ';
         search = search + 'vehicle.BatteryPercentage like "%' + objSearch + '%" or ';
         search = search + 'vehicle.HandshakDatetime like "%' + objSearch + '%" or ';
+        search = search + 'vehicle.DeviceType like "%' + objSearch + '%" or ';
         search = search + 'vehicle.IsOnline like "%' + objSearch + '%") ';
     }
 
