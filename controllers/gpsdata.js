@@ -241,26 +241,27 @@ router.get('/ExportAllGpsData', function(req, res) {
         }, {
             caption: 'IsDoor',
             type: 'string'
-        }, {
-            caption: 'IsEngine',
-            type: 'string'
-        }, {
-            caption: 'CreatedDate',
-            type: 'string'
-        }, {
-            caption: 'Altitude',
-            type: 'string'
-        }, {
-            caption: 'AD1',
-            type: 'string'
         },
-        {
-            caption: 'AD2',
-            type: 'string'
-        }, {
-            caption: 'OdoMeter',
-            type: 'string'
-        }
+        /*{
+                   caption: 'IsEngine',
+                   type: 'string'
+               }, {
+                   caption: 'CreatedDate',
+                   type: 'string'
+               }, {
+                   caption: 'Altitude',
+                   type: 'string'
+               }, {
+                   caption: 'AD1',
+                   type: 'string'
+               },
+               {
+                   caption: 'AD2',
+                   type: 'string'
+               }, {
+                   caption: 'OdoMeter',
+                   type: 'string'
+               }*/
     ];
 
 
