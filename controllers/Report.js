@@ -122,161 +122,163 @@ router.get('/ExportDetailTripReport', function(req, res) {
             }
             //response.push(response[i]);
         }
-        GetData(0);
+        // GetData(0);
 
 
-        function GetData(i) {
-            if (i < response.length) {
-                var row = [];
-                var Name = 'N/A';
-                var TIme = 'N/A';
-                // var Address = 'N/A';
-                var DeviceStatus = 'N/A';
-                var AssetStatus = 'N/A';
-                var Speed = 0.00;
-                var Fuleper = 0.00;
-                var Fulelett = 0.00;
-                var Mileage = 0.00;
-                var Temp = 0.00;
-                var GPSSignal = 'N/A';
-                var Direction = 0.00;
-                var Latitude = 0.00;
-                var Longitude = 0.00;
+        //function GetData(i) {
+        //if (i < response.length) {
+        for (var i = 0; i < response.length; i++) {
+            var row = [];
+            var Name = 'N/A';
+            var TIme = 'N/A';
+            // var Address = 'N/A';
+            var DeviceStatus = 'N/A';
+            var AssetStatus = 'N/A';
+            var Speed = 0.00;
+            var Fuleper = 0.00;
+            var Fulelett = 0.00;
+            var Mileage = 0.00;
+            var Temp = 0.00;
+            var GPSSignal = 'N/A';
+            var Direction = 0.00;
+            var Latitude = 0.00;
+            var Longitude = 0.00;
 
-                if (response[i].Latitude != undefined && response[i].Latitude != null && response[i].Latitude != '' && response[i].Longitude != undefined && response[i].Longitude != null && response[i].Longitude != '') {
-                    // geocoder.reverse({ lat: response[i].Latitude, lon: response[i].Longitude }, function(err, resAddress) {
-                    if (response[i].Date != null && response[i].Date != '' && response[i].Date != undefined) {
-                        // Datetime = dateformat(response[i].Datetime, 2);
-                        TIme = momentz.utc(new Date(response[i].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a')
-                    }
-                    if (response[i].Name != null && response[i].Name != '' && response[i].Name != undefined) {
-                        Name = response[i].Name;
-                    }
-
-                    if (response[i].DeviceStatus != null && response[i].DeviceStatus != '' && response[i].DeviceStatus != undefined) {
-                        DeviceStatus = response[i].DeviceStatus;
-                    }
-
-                    if (response[i].IsEngine != null && response[i].IsEngine != '' && response[i].IsEngine != undefined) {
-                        AssetStatus = response[i].IsEngine;
-                    }
-
-                    if (response[i].Speed != null && response[i].Speed != '' && response[i].Speed != undefined) {
-                        Speed = parseFloat(response[i].Speed).toFixed(2);
-                    }
-
-                    if (response[i].Fuleper != null && response[i].Fuleper != '' && response[i].Fuleper != undefined) {
-                        Fuleper = parseFloat(response[i].Fuleper).toFixed(2);
-                    }
-                    if (response[i].Fulelett != null && response[i].Fulelett != '' && response[i].Fulelett != undefined) {
-                        Fulelett = parseFloat(response[i].Fulelett).toFixed(2);
-                    }
-
-
-                    if (response[i].Mileage != null && response[i].Mileage != '' && response[i].Mileage != undefined) {
-                        Mileage = parseFloat(response[i].Mileage).toFixed(2);
-                    }
-                    if (response[i].Temp != null && response[i].Temp != '' && response[i].Temp != undefined) {
-                        Temp = parseFloat(response[i].Temp).toFixed(2);
-                    }
-
-                    if (response[i].GPSSignal != null && response[i].GPSSignal != '' && response[i].GPSSignal != undefined) {
-                        GPSSignal = parseFloat(response[i].GPSSignal).toFixed(2);
-                    }
-
-                    if (response[i].Direction != null && response[i].Direction != '' && response[i].Direction != undefined) {
-                        Direction = response[i].Direction;
-                    }
-                    if (response[i].Latitude != null && response[i].Latitude != '' && response[i].Latitude != undefined) {
-                        Latitude = response[i].Latitude;
-                    }
-                    if (response[i].Longitude != null && response[i].Longitude != '' && response[i].Longitude != undefined) {
-                        Longitude = response[i].Longitude;
-                    }
-
-                    // if (err == null && resAddress != null) {
-                    //     if (resAddress.length > 0) {
-                    //         Address = resAddress[0].formattedAddress;
-                    //         row.push(Name.toString(), TIme.toString(), Address.toString(), DeviceStatus.toString(), AssetStatus.toString(), Speed, Fuleper, Fulelett, Mileage, Temp, GPSSignal.toString(), Direction, Latitude, Longitude);
-                    //     } else {
-                    //         Address = "N/A";
-                    //         row.push(Name.toString(), TIme.toString(), Address.toString(), DeviceStatus.toString(), AssetStatus.toString(), Speed, Fuleper, Fulelett, Mileage, Temp, GPSSignal.toString(), Direction, Latitude, Longitude);
-                    //     }
-                    // } else {
-                    // Address = "N/A";
-                    row.push(Name.toString(), TIme.toString(), /*DeviceStatus.toString(),*/ AssetStatus.toString(), Speed, Fuleper, Fulelett, Mileage, Temp, GPSSignal.toString(), Direction, Latitude, Longitude);
-                    // }
-                    conf.rows.push(row);
-                    GetData(i + 1);
-                    // })
-                } else {
-                    if (response[i].Date != null && response[i].Date != '' && response[i].Date != undefined) {
-                        // Datetime = dateformat(response[i].Datetime, 2);
-                        TIme = momentz.utc(new Date(response[i].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a')
-                    }
-                    if (response[i].Name != null && response[i].Name != '' && response[i].Name != undefined) {
-                        Name = response[i].Name;
-                    }
-                    if (response[i].Address != null && response[i].Address != '' && response[i].Address != undefined) {
-                        Address = response[i].Address;
-                    }
-
-                    if (response[i].DeviceStatus != null && response[i].DeviceStatus != '' && response[i].DeviceStatus != undefined) {
-                        DeviceStatus = response[i].DeviceStatus;
-                    }
-
-                    if (response[i].IsEngine != null && response[i].IsEngine != '' && response[i].IsEngine != undefined) {
-                        AssetStatus = response[i].IsEngine;
-                    }
-
-                    if (response[i].Speed != null && response[i].Speed != '' && response[i].Speed != undefined) {
-                        Speed = parseFloat(response[i].Speed).toFixed(2);
-                    }
-
-                    if (response[i].Fuleper != null && response[i].Fuleper != '' && response[i].Fuleper != undefined) {
-                        Fuleper = parseFloat(response[i].Fuleper).toFixed(2);
-                    }
-                    if (response[i].Fulelett != null && response[i].Fulelett != '' && response[i].Fulelett != undefined) {
-                        Fulelett = parseFloat(response[i].Fulelett).toFixed(2);
-                    }
-
-
-                    if (response[i].Mileage != null && response[i].Mileage != '' && response[i].Mileage != undefined) {
-                        Mileage = parseFloat(response[i].Mileage).toFixed(2);
-                    }
-                    if (response[i].Temp != null && response[i].Temp != '' && response[i].Temp != undefined) {
-                        Temp = parseFloat(response[i].Temp).toFixed(2);
-                    }
-
-                    if (response[i].GPSSignal != null && response[i].GPSSignal != '' && response[i].GPSSignal != undefined) {
-                        GPSSignal = parseFloat(response[i].GPSSignal).toFixed(2);
-                    }
-
-                    if (response[i].Direction != null && response[i].Direction != '' && response[i].Direction != undefined) {
-                        Direction = response[i].Direction;
-                    }
-                    if (response[i].Latitude != null && response[i].Latitude != '' && response[i].Latitude != undefined) {
-                        Latitude = response[i].Latitude;
-                    }
-                    if (response[i].Longitude != null && response[i].Longitude != '' && response[i].Longitude != undefined) {
-                        Longitude = response[i].Longitude;
-                    }
-                    row.push(Name.toString(), TIme.toString(), /*DeviceStatus.toString(),*/ AssetStatus.toString(), Speed, /*Fuleper, Fulelett, Mileage, Temp, GPSSignal.toString(),*/ Direction, Latitude, Longitude);
-                    conf.rows.push(row);
-                    GetData(i + 1);
+            if (response[i].Latitude != undefined && response[i].Latitude != null && response[i].Latitude != '' && response[i].Longitude != undefined && response[i].Longitude != null && response[i].Longitude != '') {
+                // geocoder.reverse({ lat: response[i].Latitude, lon: response[i].Longitude }, function(err, resAddress) {
+                if (response[i].Date != null && response[i].Date != '' && response[i].Date != undefined) {
+                    // Datetime = dateformat(response[i].Datetime, 2);
+                    TIme = momentz.utc(new Date(response[i].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a')
                 }
-                /*console.log(Name.toString(), TIme.toString(), Address.toString(), DeviceStatus.toString(), AssetStatus.toString(), Speed, Fuleper, Fulelett, Mileage, Temp, GPSSignal.toString(), Direction, Latitude, Longitude);
+                if (response[i].Name != null && response[i].Name != '' && response[i].Name != undefined) {
+                    Name = response[i].Name;
+                }
 
-                row.push(Name.toString(), TIme.toString(), Address.toString(), DeviceStatus.toString(), AssetStatus.toString(), Speed, Fuleper, Fulelett, Mileage, Temp, GPSSignal.toString(), Direction, Latitude, Longitude);
+                if (response[i].DeviceStatus != null && response[i].DeviceStatus != '' && response[i].DeviceStatus != undefined) {
+                    DeviceStatus = response[i].DeviceStatus;
+                }
+
+                if (response[i].IsEngine != null && response[i].IsEngine != '' && response[i].IsEngine != undefined) {
+                    AssetStatus = response[i].IsEngine;
+                }
+
+                if (response[i].Speed != null && response[i].Speed != '' && response[i].Speed != undefined) {
+                    Speed = parseFloat(response[i].Speed).toFixed(2);
+                }
+
+                if (response[i].Fuleper != null && response[i].Fuleper != '' && response[i].Fuleper != undefined) {
+                    Fuleper = parseFloat(response[i].Fuleper).toFixed(2);
+                }
+                if (response[i].Fulelett != null && response[i].Fulelett != '' && response[i].Fulelett != undefined) {
+                    Fulelett = parseFloat(response[i].Fulelett).toFixed(2);
+                }
+
+
+                if (response[i].Mileage != null && response[i].Mileage != '' && response[i].Mileage != undefined) {
+                    Mileage = parseFloat(response[i].Mileage).toFixed(2);
+                }
+                if (response[i].Temp != null && response[i].Temp != '' && response[i].Temp != undefined) {
+                    Temp = parseFloat(response[i].Temp).toFixed(2);
+                }
+
+                if (response[i].GPSSignal != null && response[i].GPSSignal != '' && response[i].GPSSignal != undefined) {
+                    GPSSignal = parseFloat(response[i].GPSSignal).toFixed(2);
+                }
+
+                if (response[i].Direction != null && response[i].Direction != '' && response[i].Direction != undefined) {
+                    Direction = response[i].Direction;
+                }
+                if (response[i].Latitude != null && response[i].Latitude != '' && response[i].Latitude != undefined) {
+                    Latitude = response[i].Latitude;
+                }
+                if (response[i].Longitude != null && response[i].Longitude != '' && response[i].Longitude != undefined) {
+                    Longitude = response[i].Longitude;
+                }
+
+                // if (err == null && resAddress != null) {
+                //     if (resAddress.length > 0) {
+                //         Address = resAddress[0].formattedAddress;
+                //         row.push(Name.toString(), TIme.toString(), Address.toString(), DeviceStatus.toString(), AssetStatus.toString(), Speed, Fuleper, Fulelett, Mileage, Temp, GPSSignal.toString(), Direction, Latitude, Longitude);
+                //     } else {
+                //         Address = "N/A";
+                //         row.push(Name.toString(), TIme.toString(), Address.toString(), DeviceStatus.toString(), AssetStatus.toString(), Speed, Fuleper, Fulelett, Mileage, Temp, GPSSignal.toString(), Direction, Latitude, Longitude);
+                //     }
+                // } else {
+                // Address = "N/A";
+                row.push(Name.toString(), TIme.toString(), /*DeviceStatus.toString(),*/ AssetStatus.toString(), Speed, Fuleper, Fulelett, Mileage, Temp, GPSSignal.toString(), Direction, Latitude, Longitude);
+                // }
                 conf.rows.push(row);
-                GetData(i + 1);*/
+                // GetData(i + 1);
+                // })
             } else {
-                var result = nodeExcel.execute(conf);
-                res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-                res.setHeader("Content-Disposition", "attachment; filename=DetailTripReport.xlsx");
-                res.end(result, 'binary');
+                if (response[i].Date != null && response[i].Date != '' && response[i].Date != undefined) {
+                    // Datetime = dateformat(response[i].Datetime, 2);
+                    TIme = momentz.utc(new Date(response[i].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a')
+                }
+                if (response[i].Name != null && response[i].Name != '' && response[i].Name != undefined) {
+                    Name = response[i].Name;
+                }
+                if (response[i].Address != null && response[i].Address != '' && response[i].Address != undefined) {
+                    Address = response[i].Address;
+                }
+
+                if (response[i].DeviceStatus != null && response[i].DeviceStatus != '' && response[i].DeviceStatus != undefined) {
+                    DeviceStatus = response[i].DeviceStatus;
+                }
+
+                if (response[i].IsEngine != null && response[i].IsEngine != '' && response[i].IsEngine != undefined) {
+                    AssetStatus = response[i].IsEngine;
+                }
+
+                if (response[i].Speed != null && response[i].Speed != '' && response[i].Speed != undefined) {
+                    Speed = parseFloat(response[i].Speed).toFixed(2);
+                }
+
+                if (response[i].Fuleper != null && response[i].Fuleper != '' && response[i].Fuleper != undefined) {
+                    Fuleper = parseFloat(response[i].Fuleper).toFixed(2);
+                }
+                if (response[i].Fulelett != null && response[i].Fulelett != '' && response[i].Fulelett != undefined) {
+                    Fulelett = parseFloat(response[i].Fulelett).toFixed(2);
+                }
+
+
+                if (response[i].Mileage != null && response[i].Mileage != '' && response[i].Mileage != undefined) {
+                    Mileage = parseFloat(response[i].Mileage).toFixed(2);
+                }
+                if (response[i].Temp != null && response[i].Temp != '' && response[i].Temp != undefined) {
+                    Temp = parseFloat(response[i].Temp).toFixed(2);
+                }
+
+                if (response[i].GPSSignal != null && response[i].GPSSignal != '' && response[i].GPSSignal != undefined) {
+                    GPSSignal = parseFloat(response[i].GPSSignal).toFixed(2);
+                }
+
+                if (response[i].Direction != null && response[i].Direction != '' && response[i].Direction != undefined) {
+                    Direction = response[i].Direction;
+                }
+                if (response[i].Latitude != null && response[i].Latitude != '' && response[i].Latitude != undefined) {
+                    Latitude = response[i].Latitude;
+                }
+                if (response[i].Longitude != null && response[i].Longitude != '' && response[i].Longitude != undefined) {
+                    Longitude = response[i].Longitude;
+                }
+                row.push(Name.toString(), TIme.toString(), /*DeviceStatus.toString(),*/ AssetStatus.toString(), Speed, /*Fuleper, Fulelett, Mileage, Temp, GPSSignal.toString(),*/ Direction, Latitude, Longitude);
+                conf.rows.push(row);
+                // GetData(i + 1);
             }
         }
+        /*console.log(Name.toString(), TIme.toString(), Address.toString(), DeviceStatus.toString(), AssetStatus.toString(), Speed, Fuleper, Fulelett, Mileage, Temp, GPSSignal.toString(), Direction, Latitude, Longitude);
+
+        row.push(Name.toString(), TIme.toString(), Address.toString(), DeviceStatus.toString(), AssetStatus.toString(), Speed, Fuleper, Fulelett, Mileage, Temp, GPSSignal.toString(), Direction, Latitude, Longitude);
+        conf.rows.push(row);
+        GetData(i + 1);*/
+        //} else {
+        var result = nodeExcel.execute(conf);
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader("Content-Disposition", "attachment; filename=DetailTripReport.xlsx");
+        res.end(result, 'binary');
+        //}
+        //}
 
     })
 })

@@ -451,6 +451,12 @@ global.Command5001 = function(line, Callback) {
     }
 };
 
+var systemtime = new Date();
+var DeviceTime = new Date("2017-08-19 04:57:00 UTC");
+console.log(systemtime)
+console.log(DeviceTime)
+console.log(parseInt((DeviceTime - systemtime) / 1000))
+
 //Command9955 - GPS Command
 global.Command9955 = function(line, Callback) {
     console.log("GPS Data = " + line);
@@ -567,282 +573,289 @@ global.Command9955 = function(line, Callback) {
             IsOriginalSirenTriggeringStatus = true;
         }
 
-        var IsAdvanture = false;
-        // //Insert data in gps
-        var query = "INSERT INTO tblgpsdata (Datetime,Latitude,Longitude,GPSPositioning,Speed,Direction,Status,DeviceId,IsRelayToStopTheCar,IsSirenSound,IsUserDefined,IsLockTheDoor,IsUnlockTheDoor,IsSOS,IsWiringForAntiTamper,IsDoor,IsEngine,IsOriginalSirenTriggeringStatus,CreatedDate,HDOP,Altitude,AD1,AD2,OdoMeter,Date ) " +
-            "VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + inputoutputSTatus + "', '" + DeviceId + "'," + IsRelayToStopTheCar + "," + IsSirenSound + "," + IsUserDefined + "," + IsLockTheDoor + "," + IsUnlockTheDoor + "," + IsSOS + "," + IsWiringForAntiTamper + "," + IsDoor + "," + IsEngine + "," + IsOriginalSirenTriggeringStatus + ",'" + CurrentDate + "','" + HDOP + "','" + altitude + "','" + AD1 + "','" + AD2 + "','" + Odometer + "','" + unixDateStemp + "');";
-        connection.query(query, function(err, rows, fields) {
+        //check <5 min time difference then only store data otherwise neglect
+        var systemtime = new Date();
+        var DeviceTime = new Date(GPSDateTime + " UTC");
 
-            var objConnection = {
-                Position: Position,
-                Speed: Speed,
-                Deviceid: DeviceId,
-                Latitude: Latitude,
-                Longitude: Longitude,
-                Direction: Direction,
-                IsRelayToStopTheCar: IsRelayToStopTheCar,
-                IsSirenSound: IsSirenSound,
-                IsUserDefined: IsUserDefined,
-                IsLockTheDoor: IsLockTheDoor,
-                IsUnlockTheDoor: IsUnlockTheDoor,
-                IsSOS: IsSOS,
-                IsWiringForAntiTamper: IsWiringForAntiTamper,
-                IsDoor: IsDoor,
-                IsEngine: IsEngine,
-                IsOriginalSirenTriggeringStatus: IsOriginalSirenTriggeringStatus,
-                Date: unixDateStemp
-            }
+        var timediffernce = parseInt((DeviceTime - systemtime) / 1000);
+        if (timediffernce <= 300) {
 
-            if (Position == 'A') {
-                io.sockets.emit('BikeRoute', JSON.stringify(objConnection));
-                io.sockets.emit(DeviceId + 'BikeRoute', JSON.stringify(objConnection));
-            }
-        });
+            // //Insert data in gps
+            var query = "INSERT INTO tblgpsdata (Datetime,Latitude,Longitude,GPSPositioning,Speed,Direction,Status,DeviceId,IsRelayToStopTheCar,IsSirenSound,IsUserDefined,IsLockTheDoor,IsUnlockTheDoor,IsSOS,IsWiringForAntiTamper,IsDoor,IsEngine,IsOriginalSirenTriggeringStatus,CreatedDate,HDOP,Altitude,AD1,AD2,OdoMeter,Date ) " +
+                "VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + inputoutputSTatus + "', '" + DeviceId + "'," + IsRelayToStopTheCar + "," + IsSirenSound + "," + IsUserDefined + "," + IsLockTheDoor + "," + IsUnlockTheDoor + "," + IsSOS + "," + IsWiringForAntiTamper + "," + IsDoor + "," + IsEngine + "," + IsOriginalSirenTriggeringStatus + ",'" + CurrentDate + "','" + HDOP + "','" + altitude + "','" + AD1 + "','" + AD2 + "','" + Odometer + "','" + unixDateStemp + "');";
+            connection.query(query, function(err, rows, fields) {
 
-        //Fence
-        connection.query("SELECT * from tblfence where deviceId=" + DeviceId, function(err, rows, fields) {
-            if (!err && rows.length > 0) {
-                connection.query("SELECT * from tblvehicle where deviceid=" + DeviceId + " and IsDelete=false", function(err, Bikerows, fields) {
-                    if (!err && Bikerows.length > 0) {
-                        var objVehicle = Bikerows[0];
-                        if (Position == 'A') {
+                var objConnection = {
+                    Position: Position,
+                    Speed: Speed,
+                    Deviceid: DeviceId,
+                    Latitude: Latitude,
+                    Longitude: Longitude,
+                    Direction: Direction,
+                    IsRelayToStopTheCar: IsRelayToStopTheCar,
+                    IsSirenSound: IsSirenSound,
+                    IsUserDefined: IsUserDefined,
+                    IsLockTheDoor: IsLockTheDoor,
+                    IsUnlockTheDoor: IsUnlockTheDoor,
+                    IsSOS: IsSOS,
+                    IsWiringForAntiTamper: IsWiringForAntiTamper,
+                    IsDoor: IsDoor,
+                    IsEngine: IsEngine,
+                    IsOriginalSirenTriggeringStatus: IsOriginalSirenTriggeringStatus,
+                    Date: unixDateStemp
+                }
 
-                            function checkFence(j) {
-                                if (j < rows.length) {
-                                    rows[j].IsPetInFence = true;
-                                    var response = rows[j];
+                if (Position == 'A') {
+                    io.sockets.emit('BikeRoute', JSON.stringify(objConnection));
+                    io.sockets.emit(DeviceId + 'BikeRoute', JSON.stringify(objConnection));
+                }
+            });
 
-                                    // var response = rows[0];
+            //Fence
+            connection.query("SELECT * from tblfence where deviceId=" + DeviceId, function(err, rows, fields) {
+                if (!err && rows.length > 0) {
+                    connection.query("SELECT * from tblvehicle where deviceid=" + DeviceId + " and IsDelete=false", function(err, Bikerows, fields) {
+                        if (!err && Bikerows.length > 0) {
+                            var objVehicle = Bikerows[0];
+                            if (Position == 'A') {
 
-                                    var CheckPoints = {
-                                        latitude: parseFloat(Latitude),
-                                        longitude: parseFloat(Longitude)
-                                    }
+                                function checkFence(j) {
+                                    if (j < rows.length) {
+                                        rows[j].IsPetInFence = true;
+                                        var response = rows[j];
 
-                                    var IsPetInFence = true;
+                                        // var response = rows[0];
 
-                                    if (response.fencedraw == "circle") {
-                                        var CircleCenterPoints = {
-                                            latitude: parseFloat(response.lat),
-                                            longitude: parseFloat(response.lng)
+                                        var CheckPoints = {
+                                            latitude: parseFloat(Latitude),
+                                            longitude: parseFloat(Longitude)
                                         }
-                                        var CircleRadius = parseFloat(response.range);
-                                        IsPetInFence = geolib.isPointInCircle(CheckPoints, CircleCenterPoints, CircleRadius)
-                                    } else if (response.fencedraw == "polygon" || response.fencedraw == "polyline") {
-                                        var lstpolygonDrawC = [];
-                                        var lstlatC = response.lat.split(',');
-                                        var lstlngC = response.lng.split(',');
 
-                                        for (var i = 0; i < lstlatC.length; i++) {
+                                        var IsPetInFence = true;
+
+                                        if (response.fencedraw == "circle") {
+                                            var CircleCenterPoints = {
+                                                latitude: parseFloat(response.lat),
+                                                longitude: parseFloat(response.lng)
+                                            }
+                                            var CircleRadius = parseFloat(response.range);
+                                            IsPetInFence = geolib.isPointInCircle(CheckPoints, CircleCenterPoints, CircleRadius)
+                                        } else if (response.fencedraw == "polygon" || response.fencedraw == "polyline") {
+                                            var lstpolygonDrawC = [];
+                                            var lstlatC = response.lat.split(',');
+                                            var lstlngC = response.lng.split(',');
+
+                                            for (var i = 0; i < lstlatC.length; i++) {
+                                                var objDraw = {
+                                                    latitude: parseFloat(lstlatC[i]),
+                                                    longitude: parseFloat(lstlngC[i])
+                                                }
+                                                lstpolygonDrawC.push(objDraw);
+                                            }
+                                            IsPetInFence = geolib.isPointInside(CheckPoints, lstpolygonDrawC)
+                                        } else if (response.fencedraw == "rectangle") {
+                                            var lstpolygonDrawC = [];
+                                            var lstlatC = response.lat.split(',');
+                                            var lstlngC = response.lng.split(',');
+
                                             var objDraw = {
-                                                latitude: parseFloat(lstlatC[i]),
-                                                longitude: parseFloat(lstlngC[i])
+                                                latitude: parseFloat(lstlatC[0]),
+                                                longitude: parseFloat(lstlngC[0])
                                             }
                                             lstpolygonDrawC.push(objDraw);
-                                        }
-                                        IsPetInFence = geolib.isPointInside(CheckPoints, lstpolygonDrawC)
-                                    } else if (response.fencedraw == "rectangle") {
-                                        var lstpolygonDrawC = [];
-                                        var lstlatC = response.lat.split(',');
-                                        var lstlngC = response.lng.split(',');
-
-                                        var objDraw = {
-                                            latitude: parseFloat(lstlatC[0]),
-                                            longitude: parseFloat(lstlngC[0])
-                                        }
-                                        lstpolygonDrawC.push(objDraw);
-                                        var objDraw = {
-                                            latitude: parseFloat(lstlatC[0]),
-                                            longitude: parseFloat(lstlngC[1])
-                                        }
-                                        lstpolygonDrawC.push(objDraw);
-                                        var objDraw = {
-                                            latitude: parseFloat(lstlatC[1]),
-                                            longitude: parseFloat(lstlngC[1])
-                                        }
-                                        lstpolygonDrawC.push(objDraw);
-                                        var objDraw = {
-                                            latitude: parseFloat(lstlatC[1]),
-                                            longitude: parseFloat(lstlngC[0])
-                                        }
-                                        lstpolygonDrawC.push(objDraw);
-                                        var objDraw = {
-                                            latitude: parseFloat(lstlatC[0]),
-                                            longitude: parseFloat(lstlngC[0])
-                                        }
-                                        lstpolygonDrawC.push(objDraw);
-
-                                        IsPetInFence = geolib.isPointInside(CheckPoints, lstpolygonDrawC)
-                                    };
-
-                                    // console.log("Fence Last State = " + objBike.IsInFence)
-                                    // console.log("Fence Current State = " + IsPetInFence)
-                                    if (IsPetInFence != rows[j].IsInFence && rows[j].IsFenceOnline) {
-                                        var AlarmCode = '6';
-                                        var Message = '';
-
-                                        if (IsPetInFence == false) {
-                                            AlarmCode = '66';
-                                            if (rows[j].name != null && rows[j].name != '' && rows[j].name != undefined) {
-                                                Message = objVehicle.Name + ' is out of ' + rows[j].name + ' Fence.';
-                                            } else {
-                                                Message = objVehicle.Name + ' is out of Fence.';
+                                            var objDraw = {
+                                                latitude: parseFloat(lstlatC[0]),
+                                                longitude: parseFloat(lstlngC[1])
                                             }
-                                        } else {
-                                            AlarmCode = '6';
-                                            if (rows[j].name != null && rows[j].name != '' && rows[j].name != undefined) {
-                                                Message = objVehicle.Name + ' is in ' + rows[j].name + ' Fence.';
-                                            } else {
-                                                Message = objVehicle.Name + ' is in Fence.';
+                                            lstpolygonDrawC.push(objDraw);
+                                            var objDraw = {
+                                                latitude: parseFloat(lstlatC[1]),
+                                                longitude: parseFloat(lstlngC[1])
                                             }
-                                        }
-                                        console.log(unixDateStemp);
-                                        connection.query('UPDATE tblfence set IsInFence=' + IsPetInFence + ' WHERE id=' + rows[j].id, function(err, rowsFence, fields) {
-                                            console.log(err)
-                                            var Alarmquery = "INSERT INTO tblalarm (Datetime, Date, Latitude,Longitude,GPSPositioning,Speed,Direction,Status,DeviceId,AlarmCode,CreatedDate,FenceName ) VALUES ('" + GPSDateTime + "', '" + unixDateStemp + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + inputoutputSTatus + "', '" + DeviceId + "','" + AlarmCode + "','" + CurrentDate + "','" + rows[j].name + "');";
-                                            // var Alarmquery = "INSERT INTO tblalarm (Datetime,Latitude,Longitude,GPSPositioning,Speed,Direction,Status,ReservedSign,ReservedSelection,DeviceId,AlarmCode ) VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + Status + "', '" + Sign + "', '" + ReserveSection + "', '" + deviceID + "','" + AlarmCode + "');";
-                                            connection.query(Alarmquery, function(err1, Alarmrows, fields) {
+                                            lstpolygonDrawC.push(objDraw);
+                                            var objDraw = {
+                                                latitude: parseFloat(lstlatC[1]),
+                                                longitude: parseFloat(lstlngC[0])
+                                            }
+                                            lstpolygonDrawC.push(objDraw);
+                                            var objDraw = {
+                                                latitude: parseFloat(lstlatC[0]),
+                                                longitude: parseFloat(lstlngC[0])
+                                            }
+                                            lstpolygonDrawC.push(objDraw);
 
-                                                var PushNotificationdata = {
-                                                    title: 'Alert',
-                                                    message: Message,
-                                                    Fence: 'Default',
-                                                    otherfields: {
-                                                        deviceid: DeviceId,
-                                                        Id: objVehicle.id,
-                                                        VehicleName: objVehicle.Name,
-                                                        AlarmCode: AlarmCode,
-                                                        Type: 'Alarm'
-                                                    }
-                                                };
-                                                SendPushNotification(PushNotificationdata, objVehicle.iduser);
+                                            IsPetInFence = geolib.isPointInside(CheckPoints, lstpolygonDrawC)
+                                        };
 
-                                                var objConnection = {
-                                                    AlarmCode: AlarmCode.toString(),
-                                                    DeviceId: DeviceId,
-                                                    Datetime: GPSDateTime,
-                                                    Date: unixDateStemp,
-                                                    IdUser: objVehicle.iduser,
-                                                    Name: objVehicle.Name
+                                        // console.log("Fence Last State = " + objBike.IsInFence)
+                                        // console.log("Fence Current State = " + IsPetInFence)
+                                        if (IsPetInFence != rows[j].IsInFence && rows[j].IsFenceOnline) {
+                                            var AlarmCode = '6';
+                                            var Message = '';
+
+                                            if (IsPetInFence == false) {
+                                                AlarmCode = '66';
+                                                if (rows[j].name != null && rows[j].name != '' && rows[j].name != undefined) {
+                                                    Message = objVehicle.Name + ' is out of ' + rows[j].name + ' Fence.';
+                                                } else {
+                                                    Message = objVehicle.Name + ' is out of Fence.';
                                                 }
-
-
-                                                io.sockets.emit('DeviceAlarm', JSON.stringify(objConnection));
-                                                io.sockets.emit(objVehicle.iduser + 'DeviceAlarm', JSON.stringify(objConnection));
-                                                checkFence(j + 1);
-                                            });
-                                        });
-                                    } else {
-                                        checkFence(j + 1);
-                                    }
-                                } else {
-
-                                }
-                            }
-                            checkFence(0);
-                        }
-                    }
-                });
-            };
-        });
-        //Favorite place
-        connection.query("SELECT * from tblfavoriteplace where DeviceId=" + DeviceId, function(err, rows, fields) {
-            if (!err && rows.length > 0) {
-                connection.query("SELECT * from tblvehicle where deviceid=" + DeviceId + " and IsDelete=false", function(err, Bikerows, fields) {
-                    if (!err && Bikerows.length > 0) {
-                        var objBike = Bikerows[0];
-                        if (Position == 'A') {
-                            function checkFavorite(j) {
-                                if (j < rows.length) {
-                                    rows[j].IsInFavoritePlace = true;
-                                    var response = rows[j];
-
-                                    // var response = rows[0];
-
-                                    var CheckPoints = {
-                                        latitude: parseFloat(Latitude),
-                                        longitude: parseFloat(Longitude)
-                                    }
-
-                                    var IsInFavoritePlace = true;
-
-                                    // if (response.fencedraw == "circle") {
-                                    var CircleCenterPoints = {
-                                        latitude: parseFloat(response.Latitude),
-                                        longitude: parseFloat(response.Longitude)
-                                    }
-                                    var CircleRadius = parseFloat(response.Range);
-                                    IsInFavoritePlace = geolib.isPointInCircle(CheckPoints, CircleCenterPoints, CircleRadius)
-                                        // }
-
-                                    // console.log("Fence Last State = " + objBike.IsInFence)
-                                    // console.log("Fence Current State = " + IsPetInFence)
-                                    if (IsInFavoritePlace != rows[j].IsInFavoritePlace && rows[j].IsInFavoritePlace) {
-                                        var Code = '0';
-                                        var message = '';
-
-                                        if (IsInFavoritePlace == false) {
-                                            AlarmCode = '1';
-                                            if (rows[j].Name != null && rows[j].Name != '' && rows[j].Name != undefined) {
-                                                message = objBike.Name + ' is out of ' + rows[j].Name + ' Favorite Place.';
                                             } else {
-                                                message = objBike.Name + ' is out of Favorite Place.';
+                                                AlarmCode = '6';
+                                                if (rows[j].name != null && rows[j].name != '' && rows[j].name != undefined) {
+                                                    Message = objVehicle.Name + ' is in ' + rows[j].name + ' Fence.';
+                                                } else {
+                                                    Message = objVehicle.Name + ' is in Fence.';
+                                                }
                                             }
+                                            console.log(unixDateStemp);
+                                            connection.query('UPDATE tblfence set IsInFence=' + IsPetInFence + ' WHERE id=' + rows[j].id, function(err, rowsFence, fields) {
+                                                console.log(err)
+                                                var Alarmquery = "INSERT INTO tblalarm (Datetime, Date, Latitude,Longitude,GPSPositioning,Speed,Direction,Status,DeviceId,AlarmCode,CreatedDate,FenceName ) VALUES ('" + GPSDateTime + "', '" + unixDateStemp + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + inputoutputSTatus + "', '" + DeviceId + "','" + AlarmCode + "','" + CurrentDate + "','" + rows[j].name + "');";
+                                                // var Alarmquery = "INSERT INTO tblalarm (Datetime,Latitude,Longitude,GPSPositioning,Speed,Direction,Status,ReservedSign,ReservedSelection,DeviceId,AlarmCode ) VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + Status + "', '" + Sign + "', '" + ReserveSection + "', '" + deviceID + "','" + AlarmCode + "');";
+                                                connection.query(Alarmquery, function(err1, Alarmrows, fields) {
+
+                                                    var PushNotificationdata = {
+                                                        title: 'Alert',
+                                                        message: Message,
+                                                        Fence: 'Default',
+                                                        otherfields: {
+                                                            deviceid: DeviceId,
+                                                            Id: objVehicle.id,
+                                                            VehicleName: objVehicle.Name,
+                                                            AlarmCode: AlarmCode,
+                                                            Type: 'Alarm'
+                                                        }
+                                                    };
+                                                    SendPushNotification(PushNotificationdata, objVehicle.iduser);
+
+                                                    var objConnection = {
+                                                        AlarmCode: AlarmCode.toString(),
+                                                        DeviceId: DeviceId,
+                                                        Datetime: GPSDateTime,
+                                                        Date: unixDateStemp,
+                                                        IdUser: objVehicle.iduser,
+                                                        Name: objVehicle.Name
+                                                    }
+
+
+                                                    io.sockets.emit('DeviceAlarm', JSON.stringify(objConnection));
+                                                    io.sockets.emit(objVehicle.iduser + 'DeviceAlarm', JSON.stringify(objConnection));
+                                                    checkFence(j + 1);
+                                                });
+                                            });
                                         } else {
-                                            AlarmCode = '0';
-                                            if (rows[j].Name != null && rows[j].Name != '' && rows[j].Name != undefined) {
-                                                message = objBike.Name + ' is in ' + rows[j].Name + ' Favorite Place.';
-                                            } else {
-                                                message = objBike.Name + ' is in Favorite Place.';
-                                            }
+                                            checkFence(j + 1);
                                         }
-                                        console.log(unixDateStemp);
-                                        connection.query('UPDATE tblfavoriteplace set IsInFavoritePlace=' + IsInFavoritePlace + ' WHERE id=' + rows[j].id, function(err, rowsFavorite, fields) {
-                                            console.log(err)
-                                            var query = "INSERT INTO tblfavoriteinout (Datetime, Date, Latitude,Longitude,GPSPositioning,Speed,Direction,Status,DeviceId,Code,CreatedDate ) VALUES ('" + GPSDateTime + "', '" + unixDateStemp + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + inputoutputSTatus + "', '" + DeviceId + "','" + Code + "','" + CurrentDate + "');";
-                                            // var Alarmquery = "INSERT INTO tblalarm (Datetime,Latitude,Longitude,GPSPositioning,Speed,Direction,Status,ReservedSign,ReservedSelection,DeviceId,AlarmCode ) VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + Status + "', '" + Sign + "', '" + ReserveSection + "', '" + deviceID + "','" + AlarmCode + "');";
-                                            connection.query(query, function(err1, Favrows, fields) {
-                                                checkFavorite(j + 1);
-                                            });
-                                        });
                                     } else {
-                                        checkFavorite(j + 1);
+
                                     }
-                                } else {
-
                                 }
+                                checkFence(0);
                             }
-                            checkFavorite(0);
                         }
-                    }
-                });
-            };
-        });
+                    });
+                };
+            });
+            //Favorite place
+            connection.query("SELECT * from tblfavoriteplace where DeviceId=" + DeviceId, function(err, rows, fields) {
+                if (!err && rows.length > 0) {
+                    connection.query("SELECT * from tblvehicle where deviceid=" + DeviceId + " and IsDelete=false", function(err, Bikerows, fields) {
+                        if (!err && Bikerows.length > 0) {
+                            var objBike = Bikerows[0];
+                            if (Position == 'A') {
+                                function checkFavorite(j) {
+                                    if (j < rows.length) {
+                                        rows[j].IsInFavoritePlace = true;
+                                        var response = rows[j];
 
-        //check Arm settings
-        connection.query("SELECT * from tblvehicle where deviceid=" + DeviceId + " and IsDelete=false", function(err, Bikerows, fields) {
-            if (!err) {
-                if (Bikerows.length > 0) {
-                    if (Bikerows[0].Arm == 2) {
-                        var checkEngine = 0;
-                        var ArmStatus = 1;
-                        if (IsEngine == true) {
-                            checkEngine = 1;
-                            ArmStatus = 0;
+                                        // var response = rows[0];
+
+                                        var CheckPoints = {
+                                            latitude: parseFloat(Latitude),
+                                            longitude: parseFloat(Longitude)
+                                        }
+
+                                        var IsInFavoritePlace = true;
+
+                                        // if (response.fencedraw == "circle") {
+                                        var CircleCenterPoints = {
+                                            latitude: parseFloat(response.Latitude),
+                                            longitude: parseFloat(response.Longitude)
+                                        }
+                                        var CircleRadius = parseFloat(response.Range);
+                                        IsInFavoritePlace = geolib.isPointInCircle(CheckPoints, CircleCenterPoints, CircleRadius)
+                                            // }
+
+                                        // console.log("Fence Last State = " + objBike.IsInFence)
+                                        // console.log("Fence Current State = " + IsPetInFence)
+                                        if (IsInFavoritePlace != rows[j].IsInFavoritePlace && rows[j].IsInFavoritePlace) {
+                                            var Code = '0';
+                                            var message = '';
+
+                                            if (IsInFavoritePlace == false) {
+                                                AlarmCode = '1';
+                                                if (rows[j].Name != null && rows[j].Name != '' && rows[j].Name != undefined) {
+                                                    message = objBike.Name + ' is out of ' + rows[j].Name + ' Favorite Place.';
+                                                } else {
+                                                    message = objBike.Name + ' is out of Favorite Place.';
+                                                }
+                                            } else {
+                                                AlarmCode = '0';
+                                                if (rows[j].Name != null && rows[j].Name != '' && rows[j].Name != undefined) {
+                                                    message = objBike.Name + ' is in ' + rows[j].Name + ' Favorite Place.';
+                                                } else {
+                                                    message = objBike.Name + ' is in Favorite Place.';
+                                                }
+                                            }
+                                            console.log(unixDateStemp);
+                                            connection.query('UPDATE tblfavoriteplace set IsInFavoritePlace=' + IsInFavoritePlace + ' WHERE id=' + rows[j].id, function(err, rowsFavorite, fields) {
+                                                console.log(err)
+                                                var query = "INSERT INTO tblfavoriteinout (Datetime, Date, Latitude,Longitude,GPSPositioning,Speed,Direction,Status,DeviceId,Code,CreatedDate ) VALUES ('" + GPSDateTime + "', '" + unixDateStemp + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + inputoutputSTatus + "', '" + DeviceId + "','" + Code + "','" + CurrentDate + "');";
+                                                // var Alarmquery = "INSERT INTO tblalarm (Datetime,Latitude,Longitude,GPSPositioning,Speed,Direction,Status,ReservedSign,ReservedSelection,DeviceId,AlarmCode ) VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + Status + "', '" + Sign + "', '" + ReserveSection + "', '" + deviceID + "','" + AlarmCode + "');";
+                                                connection.query(query, function(err1, Favrows, fields) {
+                                                    checkFavorite(j + 1);
+                                                });
+                                            });
+                                        } else {
+                                            checkFavorite(j + 1);
+                                        }
+                                    } else {
+
+                                    }
+                                }
+                                checkFavorite(0);
+                            }
                         }
-                        if (checkEngine == Bikerows[0].LastArmSetting) {
-                            var obj = new Object();
-                            obj.DeviceId = DeviceId;
-                            obj.Arm = 2;
-                            obj.ArmStatus = ArmStatus;
-                            SetArmSettings(obj, function(data) {
+                    });
+                };
+            });
 
-                            })
+            //check Arm settings
+            connection.query("SELECT * from tblvehicle where deviceid=" + DeviceId + " and IsDelete=false", function(err, Bikerows, fields) {
+                if (!err) {
+                    if (Bikerows.length > 0) {
+                        if (Bikerows[0].Arm == 2) {
+                            var checkEngine = 0;
+                            var ArmStatus = 1;
+                            if (IsEngine == true) {
+                                checkEngine = 1;
+                                ArmStatus = 0;
+                            }
+                            if (checkEngine == Bikerows[0].LastArmSetting) {
+                                var obj = new Object();
+                                obj.DeviceId = DeviceId;
+                                obj.Arm = 2;
+                                obj.ArmStatus = ArmStatus;
+                                SetArmSettings(obj, function(data) {
+
+                                })
+                            }
                         }
                     }
                 }
-            }
-        });
+            });
+        }
 
     } catch (ex) {
         console.log("Error GPS Data = " + line);
