@@ -1599,7 +1599,8 @@ router.get('/ExportDriverReport', function(req, res) {
                                 obj.StartAddress = "No Address Found";
                                 obj.EndAddress = "No Address Found";
                                 obj.StartId = lstGroup[i].data[k].Id;
-                                obj.DrivingStartTime = moment(new Date(lstGroup[i].data[k].Date * 1000)).format('DD-MM-YYYY hh:mm:ss a');
+                                obj.DrivingStartTime = momentz.utc(new Date(lstGroup[i].data[k].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a')
+                                    //moment(new Date(lstGroup[i].data[k].Date * 1000)).format('DD-MM-YYYY hh:mm:ss a');
                                 obj.StartDate = moment(new Date(lstGroup[i].data[k].Date * 1000));
                                 StartVehical = StartVehical + 1;
 
@@ -1607,7 +1608,8 @@ router.get('/ExportDriverReport', function(req, res) {
                                 obj.EndLatitude = lstGroup[i].data[k].Latitude;
                                 obj.EndLongitude = lstGroup[i].data[k].Longitude;
                                 obj.EndSpeed = parseFloat(lstGroup[i].data[k].Speed).toFixed(2);
-                                obj.EndDrivingTime = moment(new Date(lstGroup[i].data[k].Date * 1000)).format('DD-MM-YYYY hh:mm:ss a');
+                                obj.EndDrivingTime = momentz.utc(new Date(lstGroup[i].data[k].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a')
+                                    //moment(new Date(lstGroup[i].data[k].Date * 1000)).format('DD-MM-YYYY hh:mm:ss a');
                                 obj.EndId = lstGroup[i].data[k].Id;
                                 obj.EndDate = moment(new Date(lstGroup[i].data[k].Date * 1000));
                                 obj.DrivingTime = calcDateDiff(obj.EndDate, obj.StartDate);
@@ -1621,9 +1623,11 @@ router.get('/ExportDriverReport', function(req, res) {
                                     obj.EndLatitude = lstGroup[i].data[k].Latitude;
                                     obj.EndLongitude = lstGroup[i].data[k].Longitude;
                                     obj.EndSpeed = parseFloat(lstGroup[i].data[k].Speed).toFixed(2);
-                                    obj.EndDrivingTime = moment(new Date(lstGroup[i].data[k].Date * 1000)).format('DD-MM-YYYY hh:mm:ss a');
+                                    obj.EndDrivingTime = momentz.utc(new Date(lstGroup[i].data[k].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a')
+                                        //moment(new Date(lstGroup[i].data[k].Date * 1000)).format('DD-MM-YYYY hh:mm:ss a');
                                     obj.EndId = lstGroup[i].data[k - 1].Id;
-                                    obj.EndDate = moment(new Date(lstGroup[i].data[k].Date * 1000)).format('DD-MM-YYYY hh:mm:ss a');
+                                    obj.EndDate = momentz.utc(new Date(lstGroup[i].data[k].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a')
+                                        //moment(new Date(lstGroup[i].data[k].Date * 1000)).format('DD-MM-YYYY hh:mm:ss a');
                                     obj.DrivingTime = calcDateDiff(obj.EndDate, obj.StartDate);
 
                                 }
