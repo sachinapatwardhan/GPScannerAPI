@@ -23,7 +23,8 @@ router.get('/GetAllGPSByTimeZoneDate', function(req, res) {
         orderby = ' ' + req.query.orderby;
     }
 
-    var query = "select tblgpsdata.*,tblvehicle.Name from tblgpsdata left join tblvehicle on tblgpsdata.deviceid = tblvehicle.deviceid Where tblvehicle.iduser=" + req.query.idUser + " and tblgpsdata.Date >= '" + unixStartdate + "' and tblgpsdata.Date <= '" + unixEnddate + "'" + wherecondition + orderby + " LIMIT " + req.query.length + " OFFSET " + req.query.start + ";"
+
+    var query = "select tblgpsdata.*,tblvehicle.Name from tblgpsdata left join tblvehicle on tblgpsdata.deviceid = tblvehicle.deviceid Where tblvehicle.iduser=" + req.query.idUser + " and tblgpsdata.Date >= '" + unixStartdate + "' and tblgpsdata.Date <= '" + unixEnddate + "'" + wherecondition + ' order by Date' + " LIMIT " + req.query.length + " OFFSET " + req.query.start + ";"
     var Count = "select count(*) AS Totalrecord from tblgpsdata left join tblvehicle on tblgpsdata.deviceid = tblvehicle.deviceid Where tblvehicle.iduser=" + req.query.idUser + "  and tblgpsdata.Date >= '" + unixStartdate + "' and tblgpsdata.Date <= '" + unixEnddate + "'" + wherecondition + ";"
     connection.query(query, function(err, lstGPSData, fields) {
         if (!err) {
