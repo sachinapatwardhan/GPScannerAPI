@@ -286,8 +286,6 @@ router.get('/ExportDetailTripReport', function(req, res) {
     })
 })
 
-
-
 router.get('/GetAllFenceInAndOutData', function(req, res) {
     var objParam = req.query;
 
@@ -710,7 +708,8 @@ router.get('/ExportEngineReport', function(req, res) {
                         } else {
                             if (lstEngine[i].Date != null && lstEngine[i].Date != '' && lstEngine[i].Date != undefined) {
                                 StartTime = momentz.utc(new Date(lstEngine[i].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
-                                EndTime = moment(new Date(response[response.length - 1].Date * 1000)).format('DD-MM-YYYY hh:mm:ss a');
+                                // EndTime = moment(new Date(response[response.length - 1].Date * 1000)).format('DD-MM-YYYY hh:mm:ss a');
+                                EndTime = momentz.utc(new Date(response[response.length - 1].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
                                 ContinueTime = calcDateDiff(EndTime, StartTime);
                             }
                             DatewiseTravelledDistance = 0;
@@ -1073,11 +1072,10 @@ router.get('/GetAllParkingData', function(req, res) {
 
 
     var query = "select tblgpsdata.*,tblvehicle.Name from tblgpsdata inner join tblvehicle on tblgpsdata.deviceid = tblvehicle.deviceid Where tblvehicle.iduser=" + req.query.idUser + " and tblgpsdata.Date >= '" + unixStartdate + "' and tblgpsdata.Date <= '" + unixEnddate + "'" + wherecondition + ' order by tblgpsdata.Date asc' + ";"
-
+    var Count = "select tblgpsdata.*,tblvehicle.Name from tblgpsdata inner join tblvehicle on tblgpsdata.deviceid = tblvehicle.deviceid Where tblvehicle.iduser=" + req.query.idUser + " and tblgpsdata.Date >= '" + unixStartdate + "' and tblgpsdata.Date <= '" + unixEnddate + "'" + wherecondition + ' order by tblgpsdata.Date asc' + ";"
     connection.query(query, function(err, response, fields) {
 
         if (response.length > 0) {
-
 
             var groups = u.groupBy(response, function(o) {
                 return o.DeviceId;
