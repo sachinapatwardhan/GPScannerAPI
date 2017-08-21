@@ -734,7 +734,8 @@ global.Command9955 = function(line, Callback) {
                                                         Datetime: GPSDateTime,
                                                         Date: unixDateStemp,
                                                         IdUser: objVehicle.iduser,
-                                                        Name: objVehicle.Name
+                                                        Name: objVehicle.Name,
+                                                        FenceName: rows[j].name
                                                     }
 
 
