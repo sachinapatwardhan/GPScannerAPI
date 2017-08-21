@@ -1671,17 +1671,18 @@ router.get('/ExportDriverReport', function(req, res) {
                                     }
                                     obj.avgSpeed = parseFloat(sum / TotalRecord).toFixed(2);
                                     obj.LocateNumber = LocateNumber;
-                                    Speed6090 = 0;
-                                    Speed90130 = 0;
-                                    Over130 = 0;
-                                    LocateNumber = 0;
-                                    objSpeed = [];
-                                    TotalRecord = 0;
+
                                 }
 
                                 Array.push(obj);
                             }
                             StartVehical = 0;
+                            var Speed6090 = 0;
+                            var Speed90130 = 0;
+                            var Over130 = 0;
+                            var LocateNumber = 0;
+                            var objSpeed = [];
+                            var TotalRecord = 0;
                         }
                     }
 
@@ -1702,12 +1703,6 @@ router.get('/ExportDriverReport', function(req, res) {
                             }
                             obj.avgSpeed = parseFloat(sum / TotalRecord).toFixed(2);
                             obj.LocateNumber = LocateNumber;
-                            Speed6090 = 0;
-                            Speed90130 = 0;
-                            Over130 = 0;
-                            LocateNumber = 0;
-                            objSpeed = [];
-                            TotalRecord = 0;
                         }
 
                         Array.push(obj);
