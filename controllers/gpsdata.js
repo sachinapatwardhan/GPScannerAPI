@@ -828,7 +828,8 @@ router.get('/ExportAllSpeedDataReport', function(req, res) {
 
                 if (response[i].Date != null && response[i].Date != '' && response[i].Date != undefined) {
                     var Dates = new Date(response[i].Date * 1000);
-                    DisplayDate = moment(Dates).format('DD-MM-YYYY hh:mm:ss a');
+                    DisplayDate = moment(Dates).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
+
                 }
                 if (response[i].Speed != null && response[i].Speed != '' && response[i].Speed != undefined) {
                     Speed = parseFloat(response[i].Speed).toFixed(2);
@@ -1560,7 +1561,8 @@ router.get('/ExportDriverReport', function(req, res) {
                                     obj.EndDrivingTime = momentz.utc(new Date(lstGroup[i].data[k].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
                                     obj.EndId = lstGroup[i].data[k].Id;
                                     // obj.EndDate = moment(new Date(lstGroup[i].data[k].Date * 1000));
-                                    obj.EndDate = momentz.utc(new Date(lstGroup[i].data[k].Date * 1000)).tz(req.query.TimeZone);                                    obj.DrivingTime = calcDateDiff(obj.EndDate, obj.StartDate);
+                                    obj.EndDate = momentz.utc(new Date(lstGroup[i].data[k].Date * 1000)).tz(req.query.TimeZone);
+                                    obj.DrivingTime = calcDateDiff(obj.EndDate, obj.StartDate);
                                     obj.MaxSpeed = parseFloat(u.max(objSpeed, function(MaxSpeeddata) { return MaxSpeeddata; })).toFixed(2);
                                     obj.Speed6090 = Speed6090;
                                     obj.Speed90130 = Speed90130;
