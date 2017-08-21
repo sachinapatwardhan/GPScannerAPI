@@ -826,8 +826,9 @@ router.get('/ExportAllSpeedDataReport', function(req, res) {
                 }
 
                 if (response[i].Date != null && response[i].Date != '' && response[i].Date != undefined) {
-                    var Dates = new Date(response[i].Date * 1000);
-                    DisplayDate = moment(Dates).format('DD-MM-YYYY hh:mm:ss a');
+                    //var Dates = new Date(response[i].Date * 1000);
+                    DisplayDate = momentz.utc(new Date(response[i].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a')
+                        // moment(Dates).format('DD-MM-YYYY hh:mm:ss a');
                 }
                 if (response[i].Speed != null && response[i].Speed != '' && response[i].Speed != undefined) {
                     Speed = parseFloat(response[i].Speed).toFixed(2);
