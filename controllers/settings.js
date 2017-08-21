@@ -406,6 +406,70 @@ router.get('/GetAllHandshake', function(req, res) {
     })
 })
 
+router.get('/GetAllDynamickHandshake', function(req, res) {
+    var objParam = req.query;
+    var objColumns = objParam.columns;
+    var objOrderBy = objParam.order;
+    var objSearch = objParam.search;
+
+    var Orderby = objColumns[parseInt(objOrderBy[0].column)].data + ' ' + objOrderBy[0].dir;
+
+    var search = "";
+
+    if (objSearch != '' && objSearch != null && objSearch != undefined) {
+        search = 'Where (Handshake.DeviceId like "%' + objSearch + '%" or ';
+        // search = search + 'Handshake.Charging like "%' + objSearch + '%" or ';
+        // search = search + 'Handshake.Power like "%' + objSearch + '%" or ';
+        search = search + 'Handshake.Datetime like "%' + objSearch + '%") ';
+    }
+
+    if (objParam.DeviceId != null && objParam.DeviceId != 'All' && objParam.DeviceId != '' && objParam.DeviceId != undefined) {
+        if (search != "") {
+            search += ' and Handshake.DeviceId like "%' + objParam.DeviceId + '%"';
+        } else {
+            search += ' where Handshake.DeviceId like "%' + objParam.DeviceId + '%"';
+        }
+    }
+    if (objParam.fromdate != null && objParam.fromdate != '' && objParam.fromdate != undefined) {
+        if (search != "") {
+            search += ' and Handshake.Datetime >= "' + convertdateformat(objParam.fromdate) + '"';
+        } else {
+            search += ' where Handshake.Datetime >= "' + convertdateformat(objParam.fromdate) + '"';
+        }
+    }
+    if (objParam.todate != null && objParam.todate != '' && objParam.todate != undefined) {
+        if (search != "") {
+            search += ' and Handshake.Datetime <= "' + convertdateformat(objParam.todate) + '"';
+        } else {
+            search += ' where Handshake.Datetime <= "' + convertdateformat(objParam.todate) + '"';
+        }
+    }
+
+    var qry = "Select Handshake.* FROM tblhandshake AS Handshake " + search +
+        " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
+    var Countqry = "SELECT count(Handshake.id) as TotalRecord FROM tblhandshake AS Handshake " + search;
+
+    connection.query(qry, function(err, response) {
+        if (response != undefined) {
+            connection.query(Countqry, function(err, lstCount, fields) {
+                var response1 = new Object();
+                response1.draw = objParam.draw;
+                response1.recordsTotal = lstCount[0].TotalRecord;
+                response1.recordsFiltered = lstCount[0].TotalRecord;
+                response1.data = response;
+                res.json(response1);
+            });
+        } else {
+            var response1 = new Object();
+            response1.draw = objParam.draw;
+            response1.recordsTotal = 0;
+            response1.recordsFiltered = 0;
+            response1.data = [];
+            res.json(response1);
+        }
+    })
+})
+
 //End Hand shake
 
 
@@ -542,6 +606,19 @@ function convertdateUTCformat(date1, flg) {
     var firstdayHours = date.getUTCHours();
     var firstdayMinutes = date.getUTCMinutes();
     var firstdaySeconds = date.getUTCSeconds();
+
+    //return ("0000" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("00" + firstdayDay.toString()).slice(-2) + " " + "00:00:00";
+    return ("0000" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("00" + firstdayDay.toString()).slice(-2) + " " + ("00" + firstdayHours.toString()).slice(-2) + ':' + ("00" + firstdayMinutes.toString()).slice(-2) + ':' + ("00" + firstdaySeconds.toString()).slice(-2);
+}
+
+function convertdateformat(date1, flg) {
+    var date = new Date(date1);
+    var firstdayMonth = date.getMonth() + 1;
+    var firstdayDay = date.getDate();
+    var firstdayYear = date.getFullYear();
+    var firstdayHours = date.getHours();
+    var firstdayMinutes = date.getMinutes();
+    var firstdaySeconds = date.getSeconds();
     //return ("0000" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("00" + firstdayDay.toString()).slice(-2) + " " + "00:00:00";
     return ("0000" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("00" + firstdayDay.toString()).slice(-2) + " " + ("00" + firstdayHours.toString()).slice(-2) + ':' + ("00" + firstdayMinutes.toString()).slice(-2) + ':' + ("00" + firstdaySeconds.toString()).slice(-2);
 }

@@ -1520,17 +1520,21 @@ router.get('/ExportDriverReport', function(req, res) {
                                 obj.StartAddress = "No Address Found";
                                 obj.EndAddress = "No Address Found";
                                 obj.StartId = lstGroup[i].data[k].Id;
-                                obj.DrivingStartTime = moment(new Date(lstGroup[i].data[k].Date * 1000)).format('DD-MM-YYYY hh:mm:ss a');
-                                obj.StartDate = moment(new Date(lstGroup[i].data[k].Date * 1000));
+                                obj.DrivingStartTime = momentz.utc(new Date(lstGroup[i].data[k].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a')
+                                    // obj.DrivingStartTime = moment(new Date(lstGroup[i].data[k].Date * 1000)).format('DD-MM-YYYY hh:mm:ss a');
+                                obj.StartDate = momentz.utc(new Date(lstGroup[i].data[k].Date * 1000)).tz(req.query.TimeZone)
+                                    // obj.StartDate = moment(new Date(lstGroup[i].data[k].Date * 1000));
                                 StartVehical = StartVehical + 1;
 
                             } else {
                                 obj.EndLatitude = lstGroup[i].data[k].Latitude;
                                 obj.EndLongitude = lstGroup[i].data[k].Longitude;
                                 obj.EndSpeed = parseFloat(lstGroup[i].data[k].Speed).toFixed(2);
-                                obj.EndDrivingTime = moment(new Date(lstGroup[i].data[k].Date * 1000)).format('DD-MM-YYYY hh:mm:ss a');
+                                // obj.EndDrivingTime = moment(new Date(lstGroup[i].data[k].Date * 1000)).format('DD-MM-YYYY hh:mm:ss a');
+                                obj.EndDrivingTime = momentz.utc(new Date(lstGroup[i].data[k].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
                                 obj.EndId = lstGroup[i].data[k].Id;
-                                obj.EndDate = moment(new Date(lstGroup[i].data[k].Date * 1000));
+                                // obj.EndDate = moment(new Date(lstGroup[i].data[k].Date * 1000));
+                                obj.EndDate = momentz.utc(new Date(lstGroup[i].data[k].Date * 1000)).tz(req.query.TimeZone);
                                 obj.DrivingTime = calcDateDiff(obj.EndDate, obj.StartDate);
                                 obj.MaxSpeed = parseFloat(u.max(objSpeed, function(MaxSpeeddata) { return MaxSpeeddata; })).toFixed(2);
                                 obj.Speed6090 = Speed6090;
@@ -1552,10 +1556,11 @@ router.get('/ExportDriverReport', function(req, res) {
                                     obj.EndLatitude = lstGroup[i].data[k].Latitude;
                                     obj.EndLongitude = lstGroup[i].data[k].Longitude;
                                     obj.EndSpeed = parseFloat(lstGroup[i].data[k].Speed).toFixed(2);
-                                    obj.EndDrivingTime = moment(new Date(lstGroup[i].data[k].Date * 1000)).format('DD-MM-YYYY hh:mm:ss a');
-                                    obj.EndId = lstGroup[i].data[k - 1].Id;
-                                    obj.EndDate = moment(new Date(lstGroup[i].data[k].Date * 1000));
-                                    obj.DrivingTime = calcDateDiff(obj.EndDate, obj.StartDate);
+                                    // obj.EndDrivingTime = moment(new Date(lstGroup[i].data[k].Date * 1000)).format('DD-MM-YYYY hh:mm:ss a');
+                                    obj.EndDrivingTime = momentz.utc(new Date(lstGroup[i].data[k].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
+                                    obj.EndId = lstGroup[i].data[k].Id;
+                                    // obj.EndDate = moment(new Date(lstGroup[i].data[k].Date * 1000));
+                                    obj.EndDate = momentz.utc(new Date(lstGroup[i].data[k].Date * 1000)).tz(req.query.TimeZone);                                    obj.DrivingTime = calcDateDiff(obj.EndDate, obj.StartDate);
                                     obj.MaxSpeed = parseFloat(u.max(objSpeed, function(MaxSpeeddata) { return MaxSpeeddata; })).toFixed(2);
                                     obj.Speed6090 = Speed6090;
                                     obj.Speed90130 = Speed90130;
@@ -1640,12 +1645,17 @@ router.get('/ExportDriverReport', function(req, res) {
                     }
                     if (Array[i].DrivingStartTime != null && Array[i].DrivingStartTime != '' && Array[i].DrivingStartTime != undefined) {
                         DrivingStartTime = Array[i].DrivingStartTime.toString();
+                        // DrivingStartTime = momentz.utc(Array[i].DrivingStartTime).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a')
                     }
                     if (Array[i].EndDrivingTime != null && Array[i].EndDrivingTime != '' && Array[i].EndDrivingTime != undefined) {
                         EndDrivingTime = Array[i].EndDrivingTime.toString();
+                        // EndDrivingTime = momentz.utc(Array[i].EndDrivingTime).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a')
+
                     }
                     if (Array[i].DrivingTime != null && Array[i].DrivingTime != '' && Array[i].DrivingTime != undefined) {
                         DrivingTime = Array[i].DrivingTime.toString();
+                        // DrivingTime = momentz.utc(Array[i].DrivingTime).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a')
+
                     }
 
                     if (Array[i].LocateNumber != null && Array[i].LocateNumber != '' && Array[i].LocateNumber != undefined) {

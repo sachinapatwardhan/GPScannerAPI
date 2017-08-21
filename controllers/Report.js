@@ -18,11 +18,10 @@ router.get('/GetAllGPSByTimeZoneDate', function(req, res) {
 
     var convertDate = convertdateformatForUnix(Enddate);
     var unixEnddate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
-    var orderby = '  order by Date desc';
+    var orderby = '  order by tblgpsdata.Date desc';
     if (req.query.orderby != '' && req.query.orderby != undefined && req.query.orderby != null) {
         orderby = ' ' + req.query.orderby;
     }
-
 
     var query = "select tblgpsdata.*,tblvehicle.Name from tblgpsdata left join tblvehicle on tblgpsdata.deviceid = tblvehicle.deviceid Where tblvehicle.iduser=" + req.query.idUser + " and tblgpsdata.Date >= '" + unixStartdate + "' and tblgpsdata.Date <= '" + unixEnddate + "'" + wherecondition + ' order by Date' + " LIMIT " + req.query.length + " OFFSET " + req.query.start + ";"
     var Count = "select count(*) AS Totalrecord from tblgpsdata left join tblvehicle on tblgpsdata.deviceid = tblvehicle.deviceid Where tblvehicle.iduser=" + req.query.idUser + "  and tblgpsdata.Date >= '" + unixStartdate + "' and tblgpsdata.Date <= '" + unixEnddate + "'" + wherecondition + ";"
@@ -112,7 +111,7 @@ router.get('/ExportDetailTripReport', function(req, res) {
 
 
 
-    var query = "select tblgpsdata.*,tblvehicle.Name from tblgpsdata left join tblvehicle on tblgpsdata.deviceid = tblvehicle.deviceid Where tblvehicle.iduser=" + req.query.idUser + "  and tblgpsdata.Date >= '" + unixStartdate + "' and tblgpsdata.Date <= '" + unixEnddate + "'" + wherecondition + " order by Date;"
+    var query = "select tblgpsdata.*,tblvehicle.Name from tblgpsdata left join tblvehicle on tblgpsdata.deviceid = tblvehicle.deviceid Where tblvehicle.iduser=" + req.query.idUser + "  and tblgpsdata.Date >= '" + unixStartdate + "' and tblgpsdata.Date <= '" + unixEnddate + "'" + wherecondition + " order by Date DESC;"
     connection.query(query, function(err, response) {
         conf.rows = [];
         for (var i = 0; i < response.length; i++) {
@@ -1385,7 +1384,7 @@ router.get('/ExportParkingReport', function(req, res) {
 })
 
 /*-------------------------Parking Report End-----------------------*/
-router.get('/GetAllDailyStatDate', function(req, res) {
+router.get('/GetAllDailyStatDateOld', function(req, res) {
     wherecondition = '';
     wherecondition1 = '';
     if (req.query.DeviceId != 'All' && req.query.DeviceId != '-1' && req.query.DeviceId != null) {
@@ -1695,6 +1694,352 @@ router.get('/GetAllDailyStatDate', function(req, res) {
                                 response1.Array = Array;
                                 response1.alarmresponse = alarmresponse;*/
                 res.json(Array);
+            } else {
+                res.json(RecordNotFound);
+            }
+        })
+    });
+});
+
+router.get('/GetAllDailyStatDate', function(req, res) {
+    wherecondition = '';
+    wherecondition1 = '';
+    if (req.query.DeviceId != 'All' && req.query.DeviceId != '-1' && req.query.DeviceId != null) {
+        wherecondition = ' and tblgpsdata.deviceid=' + req.query.DeviceId;
+        wherecondition1 = ' and tblalarm.deviceid=' + req.query.DeviceId;
+    }
+    var Startdate = req.query.TodayStartDateTime;
+    var Enddate = req.query.TodayEndDateTime;
+
+    var convertDate = convertdateformatForUnix(Startdate);
+    var unixStartdate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
+
+    var convertDate = convertdateformatForUnix(Enddate);
+    var unixEnddate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
+
+
+    var query = "select tblgpsdata.*,tblvehicle.Name,tblvehicle.deviceid from tblgpsdata left join tblvehicle on tblgpsdata.deviceid = tblvehicle.deviceid Where tblvehicle.iduser=" + req.query.idUser + "  and tblgpsdata.Date >= '" + unixStartdate + "' and tblgpsdata.Date <= '" + unixEnddate + "'" + wherecondition + ' order by tblgpsdata.Date asc' + ";"
+    connection.query(query, function(err, response, fields) {
+        var query1 = "select tblalarm.*,tblvehicle.deviceid from tblalarm left join tblvehicle on tblalarm.deviceid = tblvehicle.deviceid Where tblvehicle.iduser=" + req.query.idUser + "  and tblalarm.Date >= '" + unixStartdate + "' and tblalarm.Date <= '" + unixEnddate + "'" + wherecondition1 + ";"
+        connection.query(query1, function(alarmerr, alarmresponse, alarmfields) {
+
+            if (response.length > 0) {
+
+                // var group1 = u.groupBy(response, function(o) {
+                //     return o.DeviceId
+                // });
+
+                var groups = u.groupBy(response, function(value) {
+                    return value.DeviceId + '#' + momentz.utc(value.Datetime).format('DD-MM-YYYY');
+                });
+
+                var data = u.map(groups, function(group) {
+                    return {
+                        DeviceId: group[0].DeviceId,
+                        Datetime: group[0].Datetime,
+                        IsEngine: u.pluck(group, 'IsEngine'),
+                        Direction: u.pluck(group, 'Direction'),
+                        Datetime1: u.pluck(group, 'Datetime'),
+                        GPSPositioning: u.pluck(group, 'GPSPositioning'),
+                    }
+                });
+
+                var l = 0;
+                var COuntEngineOff = 0;
+                var COuntEngineON = 0;
+                var CountDriving = 0;
+                var Array = [];
+                var StartDate = '';
+                var EndDate = '';
+                var EngineOnStartDate = '';
+                var EngineOnEndDate = '';
+                var DrivingStartTime = '';
+                var DrivingEndTime = '';
+                var Speed = 0.0;
+                var lstGroup = [];
+                var m = 0;
+
+                getArray(0);
+
+                function getArray(i) {
+                    if (i < data.length) {
+                        COuntEngineOff = 0;
+                        COuntEngineON = 0;
+                        CountDriving = 0;
+
+
+                        var obj = new Object();
+                        var hours = 0;
+                        var minutes = 0;
+                        var seconds = 0;
+                        var EngineOnhours = 0;
+                        var EngineOnminutes = 0;
+                        var EngineOnseconds = 0;
+                        var Drivinghours = 0;
+                        var Drivingminutes = 0;
+                        var Drivingseconds = 0;
+                        DrivingStartTime = '';
+                        DrivingEndTime = '';
+                        StartDate = '';
+                        EndDate = '';
+                        EngineOnStartDate = '';
+                        EngineOnEndDate = '';
+                        Speed = 0.0;
+                        var SpeedCo = 0;
+                        obj.DeviceId = lstGroup[i].data[0].deviceid;
+                        obj.Name = lstGroup[i].data[0].Name;
+                        obj.Date = momentz.utc(new Date(lstGroup[i].data[0].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY');
+                        obj.InvalidLocation = 0;
+                        obj.Mileage = 0.0;
+                        obj.AlarmNumber = 0;
+                        if (alarmresponse.length > 0) {
+                            var some = u.where(alarmresponse, { deviceid: obj.DeviceId });
+
+                            function getAlarmnum(j) {
+                                var alarmDate = momentz.utc(new Date(some[h].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY');
+                                if (alarmDate == obj.Date) {
+                                    obj.AlarmNumber = obj.AlarmNumber + 1;
+                                    getAlarmnum(j + 1);
+                                } else {
+                                    getAlarmnum(j + 1);
+                                }
+
+                            }
+                            getAlarmnum(0);
+
+                        }
+                        if (data[i].GPSPositioning.length > 0) {
+                            var some = u.where(data[i].GPSPositioning, { GPSPositioning: 'B' });
+                            if (some.length != 0) {
+                                obj.InvalidLocation = some.length;
+                            }
+                        }
+
+                    } else {
+
+                    }
+                }
+                res.json(data);
+                /*  if (lstGroupData.length > 0) {
+                      function update(i) {
+                          console.log(i, "------", lstGroupData[i].data);
+                          if (lstGroupData[i].data.length > 0) {
+                              function updatedata(j) {
+                                  if (lstGroupData[i].data[j] != null) {
+                                      lstGroup[m] = lstGroupData[i].data[j];
+                                      console.log("---", m);
+                                      m++;
+                                      updatedata(j + 1);
+                                  } else {
+                                      update(i + 1);
+                                  }
+                              }
+                              updatedata(0);
+
+                          }
+                      }
+                      update(0);
+                  }*/
+                // console.log("@@..", lstGroup.length);
+                // res.json(lstGroupData);
+
+                //res.json(lstGroup);
+
+                // for (var i = 0; i < lstGroup.length; i++) {
+                //     COuntEngineOff = 0;
+                //     COuntEngineON = 0;
+                //     CountDriving = 0;
+
+
+                //     if (lstGroup[i].data.length > 0) {
+                //         var obj = new Object();
+                //         var hours = 0;
+                //         var minutes = 0;
+                //         var seconds = 0;
+                //         var EngineOnhours = 0;
+                //         var EngineOnminutes = 0;
+                //         var EngineOnseconds = 0;
+                //         var Drivinghours = 0;
+                //         var Drivingminutes = 0;
+                //         var Drivingseconds = 0;
+                //         DrivingStartTime = '';
+                //         DrivingEndTime = '';
+                //         StartDate = '';
+                //         EndDate = '';
+                //         EngineOnStartDate = '';
+                //         EngineOnEndDate = '';
+                //         Speed = 0.0;
+                //         var SpeedCo = 0;
+                //         obj.DeviceId = lstGroup[i].data[0].deviceid;
+                //         obj.Name = lstGroup[i].data[0].Name;
+                //         obj.Date = momentz.utc(new Date(lstGroup[i].data[0].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY');
+                //         obj.InvalidLocation = 0;
+                //         obj.Mileage = 0.0;
+                //         obj.AlarmNumber = 0;
+                //         if (alarmresponse.length > 0) {
+                //             for (var h = 0; h < alarmresponse.length; h++) {
+                //                 var alarmDate = momentz.utc(new Date(alarmresponse[h].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY');
+                //                 if (alarmresponse[h].deviceid == obj.DeviceId && alarmDate == obj.Date) {
+                //                     obj.AlarmNumber = obj.AlarmNumber + 1;
+                //                 }
+                //             }
+
+                //         }
+                //         for (var k = 0; k < lstGroup[i].data.length; k++) {
+
+
+                //             if (lstGroup[i].data[k].GPSPositioning != 'A') {
+                //                 obj.InvalidLocation = obj.InvalidLocation + 1;
+                //             }
+                //             if (k == 0) { obj.LocateNumber = 1; } else {
+
+                //                 obj.Mileage = obj.Mileage + distance(parseFloat(lstGroup[i].data[k - 1].Latitude), parseFloat(lstGroup[i].data[k - 1].Longitude), parseFloat(lstGroup[i].data[k].Latitude), parseFloat(lstGroup[i].data[k].Longitude))
+
+                //                 if (lstGroup[i].data[k].Latitude != lstGroup[i].data[k - 1].Latitude || lstGroup[i].data[k].Latitude != lstGroup[i].data[k - 1].Latitude) {
+                //                     obj.LocateNumber = obj.LocateNumber + 1;
+                //                 }
+                //             }
+
+                //             if (lstGroup[i].data[k].Speed > 1 && lstGroup[i].data[k].IsEngine == 1) {
+                //                 Speed = Speed + parseFloat(lstGroup[i].data[k].Speed);
+                //                 SpeedCo = SpeedCo + 1;
+                //             }
+                //             //  console.log("id.....", lstGroup[i].data[k].Id, "-----", lstGroup[i].data[k].IsEngine);
+                //             if (lstGroup[i].data[k].IsEngine == 1) {
+                //                 if (COuntEngineOff != 0) {
+                //                     if (EndDate == null || EndDate == undefined || EndDate == '') {
+                //                         EndDate = Startdate;
+                //                     } else {
+                //                         hours = hours + timeDifference(StartDate, EndDate, 'h');
+                //                         minutes = minutes + timeDifference(StartDate, EndDate, 'm');
+                //                         seconds = seconds + timeDifference(StartDate, EndDate, 's');
+                //                     }
+                //                     COuntEngineOff = 0;
+                //                     EndDate = '';
+                //                 }
+                //                 if (COuntEngineON == 0) {
+
+                //                     EngineOnEndDate = '';
+                //                     EngineOnStartDate = new Date(lstGroup[i].data[k].Date * 1000);
+                //                     obj.onStartid = lstGroup[i].data[k].Id;
+                //                     obj.sd = momentz.utc(new Date(lstGroup[i].data[k].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');;;
+                //                     COuntEngineON = COuntEngineON + 1;
+                //                 } else {
+                //                     EngineOnEndDate = new Date(lstGroup[i].data[k].Date * 1000);
+                //                     obj.ed = momentz.utc(new Date(lstGroup[i].data[k].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');;
+                //                     obj.onEndid = lstGroup[i].data[k].Id;
+                //                 }
+
+                //                 if (CountDriving == 0 && lstGroup[i].data[k].Speed > 1) {
+                //                     DrivingEndTime = '';
+                //                     obj.DrivS_id = lstGroup[i].data[k].Id;
+                //                     DrivingStartTime = new Date(lstGroup[i].data[k].Date * 1000);
+                //                     CountDriving = CountDriving + 1;
+                //                 } else if (CountDriving != 0 && lstGroup[i].data[k].Speed > 1) {
+                //                     obj.DrivE_id = lstGroup[i].data[k].Id;
+                //                     DrivingEndTime = new Date(lstGroup[i].data[k].Date * 1000);
+                //                 }
+                //                 if (CountDriving != 0 && lstGroup[i].data[k].Speed < 1) {
+                //                     Drivinghours = Drivinghours + timeDifference(DrivingStartTime, DrivingEndTime, 'h');
+                //                     Drivingminutes = Drivingminutes + timeDifference(DrivingStartTime, DrivingEndTime, 'm');
+                //                     Drivingseconds = Drivingseconds + timeDifference(DrivingStartTime, DrivingEndTime, 's');
+                //                     CountDriving = 0;
+                //                 }
+
+                //             } else if (lstGroup[i].data[k].IsEngine == 0) {
+                //                 if (COuntEngineON != 0) {
+                //                     if (EngineOnEndDate == null || EngineOnEndDate == undefined || EngineOnEndDate == '') {
+                //                         EngineOnEndDate = EngineOnStartDate;
+                //                     } else {
+                //                         EngineOnhours = EngineOnhours + timeDifference(EngineOnStartDate, EngineOnEndDate, 'h');
+                //                         EngineOnminutes = EngineOnminutes + timeDifference(EngineOnStartDate, EngineOnEndDate, 'm');
+                //                         EngineOnseconds = EngineOnseconds + timeDifference(EngineOnStartDate, EngineOnEndDate, 's');
+
+                //                     }
+                //                     if (CountDriving != 0) {
+                //                         if (DrivingEndTime == null || DrivingEndTime == undefined || DrivingEndTime == '') {} else {
+                //                             Drivinghours = Drivinghours + timeDifference(DrivingStartTime, DrivingEndTime, 'h');
+                //                             Drivingminutes = Drivingminutes + timeDifference(DrivingStartTime, DrivingEndTime, 'm');
+                //                             Drivingseconds = Drivingseconds + timeDifference(DrivingStartTime, DrivingEndTime, 's');
+                //                         }
+                //                         CountDriving = 0;
+                //                     }
+                //                     COuntEngineON = 0;
+                //                 }
+                //                 if (COuntEngineOff == 0) {
+
+                //                     obj.DeviceId = lstGroup[i].data[k].DeviceId;
+                //                     obj.Id = lstGroup[i].data[k].Id;
+                //                     obj.ParkingTime = 0;
+                //                     StartDate = new Date(lstGroup[i].data[k].Date * 1000);
+                //                     COuntEngineOff = COuntEngineOff + 1;
+
+                //                 } else {
+                //                     obj.EndId = lstGroup[i].data[k].Id;
+                //                     EndDate = new Date(lstGroup[i].data[k].Date * 1000);
+
+                //                     obj.Date = momentz.utc(new Date(lstGroup[i].data[0].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY');
+
+                //                 }
+                //             }
+
+                //         }
+                //         if (COuntEngineON == 0 && COuntEngineOff == 0) {
+                //             obj.ParkingTime = hours + ' hours, ' + minutes + ' minutes, and ' + seconds + ' seconds';
+                //             obj.DrivingTime = EngineOnhours + ' hours, ' + EngineOnminutes + ' minutes, and ' + EngineOnseconds + ' seconds';
+                //             Array.push(obj);
+
+                //         } else {
+                //             if (COuntEngineON != 0) {
+                //                 if (EngineOnEndDate == '') {
+                //                     EngineOnhours = EngineOnhours + 0;
+                //                     EngineOnminutes = EngineOnminutes + 0;
+                //                     EngineOnseconds = EngineOnseconds + 0;
+                //                 } else {
+                //                     EngineOnhours = EngineOnhours + timeDifference(EngineOnStartDate, EngineOnEndDate, 'h');
+                //                     EngineOnminutes = EngineOnminutes + timeDifference(EngineOnStartDate, EngineOnEndDate, 'm');
+                //                     EngineOnseconds = EngineOnseconds + timeDifference(EngineOnStartDate, EngineOnEndDate, 's');
+                //                 }
+                //             }
+
+                //             if (CountDriving != 0) {
+                //                 if (DrivingEndTime == '') {
+                //                     Drivinghours = Drivinghours + 0;
+                //                     Drivingminutes = Drivingminutes + 0;
+                //                     Drivingseconds = Drivingseconds + 0;
+                //                 } else {
+                //                     Drivinghours = Drivinghours + timeDifference(DrivingStartTime, DrivingEndTime, 'h');
+                //                     Drivingminutes = Drivingminutes + timeDifference(DrivingStartTime, DrivingEndTime, 'm');
+                //                     Drivingseconds = Drivingseconds + timeDifference(DrivingStartTime, DrivingEndTime, 's');
+                //                 }
+                //             }
+
+                //             if (COuntEngineON != 0) {
+                //                 if (EndDate == '') {
+                //                     hours = hours + 0;
+                //                     minutes = minutes + 0;
+                //                     seconds = seconds + 0;
+                //                 } else {
+                //                     hours = hours + timeDifference(StartDate, EndDate, 'h');
+                //                     minutes = minutes + timeDifference(StartDate, EndDate, 'm');
+                //                     seconds = seconds + timeDifference(StartDate, EndDate, 's');
+                //                 }
+
+                //             }
+                //             if (SpeedCo > 0) {
+                //                 obj.AverageSpeed = Speed / SpeedCo;
+                //             } else {
+                //                 obj.AverageSpeed = 0
+                //             }
+                //             obj.ParkingTime = hours + ' hours, ' + minutes + ' minutes, and ' + seconds + ' seconds';
+                //             obj.EnginOnTime = EngineOnhours + ' hours, ' + EngineOnminutes + ' minutes, and ' + EngineOnseconds + ' seconds';
+                //             obj.DrivingTime = Drivinghours + ' hours, ' + Drivingminutes + ' minutes, and ' + Drivingseconds + ' seconds';
+                //             Array.push(obj);
+                //         }
+                //     }
+
+                // }
+
             } else {
                 res.json(RecordNotFound);
             }
