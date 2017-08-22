@@ -454,7 +454,7 @@ router.get('/ExportFenceReport', function(req, res) {
                         }
 
                         if (response[i].AlarmCode != null && response[i].AlarmCode != '' && response[i].AlarmCode != undefined) {
-                            if (response[i].AlarmCode == '06') {
+                            if (response[i].AlarmCode == '6') {
                                 FenceStatus = 'Fence In';
                             } else {
                                 FenceStatus = 'Fence Out';
@@ -485,7 +485,7 @@ router.get('/ExportFenceReport', function(req, res) {
                         }
 
                         if (response[i].AlarmCode != null && response[i].AlarmCode != '' && response[i].AlarmCode != undefined) {
-                            if (response[i].AlarmCode == '06') {
+                            if (response[i].AlarmCode == '6') {
                                 FenceStatus = 'Fence In';
                             } else {
                                 FenceStatus = 'Fence Out';
