@@ -1579,7 +1579,6 @@ router.get('/ExportDriverReport', function(req, res) {
             var l = 0;
             var StartVehical = 0;
             var Array = [];
-            var Mileage = 0.00;
             for (var i = 0; i < lstGroup.length; i++) {
                 StartVehical = 0;
                 var Speed6090 = 0;
@@ -1588,6 +1587,7 @@ router.get('/ExportDriverReport', function(req, res) {
                 var LocateNumber = 0;
                 var objSpeed = [];
                 var TotalRecord = 0;
+                var Mileage = 0.00;
                 if (lstGroup[i].data.length > 0) {
                     for (var k = 0; k < lstGroup[i].data.length; k++) {
                         if (lstGroup[i].data[k].IsEngine == true) {
@@ -1677,12 +1677,13 @@ router.get('/ExportDriverReport', function(req, res) {
                                 Array.push(obj);
                             }
                             StartVehical = 0;
-                            var Speed6090 = 0;
-                            var Speed90130 = 0;
-                            var Over130 = 0;
-                            var LocateNumber = 0;
-                            var objSpeed = [];
-                            var TotalRecord = 0;
+                            Speed6090 = 0;
+                            Speed90130 = 0;
+                            Over130 = 0;
+                            LocateNumber = 0;
+                            objSpeed = [];
+                            TotalRecord = 0;
+                            Mileage = 0.00;
                         }
                     }
 
