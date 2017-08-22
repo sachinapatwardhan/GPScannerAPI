@@ -663,6 +663,7 @@ router.get('/ExportEngineReport', function(req, res) {
 
                     }
                 } else {
+                    lstEngine = u.sortBy(lstEngine, function(num) { num.StartTime }).reverse();
                     GetData(0);
                 }
 
