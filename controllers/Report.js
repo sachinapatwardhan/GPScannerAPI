@@ -2409,8 +2409,10 @@ router.get('/ExportDailyStatReport', function(req, res) {
                     }
                 }
 
-
-
+                if (Array.length > 0) {
+                    var data = u.sortBy(Array, function(num) { return num.Date }).reverse();
+                    Array = data;
+                }
                 conf.rows = [];
                 GetData(0);
 
