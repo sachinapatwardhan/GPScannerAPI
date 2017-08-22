@@ -1710,7 +1710,10 @@ router.get('/ExportDriverReport', function(req, res) {
                     }
                 }
             }
-
+            if (Array.length > 0) {
+                var data = u.sortBy(Array, function(num) { return num.DrivingStartTime }).reverse();
+                Array = data;
+            }
             var Name = '';
             var DrivingStartTime = '';
             var EndDrivingTime = '';
