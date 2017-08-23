@@ -318,7 +318,6 @@ router.get('/GetAllFenceInAndOutData', function(req, res) {
     //         search += " Where tblvehicle.IsDelete = 0 AND tblvehicle.idUser = " + objParam.idUser;
     //     }
     // }
-    console.log(unixStartdate, "----", unixEnddate)
     if (objParam.DeviceId != null && objParam.DeviceId != 'All' && objParam.DeviceId != undefined && objParam.DeviceId != '-1') {
         if (search != "") {
             search += " And tblalarm.DeviceId =" + objParam.DeviceId;
@@ -349,7 +348,6 @@ router.get('/GetAllFenceInAndOutData', function(req, res) {
     }
 
     var query = "Select tblalarm.* , tblvehicle.iduser, tblvehicle.Name, tblvehicle.IsOnline from tblalarm left join tblvehicle On tblvehicle.deviceid = tblalarm.DeviceId " + search + Orderby + " LIMIT " + req.query.length + " OFFSET " + req.query.start + ";";
-    console.log(query);
     var count = "Select count(*) As Totalrecord from tblalarm left join tblvehicle On tblvehicle.deviceid = tblalarm.DeviceId " + search + ";";
     connection.query(query, function(err, response) {
 
