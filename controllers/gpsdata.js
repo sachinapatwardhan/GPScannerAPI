@@ -449,7 +449,7 @@ router.get('/ExportAlarm', function(req, res) {
 
 
     var objParam = req.query;
-    var Orderby = 'CreatedDate asc';
+    var Orderby = 'Date desc';
     var search = {};
     search['$and'] = [];
     var DeviceId = objParam.DeviceId;
