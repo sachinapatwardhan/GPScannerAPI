@@ -77,7 +77,7 @@ router.get('/GetVehicleById', function(req, res) {
 
 router.get('/GetVehicleDetailById', function(req, res) {
     var query = "SELECT tv.*, tgd.ExpiryDate, tgd.IsActive From tblvehicle as tv LEFT JOIN tblgpsdevice as tgd ON tgd.DeviceId = tv.deviceid WHERE tv.id = " + req.query.idVehicle + " LIMIT 1"
-    console.log(query);
+        // console.log(query);
     connection.query(query, function(err, rows, fields) {
         if (!err) {
             console.log(rows);
@@ -815,6 +815,14 @@ router.get('/UpdateVehicleShare', jsonParser, function(req, res) {
     connection.query("Update tblvehicle set IsShared=" + req.query.IsShared + " where deviceid='" + req.query.DeviceId + "'", function(err, rows, fields) {
         if (!err) {
             res.json({ success: true, message: 'Vehicle No. Save Successfully.' });
+
+            var objConnection = {
+                DeviceId: req.query.DeviceId,
+                // PetId: objVehicle.id,
+                Status: req.query.IsShared
+            }
+            io.sockets.emit('ShareStatus', JSON.stringify(objConnection));
+            io.sockets.emit(req.query.DeviceId + 'ShareStatus', JSON.stringify(objConnection));
         } else {
             console.log(err);
             res.json({ success: false, message: 'Vehicle No. could not save. Try again later.' });
