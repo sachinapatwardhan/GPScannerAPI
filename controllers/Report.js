@@ -3,7 +3,7 @@ var User = models.tbluserinformation;
 var Vehicle = models.tblvehicle;
 var GPSdata = models.tblgpsdata;
 var momentz = require('moment-timezone');
-
+/*------------------------------------Detailed Trip Report-------------------*/
 router.get('/GetAllGPSByTimeZoneDate', function(req, res) {
 
     wherecondition = '';
@@ -285,33 +285,47 @@ router.get('/ExportDetailTripReport', function(req, res) {
     })
 })
 
+/*------------------------------------Detailed Trip Report End-------------------*/
+
+//------------------------------------Fence in/out Report-----------------------------------------------//
 router.get('/GetAllFenceInAndOutData', function(req, res) {
     var objParam = req.query;
 
     var Orderby = 'Order By Date DESC';
     var search = "";
-    // var StartDate = convertdateformatForUnix(objParam.StartDate);
+    // var unixStartdate = new Date(objParam.StartDate).getTime() / 1000;
+    // var unixEndDate = new Date(objParam.EndDate).getTime() / 1000;
+    search = " where tblvehicle.iduser=" + req.query.idUser;
+    var Startdate = objParam.StartDate;
+    var Enddate = objParam.EndDate;
 
-    var unixStartdate = new Date(objParam.StartDate).getTime() / 1000;
+    var convertDate = convertdateformatForUnix(Startdate);
+    var unixStartdate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
 
-    // var EndDate = convertdateformatForUnix(objParam.EndDate);
+    var convertDate = convertdateformatForUnix(Enddate);
+    var unixEnddate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
 
-    var unixEndDate = new Date(objParam.EndDate).getTime() / 1000;
-
-    if (objParam.DeviceId != null && objParam.DeviceId != 'All' && objParam.DeviceId != undefined) {
+    // if (objParam.DeviceId != null && objParam.DeviceId != 'All' && objParam.DeviceId != undefined) {
+    //     if (search != "") {
+    //         search += " And tblalarm.DeviceId IN (" + objParam.DeviceId + ")";
+    //     } else {
+    //         search += " Where tblalarm.DeviceId IN (" + objParam.DeviceId + ")";
+    //     }
+    // } else {
+    //     if (search != "") {
+    //         search += " And tblvehicle.IsDelete = 0 AND tblvehicle.idUser = " + objParam.idUser;
+    //     } else {
+    //         search += " Where tblvehicle.IsDelete = 0 AND tblvehicle.idUser = " + objParam.idUser;
+    //     }
+    // }
+    console.log(unixStartdate, "----", unixEnddate)
+    if (objParam.DeviceId != null && objParam.DeviceId != 'All' && objParam.DeviceId != undefined && objParam.DeviceId != '-1') {
         if (search != "") {
-            search += " And tblalarm.DeviceId IN (" + objParam.DeviceId + ")";
+            search += " And tblalarm.DeviceId =" + objParam.DeviceId;
         } else {
-            search += " Where tblalarm.DeviceId IN (" + objParam.DeviceId + ")";
-        }
-    } else {
-        if (search != "") {
-            search += " And tblvehicle.IsDelete = 0 AND tblvehicle.idUser = " + objParam.idUser;
-        } else {
-            search += " Where tblvehicle.IsDelete = 0 AND tblvehicle.idUser = " + objParam.idUser;
+            search += " Where tblalarm.DeviceId =" + objParam.DeviceId;
         }
     }
-
     if (objParam.StartDate != null && objParam.StartDate != '' && objParam.StartDate != undefined) {
         if (search != "") {
             search += " And tblalarm.Date >= '" + unixStartdate + "'";
@@ -322,9 +336,9 @@ router.get('/GetAllFenceInAndOutData', function(req, res) {
 
     if (objParam.EndDate != null && objParam.EndDate != '' && objParam.EndDate != undefined) {
         if (search != "") {
-            search += " And tblalarm.Date <= '" + unixEndDate + "'";
+            search += " And tblalarm.Date <= '" + unixEnddate + "'";
         } else {
-            search += " Where tblalarm.Date <= '" + unixEndDate + "'";
+            search += " Where tblalarm.Date <= '" + unixEnddate + "'";
         }
     }
 
@@ -335,6 +349,7 @@ router.get('/GetAllFenceInAndOutData', function(req, res) {
     }
 
     var query = "Select tblalarm.* , tblvehicle.iduser, tblvehicle.Name, tblvehicle.IsOnline from tblalarm left join tblvehicle On tblvehicle.deviceid = tblalarm.DeviceId " + search + Orderby + " LIMIT " + req.query.length + " OFFSET " + req.query.start + ";";
+    console.log(query);
     var count = "Select count(*) As Totalrecord from tblalarm left join tblvehicle On tblvehicle.deviceid = tblalarm.DeviceId " + search + ";";
     connection.query(query, function(err, response) {
 
@@ -380,28 +395,36 @@ router.get('/ExportFenceReport', function(req, res) {
     ];
     var Orderby = 'Order By Date DESC';
     var search = "";
-    // var StartDate = convertdateformatForUnix(objParam.StartDate);
+    search = " where tblvehicle.iduser=" + req.query.idUser;
+    var Startdate = objParam.StartDate;
+    var Enddate = objParam.EndDate;
 
-    var unixStartdate = new Date(objParam.StartDate).getTime() / 1000;
+    var convertDate = convertdateformatForUnix(Startdate);
+    var unixStartdate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
 
-    // var EndDate = convertdateformatForUnix(objParam.EndDate);
+    var convertDate = convertdateformatForUnix(Enddate);
+    var unixEnddate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
 
-    var unixEndDate = new Date(objParam.EndDate).getTime() / 1000;
-
-    if (objParam.DeviceId != null && objParam.DeviceId != 'All' && objParam.DeviceId != undefined) {
+    // if (objParam.DeviceId != null && objParam.DeviceId != 'All' && objParam.DeviceId != undefined) {
+    //     if (search != "") {
+    //         search += " And tblalarm.DeviceId IN (" + objParam.DeviceId + ")";
+    //     } else {
+    //         search += " Where tblalarm.DeviceId IN (" + objParam.DeviceId + ")";
+    //     }
+    // } else {
+    //     if (search != "") {
+    //         search += " And tblvehicle.IsDelete = 0 AND tblvehicle.idUser = " + objParam.idUser;
+    //     } else {
+    //         search += " Where tblvehicle.IsDelete = 0 AND tblvehicle.idUser = " + objParam.idUser;
+    //     }
+    // }
+    if (objParam.DeviceId != null && objParam.DeviceId != 'All' && objParam.DeviceId != undefined && objParam.DeviceId != '-1') {
         if (search != "") {
-            search += " And tblalarm.DeviceId IN (" + objParam.DeviceId + ")";
+            search += " And tblalarm.DeviceId =" + objParam.DeviceId;
         } else {
-            search += " Where tblalarm.DeviceId IN (" + objParam.DeviceId + ")";
-        }
-    } else {
-        if (search != "") {
-            search += " And tblvehicle.IsDelete = 0 AND tblvehicle.idUser = " + objParam.idUser;
-        } else {
-            search += " Where tblvehicle.IsDelete = 0 AND tblvehicle.idUser = " + objParam.idUser;
+            search += " Where tblalarm.DeviceId =" + objParam.DeviceId;
         }
     }
-
     if (objParam.StartDate != null && objParam.StartDate != '' && objParam.StartDate != undefined) {
         if (search != "") {
             search += " And tblalarm.Date >= '" + unixStartdate + "'";
@@ -412,9 +435,9 @@ router.get('/ExportFenceReport', function(req, res) {
 
     if (objParam.EndDate != null && objParam.EndDate != '' && objParam.EndDate != undefined) {
         if (search != "") {
-            search += " And tblalarm.Date <= '" + unixEndDate + "'";
+            search += " And tblalarm.Date <= '" + unixEnddate + "'";
         } else {
-            search += " Where tblalarm.Date <= '" + unixEndDate + "'";
+            search += " Where tblalarm.Date <= '" + unixEnddate + "'";
         }
     }
 
@@ -513,15 +536,29 @@ router.get('/ExportFenceReport', function(req, res) {
     })
 })
 
+//------------------------------------Fence in/out Report end-----------------------------------------------//
+
+//------------------------------------Engine on/off Report-----------------------------------------------//
 router.get('/GetAllEngineData', function(req, res) {
     var objParam = req.query;
 
     var Orderby = ' Order By Date ASC';
     var search = "";
 
-    var unixStartdate = new Date(objParam.StartDate).getTime() / 1000;
+    // var unixStartdate = new Date(objParam.StartDate).getTime() / 1000;
+    // var unixEndDate = new Date(objParam.EndDate).getTime() / 1000;
 
-    var unixEndDate = new Date(objParam.EndDate).getTime() / 1000;
+    var Startdate = objParam.StartDate;
+    var Enddate = objParam.EndDate;
+
+    var convertDate = convertdateformatForUnix(Startdate);
+    var unixStartdate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
+
+    var convertDate = convertdateformatForUnix(Enddate);
+    var unixEnddate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
+
+
+
 
     if (objParam.DeviceId != null && objParam.DeviceId != 'All' && objParam.DeviceId != undefined) {
         if (search != "") {
@@ -541,18 +578,57 @@ router.get('/GetAllEngineData', function(req, res) {
 
     if (objParam.EndDate != null && objParam.EndDate != '' && objParam.EndDate != undefined) {
         if (search != "") {
-            search += " And tblgpsdata.Date <= '" + unixEndDate + "'";
+            search += " And tblgpsdata.Date <= '" + unixEnddate + "'";
         } else {
-            search += " Where tblgpsdata.Date <= '" + unixEndDate + "'";
+            search += " Where tblgpsdata.Date <= '" + unixEnddate + "'";
         }
     }
-
     var query = "SELECT tblgpsdata.Id, tblgpsdata.Datetime, tblgpsdata.Date, tblgpsdata.Latitude, tblgpsdata.Longitude, tblgpsdata.DeviceId, tblgpsdata.IsEngine, tblgpsdata.Speed, tblvehicle.Name, tblvehicle.iduser FROM tblgpsdata LEFT JOIN tblvehicle ON tblvehicle.deviceid = tblgpsdata.DeviceId " + search;
     query += Orderby;
 
     connection.query(query, function(err, response) {
         if (response != undefined) {
-            res.json(response);
+            var Array = [];
+            var COuntEngineOff = 0;
+            var COuntEngineOn = 0;
+            for (var k = 0; k < response.length; k++) {
+                if (response[k].IsEngine == 1) {
+                    if (COuntEngineOn == 0) {
+                        response[k].Status = 'Engine On';
+                        response[k].StartTime = moment(new Date(response[k].Date * 1000)).format('DD-MM-YYYY hh:mm:ss a');
+                        Array.push(response[k]);
+                    }
+                    COuntEngineOff = 0;
+                    COuntEngineOn = COuntEngineOn + 1;
+                } else {
+                    if (COuntEngineOff == 0) {
+                        response[k].Status = 'Engine Off';
+                        response[k].StartTime = momentz.utc(new Date(response[k].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
+                        Array.push(response[k]);
+                    }
+                    COuntEngineOn = 0;
+                    COuntEngineOff = COuntEngineOff + 1;
+                }
+            }
+            var DatewiseTravelledDistance = 0;
+            for (var j = 0; j < Array.length; j++) {
+                if (j != Array.length - 1) {
+                    Array[j].EndTime = Array[j + 1].StartTime;
+                    Array[j].ContinueTime = calcDateDiff(Array[j].EndTime, Array[j].StartTime);
+                } else {
+                    Array[j].EndTime = momentz.utc(new Date(response[response.length - 1].Date * 1000)).format('DD-MM-YYYY hh:mm:ss a');
+                    Array[j].ContinueTime = calcDateDiff(Array[j].EndTime, Array[j].StartTime);
+                }
+
+                if (j != Array.length - 1) {
+                    DatewiseTravelledDistance = distance(parseFloat(Array[j].Latitude), parseFloat(Array[j].Longitude), parseFloat(Array[j + 1].Latitude), parseFloat(Array[j + 1].Longitude))
+                } else {
+                    DatewiseTravelledDistance = 0;
+                }
+                Array[j].Mileage = DatewiseTravelledDistance;
+            }
+            res.json(Array);
+            //res.json(response);
         } else {
             var response1 = new Object()
             res.json(response1);
@@ -588,9 +664,17 @@ router.get('/ExportEngineReport', function(req, res) {
     var Orderby = ' Order By Date ASC';
     var search = "";
 
-    var unixStartdate = new Date(objParam.StartDate).getTime() / 1000;
+    // var unixStartdate = new Date(objParam.StartDate).getTime() / 1000;
+    // var unixEndDate = new Date(objParam.EndDate).getTime() / 1000;
+    var Startdate = objParam.StartDate;
+    var Enddate = objParam.EndDate;
 
-    var unixEndDate = new Date(objParam.EndDate).getTime() / 1000;
+    var convertDate = convertdateformatForUnix(Startdate);
+    var unixStartdate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
+
+    var convertDate = convertdateformatForUnix(Enddate);
+    var unixEnddate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
+
 
     if (objParam.DeviceId != null && objParam.DeviceId != 'All' && objParam.DeviceId != undefined) {
         if (search != "") {
@@ -610,126 +694,163 @@ router.get('/ExportEngineReport', function(req, res) {
 
     if (objParam.EndDate != null && objParam.EndDate != '' && objParam.EndDate != undefined) {
         if (search != "") {
-            search += " And tblgpsdata.Date <= '" + unixEndDate + "'";
+            search += " And tblgpsdata.Date <= '" + unixEnddate + "'";
         } else {
-            search += " Where tblgpsdata.Date <= '" + unixEndDate + "'";
+            search += " Where tblgpsdata.Date <= '" + unixEnddate + "'";
         }
     }
-
     var query = "SELECT tblgpsdata.Id, tblgpsdata.Datetime, tblgpsdata.Date, tblgpsdata.Latitude, tblgpsdata.Longitude, tblgpsdata.DeviceId, tblgpsdata.IsEngine, tblgpsdata.Speed, tblvehicle.Name, tblvehicle.iduser FROM tblgpsdata LEFT JOIN tblvehicle ON tblvehicle.deviceid = tblgpsdata.DeviceId " + search;
     query += Orderby;
     connection.query(query, function(err, response) {
+        var Array = [];
         var lstEngine = [];
+
         if (response != undefined) {
             conf.rows = [];
             var COuntEngineOff = 0;
             var COuntEngineOn = 0;
-
-            FilterArray(0);
-
-            function FilterArray(k) {
-                if (k < response.length) {
-                    if (response[k].IsEngine == 1) {
-                        if (COuntEngineOn == 0) {
-                            lstEngine.push(response[k]);
-                            COuntEngineOff = 0;
-                            COuntEngineOn = COuntEngineOn + 1;
-                            setTimeout(function() {
-                                FilterArray(k + 1);
-                            }, 10)
-
-                        } else {
-                            setTimeout(function() {
-                                FilterArray(k + 1);
-                            }, 10)
-                            COuntEngineOff = 0;
-                            COuntEngineOn = COuntEngineOn + 1;
-                        }
-                    } else {
-                        if (COuntEngineOff == 0) {
-                            lstEngine.push(response[k]);
-                            COuntEngineOn = 0;
-                            COuntEngineOff = COuntEngineOff + 1;
-                            setTimeout(function() {
-                                FilterArray(k + 1);
-                            }, 10)
-                        } else {
-                            COuntEngineOn = 0;
-                            COuntEngineOff = COuntEngineOff + 1;
-                            setTimeout(function() {
-                                FilterArray(k + 1);
-                            }, 10)
-                        }
-
+            var Array = [];
+            var COuntEngineOff = 0;
+            var COuntEngineOn = 0;
+            for (var k = 0; k < response.length; k++) {
+                if (response[k].IsEngine == 1) {
+                    if (COuntEngineOn == 0) {
+                        response[k].Status = 'Engine On';
+                        response[k].StartTime = moment(new Date(response[k].Date * 1000)).format('DD-MM-YYYY hh:mm:ss a');
+                        Array.push(response[k]);
                     }
+                    COuntEngineOff = 0;
+                    COuntEngineOn = COuntEngineOn + 1;
                 } else {
-                    lstEngine = u.sortBy(lstEngine, function(num) { num.StartTime }).reverse();
-                    GetData(0);
-                }
-
-                function GetData(i) {
-                    if (i < lstEngine.length) {
-                        var row = [];
-                        var Name = '';
-                        var Status = '';
-                        var ContinueTIme = '';
-                        var StartTime = '';
-                        var EndTime = '';
-                        var Mileage = 0.00;
-                        var DatewiseTravelledDistance = 0;
-                        if (lstEngine[i].Name != null && lstEngine[i].Name != '' && lstEngine[i].Name != undefined) {
-                            Name = lstEngine[i].Name;
-                        }
-
-                        if (lstEngine[i].IsEngine != null && lstEngine[i].IsEngine != '' && lstEngine[i].IsEngine != undefined) {
-                            if (lstEngine[i].IsEngine == 1) {
-                                Status = 'Engine On';
-                            } else {
-                                Status = 'Engine Off';
-                            }
-                        } else {
-                            Status = 'Engine Off';
-                        }
-
-                        // $scope.lstEngine[j].StartTime = $scope.lstEngine[j].DisplayDate;
-
-                        if (i != lstEngine.length - 1) {
-                            if (lstEngine[i].Date != null && lstEngine[i].Date != '' && lstEngine[i].Date != undefined) {
-                                StartTime = momentz.utc(new Date(lstEngine[i].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
-                                EndTime = momentz.utc(new Date(lstEngine[i + 1].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
-                                ContinueTime = calcDateDiff(EndTime, StartTime);
-                                // Datetime = dateformat(response[i].Datetime, 2);
-                            }
-                            if (lstEngine[i].Latitude != undefined && lstEngine[i].Latitude != null && lstEngine[i].Latitude != '' && lstEngine[i].Longitude != undefined && lstEngine[i].Longitude != null && lstEngine[i].Longitude != '') {
-                                DatewiseTravelledDistance = distance(parseFloat(lstEngine[i].Latitude), parseFloat(lstEngine[i].Longitude), parseFloat(lstEngine[i + 1].Latitude), parseFloat(lstEngine[i + 1].Longitude))
-                                Mileage = parseFloat(DatewiseTravelledDistance).toFixed(2);
-                            }
-
-                        } else {
-                            if (lstEngine[i].Date != null && lstEngine[i].Date != '' && lstEngine[i].Date != undefined) {
-                                StartTime = momentz.utc(new Date(lstEngine[i].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
-                                // EndTime = moment(new Date(response[response.length - 1].Date * 1000)).format('DD-MM-YYYY hh:mm:ss a');
-                                EndTime = momentz.utc(new Date(response[response.length - 1].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
-                                ContinueTime = calcDateDiff(EndTime, StartTime);
-                            }
-                            DatewiseTravelledDistance = 0;
-                            Mileage = parseFloat(DatewiseTravelledDistance).toFixed(2);
-                        }
-
-                        row.push(Name.toString(), Status.toString(), ContinueTime.toString(), StartTime.toString(), EndTime.toString(), Mileage.toString());
-                        conf.rows.push(row);
-
-                        setTimeout(function() {
-                            GetData(i + 1);
-                        }, 10)
-                    } else {
-                        var result = nodeExcel.execute(conf);
-                        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-                        res.setHeader("Content-Disposition", "attachment; filename=EngineOnOffDetail.xlsx");
-                        res.end(result, 'binary');
+                    if (COuntEngineOff == 0) {
+                        response[k].Status = 'Engine Off';
+                        response[k].StartTime = momentz.utc(new Date(response[k].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
+                        Array.push(response[k]);
                     }
+                    COuntEngineOn = 0;
+                    COuntEngineOff = COuntEngineOff + 1;
                 }
             }
+            var DatewiseTravelledDistance = 0;
+            for (var j = 0; j < Array.length; j++) {
+                if (j != Array.length - 1) {
+                    Array[j].EndTime = Array[j + 1].StartTime;
+                    Array[j].ContinueTime = calcDateDiff(Array[j].EndTime, Array[j].StartTime);
+                } else {
+                    Array[j].EndTime = momentz.utc(new Date(response[response.length - 1].Date * 1000)).format('DD-MM-YYYY hh:mm:ss a');
+                    Array[j].ContinueTime = calcDateDiff(Array[j].EndTime, Array[j].StartTime);
+                }
+
+                if (j != Array.length - 1) {
+                    DatewiseTravelledDistance = distance(parseFloat(Array[j].Latitude), parseFloat(Array[j].Longitude), parseFloat(Array[j + 1].Latitude), parseFloat(Array[j + 1].Longitude))
+                } else {
+                    DatewiseTravelledDistance = 0;
+                }
+                Array[j].Mileage = DatewiseTravelledDistance;
+            }
+            if (Array.length > 0) {
+                var data = u.sortBy(Array, function(num) { return num.StartTime }).reverse();
+                lstEngine = data;
+            }
+            // for (var k = 0; k < response.length; k++) {
+
+            //     if (response[k].IsEngine == 1) {
+            //         if (COuntEngineOn == 0) {
+            //             lstEngine.push(response[k]);
+            //             COuntEngineOff = 0;
+            //             COuntEngineOn = COuntEngineOn + 1;
+            //         } else {
+            //             COuntEngineOff = 0;
+            //             COuntEngineOn = COuntEngineOn + 1;
+            //         }
+            //     } else {
+            //         if (COuntEngineOff == 0) {
+            //             lstEngine.push(response[k]);
+            //             COuntEngineOn = 0;
+            //             COuntEngineOff = COuntEngineOff + 1;
+
+            //         } else {
+            //             COuntEngineOn = 0;
+            //             COuntEngineOff = COuntEngineOff + 1;
+            //         }
+
+            //     }
+
+            // }
+
+            //  function GetData(i) {
+            for (var i = 0; i < lstEngine.length; i++) {
+
+                var row = [];
+                var Name = '';
+                var Status = '';
+                var ContinueTime = '';
+                var StartTime = '';
+                var EndTime = '';
+                var Mileage = 0.00;
+                var DatewiseTravelledDistance = 0;
+                if (lstEngine[i].Name != null && lstEngine[i].Name != '' && lstEngine[i].Name != undefined) {
+                    Name = lstEngine[i].Name;
+                }
+
+                if (lstEngine[i].IsEngine != null && lstEngine[i].IsEngine != '' && lstEngine[i].IsEngine != undefined) {
+                    if (lstEngine[i].IsEngine == 1) {
+                        Status = 'Engine On';
+                    } else {
+                        Status = 'Engine Off';
+                    }
+                } else {
+                    Status = 'Engine Off';
+                }
+                if (lstEngine[i].ContinueTime != null && lstEngine[i].ContinueTime != '' && lstEngine[i].ContinueTime != undefined) {
+                    ContinueTime = lstEngine[i].ContinueTime;
+                }
+                if (lstEngine[i].StartTime != null && lstEngine[i].StartTime != '' && lstEngine[i].StartTime != undefined) {
+                    StartTime = lstEngine[i].StartTime;
+                }
+                if (lstEngine[i].Mileage != null && lstEngine[i].Mileage != '' && lstEngine[i].Mileage != undefined) {
+                    Mileage = parseFloat(lstEngine[i].Mileage).toFixed(2);
+                }
+                if (lstEngine[i].EndTime != null && lstEngine[i].EndTime != '' && lstEngine[i].EndTime != undefined) {
+                    EndTime = lstEngine[i].EndTime;
+                }
+                // Array[j].StartTime = Array[j].DisplayDate;
+
+                // if (i != lstEngine.length - 1) {
+                //     if (lstEngine[i].Date != null && lstEngine[i].Date != '' && lstEngine[i].Date != undefined) {
+                //         StartTime = momentz.utc(new Date(lstEngine[i].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
+                //         EndTime = momentz.utc(new Date(lstEngine[i + 1].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
+                //         ContinueTime = calcDateDiff(EndTime, StartTime);
+                //         // Datetime = dateformat(response[i].Datetime, 2);
+                //     }
+                //     if (lstEngine[i].Latitude != undefined && lstEngine[i].Latitude != null && lstEngine[i].Latitude != '' && lstEngine[i].Longitude != undefined && lstEngine[i].Longitude != null && lstEngine[i].Longitude != '') {
+                //         DatewiseTravelledDistance = distance(parseFloat(lstEngine[i].Latitude), parseFloat(lstEngine[i].Longitude), parseFloat(lstEngine[i + 1].Latitude), parseFloat(lstEngine[i + 1].Longitude))
+                //         Mileage = parseFloat(DatewiseTravelledDistance).toFixed(2);
+                //     }
+
+                // } else {
+                //     if (lstEngine[i].Date != null && lstEngine[i].Date != '' && lstEngine[i].Date != undefined) {
+                //         StartTime = momentz.utc(new Date(lstEngine[i].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
+                //         // EndTime = moment(new Date(response[response.length - 1].Date * 1000)).format('DD-MM-YYYY hh:mm:ss a');
+                //         EndTime = momentz.utc(new Date(response[response.length - 1].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
+                //         ContinueTime = calcDateDiff(EndTime, StartTime);
+                //     }
+                //     DatewiseTravelledDistance = 0;
+                //     Mileage = parseFloat(DatewiseTravelledDistance).toFixed(2);
+                // }
+
+                row.push(Name.toString(), Status.toString(), ContinueTime.toString(), StartTime.toString(), EndTime.toString(), Mileage.toString());
+                conf.rows.push(row);
+
+                /*setTimeout(function() {
+                    GetData(i + 1);
+                }, 10)*/
+
+            }
+            var result = nodeExcel.execute(conf);
+            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            res.setHeader("Content-Disposition", "attachment; filename=EngineOnOffDetail.xlsx");
+            res.end(result, 'binary');
         } else {
             var response1 = new Object()
             res.json(response1);
@@ -737,38 +858,47 @@ router.get('/ExportEngineReport', function(req, res) {
     })
 })
 
+//------------------------------------Engine on/off Report End-----------------------------------------------//
 /*================ LastPosition Report Start====================*/
 router.get('/GetAllVehicleLastPositionByUserIdWebApp', jsonParser, function(req, res) {
     var WhereCondition = '';
-    var StartDate = req.query.StartDate;
-    var EndDate = req.query.EndDate;
+    // var StartDate = req.query.StartDate;
+    // var EndDate = req.query.EndDate;
+    var StartDate = req.query.TodayStartDateTime;
+    var EndDate = req.query.TodayEndDateTime;
 
-    if (StartDate != '' && EndDate != '') {
-        StartDate = momentz(StartDate).format('YYYY-MM-DD HH:mm:ss');
+    var convertDate = convertdateformatForUnix(StartDate);
+    var unixStartdate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
+
+    var convertDate = convertdateformatForUnix(EndDate);
+    var unixEnddate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
+    if (StartDate != '' && EndDate != '' && StartDate != 'Invalid date' && EndDate != 'Invalid date') {
+        /*StartDate = momentz(StartDate).format('YYYY-MM-DD HH:mm:ss');
         EndDate = momentz(EndDate).format('YYYY-MM-DD HH:mm:ss');
+        console.log(StartDate, "---", EndDate);
         var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
         var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
-
+        console.log(unixStartdate, "------", unixEndDate)*/
         if (WhereCondition == '') {
-            WhereCondition = 'where Date>="' + unixStartdate + '" and Date<="' + unixEndDate + '" ';
+            WhereCondition = 'where Date>="' + unixStartdate + '" and Date<="' + unixEnddate + '" ';
         } else {
-            WhereCondition = WhereCondition + 'and Date>="' + StartDate + '" and Date<="' + EndDate + '" ';
+            WhereCondition = WhereCondition + 'and Date>="' + unixStartdate + '" and Date<="' + unixEnddate + '" ';
         }
-    } else if (StartDate != null && StartDate != '') {
-        StartDate = momentz(StartDate).format('YYYY-MM-DD HH:mm:ss');
-        var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
+    } else if (StartDate != null && StartDate != '' && StartDate != 'Invalid date') {
+        // StartDate = momentz(StartDate).format('YYYY-MM-DD HH:mm:ss');
+        // var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
         if (WhereCondition == '') {
             WhereCondition = 'where Date>="' + unixStartdate + '" ';
         } else {
             WhereCondition = WhereCondition + 'and Date>="' + unixStartdate + '" ';
         }
-    } else if (EndDate != null && EndDate != '') {
-        EndDate = momentz(EndDate).format('YYYY-MM-DD HH:mm:ss');
-        var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
+    } else if (EndDate != null && EndDate != '' && EndDate != 'Invalid date') {
+        // EndDate = momentz(EndDate).format('YYYY-MM-DD HH:mm:ss');
+        // var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
         if (WhereCondition == '') {
-            WhereCondition = 'where Date<="' + unixEndDate + '" ';
+            WhereCondition = 'where Date<="' + unixEnddate + '" ';
         } else {
-            WhereCondition = WhereCondition + 'and Date<="' + unixEndDate + '" ';
+            WhereCondition = WhereCondition + 'and Date<="' + unixEnddate + '" ';
         }
     }
     var query = "SELECT  tb.*,tpg.IsEngine,tpg.IsDoor, tpg.Latitude,tpg.Longitude,tpg.Datetime, tpg.Date, tpg.Speed, tpg.Direction FROM tblvehicle tb Inner JOIN tblgpsdata tpg ON tb.deviceid=tpg.DeviceId INNER JOIN (SELECT DeviceId, MAX(Date) as maxDate FROM (SELECT DeviceId, Date FROM tblgpsdata " + WhereCondition + "ORDER BY Date DESC) d GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId AND tpg.Date = b.maxDate WHERE iduser=" + req.query.UserId + " and IsDelete=false group by tb.deviceid order by Name LIMIT " + req.query.length + " OFFSET " + req.query.start + ";"
@@ -838,36 +968,41 @@ router.get('/ExportLastPositionDataByUserId', function(req, res) {
     var StartDate = req.query.StartDate;
     var EndDate = req.query.EndDate;
 
-    if (StartDate != '' && EndDate != '') {
-        StartDate = new Date(StartDate);
-        EndDate = new Date(EndDate);
-        var StartDate1 = momentz.utc(StartDate).format('YYYY-MM-DD HH:mm:ss');
-        var EndDate1 = momentz.utc(EndDate).format('YYYY-MM-DD HH:mm:ss');
-        var unixStartdate = new Date(StartDate1.replace(' ', 'T')).getTime() / 1000;
-        var unixEndDate = new Date(EndDate1.replace(' ', 'T')).getTime() / 1000;
+    var convertDate = convertdateformatForUnix(StartDate);
+    var unixStartdate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
+
+    var convertDate = convertdateformatForUnix(EndDate);
+    var unixEnddate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
+    if (StartDate != '' && EndDate != '' && StartDate != 'Invalid date' && EndDate != 'Invalid date') {
+        // StartDate = new Date(StartDate);
+        // EndDate = new Date(EndDate);
+        // var StartDate1 = momentz.utc(StartDate).format('YYYY-MM-DD HH:mm:ss');
+        // var EndDate1 = momentz.utc(EndDate).format('YYYY-MM-DD HH:mm:ss');
+        // var unixStartdate = new Date(StartDate1.replace(' ', 'T')).getTime() / 1000;
+        // var unixEndDate = new Date(EndDate1.replace(' ', 'T')).getTime() / 1000;
 
         if (WhereCondition == '') {
-            WhereCondition = 'where Date>="' + unixStartdate + '" and Date<="' + unixEndDate + '" ';
+            WhereCondition = 'where Date>="' + unixStartdate + '" and Date<="' + unixEnddate + '" ';
         } else {
-            WhereCondition = WhereCondition + 'and Date>="' + unixStartdate + '" and Date<="' + unixEndDate + '" ';
+            WhereCondition = WhereCondition + 'and Date>="' + unixStartdate + '" and Date<="' + unixEnddate + '" ';
         }
-    } else if (StartDate != null && StartDate != '') {
-        StartDate = new Date(StartDate);
-        var StartDate1 = momentz.utc(StartDate).format('YYYY-MM-DD HH:mm:ss');
-        var unixStartdate = new Date(StartDate1.replace(' ', 'T')).getTime() / 1000;
+    } else if (StartDate != null && StartDate != '' && StartDate != 'Invalid date') {
+        // StartDate = new Date(StartDate);
+        // var StartDate1 = momentz.utc(StartDate).format('YYYY-MM-DD HH:mm:ss');
+        // var unixStartdate = new Date(StartDate1.replace(' ', 'T')).getTime() / 1000;
         if (WhereCondition == '') {
             WhereCondition = 'where Date>="' + unixStartdate + '" ';
         } else {
             WhereCondition = WhereCondition + 'and Date>="' + unixStartdate + '" ';
         }
-    } else if (EndDate != null && EndDate != '') {
-        EndDate = new Date(EndDate);
-        var EndDate1 = momentz.utc(EndDate).format('YYYY-MM-DD HH:mm:ss');
-        var unixEndDate = new Date(EndDate1.replace(' ', 'T')).getTime() / 1000;
+    } else if (EndDate != null && EndDate != '' && EndDate != 'Invalid date') {
+        // EndDate = new Date(EndDate);
+        // var EndDate1 = momentz.utc(EndDate).format('YYYY-MM-DD HH:mm:ss');
+        // var unixEndDate = new Date(EndDate1.replace(' ', 'T')).getTime() / 1000;
         if (WhereCondition == '') {
-            WhereCondition = 'where Date<="' + unixEndDate + '" ';
+            WhereCondition = 'where Date<="' + unixEnddate + '" ';
         } else {
-            WhereCondition = WhereCondition + 'and Date<="' + unixEndDate + '" ';
+            WhereCondition = WhereCondition + 'and Date<="' + unixEnddate + '" ';
         }
     }
     connection.query("SELECT  tb.*,tpg.IsEngine,tpg.IsDoor, tpg.Latitude,tpg.Longitude,tpg.Datetime, tpg.Date, tpg.Speed, tpg.Direction FROM tblvehicle tb Inner JOIN tblgpsdata tpg ON tb.deviceid=tpg.DeviceId INNER JOIN (SELECT DeviceId, MAX(Date) as maxDate FROM (SELECT DeviceId, Date FROM tblgpsdata " + WhereCondition + "ORDER BY Date DESC) d GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId AND tpg.Date = b.maxDate WHERE iduser=" + req.query.UserId + " and IsDelete=false group by tb.deviceid order by Name;", function(err, rows, fields) {
@@ -1052,8 +1187,8 @@ router.get('/ExportLastPositionDataByUserId', function(req, res) {
     }
 });
 /*================ LastPosition Report End====================*/
-/*-------------------------Parking Report Start-----------------------*/
 
+/*-------------------------Parking Report Start-----------------------*/
 router.get('/GetAllParkingData', function(req, res) {
 
     wherecondition = '';
@@ -1069,7 +1204,6 @@ router.get('/GetAllParkingData', function(req, res) {
 
     var convertDate = convertdateformatForUnix(Enddate);
     var unixEnddate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
-
 
     var query = "select tblgpsdata.*,tblvehicle.Name from tblgpsdata inner join tblvehicle on tblgpsdata.deviceid = tblvehicle.deviceid Where tblvehicle.iduser=" + req.query.idUser + " and tblgpsdata.Date >= '" + unixStartdate + "' and tblgpsdata.Date <= '" + unixEnddate + "'" + wherecondition + ' order by tblgpsdata.Date asc' + ";"
     var Count = "select tblgpsdata.*,tblvehicle.Name from tblgpsdata inner join tblvehicle on tblgpsdata.deviceid = tblvehicle.deviceid Where tblvehicle.iduser=" + req.query.idUser + " and tblgpsdata.Date >= '" + unixStartdate + "' and tblgpsdata.Date <= '" + unixEnddate + "'" + wherecondition + ' order by tblgpsdata.Date asc' + ";"
@@ -1198,8 +1332,6 @@ router.get('/ExportParkingReport', function(req, res) {
     var convertDate = convertdateformatForUnix(Enddate);
     var unixEnddate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
 
-
-
     //    var query = "select tblgpsdata.*,tblvehicle.Name from tblgpsdata left join tblvehicle on tblgpsdata.deviceid = tblvehicle.deviceid Where tblvehicle.iduser=" + req.query.idUser + "  and tblgpsdata.Date >= '" + unixStartdate + "' and tblgpsdata.Date <= '" + unixEnddate + "'" + wherecondition + ' order by tblgpsdata.Date ASC' + ";"
     var query = "select tblgpsdata.*,tblvehicle.Name from tblgpsdata left join tblvehicle on tblgpsdata.deviceid = tblvehicle.deviceid Where tblvehicle.iduser=" + req.query.idUser + "  and tblgpsdata.Date >= '" + unixStartdate + "' and tblgpsdata.Date <= '" + unixEnddate + "'" + wherecondition + ' order by tblgpsdata.Date ASC' + ";"
 
@@ -1229,16 +1361,16 @@ router.get('/ExportParkingReport', function(req, res) {
                 if (lstGroup[i].data.length > 0) {
                     for (var k = 0; k < lstGroup[i].data.length; k++) {
                         if (lstGroup[i].data[k].IsEngine == 0) {
-                            /*if (k != 0 && momentz.utc(new Date(lstGroup[i].data[k - 1].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY') != momentz.utc(new Date(lstGroup[i].data[k].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY')) {
-                                if (obj.EndTime == null || obj.EndTime == undefined || obj.EndTime == '') {
-                                    obj.EndTime = obj.StartTime
-                                    EndDate = StartDate;
-                                    obj.ParkingTime = timeDifference(StartDate, EndDate);
-                                }
-                                Array.push(obj);
-                                COuntEngineOff = 0;
-                            }
-*/
+                            // if (k != 0 && momentz.utc(new Date(lstGroup[i].data[k - 1].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY') != momentz.utc(new Date(lstGroup[i].data[k].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY')) {
+                            //     if (obj.EndTime == null || obj.EndTime == undefined || obj.EndTime == '') {
+                            //         obj.EndTime = obj.StartTime
+                            //         EndDate = StartDate;
+                            //         obj.ParkingTime = timeDifference(StartDate, EndDate);
+                            //     }
+                            //     Array.push(obj);
+                            //     COuntEngineOff = 0;
+                            // }
+
                             if (COuntEngineOff == 0) {
                                 var obj = new Object();
                                 obj.Latitude = lstGroup[i].data[k].Latitude;
@@ -1385,6 +1517,8 @@ router.get('/ExportParkingReport', function(req, res) {
 })
 
 /*-------------------------Parking Report End-----------------------*/
+
+//---------------------------------Daily Stat. Report Start.------------------------------------//
 router.get('/GetAllDailyStatDateOld', function(req, res) {
     wherecondition = '';
     wherecondition1 = '';
@@ -1400,7 +1534,6 @@ router.get('/GetAllDailyStatDateOld', function(req, res) {
 
     var convertDate = convertdateformatForUnix(Enddate);
     var unixEnddate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
-
 
     var query = "select tblgpsdata.*,tblvehicle.Name,tblvehicle.deviceid from tblgpsdata left join tblvehicle on tblgpsdata.deviceid = tblvehicle.deviceid Where tblvehicle.iduser=" + req.query.idUser + "  and tblgpsdata.Date >= '" + unixStartdate + "' and tblgpsdata.Date <= '" + unixEnddate + "'" + wherecondition + ' order by tblgpsdata.Date asc' + ";"
     connection.query(query, function(err, response, fields) {
@@ -1717,7 +1850,6 @@ router.get('/GetAllDailyStatDate', function(req, res) {
 
     var convertDate = convertdateformatForUnix(Enddate);
     var unixEnddate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
-
 
     var query = "select tblgpsdata.*,tblvehicle.Name,tblvehicle.deviceid from tblgpsdata left join tblvehicle on tblgpsdata.deviceid = tblvehicle.deviceid Where tblvehicle.iduser=" + req.query.idUser + "  and tblgpsdata.Date >= '" + unixStartdate + "' and tblgpsdata.Date <= '" + unixEnddate + "'" + wherecondition + ' order by tblgpsdata.Date asc' + ";"
     connection.query(query, function(err, response, fields) {
@@ -2120,7 +2252,6 @@ router.get('/ExportDailyStatReport', function(req, res) {
 
     var convertDate = convertdateformatForUnix(Enddate);
     var unixEnddate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
-
 
     var query = "select tblgpsdata.*,tblvehicle.Name,tblvehicle.deviceid from tblgpsdata left join tblvehicle on tblgpsdata.deviceid = tblvehicle.deviceid Where tblvehicle.iduser=" + req.query.idUser + "  and tblgpsdata.Date >= '" + unixStartdate + "' and tblgpsdata.Date <= '" + unixEnddate + "'" + wherecondition + ' order by tblgpsdata.Date asc' + ";"
 
