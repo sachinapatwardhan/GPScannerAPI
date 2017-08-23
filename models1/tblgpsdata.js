@@ -93,11 +93,11 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     AD1: {
-      type: DataTypes.INTEGER(11),
+      type: DataTypes.STRING,
       allowNull: true
     },
     AD2: {
-      type: DataTypes.INTEGER(11),
+      type: DataTypes.STRING,
       allowNull: true
     },
     OdoMeter: {
