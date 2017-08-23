@@ -31,6 +31,7 @@ router.post('/GetPath', jsonParser, function(req, res) {
 
 });
 
+
 router.get('/ExportReport', function(req, res) {
     objTask = req.query;
     var conf = {};
@@ -62,25 +63,27 @@ router.get('/ExportReport', function(req, res) {
 
 
     var query = "select Id,Datetime, Latitude, Longitude, GPSPositioning, Speed, Direction, DeviceId,IsEngine, Date from tblgpsdata where deviceid=" + req.query.DeviceId + " and GPSPositioning='A' and Date >= '" + unixStartdate + "' and Date <= '" + unixEnddate + "' order by Datetime;"
-
     connection.query(query, function(err, response) {
         conf.rows = [];
-        GetData(0);
+        var lstTemp = [];
+
         var COuntEngineOff = 0;
+
         for (var i = 0; i < response.length; i++) {
             if (response[i].IsEngine == true) {
                 COuntEngineOff = 0;
-                $scope.lstTemp.push(response[i]);
+                lstTemp.push(response[i]);
             } else {
                 if (COuntEngineOff == 0) {
-                    $scope.lstTemp.push(response[i]);
+                    lstTemp.push(response[i]);
                 }
                 COuntEngineOff = COuntEngineOff + 1;
             }
         }
+        GetData(0);
 
         function GetData(i) {
-            if (i < $scope.lstTemp.length) {
+            if (i < lstTemp.length) {
                 var row = [];
                 var Datetime = 'N/A';
                 var longitude = 0.00;
@@ -90,25 +93,25 @@ router.get('/ExportReport', function(req, res) {
                 var Direction = 0.00;
 
 
-                if ($scope.lstTemp[i].Datetime != null && $scope.lstTemp[i].Datetime != '' && $scope.lstTemp[i].Datetime != undefined) {
+                if (lstTemp[i].Datetime != null && lstTemp[i].Datetime != '' && lstTemp[i].Datetime != undefined) {
                     // Datetime = dateformat(response[i].Datetime, 2);
-                    Datetime = momentz.utc(new Date($scope.lstTemp[i].Date * 1000)).tz(objTask.TimeZone).format('DD-MM-YYYY hh:mm:ss a')
+                    Datetime = momentz.utc(new Date(lstTemp[i].Date * 1000)).tz(objTask.TimeZone).format('DD-MM-YYYY hh:mm:ss a')
                 }
 
-                if ($scope.lstTemp[i].Latitude != null && $scope.lstTemp[i].Latitude != '' && $scope.lstTemp[i].Latitude != undefined) {
-                    Latitude = $scope.lstTemp[i].Latitude;
+                if (lstTemp[i].Latitude != null && lstTemp[i].Latitude != '' && lstTemp[i].Latitude != undefined) {
+                    Latitude = lstTemp[i].Latitude;
                 }
-                if ($scope.lstTemp[i].Longitude != null && $scope.lstTemp[i].Longitude != '' && $scope.lstTemp[i].Longitude != undefined) {
-                    Longitude = $scope.lstTemp[i].Longitude;
+                if (lstTemp[i].Longitude != null && lstTemp[i].Longitude != '' && lstTemp[i].Longitude != undefined) {
+                    Longitude = lstTemp[i].Longitude;
                 }
-                if ($scope.lstTemp[i].GPSPositioning != null && $scope.lstTemp[i].GPSPositioning != '' && $scope.lstTemp[i].GPSPositioning != undefined) {
-                    GPSPositioning = $scope.lstTemp[i].GPSPositioning;
+                if (lstTemp[i].GPSPositioning != null && lstTemp[i].GPSPositioning != '' && lstTemp[i].GPSPositioning != undefined) {
+                    GPSPositioning = lstTemp[i].GPSPositioning;
                 }
-                if ($scope.lstTemp[i].Speed != null && $scope.lstTemp[i].Speed != '' && $scope.lstTemp[i].Speed != undefined) {
-                    Speed = parseFloat($scope.lstTemp[i].Speed).toFixed(2);
+                if (lstTemp[i].Speed != null && lstTemp[i].Speed != '' && lstTemp[i].Speed != undefined) {
+                    Speed = parseFloat(lstTemp[i].Speed).toFixed(2);
                 }
-                if ($scope.lstTemp[i].Direction != null && $scope.lstTemp[i].Direction != '' && $scope.lstTemp[i].Direction != undefined) {
-                    Direction = $scope.lstTemp[i].Direction;
+                if (lstTemp[i].Direction != null && lstTemp[i].Direction != '' && lstTemp[i].Direction != undefined) {
+                    Direction = lstTemp[i].Direction;
                 }
                 var latlng = Longitude + "/" + Longitude;
                 row.push(Datetime.toString(), latlng, GPSPositioning.toString(), Speed.toString(), Direction.toString());
