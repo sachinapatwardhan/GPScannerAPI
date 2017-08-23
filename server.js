@@ -1,18 +1,28 @@
 // require('newrelic');
-var express = require('express');
+require('dotenv').config()
+global.express = require('express');
 //var router = express.Router();
-var app = express();
-var Promise = require("bluebird");
+global.app = express();
+global.Promise = require("bluebird");
 Promise.config({
     longStackTraces: true,
     warnings: true
 })
 
-var bodyParser = require('body-parser');
-var passport = require('passport');
-var jwt = require('jwt-simple');
-var nodemailer = require('nodemailer');
-var smtpTransport = require('nodemailer-smtp-transport');
+global.bodyParser = require('body-parser');
+global.jsonParser = bodyParser.json();
+global.passport = require('passport');
+global.jwt = require('jwt-simple');
+global.validator = require('validator');
+global.nodemailer = require('nodemailer');
+global.smtpTransport = require('nodemailer-smtp-transport');
+global.u = require("underscore");
+global.fs = require('fs');
+global.formidable = require('formidable');
+global.nodeExcel = require('excel-export');
+global.generatePassword = require("password-generator");
+global.geolib = require("geolib");
+global.models = require('./models1');
 global.mysql = require('mysql');
 //Import Excel File
 global.XLSX = require('xlsx');
@@ -35,18 +45,17 @@ var options = {
 };
 global.geocoder = NodeGeocoder(options);
 
+//Socket and Token
+global.SocketPort = process.env.SocketPort;
+global.SocketIPAddress = process.env.SocketIPAddress;
+global.TokenKey = process.env.TokenKey;
 
-global.MysqlHost = '192.168.1.209';
-global.Mysqluser = 'di';
-global.Mysqlpassword = 'di123##';
-global.Mysqldatabase = 'gpsscanner';
+global.MysqlHost = process.env.MysqlHost;
+global.Mysqluser = process.env.Mysqluser;
+global.Mysqlpassword = process.env.Mysqlpassword;
+global.Mysqldatabase = process.env.Mysqldatabase;
+
 //mysql connection
-// global.connection = mysql.createConnection({
-//     host: '192.168.169.39',
-//     user: 'root',
-//     password: 'upQ--xT6c3JQX9vy',
-//     database: 'gipsin'
-// });
 global.connection = mysql.createConnection({
     host: MysqlHost,
     user: Mysqluser,
@@ -54,10 +63,7 @@ global.connection = mysql.createConnection({
     database: Mysqldatabase
 });
 
-// global.RoutePath = "http://45.64.169.32:4444/";
-// global.RoutePath = "http://localhost:10026/";
-global.RoutePath = "http://localhost:7100/";
-//global.RoutePath = "http://182.70.126.194:10026/";
+global.RoutePath = process.env.RoutePath;
 
 //Push Notification
 global.PushNotifications = require('node-pushnotifications');
@@ -66,7 +72,7 @@ global.PushNotifications = require('node-pushnotifications');
 //Local
 global.PushNotificationSettings = {
     gcm: {
-        id: 'AIzaSyBA2iHOVEC3eg8CwGtneLsb3gJxXVfgfB0', // PUT YOUR GCM SERVER API KEY,
+        id: process.env.PushNotificationgcmid, // PUT YOUR GCM SERVER API KEY,
         msgcnt: 1,
         dataDefaults: {
             delayWhileIdle: false,
@@ -101,7 +107,7 @@ global.PushNotificationSettings = {
 
 // global.PushNotificationSettings = {
 //     gcm: {
-//         id: 'AIzaSyBA2iHOVEC3eg8CwGtneLsb3gJxXVfgfB0', // PUT YOUR GCM SERVER API KEY,
+//         id: process.env.PushNotificationgcmid, // PUT YOUR GCM SERVER API KEY,
 //         msgcnt: 1,
 //         dataDefaults: {
 //             delayWhileIdle: false,
@@ -135,71 +141,18 @@ global.PushNotificationSettings = {
 //schedule
 global.schedule = require('node-schedule');
 
-// function test() {
-//     console.log("test - " + new Date())
-//         // console.trace();
-//     setTimeout(test, 10000);
-// }
-
-// test();
-
-// function f() {
-//     console.log("f - " + new Date);
-// }
-
-// setInterval(f, 10000);
-
-// var rule = new schedule.RecurrenceRule();
-// //rule.dayOfWeek = [0, new schedule.Range(4, 6)];
-// //rule.hour = 5;
-// //rule.minute = 0;
-// rule.second = 10;
-
-// var j = schedule.scheduleJob(rule, function() {
-//     console.log(new Date());
-// });
-
-
-//Report
-// global.jasper = require('node-jasper')({
-//     path: __dirname + '/lib/jasperreports-5.6.0',
-//     drivers: {
-//         pg: {
-//             path: __dirname + '/lib/mysql-connector-java-5.1.39-bin.jar',
-//             class: 'com.mysql.jdbc.Driver',
-//             type: 'mysql'
-//         }
-//     },
-//     conns: {
-//         dbserver1: {
-//             host: '192.168.1.100',
-//             port: 3306,
-//             dbname: '91mai',
-//             user: 'dhaval',
-//             pass: 'dhaval',
-//             driver: 'pg'
-//         }
-//     },
-//     defaultConn: 'dbserver1'
-// });
-// var tttt = {
-//     "gateway": "gateway.sandbox.push.apple.com",
-//     "cert": __dirname + "/../resource/cert.pem",
-//     "key:": __dirname + "/../resource/key.pem",
-//     "passphrase:": "secret"
-// }
 global.PushNotificationSend = new PushNotifications(PushNotificationSettings);
 
 //Push Notification End
 
 var smtpConfig = {
-    service: "trxemail",
-    host: 'mail.trxemail.com',
-    port: 25,
+    service: process.env.SMTPService,
+    host: process.env.SMTPhost,
+    port: process.env.SMTPport,
     secure: false,
     auth: {
-        user: 'trxemail',
-        pass: 'XfYvGSU51p'
+        user: process.env.SMTPuser,
+        pass: process.env.SMTPpass
     },
     tls: {
         rejectUnauthorized: false
@@ -209,8 +162,8 @@ global.transporter = nodemailer.createTransport(smtpTransport(smtpConfig));
 
 
 //============== Send SMS ======================//
-global.api_key = 'a692ce5b';
-global.api_secret = '928903ee92ecd3e4';
+global.api_key = process.env.SMSAPIkey;
+global.api_secret = process.env.SMSapisecret;
 global.sendSMS = function(obj, callback) {
     // var SMSbody = obj.body.replace(/ /g, "%20");
     request.get({
@@ -280,13 +233,13 @@ app.get('/SendTestSMS', function(req, res) {
     })
 });
 
-
-
-var models = require("./models1");
+// var models = require("./models1");
 app.use(passport.initialize());
 app.use(function(req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept,Authorization, Access-Control-Allow-Headers");
+    res.setHeader('Access-Control-Allow-Credentials', true);
     next();
 });
 
@@ -294,8 +247,7 @@ app.use(function(req, res, next) {
 
 var http = require('http').Server(app);
 // var io = require('socket.io')(http),
-global.io = require('socket.io')(http),
-    fs = require('fs');
+global.io = require('socket.io')(http);
 
 app.get('/', function(req, res) {
     res.sendFile(__dirname + '/index.html');
@@ -311,15 +263,12 @@ app.get('/loaderio-77f8cf2fe818b42b0353bbe2a21da573', function(req, res) {
 
 app.use(express.static(__dirname + '/'));
 
-
 app.use('/customer', require('./controllers/customers'))
 app.use('/dashboard', require('./controllers/dashboard'))
 app.use('/account', require('./controllers/account'))
 
 app.use('/enquiry', require('./controllers/enquiry'))
 app.use('/vehicles', require('./controllers/vehicles'))
-
-//Pet
 
 app.use('/pettracking', require('./controllers/petTracking'))
 
@@ -329,13 +278,6 @@ app.use('/favoriteplace', require('./controllers/favoriteplace'))
     //app.use('/petshop', require('./controllers/petShop'))
 
 app.use('/carrier', require('./controllers/carrier'))
-    //app.use('/petbreed', require('./controllers/petbreed'))
-    //End of Pet
-
-//Sales
-
-
-//End of Sales
 
 //CMS
 app.use('/media', require('./controllers/media'))
@@ -343,26 +285,20 @@ app.use('/menu', require('./controllers/menu'))
 app.use('/banner', require('./controllers/banner'))
 app.use('/stickyfooter', require('./controllers/stickyfooter'))
 app.use('/widget', require('./controllers/widget'))
-
-
 app.use('/news', require('./controllers/news'))
-    //End of CMS
+
+//End of CMS
 
 
 app.use('/warehouse', require('./controllers/warehouse'))
 app.use('/vendor', require('./controllers/vendor'))
-
 app.use('/store', require('./controllers/store'))
-    //End of Master
+
 
 //User
 app.use('/role', require('./controllers/role'))
 app.use('/user', require('./controllers/user'))
 app.use('/userpermission', require('./controllers/userPermission'))
-    //End of User
-
-//User
-
 app.use('/currency', require('./controllers/currency'))
 
 //End of User
@@ -408,31 +344,14 @@ app.use('/Report', require('./controllers/Report'));
 
 //socket API End
 
-
-//app.use('/petshopaccount', require('./controllers/petshopaccount'))
-
-var PetGPS = models.tblgpsscanner;
-var PetAlarm = models.tblalarm;
-var PetResponse = models.tblapisresponse;
-var PetHandshake = models.tblhandshake;
-var Pet = models.tblpet;
-var Fence = models.tblfence;
-
-
-var geolib = require("geolib");
-
-http.listen(7212, function() {
-    console.log('listening on *:7212');
+http.listen(process.env.APIPort, function() {
+    console.log('listening on *:' + process.env.APIPort);
 });
 
-// http.listen(3333, function() {
-//     console.log('listening on *:3333');
-// });
 io.sockets.on('connection', function(socket) {
     // console.log('connection...');
     socket.on('emit_from_client', function(data) {
         // console.log('socket.io server received : ' + data);
-        // 接続しているソケット全部
         io.sockets.emit('emit_from_server', data);
     });
 
@@ -455,7 +374,6 @@ io.sockets.on('connection', function(socket) {
     //Heart Beat Data
     socket.on('Command5001', function(data) {
         // console.log('socket.io server received 5001 : ' + data);
-
         Command5001(data, function(res) {
 
         })
@@ -477,70 +395,3 @@ io.sockets.on('connection', function(socket) {
         })
     });
 });
-
-
-var PushNotification = models.tblpushnotification;
-
-function SendIOSPushNotification() {
-    console.log(__dirname + "/../resource/key.pem")
-    var deviceIds = [];
-
-    var UserId = 0;
-    var data = {
-        title: 'Fence',
-        message: "Test",
-        otherfields: {
-            deviceid: "1",
-            PetId: "2",
-            PetName: "3"
-        }
-    };
-
-    PushNotification.findAll({ where: { iduser: UserId } }).then(function(response) {
-
-        function SendNotification(i) {
-            if (i < response.length) {
-                deviceIds.push(response[i].PushNotificationId)
-                SendNotification(i + 1);
-            } else {
-                console.log(deviceIds)
-                if (deviceIds.length > 0) {
-                    PushNotificationSend.send(deviceIds, data, function(result) {
-                        console.log(result);
-                    });
-                };
-            }
-        }
-        SendNotification(0)
-    }).catch(function(error) {
-        console.log(error);
-    })
-
-}
-
-function SendPushNotification(data, UserId) {
-    var deviceIds = [];
-
-    PushNotification.findAll({ where: { iduser: UserId } }).then(function(response) {
-        console.log(response)
-
-        function SendNotification(i) {
-            if (i < response.length) {
-                deviceIds.push(response[i].PushNotificationId)
-                SendNotification(i + 1);
-            } else {
-                console.log(deviceIds)
-                if (deviceIds.length > 0) {
-
-                    PushNotificationSend.send(deviceIds, data, function(result) {
-                        console.log(result);
-                    });
-                };
-            }
-        }
-        SendNotification(0)
-    }).catch(function(error) {
-        res.json(error);
-    })
-
-}

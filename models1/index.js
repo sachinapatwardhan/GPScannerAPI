@@ -5,10 +5,10 @@ var path = require("path");
 var Sequelize = require("sequelize");
 //var env       =  "production";
 // var config    = require(path.join(__dirname, '..', 'config', 'config.json'))[env];
-var sequelize = new Sequelize("gpsscanner", "di", "di123##", {
-    host: '192.168.1.209',
+var sequelize = new Sequelize(process.env.Mysqldatabase, process.env.Mysqluser, process.env.Mysqlpassword, {
+    host: process.env.MysqlHost,
     dialect: 'mysql',
-    port: 3306,
+    port: process.env.MysqlPort,
     pool: {
         max: 5,
         min: 0,
@@ -21,23 +21,6 @@ var sequelize = new Sequelize("gpsscanner", "di", "di123##", {
 
 
 });
-
-// var sequelize = new Sequelize("Pettorway","root", "upQ--xT6c3JQX9vy", {
-//   host: '192.168.169.39',
-//   dialect: 'mysql',
-//   port:3306,
-//   pool: {
-//     max: 5,
-//     min: 0,
-//     idle: 10000
-//   },
-//   logging: false,
-//    define: {
-//         timestamps: false,
-//     }
-
-
-// });
 
 var db = {};
 

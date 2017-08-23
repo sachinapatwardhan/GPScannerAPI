@@ -1,60 +1,12 @@
-//Include
-//var express = require('express'),
-//    router = express.Router();
-//var models = require('../models1');
-//var bodyParser = require('body-parser');
-//var jsonParser = bodyParser.json()
-//var jwt = require('jwt-simple');
-//var validator = require('validator');
-//var customer = require('../models/customer');
-//var u = require("underscore");
-
-//End of Include
-
-//Global Variable
-global.SocketPort = 7020;
-global.SocketIPAddress = '127.0.0.1';
-
-global.TokenKey = "bugz";
-global.express = require('express');
 var router = express.Router();
-//global.router = express.Router();
-global.models = require('../models1');
-global.jwt = require('jwt-simple');
-global.validator = require('validator');
-global.bodyParser = require('body-parser');
-global.jsonParser = bodyParser.json();
-global.customer = require('../models/customer');
-global.u = require("underscore");
-global.app = express();
-global.fs = require('fs');
-global.formidable = require('formidable');
-global.nodeExcel = require('excel-export');
-global.generatePassword = require("password-generator");
-global.geolib = require("geolib");
-//End of Global Variable
+
 
 //Tables
-var Product = models.product;
-var ProductTag = models.producttag;
-var ProductACL = models.aclrecord;
-var ProductStore = models.storemapping;
-var ProductApplyDiscount = models.discount_appliedtoproducts;
-var ProductPictureMaping = models.product_picture_mapping;
-var MediaMgmt = models.tblmediamgmt;
-var ProductTag = models.producttag;
-var ProductAttribute = models.productattribute;
-var ProductCategory = models.product_category_mapping;
-var Category = models.tblcategorymgmt;
-var SubCategory = models.tblcategorymgmt;
-var ProductAttributeMaping = models.product_productattribute_mapping;
-var ProductAttributeValue = models.productattributevalue;
-var ProductAttribute = models.productattribute;
-var UserInRole = models.tbluserinrole;
-var Role = models.tblrole;
 var User = models.tbluserinformation;
-var PetGPS = models.tblgpsscanner;
-var CountryMgmt = models.tblcountrymgmt;
+var UserPermission = models.tbluserpermission;
+var Module = models.tblmodulemgmt;
+var Role = models.tblrole;
+var UserInRole = models.tbluserinrole;
 var AuditLog = models.tblauditlog;
 //End of Tables
 
@@ -82,9 +34,387 @@ global.RecordNotFound = {
 };
 //End of Global Message
 
-router.get('/CountryCheck', function(req, res) {
-    res.send(false);
+var https = require('https');
+
+router.get('/SendOTP', function(req, res) {
+    var data = JSON.stringify({
+        api_key: 'a692ce5b',
+        api_secret: '928903ee92ecd3e4',
+        text: 'Your One Time Password(OTP) is 1234',
+        to: '+918460533003',
+        from: 'Pettorway'
+
+    });
+
+    var options = {
+        host: 'rest.nexmo.com',
+        path: '/sms/json',
+        port: 443,
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Content-Length': Buffer.byteLength(data)
+        }
+    };
+
+    var req = https.request(options);
+
+    req.write(data);
+    req.end();
+
+    var responseData = '';
+    req.on('response', function(res1) {
+        res1.on('data', function(chunk) {
+            responseData += chunk;
+        });
+
+        res1.on('end', function() {
+            console.log(JSON.parse(responseData));
+            res.json(JSON.parse(responseData));
+        });
+    });
+});
+
+
+router.get('/SendTestMail', function(req, res) {
+
+    var mail = {
+        from: 'soham.patel@bugzstudio.com',
+        to: 'soham.patel@bugzstudio.com',
+        subject: 'hello',
+        text: 'hello world!'
+    };
+    transporter.sendMail(mail, function(error, response) {
+        if (error) {
+            res.json(error);
+        } else {
+            res.json(response);
+        }
+    });
 })
+
+
+getToken = function(headers) {
+    // console.log(headers.authorization);
+    // console.log(JSON.stringify(headers));
+    if (headers && headers.authorization) {
+        var parted = headers.authorization.split(' ');
+        if (parted.length === 2) {
+            return parted[1];
+        } else {
+            return null;
+        }
+    } else {
+        return null;
+    }
+};
+
+router.get('/EncodeData', function(req, res) {
+    var Passwordaa = req.query.data;
+    console.log(Passwordaa)
+    var EncodePass = jwt.encode(Passwordaa, "bugz");
+    // console.log(EncodePass)
+    // var DecodePass = jwt.decode(EncodePass, "bugz");
+    // console.log(DecodePass)
+    res.send(EncodePass);
+});
+
+router.get('/DecodeData', function(req, res) {
+    var Passwordaa = req.query.data;
+    // var EncodePass = jwt.encode(Passwordaa, "bugz");
+    // console.log(EncodePass)
+    var DecodePass = jwt.decode(Passwordaa, "bugz");
+    // console.log(DecodePass)
+    res.send(DecodePass);
+});
+
+app.use(express.static(__dirname + '/../MediaUploads'));
+
+router.get('/ReportExample', function(req, res) {
+
+    // var objReport = {
+    //     jasper: __dirname + '/../reports/Invoice.jasper'
+    // };
+
+    // var report = { report: objReport, data: { id: 4 } };
+    // var pdf = jasper.pdf(report);
+    // res.set({
+    //     'Content-type': 'application/pdf',
+    //     'Content-Length': pdf.length
+    // });
+    // res.send(pdf);
+
+
+})
+
+//Manage Permission to Access Methods
+global.funAccessPermission = new Object();
+global.funAccessPermission.CheckUserAccessPermission = CheckUserAccessPermission;
+
+
+function CheckUserAccessPermission(ObjParams, callback) {
+    var returnobj = {
+        success: true,
+        message: "Permission to Access...",
+    }
+
+    objHeader = ObjParams.headers;
+    var PermissionFlag = false;
+    var token = getToken(objHeader);
+
+    if (token) {
+        var objUser = jwt.decode(token, TokenKey);
+        if (objUser) {
+            //Check User Exist or not
+            User.findOne({ where: { username: objUser.username, password: objUser.password } }).then(function(UserExist) {
+                if (UserExist != null) {
+
+                    var tablename = ObjParams.query.tablename;
+                    var permission = ObjParams.query.permission;
+                    var username = objUser.username;
+
+                    //Get Module
+                    Module.findOne({ where: { Module: tablename } }).then(function(objModule) {
+                        if (objModule != null) {
+                            UserInRole.belongsTo(Role, {
+                                foreignKey: {
+                                    name: 'roleId',
+                                    allowNull: false
+                                }
+                            });
+                            UserInRole.findAll({
+                                where: { userId: UserExist.id },
+                                include: [{
+                                    model: Role
+                                }]
+                            }).then(function(strRole) {
+
+                                function uploader(i) {
+                                    if (i < strRole.length) {
+
+                                        UserPermission.findOne({ where: { idModule: objModule.id, RoleName: strRole[i].tblrole.RoleName } }).then(function(objUserPermission) {
+                                            if (objUserPermission != null) {
+
+                                                if (permission == "Added") {
+                                                    if (objUserPermission.Added == true) {
+                                                        return callback(returnobj);
+                                                    } else {
+                                                        uploader(i + 1);
+                                                    }
+                                                } else if (permission == "Show") {
+                                                    if (objUserPermission.Show == true) {
+                                                        return callback(returnobj);
+                                                    } else {
+                                                        uploader(i + 1);
+                                                    }
+                                                } else if (permission == "Modified") {
+                                                    if (objUserPermission.Modified == true) {
+                                                        return callback(returnobj);
+                                                    } else {
+                                                        uploader(i + 1);
+                                                    }
+                                                } else if (permission == "Deleted") {
+                                                    if (objUserPermission.Deleted == true) {
+                                                        return callback(returnobj);
+                                                    } else {
+                                                        uploader(i + 1);
+                                                    }
+                                                } else {
+                                                    uploader(i + 1);
+                                                }
+                                            } else {
+                                                uploader(i + 1);
+                                            }
+                                        })
+                                    } else {
+                                        return callback(NoAccessPermission)
+                                    }
+                                }
+                                uploader(0);
+
+                                if (strRole.length == 0) {
+                                    return callback(NoAccessPermission)
+                                };
+
+                            })
+                        } else {
+                            return callback(NoAccessPermission)
+                        }
+                    })
+                } else {
+                    return callback(InvalidToken);
+                }
+            })
+        } else {
+            return callback(InvalidToken);
+        };
+    } else {
+        return callback(InvalidToken);
+    }
+}
+
+//End Permission
+
+//Create Audit Log
+global.funAuditLog = new Object();
+global.funAuditLog.CreateAuditLog = CreateAuditLog;
+
+function CreateAuditLog(Method, User, Message) {
+    var objAudit = new Object();
+    objAudit.type = Method;
+    objAudit.createdby = User;
+    objAudit.createddate = new Date();
+    objAudit.message = Message;
+
+    AuditLog.create(objAudit).then(function(responseAudit) {});
+}
+var rule1 = new schedule.RecurrenceRule();
+
+var DailyUserReport = schedule.scheduleJob('0 23 * * *', function() {
+    var conf = {};
+    conf.name = "Sheet1";
+    conf.cols = [{
+        caption: 'Email',
+        type: 'string'
+    }, {
+        caption: 'TodayDevice',
+        type: 'string'
+    }, {
+        caption: 'TotalDevice',
+        type: 'string'
+    }];
+
+    connection.query("SELECT t2.email,count(t1.id) todaydevice,(select Count(*) from tblvehicle where iduser=t1.iduser and IsDelete=false) as totaldevice FROM tblvehicle t1 left join tbluserinformation t2 on t1.iduser = t2.id where date(t1.CreatedDate) = current_date() and t1.IsDelete=false group by t2.id;", function(err, response, fields) {
+        if (!err && response.length > 0) {
+            conf.rows = [];
+
+            if (response.length > 0) {
+
+                for (var i = 0; i < response.length; i++) {
+                    var row = [];
+
+                    var Email = '';
+                    var TodayDevice = '';
+                    var TotalDevice = '';
+                    if (response[i].email != null && response[i].email != '' && response[i].email != undefined) {
+                        Email = response[i].email;
+                    }
+
+                    if (response[i].todaydevice != null && response[i].todaydevice != '' && response[i].todaydevice != undefined) {
+                        TodayDevice = response[i].todaydevice.toString();
+                    }
+
+                    if (response[i].totaldevice != null && response[i].totaldevice != '' && response[i].totaldevice != undefined) {
+                        TotalDevice = response[i].totaldevice.toString();
+                    }
+                    row.push(Email, TodayDevice, TotalDevice);
+                    conf.rows.push(row);
+                }
+
+                var TodayDate = GetCurrentDate1();
+                var result = nodeExcel.execute(conf);
+                var ConsoleStream = fs.createWriteStream('MediaUploads/UserReportFileUpload/DailyUserReport__' + TodayDate + '.xlsx');
+                ConsoleStream.write(result, 'binary');
+                ConsoleStream.end();
+
+                var mail = {
+                    from: 'soham.patel@bugzstudio.com',
+                    to: 'soham.patel@bugzstudio.com',
+                    //bcc: objSetting.Value,
+                    subject: 'DailyUserReport__' + TodayDate,
+                    attachments: [{
+                        filename: 'DailyUserReport__' + TodayDate + '.xlsx',
+                        path: 'MediaUploads/UserReportFileUpload/DailyUserReport__' + TodayDate + '.xlsx', // stream this file
+                    }]
+                };
+                transporter.sendMail(mail, function(error, response) {
+
+                });
+            }
+
+        }
+    })
+});
+var rule2 = new schedule.RecurrenceRule();
+
+var MonthlyUserReport = schedule.scheduleJob('10 0 1 * *', function() {
+
+    var conf = {};
+    conf.name = "Sheet1";
+    conf.cols = [{
+        caption: 'Email',
+        type: 'string'
+    }, {
+        caption: 'ThisMonthDevice',
+        type: 'string'
+    }, {
+        caption: 'TotalDevice',
+        type: 'string'
+    }];
+
+    connection.query("SELECT t2.email,count(t1.id) ThisMonthDevice,(select Count(*) from tblvehicle where iduser=t1.iduser and IsDelete=false) as TotalDevice FROM tblvehicle t1 left join tbluserinformation t2 on t1.iduser = t2.id where MONTH(t1.CreatedDate) = MONTH(DATE_ADD(current_date(), INTERVAL 0 MONTH) - INTERVAL 1 DAY) and  YEAR(t1.CreatedDate) = YEAR(DATE_ADD(current_date(), INTERVAL 0 MONTH) - INTERVAL 1 DAY)  and t1.IsDelete=false group by t2.id;", function(err, response, fields) {
+        if (!err && response.length > 0) {
+            conf.rows = [];
+
+            if (response.length > 0) {
+                for (var i = 0; i < response.length; i++) {
+                    var row = [];
+
+                    var Email = 'N/A';
+                    var TodayDevice = 'N/A';
+                    var TotalDevice = 'N/A';
+                    if (response[i].email != null && response[i].email != '' && response[i].email != undefined) {
+                        Email = response[i].email;
+                    }
+
+                    if (response[i].ThisMonthDevice != null && response[i].ThisMonthDevice != '' && response[i].ThisMonthDevice != undefined) {
+                        ThisMonthDevice = response[i].ThisMonthDevice.toString();
+                    }
+
+                    if (response[i].TotalDevice != null && response[i].TotalDevice != '' && response[i].TotalDevice != undefined) {
+                        TotalDevice = response[i].TotalDevice.toString();
+                    }
+                    row.push(Email, ThisMonthDevice, TotalDevice);
+                    conf.rows.push(row);
+                }
+
+                var objDate = new Date();
+                var locale = "en-us";
+                var Month = objDate.toLocaleString(locale, { month: "short" });
+                var Year = objDate.getUTCFullYear();
+                var result = nodeExcel.execute(conf);
+                var ConsoleStream = fs.createWriteStream('MediaUploads/UserReportFileUpload/MonthlyUserReport__' + Month + '_' + Year + '.xlsx');
+                ConsoleStream.write(result, 'binary');
+                ConsoleStream.end();
+
+                var mail = {
+                    from: 'soham.patel@bugzstudio.com',
+                    to: 'soham.patel@bugzstudio.com',
+                    subject: 'MonthlyUserReport__' + Month + '_' + Year,
+                    attachments: [{
+                        filename: 'MonthlyUserReport__' + Month + '_' + Year + '.xlsx',
+                        path: 'MediaUploads/UserReportFileUpload/MonthlyUserReport__' + Month + '_' + Year + '.xlsx', // stream this file
+                    }]
+                };
+                transporter.sendMail(mail, function(error, response) {});
+
+            }
+        }
+    })
+});
+
+function GetCurrentDate1() {
+    var today = new Date();
+
+    var year = today.getUTCFullYear();
+    var month = today.getUTCMonth() + 1; // beware: January = 0; February = 1, etc.
+    var day = today.getUTCDate();
+
+    //return year + "-" + month + "-" + day + " " + hour + ":" + min + ":" + sec;
+
+    return ("00" + day.toString()).slice(-2) + "-" + ("00" + month.toString()).slice(-2) + "-" + ("0000" + year.toString()).slice(-4);
+}
+
 
 router.get('/GetMobileLanguageData', function(req, res) {
     // var translations = {
@@ -1466,1051 +1796,4 @@ router.get('/GetMobileLanguageData', function(req, res) {
 
     // res.json(translations);
 })
-
-
-router.get('/GetSSIDDE01', function(req, res) {
-    var SSIDData = req.query.SSIDSocket;
-    var client = new net.Socket();
-    client.connect(SocketPort, SocketIPAddress, function() {
-        console.log('Connected');
-        client.write(SSIDData);
-    });
-
-    client.on('data', function(data) {
-        console.log('Received: ' + data);
-        res.json(data.toString());
-
-        client.destroy(); // kill client after server's response
-    });
-
-    client.on('close', function() {
-        console.log('Connection closed');
-    });
-})
-
-router.get('/GetMACDW01', function(req, res) {
-    var MacData = req.query.MACSocket;
-    console.log(MacData)
-    res.json("Success");
-})
-
-var https = require('https');
-
-router.get('/SendOTP', function(req, res) {
-    var data = JSON.stringify({
-        api_key: 'a692ce5b',
-        api_secret: '928903ee92ecd3e4',
-        text: 'Your One Time Password(OTP) is 1234',
-        to: '+918460533003',
-        from: 'Pettorway'
-
-    });
-
-    var options = {
-        host: 'rest.nexmo.com',
-        path: '/sms/json',
-        port: 443,
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Content-Length': Buffer.byteLength(data)
-        }
-    };
-
-    var req = https.request(options);
-
-    req.write(data);
-    req.end();
-
-    var responseData = '';
-    req.on('response', function(res1) {
-        res1.on('data', function(chunk) {
-            responseData += chunk;
-        });
-
-        res1.on('end', function() {
-            console.log(JSON.parse(responseData));
-            res.json(JSON.parse(responseData));
-        });
-    });
-});
-
-router.get('/GetFirstUserQueryConnection', function(req, res) {
-
-    connection.query("SELECT * from tbluserinformation LIMIT 1", function(err, rows, fields) {
-        if (!err && rows.length > 0) {
-            var obj = new Object();
-            obj.status = true;
-            obj.data = rows;
-            res.json(obj);
-        } else {
-            var obj = new Object();
-            obj.status = false;
-            obj.data = err;
-            res.json(obj);
-        }
-    });
-
-});
-
-
-// function deg_to_lat_long(deg) {
-
-//     var Direction = deg.substring(deg.length - 1, deg.length);
-//     var Minute = deg.subs(deg.length - 8, deg.length - 1)
-//     var degree = deg.substring(0, deg.length - 8)
-
-//     var min = Minute.substring(0, Minute.indexOf('.'));
-//     var sec = parseFloat(Minute.substring(Minute.indexOf('.'), Minute.length)) * 60;
-
-//     sec = sec.toFixed(3);
-//     var lat_long = '';
-//     try {
-//         lat_long = geolib.useDecimal(degree + "° " + min + "' " + sec + "\" " + Direction);
-//     } catch (ex) {
-//         lat_long = parseFloat(degree) + (parseFloat(Minute) / 60);
-
-//         if (Direction == "S" || Direction == "W") {
-//             lat_long = parseFloat(lat_long) * -1;
-//         }
-//     }
-//     return lat_long;
-// }
-
-var PetGPS = models.tblgpsscanner;
-
-
-router.get('/SendTestMail', function(req, res) {
-
-    var mail = {
-        from: 'soham.patel@bugzstudio.com',
-        to: 'soham.patel@bugzstudio.com',
-        subject: 'hello',
-        text: 'hello world!'
-    };
-    transporter.sendMail(mail, function(error, response) {
-        if (error) {
-            res.json(error);
-        } else {
-            res.json(response);
-        }
-    });
-})
-
-
-// router.get('/product', function (req, res) {
-
-//     // models.sequelize.query("SELECT * FROM product where Published=true", { type: models.sequelize.QueryTypes.SELECT })
-//     //     .then(function(users) {
-//     //         // console.log(users);// We don't need spread here, since only the results will be returned for select queries
-//     //         res.json(users);
-//     //     })
-//     // models.product.find('all', { where: "Published = true" }).then(function(product) {
-
-//     //     res.json(product);
-//     // });
-
-//     models.product.findAndCountAll({ where: { Published: true }, offset: 0, limit: 10 }).then(function (products) {
-//         var user = {
-//             username: 'bugz',
-//             passowrd: 'bugz'
-//         }
-//         var token = jwt.encode(user, "bugz");
-//         // return the information including token as JSON
-//         res.json({ success: true, token: 'JWT ' + token });
-
-//     })
-
-//     // models.product.findById(2071, function(err, rows, fields) {
-//     //     // Do something...
-//     //     res.json(rows);
-//     // });
-// })
-
-getToken = function(headers) {
-    // console.log(headers.authorization);
-    // console.log(JSON.stringify(headers));
-    if (headers && headers.authorization) {
-        var parted = headers.authorization.split(' ');
-        if (parted.length === 2) {
-            return parted[1];
-        } else {
-            return null;
-        }
-    } else {
-        return null;
-    }
-};
-
-router.get('/EncodeData', function(req, res) {
-    var Passwordaa = req.query.data;
-    console.log(Passwordaa)
-    var EncodePass = jwt.encode(Passwordaa, "bugz");
-    // console.log(EncodePass)
-    // var DecodePass = jwt.decode(EncodePass, "bugz");
-    // console.log(DecodePass)
-    res.send(EncodePass);
-});
-
-router.get('/DecodeData', function(req, res) {
-    var Passwordaa = req.query.data;
-    // var EncodePass = jwt.encode(Passwordaa, "bugz");
-    // console.log(EncodePass)
-    var DecodePass = jwt.decode(Passwordaa, "bugz");
-    // console.log(DecodePass)
-    res.send(DecodePass);
-});
-
-router.get('/UpdateUsersPassword', function(req, res) {
-    // var Passwordaa = req.query.data;
-    // // var EncodePass = jwt.encode(Passwordaa, "bugz");
-    // // console.log(EncodePass)
-    // var DecodePass = jwt.decode(Passwordaa, "bugz");
-    // // console.log(DecodePass)
-    // res.send(DecodePass);
-
-    User.findAll().then(function(lstUser) {
-        function UpdatePass(i) {
-            if (i < lstUser.length) {
-
-                var objUser = lstUser[i];
-                // if (objUser.username != 'test3@test.com' && objUser.username != 'test3@test.com') {
-                var NewPassword = jwt.encode(objUser.password, "bugz");
-                objUser.updateAttributes({ password: NewPassword }).then(function(resUpdate) {
-                    UpdatePass(i + 1);
-                });
-                // } else {
-                //     UpdatePass(i + 1);
-                // }
-
-
-            } else {
-                res.send("Success")
-            }
-        }
-        UpdatePass(0)
-
-    });
-});
-
-var Merchant = models.tblmerchant;
-router.get('/UpdateMerchantPassword', function(req, res) {
-    // var Passwordaa = req.query.data;
-    // // var EncodePass = jwt.encode(Passwordaa, "bugz");
-    // // console.log(EncodePass)
-    // var DecodePass = jwt.decode(Passwordaa, "bugz");
-    // // console.log(DecodePass)
-    // res.send(DecodePass);
-
-    Merchant.findAll().then(function(lstUser) {
-        function UpdatePass(i) {
-            if (i < lstUser.length) {
-
-                var objUser = lstUser[i];
-                // if (objUser.username != 'test3@test.com' && objUser.username != 'test3@test.com') {
-                var NewPassword = jwt.encode(objUser.Password, "bugz");
-                objUser.updateAttributes({ Password: NewPassword }).then(function(resUpdate) {
-                    UpdatePass(i + 1);
-                });
-                // } else {
-                //     UpdatePass(i + 1);
-                // }
-
-
-            } else {
-                res.send("Success")
-            }
-        }
-        UpdatePass(0)
-
-    });
-});
-
-
-
-//Using Query String
-router.get('/productById', function(req, res) {
-    // console.log(req.params)
-    // console.log(req.query.ProductId)
-
-    // res.json(req.headers);
-    var token = getToken(req.headers);
-    console.log(token);
-    if (token) {
-        var decoded = jwt.decode(token, "bugz");
-        res.json(JSON.stringify(decoded));
-    }
-})
-
-app.use(express.static(__dirname + '/../MediaUploads'));
-
-router.post('/uploadExcelTest', function(req, res) {
-    var form = new formidable.IncomingForm();
-    // console.log("536 - ", form)
-    form.uploadDir = __dirname + '/../MediaUploads/FileUpload';
-    var FileName = [];
-
-    //file upload path
-    form.parse(req, function(err, fields, files) {
-        // console.log(err)
-        // console.log("543 - ", fields)
-        // console.log("544 - " + JSON.stringify(files))
-        //you can get fields here
-
-
-    });
-    form.on('fileBegin', function(name, file) {
-        // console.log("548 - ", file)
-        file.path = form.uploadDir + "/" + file.name;
-        FileName.push(file.path);
-        // var reader = new FileReader();
-        // var name1 = file.name;
-        // reader.onload = function(e) {
-        //     var data = e.target.result;
-
-        //     var workbook = XLSX.read(data, { type: 'binary' });
-        //     //console.log(workbook)
-        //     var first_sheet_name = workbook.SheetNames[0];
-        //     var worksheet = workbook.Sheets[first_sheet_name];
-        //     var lst = [];
-
-        //     lst = XLSX.utils.sheet_to_json(worksheet);
-
-        //     // console.log(worksheet['A1'].v);
-        //     // var obj = new Object();
-        //     // var lastcolumn = "A";
-        //     // var lastRow = "2";
-        //     // var Firstcolumn = "A";
-        //     // var FirstRow = "2";
-        //     // for (z in worksheet) {
-
-        //     //     /* all keys that do not begin with "!" correspond to cell addresses */
-        //     //     if (z[0] === '!') {
-        //     //         continue;
-        //     //     }
-        //     //     var str = z.match(/(\d+|[^\d]+)/g).join(',');
-        //     //     var rowcol = str.split(',');
-
-        //     //     // var row = z.substring(1, z.length);
-        //     //     // var col = z.substring(0, 1);
-
-        //     //     var row = rowcol[1];
-        //     //     var col = rowcol[0];
-
-        //     //     if (col == Firstcolumn && row != '1' && row != '2') {
-        //     //         lst.push(obj);
-        //     //         obj = new Object();
-        //     //     }
-
-        //     //     if (row != '1') {
-        //     //         obj[worksheet[col + '1'].v] = worksheet[z].v;
-        //     //     };
-
-        //     //     // lst.push(col + ' - ' + row + ' - ' + z);
-        //     //     // console.log("0!" + z + "=" + JSON.stringify(worksheet[z].v));
-        //     // }
-        //     // lst.push(obj);
-
-        //     res.json(lst);
-
-        // };
-        // reader.readAsBinaryString(file);
-
-
-        // file.path = form.uploadDir + "/" + file.name;
-        // FileName.push(file.name);
-        // console.log("550 - ", FileName);
-        //modify file path
-    });
-    form.on('end', function() {
-        // var i = 0;
-        var lst = [];
-        if (FileName.length > 0) {
-            var workbook = XLSX.readFile(FileName[0], {
-                type: 'binary'
-            });
-
-            var first_sheet_name = workbook.SheetNames[0];
-            var worksheet = workbook.Sheets[first_sheet_name];
-
-
-            lst = XLSX.utils.sheet_to_json(worksheet);
-            res.json(lst);
-
-        } else {
-            res.json(lst);
-        };
-        // function uploader(i) {
-        //     if (i < FileName.length) {
-
-        //         var objMedia = {
-        //             FileName: FileName[i],
-        //             Author: 'ashish@bugzstudio.com',
-        //             Caption: null,
-        //             AltText: null,
-        //             Description: null,
-        //             Name: FileName[i].substring(0, FileName[i].indexOf('.')),
-        //         };
-
-        //         Media.findOrCreate({ where: { FileName: objMedia.FileName }, defaults: objMedia }).then(function(response) {
-
-        //             if ((i + 1) == FileName.length) {
-        //                 res.json({ success: true, data: response, message: "Images Uploaded Successfully..." });
-        //             } else {
-        //                 uploader(i + 1);
-        //             };
-
-        //         })
-        //     }
-        // }
-        // uploader(i);
-        // if (FileName.length == 0) {
-        //     res.json({ success: false, message: "Please Select atleast One File..." });
-        // };
-        // res.sendStatus(200);
-        //when finish all process
-    });
-});
-
-var PetDevice = models.tblgpsdevice;
-router.get('/uploadExcelDevice', function(req, res) {
-    var form = new formidable.IncomingForm();
-    // console.log("536 - ", form)
-    var FileName = __dirname + '/../MediaUploads/FileUpload/DeviceList.xlsx';
-    var DeviceType = req.query.Type;
-    var IsOldDevice = req.query.IsOldDevice;
-    // var i = 0;
-    var lst = [];
-    if (FileName.length > 0) {
-        var workbook = XLSX.readFile(FileName, {
-            type: 'binary'
-        });
-
-        var first_sheet_name = workbook.SheetNames[0];
-        var worksheet = workbook.Sheets[first_sheet_name];
-
-
-        lst = XLSX.utils.sheet_to_json(worksheet);
-
-        function addDevice(i) {
-            if (i < lst.length) {
-                var obj = new Object();
-                obj.DeviceId = lst[i].DeviceId.trim();
-                obj.IMEI = lst[i].DeviceId.trim();
-                obj.CreatedDate = new Date();
-                obj.Latitude = '22.54967667';
-                obj.Longitude = '114.0822583';
-                obj.speed = '0.1';
-                obj.Direction = '323.87';
-                obj.Type = DeviceType;
-                obj.IsOldDevice = IsOldDevice;
-                obj.CreatedBy = "Admin";
-
-                PetDevice.findOrCreate({
-                    where: { DeviceId: obj.DeviceId },
-                    defaults: obj
-                }).then(function(response) {
-                    addDevice(i + 1);
-                })
-
-            } else {
-                res.json(lst);
-            }
-        }
-        addDevice(0)
-
-
-
-    } else {
-        res.json(lst);
-    };
-
-
-});
-
-var Banner = models.tblbanner;
-
-router.get('/ReportExample', function(req, res) {
-
-    // var objReport = {
-    //     jasper: __dirname + '/../reports/Invoice.jasper'
-    // };
-
-    // var report = { report: objReport, data: { id: 4 } };
-    // var pdf = jasper.pdf(report);
-    // res.set({
-    //     'Content-type': 'application/pdf',
-    //     'Content-Length': pdf.length
-    // });
-    // res.send(pdf);
-
-
-})
-
-//Import Excel User
-router.get('/ImportUserByAPI', jsonParser, function(req, res) {
-    var i = 1130;
-    var LastRow = 1300;
-
-    function SaveUser(i) {
-        console.log(i);
-        request.get({
-            url: 'http://www.pettorway.net:8012/GetDataService.aspx?method=getEnterpriseByID&id=' + i + '&mds=6b9f7ada1b98e283',
-        }, function(error, response, body) {
-            var data = eval('(' + body + ')');
-            if (data.success == true) {
-                var objUser = new Object();
-                if (validator.isEmail(data.data.name)) {
-                    objUser.email = data.data.name;
-                } else {
-                    objUser.email = null;
-                }
-                objUser.username = data.data.loginName;
-                objUser.password = null;
-                // if (data.data.phone == '') {
-                objUser.phone = null;
-                // } else {
-                //     objUser.phone = data.data.phone;
-                // }
-
-                objUser.ProfileName = data.data.name;
-                objUser.createdby = "Admin";
-                objUser.createddate = new Date();
-                objUser.IsMobileVerify = 0;
-                User.findOne({
-                        where: {
-                            username: objUser.username
-                        }
-                    }).then(function(chkUserExist) {
-                        if (chkUserExist == null) {
-                            User.create(objUser).then(function(resUser) {
-                                var objUserInRole = {
-                                    userId: resUser.id,
-                                    roleId: 3,
-                                }
-                                UserInRole.create(objUserInRole).then(function(resUserInRole) {
-                                    if ((i + 1) == LastRow) {
-                                        res.json({
-                                            success: true,
-                                            message: "Users Created successfully..."
-                                        });
-                                    } else {
-                                        SaveUser(i + 1);
-                                    }
-                                })
-                            }).catch(function(error) {
-                                console.log("In Catch..................................");
-                                objUser.email = null;
-                                User.create(objUser).then(function(resUser) {
-                                    var objUserInRole1 = {
-                                        userId: resUser.id,
-                                        roleId: 3,
-                                    }
-                                    UserInRole.create(objUserInRole1).then(function(resUserInRole) {
-                                        if ((i + 1) == LastRow) {
-                                            res.json({
-                                                success: true,
-                                                message: "Users Created successfully..."
-                                            });
-                                        } else {
-                                            SaveUser(i + 1);
-                                        }
-                                    })
-                                })
-                            })
-                        } else {
-                            console.log(i + " User already exist...");
-                            SaveUser(i + 1);
-                        }
-                    })
-                    //res.json(data);
-
-            } else {
-                SaveUser(i + 1);
-                //res.json('false1');
-            }
-        })
-    }
-
-    SaveUser(i);
-});
-
-
-//Import Device by User
-router.get('/ImportUserIdByAPI', jsonParser, function(req, res) {
-    var i = 1045;
-    // var LastRow = 1300;
-    var LastRow = 1300;
-
-    function SaveUser(i) {
-        console.log("i=" + i);
-        if (i <= 1300) {
-            request.get({
-                url: 'http://www.pettorway.net//TrackService.aspx?method=getUserAndGPSInfoUtc&school_id=4&custid=' + i + '&mds=c8fed323540a5533&mapType=GOOGLE&option=en&timestamp=1468845866397',
-            }, function(error, response, body) {
-                var data = eval('(' + body + ')');
-
-                var lstDevice = data.records
-                    // console.log(obj[11])
-                    // console.log(obj[12])
-                    // res.json(obj.length);
-                console.log(lstDevice.length)
-
-                function GetGPS(j) {
-                    if (j < lstDevice.length) {
-                        console.log("j=" + j)
-                        var obj = lstDevice[j];
-                        var DeviceId = obj[11];
-                        console.log("DeviceId=" + DeviceId)
-                        var User_Id = obj[12];
-                        request.get({
-                            url: 'http://www.pettorway.net//GetDataService.aspx?method=getHistoryMByMUtc&option=en&mds=c8fed323540a5533&school_id=4&userID=' + User_Id + '&mapType=GOOGLE&pwd=123456&from=1460897813000&to=1463910669000',
-                        }, function(error, response, body) {
-                            if (body.indexOf('html') == -1) {
-                                if (body.length > 0) {
-                                    console.log("--------------------------------------------------")
-                                    console.log(body);
-                                    console.log("--------------------------------------------------")
-                                    var lstgpsData = body.replace('"', '').replace('"', '').split(';');
-                                    if (lstgpsData.length > 0) {
-                                        function gpsdata(k) {
-                                            if (k < lstgpsData.length) {
-                                                if (lstgpsData[k].length > 0) {
-                                                    console.log("--------------------------------------------------")
-                                                    console.log(lstgpsData[k])
-                                                    var gpsstring = lstgpsData[k].split(',');
-                                                    console.log("--------------------------------------------------")
-                                                    console.log(gpsstring)
-                                                    console.log("--------------------------------------------------")
-                                                    var latitude = gpsstring[0];
-                                                    var longitude = gpsstring[1];
-                                                    var datedata = parseFloat(gpsstring[2]);
-                                                    console.log(datedata)
-                                                    var d = new Date(datedata);
-                                                    console.log(d)
-                                                    var formattedDate = d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate();
-                                                    var hours = (d.getHours() < 10) ? "0" + d.getHours() : d.getHours();
-                                                    var minutes = (d.getMinutes() < 10) ? "0" + d.getMinutes() : d.getMinutes();
-                                                    var seconds = (d.getSeconds() < 10) ? "0" + d.getSeconds() : d.getSeconds();
-                                                    var formattedTime = hours + ":" + minutes + ":" + seconds;
-
-                                                    var gpsdate = formattedDate + " " + formattedTime;
-                                                    console.log(gpsdate)
-
-                                                    var speed = gpsstring[3];
-                                                    var direction = gpsstring[4];
-
-                                                    // var query = "INSERT INTO tblgpsscanner (Datetime,Latitude,Longitude,GPSPositioning,Speed,Direction,Status,ReservedSign,ReservedSelection,DeviceId,IsAdvanture ) VALUES ('" + gpsdate + "', '" + latitude + "', '" + longitude + "', 'A', '" + speed + "', '" + direction + "', '00000000', 'L', '00000000', '" + DeviceId + "',1);";
-                                                    // connection.query(query, function(err, rows, fields) {
-                                                    //     console.log(err);
-                                                    //     gpsdata(k + 1);
-
-                                                    // });
-
-                                                    var objNavigation = {
-                                                        DeviceId: DeviceId,
-                                                        Datetime: gpsdate,
-                                                        GPSPositioning: 'A',
-                                                        Latitude: latitude,
-                                                        Longitude: longitude,
-                                                        Speed: speed,
-                                                        Direction: direction,
-                                                        Status: '00000000',
-                                                        ReservedSign: 'L',
-                                                        ReservedSelection: '00000000',
-                                                    }
-
-                                                    PetGPS.findOrCreate({
-                                                        where: {
-                                                            DeviceId: DeviceId,
-                                                            Datetime: gpsdate
-                                                        },
-                                                        defaults: objNavigation
-                                                    }).then(function(response) {
-                                                        console.log("true")
-                                                        gpsdata(k + 1);
-                                                    });
-
-                                                } else {
-                                                    gpsdata(k + 1);
-                                                }
-                                            } else {
-                                                GetGPS(j + 1);
-                                            };
-                                        }
-                                        if (i == 1045 && j == 0) {
-                                            gpsdata(39);
-                                        } else {
-                                            gpsdata(0);
-                                        }
-                                    } else {
-                                        GetGPS(j + 1);
-                                    }
-                                } else {
-                                    GetGPS(j + 1);
-                                }
-                            } else {
-                                GetGPS(j + 1);
-                            };
-                        });
-
-
-                    } else {
-                        SaveUser(i + 1);
-                    };
-                }
-                if (i == 4) {
-                    GetGPS(517)
-                } else {
-                    GetGPS(0)
-                }
-            })
-        } else {
-            res.json({
-                success: true,
-                message: "Data Import Successfully."
-            });
-        };
-    }
-
-    SaveUser(i);
-});
-
-//End of Import Excel USer
-
-//Manage Permission to Access Methods
-global.funAccessPermission = new Object();
-global.funAccessPermission.CheckUserAccessPermission = CheckUserAccessPermission;
-var User = models.tbluserinformation;
-var UserPermission = models.tbluserpermission;
-var Module = models.tblmodulemgmt;
-var Role = models.tblrole;
-var UserInRole = models.tbluserinrole;
-
-function CheckUserAccessPermission(ObjParams, callback) {
-    var returnobj = {
-        success: true,
-        message: "Permission to Access...",
-    }
-
-    objHeader = ObjParams.headers;
-    var PermissionFlag = false;
-    var token = getToken(objHeader);
-
-    if (token) {
-        var objUser = jwt.decode(token, TokenKey);
-        if (objUser) {
-            //Check User Exist or not
-            User.findOne({ where: { username: objUser.username, password: objUser.password } }).then(function(UserExist) {
-                if (UserExist != null) {
-
-                    var tablename = ObjParams.query.tablename;
-                    var permission = ObjParams.query.permission;
-                    var username = objUser.username;
-
-                    //Get Module
-                    Module.findOne({ where: { Module: tablename } }).then(function(objModule) {
-                        if (objModule != null) {
-                            UserInRole.belongsTo(Role, {
-                                foreignKey: {
-                                    name: 'roleId',
-                                    allowNull: false
-                                }
-                            });
-                            UserInRole.findAll({
-                                where: { userId: UserExist.id },
-                                include: [{
-                                    model: Role
-                                }]
-                            }).then(function(strRole) {
-
-                                function uploader(i) {
-                                    if (i < strRole.length) {
-
-                                        UserPermission.findOne({ where: { idModule: objModule.id, RoleName: strRole[i].tblrole.RoleName } }).then(function(objUserPermission) {
-                                            if (objUserPermission != null) {
-
-                                                if (permission == "Added") {
-                                                    if (objUserPermission.Added == true) {
-                                                        return callback(returnobj);
-                                                    } else {
-                                                        uploader(i + 1);
-                                                    }
-                                                } else if (permission == "Show") {
-                                                    if (objUserPermission.Show == true) {
-                                                        return callback(returnobj);
-                                                    } else {
-                                                        uploader(i + 1);
-                                                    }
-                                                } else if (permission == "Modified") {
-                                                    if (objUserPermission.Modified == true) {
-                                                        return callback(returnobj);
-                                                    } else {
-                                                        uploader(i + 1);
-                                                    }
-                                                } else if (permission == "Deleted") {
-                                                    if (objUserPermission.Deleted == true) {
-                                                        return callback(returnobj);
-                                                    } else {
-                                                        uploader(i + 1);
-                                                    }
-                                                } else {
-                                                    uploader(i + 1);
-                                                }
-                                            } else {
-                                                uploader(i + 1);
-                                            }
-                                        })
-                                    } else {
-                                        return callback(NoAccessPermission)
-                                    }
-                                }
-                                uploader(0);
-
-                                if (strRole.length == 0) {
-                                    return callback(NoAccessPermission)
-                                };
-
-                            })
-                        } else {
-                            return callback(NoAccessPermission)
-                        }
-                    })
-                } else {
-                    return callback(InvalidToken);
-                }
-            })
-        } else {
-            return callback(InvalidToken);
-        };
-    } else {
-        return callback(InvalidToken);
-    }
-}
-
-//End Permission
-
-//Check country IsEurop or not
-router.get('/GetEuropeCountry', function(req, res) {
-    console.log("---------------------------------------")
-    console.log(req.connection.remoteAddress)
-    console.log("---------------------------------------")
-    request.get({
-        url: 'https://restcountries.eu/rest/v1/region/europe',
-    }, function(error, response, body) {
-        var data = eval('(' + body + ')');
-        console.log(data)
-        var objEuropeCountry = data
-        var count = 0;
-
-        function SaveCountry(i) {
-            if (i < objEuropeCountry.length) {
-                CountryMgmt.findOne({ where: { Country: objEuropeCountry[i].name } }).then(function(response) {
-                    if (response != null) {
-                        response.updateAttributes({ IsEurope: true }).then(function(resUpdate) {
-                            SaveCountry(i + 1);
-                            count = count + 1;
-                        });
-                    } else {
-                        SaveCountry(i + 1);
-                    }
-                })
-            } else {
-                res.json({
-                    success: true,
-                    data: count
-                });
-            }
-        }
-        SaveCountry(0);
-
-    })
-});
-
-//Create Audit Log
-global.funAuditLog = new Object();
-global.funAuditLog.CreateAuditLog = CreateAuditLog;
-
-function CreateAuditLog(Method, User, Message) {
-    var objAudit = new Object();
-    objAudit.type = Method;
-    objAudit.createdby = User;
-    objAudit.createddate = new Date();
-    objAudit.message = Message;
-
-    AuditLog.create(objAudit).then(function(responseAudit) {});
-}
-var rule1 = new schedule.RecurrenceRule();
-// rule1.hour = 6;
-// rule1.minute = 0;
-// rule1.second = 0;
-var DailyUserReport = schedule.scheduleJob('0 23 * * *', function() {
-    var conf = {};
-    conf.name = "Sheet1";
-    conf.cols = [{
-        caption: 'Email',
-        type: 'string'
-    }, {
-        caption: 'TodayDevice',
-        type: 'string'
-    }, {
-        caption: 'TotalDevice',
-        type: 'string'
-    }];
-
-    connection.query("SELECT t2.email,count(t1.id) todaydevice,(select Count(*) from tblbike where iduser=t1.iduser and IsDeleted=false and DeviceType='M2-U') as totaldevice FROM tblbike t1 left join tbluserinformation t2 on t1.iduser = t2.id where date(t1.CreatedDate) = current_date() and t1.IsDeleted=false and DeviceType='M2-U' group by t2.id;", function(err, response, fields) {
-        if (!err && response.length > 0) {
-            conf.rows = [];
-            GetData1(0);
-
-            function GetData1(i) {
-                if (i < response.length) {
-                    var row = [];
-
-                    var Email = '';
-                    var TodayDevice = '';
-                    var TotalDevice = '';
-                    if (response[i].email != null && response[i].email != '' && response[i].email != undefined) {
-                        Email = response[i].email;
-                    }
-
-                    if (response[i].todaydevice != null && response[i].todaydevice != '' && response[i].todaydevice != undefined) {
-                        TodayDevice = response[i].todaydevice.toString();
-                    }
-
-                    if (response[i].totaldevice != null && response[i].totaldevice != '' && response[i].totaldevice != undefined) {
-                        TotalDevice = response[i].totaldevice.toString();
-                    }
-                    row.push(Email, TodayDevice, TotalDevice);
-                    conf.rows.push(row);
-                    GetData1(i + 1);
-                } else {
-                    var TodayDate = GetCurrentDate1();
-                    var result = nodeExcel.execute(conf);
-                    var ConsoleStream = fs.createWriteStream('MediaUploads/DailyUserReportFileUpload/DailyUserReport__' + TodayDate + '.xlsx');
-                    ConsoleStream.write(result, 'binary');
-                    ConsoleStream.end();
-
-                    var mail = {
-                        from: 'jaystamakuwala@gmail.com',
-                        to: 'jaystamakuwala@gmail.com',
-                        //bcc: objSetting.Value,
-                        subject: 'DailyUserReport__' + TodayDate,
-                        attachments: [{
-                            filename: 'DailyUserReport__' + TodayDate + '.xlsx',
-                            path: 'MediaUploads/DailyUserReportFileUpload/DailyUserReport__' + TodayDate + '.xlsx', // stream this file
-                        }]
-                    };
-                    transporter.sendMail(mail, function(error, response) {
-                        if (error) {
-                            // res.json(error);
-                        } else {
-                            //funAuditLog.CreateAuditLog('forgotpassword', objUser.username, 'forgot User Password');
-                            // res.json({
-                            //     success: true,
-                            //     message: "Password sent to your email successfully...",
-                            //     data: response
-                            // });
-                        }
-                    });
-                }
-            }
-        }
-    })
-});
-var rule2 = new schedule.RecurrenceRule();
-// rule2.hour = 0;
-// rule2.minute = 55;
-// rule2.second = 0;
-// rule2.date = 1;
-//rule2.minute = new schedule.Range(0, 59, 1);
-var MonthlyUserReport = schedule.scheduleJob('10 0 1 * *', function() {
-    var conf = {};
-    conf.name = "Sheet1";
-    conf.cols = [{
-        caption: 'Email',
-        type: 'string'
-    }, {
-        caption: 'ThisMonthDevice',
-        type: 'string'
-    }, {
-        caption: 'TotalDevice',
-        type: 'string'
-    }];
-
-    connection.query("SELECT t2.email,count(t1.id) ThisMonthDevice,(select Count(*) from tblbike where iduser=t1.iduser and IsDeleted=false and DeviceType='M2-U') as TotalDevice FROM tblbike t1 left join tbluserinformation t2 on t1.iduser = t2.id where MONTH(t1.CreatedDate) = MONTH(DATE_ADD(current_date(), INTERVAL 0 MONTH) - INTERVAL 1 DAY) and  YEAR(t1.CreatedDate) = YEAR(DATE_ADD(current_date(), INTERVAL 0 MONTH) - INTERVAL 1 DAY)  and t1.IsDeleted=false and DeviceType='M2-U' group by t2.id;", function(err, response, fields) {
-        if (!err && response.length > 0) {
-            conf.rows = [];
-            GetData(0);
-
-            function GetData(i) {
-                if (i < response.length) {
-                    var row = [];
-
-                    var Email = 'N/A';
-                    var TodayDevice = 'N/A';
-                    var TotalDevice = 'N/A';
-                    if (response[i].email != null && response[i].email != '' && response[i].email != undefined) {
-                        Email = response[i].email;
-                    }
-
-                    if (response[i].ThisMonthDevice != null && response[i].ThisMonthDevice != '' && response[i].ThisMonthDevice != undefined) {
-                        ThisMonthDevice = response[i].ThisMonthDevice.toString();
-                    }
-
-                    if (response[i].TotalDevice != null && response[i].TotalDevice != '' && response[i].TotalDevice != undefined) {
-                        TotalDevice = response[i].TotalDevice.toString();
-                    }
-                    row.push(Email, ThisMonthDevice, TotalDevice);
-                    conf.rows.push(row);
-                    GetData(i + 1);
-                } else {
-                    var objDate = new Date();
-                    var locale = "en-us";
-                    var Month = objDate.toLocaleString(locale, { month: "short" });
-                    var Year = objDate.getUTCFullYear();
-                    var result = nodeExcel.execute(conf);
-                    var ConsoleStream = fs.createWriteStream('MediaUploads/MonthlyUserReportFileUpload/MonthlyUserReport__' + Month + '_' + Year + '.xlsx');
-                    ConsoleStream.write(result, 'binary');
-                    ConsoleStream.end();
-
-                    var mail = {
-                        from: objSystemEmail.DefaultEmailFrom,
-                        to: objUser.email,
-                        //bcc: objSetting.Value,
-                        subject: 'MonthlyUserReport__' + Month + '_' + Year,
-                        attachments: [{
-                            filename: 'MonthlyUserReport__' + Month + '_' + Year + '.xlsx',
-                            path: 'MediaUploads/MonthlyUserReportFileUpload/MonthlyUserReport__' + Month + '_' + Year + '.xlsx', // stream this file
-                        }]
-                    };
-                    transporter.sendMail(mail, function(error, response) {
-                        if (error) {
-                            // res.json(error);
-                        } else {
-                            //funAuditLog.CreateAuditLog('forgotpassword', objUser.username, 'forgot User Password');
-                            // res.json({
-                            //     success: true,
-                            //     message: "Password sent to your email successfully...",
-                            //     data: response
-                            // });
-                        }
-                    });
-                }
-            }
-        }
-    })
-});
-
-function GetCurrentDate1() {
-    var today = new Date();
-
-    var year = today.getUTCFullYear();
-    var month = today.getUTCMonth() + 1; // beware: January = 0; February = 1, etc.
-    var day = today.getUTCDate();
-
-    //return year + "-" + month + "-" + day + " " + hour + ":" + min + ":" + sec;
-
-    return ("00" + day.toString()).slice(-2) + "-" + ("00" + month.toString()).slice(-2) + "-" + ("0000" + year.toString()).slice(-4);
-}
 module.exports = router
