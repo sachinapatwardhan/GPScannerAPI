@@ -5,7 +5,6 @@ var GPSdata = models.tblgpsdata;
 var momentz = require('moment-timezone');
 /*------------------------------------Detailed Trip Report-------------------*/
 router.get('/GetAllGPSByTimeZoneDate', function(req, res) {
-
     wherecondition = '';
     if (req.query.DeviceId != 'All' && req.query.DeviceId != '-1' && req.query.DeviceId != null) {
         wherecondition = ' and tblgpsdata.deviceid=' + req.query.DeviceId;
@@ -904,7 +903,7 @@ router.get('/GetAllVehicleLastPositionByUserIdWebApp', jsonParser, function(req,
     connection.query(query, function(err, rows, fields) {
         if (!err) {
             for (var i = 0; i < rows.length; i++) {
-                rows[i].Time = momentz.utc(rows[i].Date * 1000).format('DD-MM-YYYY HH:mm:ss')
+                rows[i].Time = momentz.utc(rows[i].Date * 1000).format('DD-MM-YYYY HH:mm:ss a')
             }
             connection.query(count, function(error, count, fields) {
                 res.json({ success: true, data: rows, Totalrecord: count.length });
