@@ -167,7 +167,6 @@ router.get('/DeleteBike', function(req, res) {
 });
 
 router.get('/GetVehicleCurrentLocation', function(req, res) {
-
     var Startdate = new Date();
 
     var convertDate = convertdateformatForUnix(Startdate);
@@ -185,6 +184,22 @@ router.get('/GetVehicleCurrentLocation', function(req, res) {
             res.json({ success: true, data: response });
         } else {
             res.json(RecordNotFound);
+        }
+    })
+});
+
+router.get('/GetVehicleCurrentLocationForSharedDevice', function(req, res) {
+    var Startdate = new Date();
+
+    var convertDate = convertdateformatForUnix(Startdate);
+    var unixStartdate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
+    // var unixStartdate = Startdate.getTime() / 1000;
+    var query = "Select tv.Name, tv.IsOnline, tv.iduser, tv.IsShared, tgps.* FROM tblgpsdata as tgps LEFT JOIN tblvehicle as tv ON tgps.DeviceId = tv.deviceid where tgps.DeviceId = " + jwt.decode(req.query.DeviceId, "bugz") + " AND tgps.Date <= '" + unixStartdate + "' ORDER BY Date DESC limit 1";
+    connection.query(query, function(err, rows, fields) {
+        if (!err) {
+            res.json({ success: true, data: rows[0] });
+        } else {
+            res.json({ success: false, data: [] });
         }
     })
 });
@@ -773,6 +788,18 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
 router.get('/UpdateVehicleName', jsonParser, function(req, res) {
 
     connection.query("Update tblvehicle set Name='" + req.query.Name + "' where deviceid=" + req.query.DeviceId, function(err, rows, fields) {
+        if (!err) {
+            res.json({ success: true, message: 'Vehicle No. Save Successfully.' });
+        } else {
+            console.log(err);
+            res.json({ success: false, message: 'Vehicle No. could not save. Try again later.' });
+        }
+    })
+
+})
+
+router.get('/UpdateVehicleShare', jsonParser, function(req, res) {
+    connection.query("Update tblvehicle set IsShared=" + req.query.IsShared + " where deviceid='" + req.query.DeviceId + "'", function(err, rows, fields) {
         if (!err) {
             res.json({ success: true, message: 'Vehicle No. Save Successfully.' });
         } else {
