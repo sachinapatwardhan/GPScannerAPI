@@ -746,7 +746,7 @@ router.get('/ExportEngineReport', function(req, res) {
                 Array[j].Mileage = DatewiseTravelledDistance;
             }
             if (Array.length > 0) {
-                var data = u.sortBy(Array, function(num) { return num.StartTime }).reverse();
+                var data = u.sortBy(Array, function(num) { return new Date(num.StartTime) }).reverse();
                 lstEngine = data;
             }
             // for (var k = 0; k < response.length; k++) {
@@ -1411,7 +1411,7 @@ router.get('/ExportParkingReport', function(req, res) {
 
         }
         if (Array.length > 0) {
-            var data = u.sortBy(Array, function(num) { return num.StartTime }).reverse();
+            var data = u.sortBy(Array, function(num) { return new Date(num.StartTime) }).reverse();
             Array = data;
         }
         GetData(0);
@@ -2539,7 +2539,7 @@ router.get('/ExportDailyStatReport', function(req, res) {
                 }
 
                 if (Array.length > 0) {
-                    var data = u.sortBy(Array, function(num) { return num.Date }).reverse();
+                    var data = u.sortBy(Array, function(num) { return new Date(num.Date) }).reverse();
                     Array = data;
                 }
                 conf.rows = [];
