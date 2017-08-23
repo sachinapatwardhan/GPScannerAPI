@@ -1856,7 +1856,7 @@ router.get('/ExportDriverReport', function(req, res) {
                 }
             }
             if (Array.length > 0) {
-                var data = u.sortBy(Array, function(num) { return num.DrivingStartTime }).reverse();
+                var data = u.sortBy(Array, function(num) { return new Date(num.DrivingStartTime) }).reverse();
                 Array = data;
             }
             var Name = '';
