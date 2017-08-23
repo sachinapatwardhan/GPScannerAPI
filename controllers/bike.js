@@ -75,6 +75,19 @@ router.get('/GetVehicleById', function(req, res) {
     })
 })
 
+router.get('/GetVehicleDetailById', function(req, res) {
+    var query = "SELECT tv.*, tgd.ExpiryDate, tgd.IsActive From tblvehicle as tv LEFT JOIN tblgpsdevice as tgd ON tgd.DeviceId = tv.deviceid WHERE tv.id = " + req.query.idVehicle + " LIMIT 1"
+    console.log(query);
+    connection.query(query, function(err, rows, fields) {
+        if (!err) {
+            console.log(rows);
+            res.json({ success: true, data: rows[0] });
+        } else {
+            res.json({ success: false, data: [] });
+        }
+    })
+})
+
 router.post('/GetAllWorkingBike', jsonParser, function(req, res) {
     connection.query("SELECT  tb.id,tb.deviceid,tb.Name,tb.IsOnline, tb.DeviceType, tb.IsACC,tpg.IsEngine, tpg.Latitude,tpg.Longitude,tpg.Datetime, tpg.Date, tpg.Speed, tpg.Direction FROM tblvehicle tb INNER JOIN tblgpsdata tpg ON tb.deviceid=tpg.DeviceId INNER JOIN (SELECT DeviceId,MAX(Date) Date FROM tblgpsdata GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId AND tpg.Date = b.Date WHERE iduser=" + req.query.idUser + " and IsDelete=false;", function(err, rows, fields) {
         if (!err) {
