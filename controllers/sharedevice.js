@@ -26,9 +26,7 @@ router.post('/SaveSharedUser', jsonParser, function(req, res) {
                 objUser.idUser = chkUserExist.id;
                 objUser.CreatedDate = new Date();
                 objUser.CreatedBy = decoded.username;
-                console.log(objUser);
                 SharedDevice.findOne({ where: { DeviceId: objUser.DeviceId, idUser: objUser.idUser, idSharedUser: objUser.idSharedUser } }).then(function(resExist) {
-                    console.log(resExist);
                     if (resExist != null) {
                         res.json({
                             success: false,
@@ -42,8 +40,15 @@ router.post('/SaveSharedUser', jsonParser, function(req, res) {
                             res.json({
                                 success: true,
                                 message: "Vehicle Shared successfully...",
-                                data: response[0]
+                                data: response
                             });
+
+                            var objConnection = {
+                                UserId: objUser.idUser,
+                                DeviceId: objUser.DeviceId
+                            }
+                            io.sockets.emit('ShareStatus', JSON.stringify(objConnection));
+                            io.sockets.emit(objUser.idUser + 'ShareStatus', JSON.stringify(objConnection));
                         })
                     }
                 })
@@ -69,6 +74,14 @@ router.get('/RemoveSharedUser', function(req, res) {
             if (response) {
                 funAuditLog.CreateAuditLog('DeleteSharedUser', decoded.username, 'Delete Shared User');
                 res.json({ success: true, message: "User Removed successfully...", data: response });
+
+                var objConnection = {
+                    UserId: req.query.UserId,
+                    DeviceId: req.query.DeviceId
+                }
+                io.sockets.emit('ShareStatus', JSON.stringify(objConnection));
+                io.sockets.emit(req.query.UserId + 'ShareStatus', JSON.stringify(objConnection));
+
             } else {
                 res.json({ success: false, message: 'User not Removed.' });
             }
