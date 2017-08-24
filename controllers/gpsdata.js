@@ -1420,18 +1420,18 @@ router.get('/GetAllDriverReport', function(req, res) {
     var objParam = req.query;
     var WhereCondition = " Where Bike.idUser= " + req.query.idUser;
     if (objParam.StartDate != '' && objParam.EndDate != '') {
-        var StartDate = convertdateUTCformat(objParam.StartDate);
+        var StartDate = convertdateformatForUnix(objParam.StartDate);
         var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
-        var EndDate = convertdateUTCformat(objParam.EndDate);
+        var EndDate = convertdateformatForUnix(objParam.EndDate);
         var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
         WhereCondition += " And gps.Date between '" + unixStartdate + "' And '" + unixEndDate + "'";
 
     } else if (objParam.StartDate != null && objParam.StartDate != '') {
-        var StartDate = convertdateUTCformat(objParam.StartDate);
+        var StartDate = convertdateformatForUnix(objParam.StartDate);
         var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
         WhereCondition += " And gps.Date >='" + unixStartdate + "'";
     } else if (objParam.EndDate != null && objParam.EndDate != '') {
-        var EndDate = convertdateUTCformat(objParam.EndDate);
+        var EndDate = convertdateformatForUnix(objParam.EndDate);
         var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
         WhereCondition += " And gps.Date <='" + unixEndDate + "'";
 
@@ -1449,7 +1449,6 @@ router.get('/GetAllDriverReport', function(req, res) {
         "gps.DeviceId = Bike.deviceid " +
         WhereCondition +
         " order by gps.Date Asc";
-
     connection.query(query, function(err, response, fields) {
         if (response.length > 0) {
             var groups = u.groupBy(response, function(o) {
