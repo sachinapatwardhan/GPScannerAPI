@@ -320,6 +320,7 @@ app.use('/languageresources', require('./controllers/languageResources'))
 app.use('/pushnotification', require('./controllers/pushnotification'))
 app.use('/petfence', require('./controllers/petFence'))
 app.use('/facebookpagesetting', require('./controllers/facebookpagesetting'))
+app.use('/sharedevice', require('./controllers/sharedevice'))
 
 //End of Setting
 

@@ -1,0 +1,81 @@
+var router = express.Router();
+var User = models.tbluserinformation;
+var SharedDevice = models.tblsharedevice;
+
+router.get('/GetAllSharedDeviceByUser', function(req, res) {
+    SharedDevice.findAll({
+        where: { DeviceId: req.query.DeviceId, idSharedUser: req.query.idSharedUser },
+        order: 'CreatedDate DESC'
+    }).then(function(response) {
+        res.json(response);
+    }).catch(function(error) {
+        res.json(error);
+    })
+});
+
+router.post('/SaveSharedUser', jsonParser, function(req, res) {
+    objUser = req.body;
+
+    objHeader = req.headers;
+
+    var token = getToken(objHeader);
+    if (token) {
+        var decoded = jwt.decode(token, TokenKey);
+        User.findOne({ where: { email: objUser.email } }).then(function(chkUserExist) {
+            if (chkUserExist != null) {
+                objUser.idUser = chkUserExist.id;
+                objUser.CreatedDate = new Date();
+                objUser.CreatedBy = decoded.username;
+                console.log(objUser);
+                SharedDevice.findOne({ where: { DeviceId: objUser.DeviceId, idUser: objUser.idUser, idSharedUser: objUser.idSharedUser } }).then(function(resExist) {
+                    console.log(resExist);
+                    if (resExist != null) {
+                        res.json({
+                            success: false,
+                            message: "Vehicle is already Shared With This User...",
+                            data: resExist
+                        });
+
+                    } else {
+                        SharedDevice.create(objUser).then(function(response) {
+                            funAuditLog.CreateAuditLog('ShareDevice', decoded.username, 'Share Vehicle');
+                            res.json({
+                                success: true,
+                                message: "Vehicle Shared successfully...",
+                                data: response[0]
+                            });
+                        })
+                    }
+                })
+            } else {
+                res.json({
+                    success: false,
+                    message: "User is not Exist...",
+                    data: 1,
+                });
+            }
+        })
+    } else {
+        res.json(InvalidToken);
+    }
+})
+
+router.get('/RemoveSharedUser', function(req, res) {
+    objHeader = req.headers;
+    var token = getToken(objHeader);
+    if (token) {
+        var decoded = jwt.decode(token, TokenKey);
+        SharedDevice.destroy({ where: { id: req.query.id } }).then(function(response) {
+            if (response) {
+                funAuditLog.CreateAuditLog('DeleteSharedUser', decoded.username, 'Delete Shared User');
+                res.json({ success: true, message: "User Removed successfully...", data: response });
+            } else {
+                res.json({ success: false, message: 'User not Removed.' });
+            }
+        })
+    } else {
+        res.json(InvalidToken);
+    }
+})
+
+module.exports = router

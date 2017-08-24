@@ -1169,6 +1169,7 @@ router.get('/MobileAppLogin', jsonParser, function(req, res) {
                     token: 'JWT ' + token,
                     UserId: response.id,
                     UserName: response.username,
+                    Email: response.email,
                     message: "Login Successfully..."
                 });
             })
