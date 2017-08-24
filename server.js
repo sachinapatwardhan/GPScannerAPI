@@ -68,7 +68,6 @@ global.RoutePath = process.env.RoutePath;
 //Push Notification
 global.PushNotifications = require('node-pushnotifications');
 
-// var setting = models.tblsetting;
 //Local
 global.PushNotificationSettings = {
     gcm: {
@@ -91,14 +90,9 @@ global.PushNotificationSettings = {
             sound: 'bass.caf'
         },
         options: {
-            // cert: __dirname + "/../certs/pettorwayIOS.p12", // {Buffer|String} The filename of the connection certificate to load from disk, or a Buffer/String containing the certificate data. (Defaults to: cert.pem)
-            // passphrase: "pettorway"
             cert: __dirname + "/certs/certdevelopment.pem",
             key: __dirname + "/certs/keyDevelopment.pem",
-            // cert: __dirname + "/certs/certProduction.pem",
-            // key: __dirname + "/certs/keyProduction.pem",
             // production: true
-            // key: __dirname + "/../certs/pettorwayIOS.p12"
         }
     },
 };
@@ -126,14 +120,9 @@ global.PushNotificationSettings = {
 //             sound: 'bass.caf'
 //         },
 //         options: {
-//             // cert: __dirname + "/../certs/pettorwayIOS.p12", // {Buffer|String} The filename of the connection certificate to load from disk, or a Buffer/String containing the certificate data. (Defaults to: cert.pem)
-//             // passphrase: "pettorway"
-//             //cert: __dirname + "/certs/certdevelopment.pem",
-//             //key: __dirname + "/certs/keyDevelopment.pem",
 //              cert: __dirname + "/certs/certProduction.pem",
 //              key: __dirname + "/certs/keyProduction.pem",
 //              production: true
-//             // key: __dirname + "/../certs/pettorwayIOS.p12"
 //         }
 //     },
 // };
