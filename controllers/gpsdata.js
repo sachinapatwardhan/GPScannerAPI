@@ -945,7 +945,7 @@ router.get('/GetAllWoringHourForReport', function(req, res) {
 
                 if (IsDriving == 1) {
                     IsDriving = 0;
-                    TotalDrivingtime = TotalDrivingtime + calcDateDiffCalInSec(moment(group.length - 1), moment(group[DrivingStartPosition].Date));
+                    TotalDrivingtime = TotalDrivingtime + calcDateDiffCalInSec(moment(group[group.length - 1].Date), moment(group[DrivingStartPosition].Date));
                 }
                 if (TotalSpeedRecord == 0) {
                     TotalSpeedRecord = 1;
@@ -1118,7 +1118,7 @@ router.get('/ExportAllWoringHourForReport', function(req, res) {
 
             if (IsDriving == 1) {
                 IsDriving = 0;
-                TotalDrivingtime = TotalDrivingtime + calcDateDiffCalInSec(moment(group.length - 1), moment(group[DrivingStartPosition].Date));
+                TotalDrivingtime = TotalDrivingtime + calcDateDiffCalInSec(moment(group[group.length - 1].Date), moment(group[DrivingStartPosition].Date));
             }
             if (TotalSpeedRecord == 0) {
                 TotalSpeedRecord = 1;
