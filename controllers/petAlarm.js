@@ -184,9 +184,9 @@ router.get('/DeleteVehicleAlarm', function(req, res) {
 router.get('/GetVehicleAlarmByUser', function(req, res) {
     var search = "";
     if (search != "") {
-        search += " and tp.DeviceId = tpg.deviceid and tpg.iduser = " + req.query.UserId + " and tpg.IsDelete = 0";
+        search += " and (tpg.iduser = " + req.query.UserId + " or tsd.idUser=" + req.query.UserId + ") and tpg.IsDelete = 0";
     } else {
-        search += " Where tp.DeviceId = tpg.deviceid and tpg.iduser = " + req.query.UserId + " and tpg.IsDelete = 0";
+        search += " Where (tpg.iduser = " + req.query.UserId + " or tsd.idUser=" + req.query.UserId + ") and tpg.IsDelete = 0";
     }
 
     if (req.query.DeviceId != null && req.query.DeviceId != undefined && req.query.DeviceId != '-1' && req.query.DeviceId != 'All') {
@@ -196,7 +196,7 @@ router.get('/GetVehicleAlarmByUser', function(req, res) {
             search += " Where tp.DeviceId = '" + req.query.DeviceId + "'";
         }
     }
-    var query = "select tp.Id,tp.CreatedDate,tp.Datetime,tp.Date,tp.DeviceId,tp.Speed,tp.AlarmCode, tp.FenceName, tpg.id,tpg.Name from tblalarm tp inner join tblvehicle tpg";
+    var query = "select tp.Id,tp.CreatedDate,tp.Datetime,tp.Date,tp.DeviceId,tp.Speed,tp.AlarmCode, tp.FenceName, tpg.id,tpg.Name from tblalarm tp inner join tblvehicle tpg on tp.DeviceId = tpg.deviceid left join tblsharedevice tsd on tpg.id=tsd.idVehicle ";
     query += search;
 
     var limit = 10;

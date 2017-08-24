@@ -9,10 +9,7 @@ var TaxSetting = models.tblsetting;
 var HandShake = models.tblhandshake;
 var Vehicle = models.tblvehicle;
 var GPSData = models.tblgpsdata;
-
 var momentz = require('moment-timezone');
-
-
 
 //End of Tables
 
@@ -120,7 +117,7 @@ function clone(obj) {
 
 function SendPushNotification(data, UserId) {
     // var deviceIds = [];
-    connection.query("SELECT PushNotificationId,Platform from tblpushnotification where iduser=" + UserId + " group by PushNotificationId, Platform", function(err, response, fields) {
+    connection.query("SELECT PushNotificationId,Platform from tblpushnotification where iduser in (" + UserId + ") group by PushNotificationId, Platform", function(err, response, fields) {
         if (!err && response.length > 0) {
             // PushNotification.findAll({ where: { iduser: UserId } }).then(function(response) {
             function SendNotification(i) {
@@ -201,9 +198,6 @@ global.CalculateCRCbyHex = function(hex) {
     return ("0000" + decimalToHexString(crc.crc16x25(bytedata))).slice(-4);
 }
 
-// var Testdatatt = '100000000C9461000C9473000C9473000C9473000C9473000C9473000C9473000C9473000C9473000C9473000C9473000C9473000C9473000C9473000C9473000C9473000C94C3000C9473000C9473000C9473000C9473000C9473000C9473000C9473000C9473000C94730000000000240027002A000000000023002600290000000000DD10008000250028002B0004040404040404040202020202020303030303030102040810204080010204081020010204081020000000080002010000030407000000000000000011241FBECFEFD8E0DEBFCDBF21E0A0E0B1E001C01D92A930B207E1F70E940D010C94E1010C940000833081F028F4813099F08230A1F008958730A9F088305310010000B9F08430D1F4809180008F7D03C0809180008F7780938000089584B58F7702C084B58F7D84BD08958091B0008F7703C08091B0008F7D8093B00008953FB7F8948091050190910601A0910701B091080126B5A89B05C02F3F19F00196A11DB11D3FBFBA2FA92F982F8827820F911DA11DB11DBC01CD0142E0660F771F881F991FF3100180004A95D1F708951F920F920FB60F9211242F933F938F939F93AF93BF938091010190910201A0910301B09104013091000123E0230F2D3720F40196A11DB11D05C026E8230F0296A11DB11D209300018093010190930201A0930301B09304018091050190910601A0910701B09108010196A11DB11D8093050190930601A09307018410020000B0930801BF91AF919F918F913F912F910F900FBE0F901F901895789484B5826084BD84B5816084BD85B5826085BD85B5816085BD80916E00816080936E00109281008091810082608093810080918100816080938100809180008160809380008091B10084608093B1008091B00081608093B00080917A00846080937A00809159100280007A00826080937A0080917A00816080937A0080917A00806880937A001092C100CCE9D0E0FE01249108E810E0F8018491882399F090E0880F991FFC01E859FF4FA591B49184589F4FFC01459154918FB7F8949C91292B2C938FBF40EBE42E40E0F42E50E0C52E50E0D52EF7018491FE01A490F801B490BB20A1F081110E947500DF10030000EB2DF0E0EE0FFF1FEE58FF4FA591B4918C91A82291E080E009F490E0A92EB82E02C0A12CB12CF7018491FE018490F80194909920C1F081110E947500892D90E0880F991F84589F4FFC01A591B4918FB7F8949C91AA94AB2819F48094892201C0892A8C928FBF0E949E002B013C0184EF882E99249394A12CB12C0E949E00DC014D10038000CB0184199509A609B709883E9340A105B10558F021E0821A9108A108B10888EE480E83E0581E611C711C81149104A104B10419F7C114D10409F497CF0E94000094CFF894FFCFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFAC00000001';
-// console.log(CalculateCRCbyHex('4040001266104024166087400001'));
-
 router.get('/CalculateCRCOnline', function(req, res) {
     res.send(CalculateCRCbyHex(req.query.data));
 });
@@ -250,8 +244,6 @@ function hexToBinary(s) {
     }
     return ret;
 }
-// var binary = parseInt('1000', 16).toString(2)
-// console.log(hexToBinary('1001'))
 
 //Decimal To Hex
 function decimalToHexString(number) {
@@ -611,9 +603,9 @@ global.Command9955 = function(line, Callback) {
             });
 
             //Fence
-            connection.query("SELECT * from tblfence where deviceId=" + DeviceId, function(err, rows, fields) {
+            connection.query("SELECT * from tblfence where deviceId=" + DeviceId + " and IsFenceOnline=true", function(err, rows, fields) {
                 if (!err && rows.length > 0) {
-                    connection.query("SELECT * from tblvehicle where deviceid=" + DeviceId + " and IsDelete=false", function(err, Bikerows, fields) {
+                    connection.query("SELECT id,Name,iduser,deviceid from tblvehicle where deviceid=" + DeviceId + " and IsDelete=false", function(err, Bikerows, fields) {
                         if (!err && Bikerows.length > 0) {
                             var objVehicle = Bikerows[0];
                             if (Position == 'A') {
@@ -707,41 +699,67 @@ global.Command9955 = function(line, Callback) {
                                                     Message = objVehicle.Name + ' is in Fence.';
                                                 }
                                             }
-                                            console.log(unixDateStemp);
+                                            // console.log(unixDateStemp);
                                             connection.query('UPDATE tblfence set IsInFence=' + IsPetInFence + ' WHERE id=' + rows[j].id, function(err, rowsFence, fields) {
-                                                console.log(err)
+                                                // console.log(err)
                                                 var Alarmquery = "INSERT INTO tblalarm (Datetime, Date, Latitude,Longitude,GPSPositioning,Speed,Direction,Status,DeviceId,AlarmCode,CreatedDate,FenceName ) VALUES ('" + GPSDateTime + "', '" + unixDateStemp + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + inputoutputSTatus + "', '" + DeviceId + "','" + AlarmCode + "','" + CurrentDate + "','" + rows[j].name + "');";
                                                 // var Alarmquery = "INSERT INTO tblalarm (Datetime,Latitude,Longitude,GPSPositioning,Speed,Direction,Status,ReservedSign,ReservedSelection,DeviceId,AlarmCode ) VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + Status + "', '" + Sign + "', '" + ReserveSection + "', '" + deviceID + "','" + AlarmCode + "');";
                                                 connection.query(Alarmquery, function(err1, Alarmrows, fields) {
 
-                                                    var PushNotificationdata = {
-                                                        title: 'Alert',
-                                                        message: Message,
-                                                        Fence: 'Default',
-                                                        otherfields: {
-                                                            deviceid: DeviceId,
-                                                            Id: objVehicle.id,
-                                                            VehicleName: objVehicle.Name,
-                                                            AlarmCode: AlarmCode,
-                                                            Type: 'Alarm'
+                                                    connection.query("SELECT * from tblsharedevice where idVehicle=" + objVehicle.id, function(err, lstShareUser, fields) {
+                                                        var lstAllUser = [objVehicle.iduser];
+                                                        var AllUser = objVehicle.iduser.toString();
+                                                        if (!err && lstShareUser.length > 0) {
+                                                            for (var i = 0; i < lstShareUser.length; i++) {
+                                                                lstAllUser.push(lstShareUser[i].idUser)
+                                                                AllUser = AllUser + ',' + lstShareUser[i].idUser;
+                                                            }
                                                         }
-                                                    };
-                                                    SendPushNotification(PushNotificationdata, objVehicle.iduser);
+                                                        var PushNotificationdata = {
+                                                            title: 'Alert',
+                                                            message: Message,
+                                                            Fence: 'Default',
+                                                            otherfields: {
+                                                                deviceid: DeviceId,
+                                                                Id: objVehicle.id,
+                                                                VehicleName: objVehicle.Name,
+                                                                AlarmCode: AlarmCode,
+                                                                Type: 'Alarm'
+                                                            }
+                                                        };
+                                                        SendPushNotification(PushNotificationdata, AllUser);
 
-                                                    var objConnection = {
-                                                        AlarmCode: AlarmCode.toString(),
-                                                        DeviceId: DeviceId,
-                                                        Datetime: GPSDateTime,
-                                                        Date: unixDateStemp,
-                                                        IdUser: objVehicle.iduser,
-                                                        Name: objVehicle.Name,
-                                                        FenceName: rows[j].name
-                                                    }
+                                                        // var objConnection = {
+                                                        //     AlarmCode: AlarmCode.toString(),
+                                                        //     DeviceId: DeviceId,
+                                                        //     Datetime: GPSDateTime,
+                                                        //     Date: unixDateStemp,
+                                                        //     IdUser: objVehicle.iduser,
+                                                        //     Name: objVehicle.Name,
+                                                        //     FenceName: rows[j].name
+                                                        // }
 
 
-                                                    io.sockets.emit('DeviceAlarm', JSON.stringify(objConnection));
-                                                    io.sockets.emit(objVehicle.iduser + 'DeviceAlarm', JSON.stringify(objConnection));
-                                                    checkFence(j + 1);
+                                                        // // io.sockets.emit('DeviceAlarm', JSON.stringify(objConnection));
+                                                        // io.sockets.emit(objVehicle.iduser + 'DeviceAlarm', JSON.stringify(objConnection));
+
+                                                        for (var i = 0; i < lstAllUser.length; i++) {
+                                                            var objConnection = {
+                                                                AlarmCode: AlarmCode.toString(),
+                                                                DeviceId: DeviceId,
+                                                                Datetime: GPSDateTime,
+                                                                Date: unixDateStemp,
+                                                                IdUser: objVehicle.iduser,
+                                                                Name: objVehicle.Name,
+                                                                FenceName: rows[j].name
+                                                            }
+
+                                                            io.sockets.emit(lstAllUser[i] + 'DeviceAlarm', JSON.stringify(objConnection));
+                                                        }
+
+                                                        checkFence(j + 1);
+
+                                                    });
                                                 });
                                             });
                                         } else {
@@ -935,69 +953,86 @@ global.Command9999 = function(line, Callback) {
         connection.query(query, function(err, rows, fields) {
 
 
-            connection.query("SELECT * from tblvehicle where deviceid=" + DeviceId + " and IsDelete=false", function(err, lstVehicle, fields) {
+            connection.query("SELECT id,Name,iduser,deviceid from tblvehicle where deviceid=" + DeviceId + " and IsDelete=false", function(err, lstVehicle, fields) {
                 if (!err && lstVehicle.length > 0) {
                     var objVehicle = lstVehicle[0];
-                    var Message = "";
-
-                    if (AlarmCode == '04') {
-                        Message = 'Vehicle ' + objVehicle.Name + ' Engine ON alert! Please check!';
-                    } else if (AlarmCode == '03') {
-                        Message = 'Vehicle ' + objVehicle.Name + ' Door Open alert! Please check!';
-                    } else if (AlarmCode == '10') {
-                        Message = 'Vehicle ' + objVehicle.Name + ' Low Bettry alert! Please check!';
-                    } else if (AlarmCode == '11') {
-                        Message = 'Vehicle ' + objVehicle.Name + ' Max Speed alert! Please check!';
-                    } else if (AlarmCode == '12') {
-                        Message = 'Vehicle ' + objVehicle.Name + ' Movement alert! Please check!';
-                    } else if (AlarmCode == '30') {
-                        Message = 'Vehicle ' + objVehicle.Name + ' Vibration alert! Please check!';
-                    } else if (AlarmCode == '50') {
-                        Message = 'Vehicle ' + objVehicle.Name + ' External Power Cut alert! Please check!';
-                    } else if (AlarmCode == '05') {
-                        Message = 'Vehicle ' + objVehicle.Name + ' Original Triggering alert! Please check!';
-                    } else if (AlarmCode == '02') {
-                        Message = 'Vehicle ' + objVehicle.Name + ' Line Broken alert! Please check!';
-                    } else if (AlarmCode == '52') {
-                        Message = 'Vehicle ' + objVehicle.Name + ' Veer Report alert! Please check!';
-                    } else if (AlarmCode == '60') {
-                        Message = 'Vehicle ' + objVehicle.Name + ' Fuel Driving alert! Please check!';
-                    } else if (AlarmCode == '71') {
-                        Message = 'Vehicle ' + objVehicle.Name + ' Crash alert! Please check!';
-                    } else if (AlarmCode == '72') {
-                        Message = 'Vehicle ' + objVehicle.Name + ' Acceleration alert! Please check!';
-                    } else if (AlarmCode == '81') {
-                        Message = 'Vehicle ' + objVehicle.Name + ' Fuel Loss alert! Please check!';
-                    }
-
-                    var PushNotificationdata = {
-                        title: 'Alert',
-                        message: Message,
-                        Fence: 'Default',
-                        otherfields: {
-                            deviceid: DeviceId,
-                            Id: objVehicle.id,
-                            VehicleName: objVehicle.Name,
-                            AlarmCode: AlarmCode,
-                            Type: 'Alarm'
+                    connection.query("SELECT * from tblsharedevice where idVehicle=" + objVehicle.id, function(err, lstShareUser, fields) {
+                        var lstAllUser = [objVehicle.iduser];
+                        var AllUser = objVehicle.iduser.toString();
+                        if (!err && lstShareUser.length > 0) {
+                            for (var i = 0; i < lstShareUser.length; i++) {
+                                lstAllUser.push(lstShareUser[i].idUser)
+                                AllUser = AllUser + ',' + lstShareUser[i].idUser;
+                            }
                         }
-                    };
-                    SendPushNotification(PushNotificationdata, objVehicle.iduser);
+
+                        var Message = "";
+
+                        if (AlarmCode == '04') {
+                            Message = 'Vehicle ' + objVehicle.Name + ' Engine ON alert! Please check!';
+                        } else if (AlarmCode == '03') {
+                            Message = 'Vehicle ' + objVehicle.Name + ' Door Open alert! Please check!';
+                        } else if (AlarmCode == '10') {
+                            Message = 'Vehicle ' + objVehicle.Name + ' Low Bettry alert! Please check!';
+                        } else if (AlarmCode == '11') {
+                            Message = 'Vehicle ' + objVehicle.Name + ' Max Speed alert! Please check!';
+                        } else if (AlarmCode == '12') {
+                            Message = 'Vehicle ' + objVehicle.Name + ' Movement alert! Please check!';
+                        } else if (AlarmCode == '30') {
+                            Message = 'Vehicle ' + objVehicle.Name + ' Vibration alert! Please check!';
+                        } else if (AlarmCode == '50') {
+                            Message = 'Vehicle ' + objVehicle.Name + ' External Power Cut alert! Please check!';
+                        } else if (AlarmCode == '05') {
+                            Message = 'Vehicle ' + objVehicle.Name + ' Original Triggering alert! Please check!';
+                        } else if (AlarmCode == '02') {
+                            Message = 'Vehicle ' + objVehicle.Name + ' Line Broken alert! Please check!';
+                        } else if (AlarmCode == '52') {
+                            Message = 'Vehicle ' + objVehicle.Name + ' Veer Report alert! Please check!';
+                        } else if (AlarmCode == '60') {
+                            Message = 'Vehicle ' + objVehicle.Name + ' Fuel Driving alert! Please check!';
+                        } else if (AlarmCode == '71') {
+                            Message = 'Vehicle ' + objVehicle.Name + ' Crash alert! Please check!';
+                        } else if (AlarmCode == '72') {
+                            Message = 'Vehicle ' + objVehicle.Name + ' Acceleration alert! Please check!';
+                        } else if (AlarmCode == '81') {
+                            Message = 'Vehicle ' + objVehicle.Name + ' Fuel Loss alert! Please check!';
+                        }
+
+                        var PushNotificationdata = {
+                            title: 'Alert',
+                            message: Message,
+                            Fence: 'Default',
+                            otherfields: {
+                                deviceid: DeviceId,
+                                Id: objVehicle.id,
+                                VehicleName: objVehicle.Name,
+                                AlarmCode: AlarmCode,
+                                Type: 'Alarm'
+                            }
+                        };
+                        console.log(AllUser)
+                        SendPushNotification(PushNotificationdata, AllUser);
 
 
-                    var objConnection = {
-                        AlarmCode: AlarmCode.toString(),
-                        DeviceId: DeviceId,
-                        Datetime: GPSDateTime,
-                        Date: unixDateStemp,
-                        IdUser: objVehicle.iduser,
-                        Name: objVehicle.Name
-                    }
 
-                    // if (new Date(GPSDateTime) <= new Date()) {
-                    io.sockets.emit('DeviceAlarm', JSON.stringify(objConnection));
-                    io.sockets.emit(objVehicle.iduser + 'DeviceAlarm', JSON.stringify(objConnection));
-                    // }
+
+                        // if (new Date(GPSDateTime) <= new Date()) {
+                        // io.sockets.emit('DeviceAlarm', JSON.stringify(objConnection));
+                        for (var i = 0; i < lstAllUser.length; i++) {
+                            var objConnection = {
+                                AlarmCode: AlarmCode.toString(),
+                                DeviceId: DeviceId,
+                                Datetime: GPSDateTime,
+                                Date: unixDateStemp,
+                                IdUser: lstAllUser[i],
+                                Name: objVehicle.Name
+                            }
+
+                            io.sockets.emit(lstAllUser[i] + 'DeviceAlarm', JSON.stringify(objConnection));
+                        }
+                        // }
+
+                    });
                 }
             });
 
@@ -1163,16 +1198,8 @@ router.get('/SendSpeedData', function(req, res) {
     client.connect(SocketPort, SocketIPAddress, function() {
         // console.log('G-Sensor send to ' + DeviceId);
         client.write(Data, 'hex');
-        // client.setTimeout(30000, function() {
-        //     if (Sendflag == false) {
-        //         Sendflag = true;
-        //         res.json({ success: false, message: 'Device not connected. Try after 5 minute.' });
-        //         client.destroy();
-        //     };
 
-        // });
-
-        client.setTimeout(30000, function() {
+        client.setTimeout(10000, function() {
             if (Sendflag == false) {
                 Sendflag = true;
 
@@ -1238,7 +1265,7 @@ router.get('/GetCurrentLocation', function(req, res) {
         // console.log('G-Sensor send to ' + DeviceId);
         client.write(Data, 'hex');
 
-        client.setTimeout(30000, function() {
+        client.setTimeout(10000, function() {
             if (Sendflag == false) {
                 Sendflag = true;
 
@@ -1299,16 +1326,8 @@ router.get('/SetGPRSInterval', function(req, res) {
     client.connect(SocketPort, SocketIPAddress, function() {
         // console.log('G-Sensor send to ' + DeviceId);
         client.write(Data, 'hex');
-        // client.setTimeout(30000, function() {
-        //     if (Sendflag == false) {
-        //         Sendflag = true;
-        //         res.json({ success: false, message: 'Device not connected. Try after 5 minute.' });
-        //         client.destroy();
-        //     };
 
-        // });
-
-        client.setTimeout(30000, function() {
+        client.setTimeout(10000, function() {
             if (Sendflag == false) {
                 Sendflag = true;
 
@@ -1374,7 +1393,7 @@ router.get('/FectoryReset', function(req, res) {
         // console.log('G-Sensor send to ' + DeviceId);
         client.write(Data, 'hex');
 
-        client.setTimeout(30000, function() {
+        client.setTimeout(10000, function() {
             if (Sendflag == false) {
                 Sendflag = true;
 
@@ -1440,7 +1459,7 @@ router.get('/RebootDevice', function(req, res) {
         // console.log('G-Sensor send to ' + DeviceId);
         client.write(Data, 'hex');
 
-        client.setTimeout(30000, function() {
+        client.setTimeout(10000, function() {
             if (Sendflag == false) {
                 Sendflag = true;
 
@@ -1506,16 +1525,8 @@ router.get('/SetSleepMode', function(req, res) {
     client.connect(SocketPort, SocketIPAddress, function() {
         // console.log('G-Sensor send to ' + DeviceId);
         client.write(Data, 'hex');
-        // client.setTimeout(30000, function() {
-        //     if (Sendflag == false) {
-        //         Sendflag = true;
-        //         res.json({ success: false, message: 'Device not connected. Try after 5 minute.' });
-        //         client.destroy();
-        //     };
 
-        // });
-
-        client.setTimeout(30000, function() {
+        client.setTimeout(10000, function() {
             if (Sendflag == false) {
                 Sendflag = true;
 
@@ -1587,16 +1598,8 @@ router.get('/SetOutputControl', function(req, res) {
     client.connect(SocketPort, SocketIPAddress, function() {
         // console.log('G-Sensor send to ' + DeviceId);
         client.write(Data, 'hex');
-        // client.setTimeout(30000, function() {
-        //     if (Sendflag == false) {
-        //         Sendflag = true;
-        //         res.json({ success: false, message: 'Device not connected. Try after 5 minute.' });
-        //         client.destroy();
-        //     };
 
-        // });
-
-        client.setTimeout(30000, function() {
+        client.setTimeout(10000, function() {
             if (Sendflag == false) {
                 Sendflag = true;
 
@@ -1714,7 +1717,7 @@ global.SetArmSettings = function(objdata, Callback) {
         // console.log('G-Sensor send to ' + DeviceId);
         client.write(Data, 'hex');
 
-        client.setTimeout(30000, function() {
+        client.setTimeout(10000, function() {
             if (Sendflag == false) {
                 Sendflag = true;
 
@@ -1776,16 +1779,8 @@ router.get('/SetGPRSIntervalStopCar', function(req, res) {
     client.connect(SocketPort, SocketIPAddress, function() {
         // console.log('G-Sensor send to ' + DeviceId);
         client.write(Data, 'hex');
-        // client.setTimeout(30000, function() {
-        //     if (Sendflag == false) {
-        //         Sendflag = true;
-        //         res.json({ success: false, message: 'Device not connected. Try after 5 minute.' });
-        //         client.destroy();
-        //     };
 
-        // });
-
-        client.setTimeout(30000, function() {
+        client.setTimeout(10000, function() {
             if (Sendflag == false) {
                 Sendflag = true;
 
@@ -1857,16 +1852,8 @@ router.get('/SetTimeZone', function(req, res) {
     client.connect(SocketPort, SocketIPAddress, function() {
         // console.log('G-Sensor send to ' + DeviceId);
         client.write(Data, 'hex');
-        // client.setTimeout(30000, function() {
-        //     if (Sendflag == false) {
-        //         Sendflag = true;
-        //         res.json({ success: false, message: 'Device not connected. Try after 5 minute.' });
-        //         client.destroy();
-        //     };
 
-        // });
-
-        client.setTimeout(30000, function() {
+        client.setTimeout(10000, function() {
             if (Sendflag == false) {
                 Sendflag = true;
 
@@ -1932,16 +1919,8 @@ router.get('/SetOdometerSetting', function(req, res) {
     client.connect(SocketPort, SocketIPAddress, function() {
         // console.log('G-Sensor send to ' + DeviceId);
         client.write(Data, 'hex');
-        // client.setTimeout(30000, function() {
-        //     if (Sendflag == false) {
-        //         Sendflag = true;
-        //         res.json({ success: false, message: 'Device not connected. Try after 5 minute.' });
-        //         client.destroy();
-        //     };
 
-        // });
-
-        client.setTimeout(30000, function() {
+        client.setTimeout(10000, function() {
             if (Sendflag == false) {
                 Sendflag = true;
 
@@ -2009,16 +1988,8 @@ router.get('/SetHeartBeatInterval', function(req, res) {
     client.connect(SocketPort, SocketIPAddress, function() {
         // console.log('G-Sensor send to ' + DeviceId);
         client.write(Data, 'hex');
-        // client.setTimeout(30000, function() {
-        //     if (Sendflag == false) {
-        //         Sendflag = true;
-        //         res.json({ success: false, message: 'Device not connected. Try after 5 minute.' });
-        //         client.destroy();
-        //     };
 
-        // });
-
-        client.setTimeout(30000, function() {
+        client.setTimeout(10000, function() {
             if (Sendflag == false) {
                 Sendflag = true;
 
@@ -2082,16 +2053,8 @@ router.get('/ClearDataLogger', function(req, res) {
     client.connect(SocketPort, SocketIPAddress, function() {
         // console.log('G-Sensor send to ' + DeviceId);
         client.write(Data, 'hex');
-        // client.setTimeout(30000, function() {
-        //     if (Sendflag == false) {
-        //         Sendflag = true;
-        //         res.json({ success: false, message: 'Device not connected. Try after 5 minute.' });
-        //         client.destroy();
-        //     };
 
-        // });
-
-        client.setTimeout(30000, function() {
+        client.setTimeout(10000, function() {
             if (Sendflag == false) {
                 Sendflag = true;
 
@@ -2153,16 +2116,8 @@ router.get('/GetFirmWareVersion', function(req, res) {
     client.connect(SocketPort, SocketIPAddress, function() {
         // console.log('G-Sensor send to ' + DeviceId);
         client.write(Data, 'hex');
-        // client.setTimeout(30000, function() {
-        //     if (Sendflag == false) {
-        //         Sendflag = true;
-        //         res.json({ success: false, message: 'Device not connected. Try after 5 minute.' });
-        //         client.destroy();
-        //     };
 
-        // });
-
-        client.setTimeout(30000, function() {
+        client.setTimeout(10000, function() {
             if (Sendflag == false) {
                 Sendflag = true;
 
@@ -2231,16 +2186,8 @@ router.get('/ReadGPRSTimeInterval', function(req, res) {
     client.connect(SocketPort, SocketIPAddress, function() {
         // console.log('G-Sensor send to ' + DeviceId);
         client.write(Data, 'hex');
-        // client.setTimeout(30000, function() {
-        //     if (Sendflag == false) {
-        //         Sendflag = true;
-        //         res.json({ success: false, message: 'Device not connected. Try after 5 minute.' });
-        //         client.destroy();
-        //     };
 
-        // });
-
-        client.setTimeout(30000, function() {
+        client.setTimeout(10000, function() {
             if (Sendflag == false) {
                 Sendflag = true;
 
@@ -2302,7 +2249,7 @@ router.get('/ReadTroubleCode', function(req, res) {
     client.connect(SocketPort, SocketIPAddress, function() {
 
         client.write(Data, 'hex');
-        client.setTimeout(30000, function() {
+        client.setTimeout(10000, function() {
             if (Sendflag == false) {
                 Sendflag = true;
 
@@ -2362,7 +2309,7 @@ router.get('/ClearTroubleCode', function(req, res) {
 
         client.write(Data, 'hex');
 
-        client.setTimeout(30000, function() {
+        client.setTimeout(10000, function() {
             if (Sendflag == false) {
                 Sendflag = true;
 
@@ -2419,7 +2366,7 @@ router.get('/ReadVINCode', function(req, res) {
     client.connect(SocketPort, SocketIPAddress, function() {
 
         client.write(Data, 'hex');
-        client.setTimeout(30000, function() {
+        client.setTimeout(10000, function() {
             if (Sendflag == false) {
                 Sendflag = true;
 
@@ -2479,16 +2426,8 @@ router.get('/ReadRFIDTags', function(req, res) {
     client.connect(SocketPort, SocketIPAddress, function() {
         // console.log('G-Sensor send to ' + DeviceId);
         client.write(Data, 'hex');
-        // client.setTimeout(30000, function() {
-        //     if (Sendflag == false) {
-        //         Sendflag = true;
-        //         res.json({ success: false, message: 'Device not connected. Try after 5 minute.' });
-        //         client.destroy();
-        //     };
 
-        // });
-
-        client.setTimeout(30000, function() {
+        client.setTimeout(10000, function() {
             if (Sendflag == false) {
                 Sendflag = true;
 
@@ -2555,16 +2494,8 @@ router.get('/MonitorVoice', function(req, res) {
     client.connect(SocketPort, SocketIPAddress, function() {
         // console.log('G-Sensor send to ' + DeviceId);
         client.write(Data, 'hex');
-        // client.setTimeout(30000, function() {
-        //     if (Sendflag == false) {
-        //         Sendflag = true;
-        //         res.json({ success: false, message: 'Device not connected. Try after 5 minute.' });
-        //         client.destroy();
-        //     };
 
-        // });
-
-        client.setTimeout(30000, function() {
+        client.setTimeout(10000, function() {
             if (Sendflag == false) {
                 Sendflag = true;
 
