@@ -4,7 +4,7 @@ var SharedDevice = models.tblsharedevice;
 
 router.get('/GetAllSharedDeviceByUser', function(req, res) {
     SharedDevice.findAll({
-        where: { DeviceId: req.query.DeviceId, idSharedUser: req.query.idSharedUser },
+        where: { DeviceId: req.query.DeviceId, $or: [{ idSharedUser: req.query.idSharedUser }, { idUser: req.query.idSharedUser }] },
         order: 'CreatedDate DESC'
     }).then(function(response) {
         res.json(response);
