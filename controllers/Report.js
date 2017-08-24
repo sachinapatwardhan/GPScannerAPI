@@ -2265,7 +2265,9 @@ router.get('/GetAllDailyStatDate', function(req, res) {
                             }
                             //--------Count Locate Number----------//
                             if (k == 0) { obj.LocateNumber = 1; } else {
-                                obj.Mileage = obj.Mileage + distance(parseFloat(lstGroup[i].data[k - 1].Latitude), parseFloat(lstGroup[i].data[k - 1].Longitude), parseFloat(lstGroup[i].data[k].Latitude), parseFloat(lstGroup[i].data[k].Longitude))
+                                if (lstGroup[i].data[k].IsEngine == 1) {
+                                    obj.Mileage = obj.Mileage + distance(parseFloat(lstGroup[i].data[k - 1].Latitude), parseFloat(lstGroup[i].data[k - 1].Longitude), parseFloat(lstGroup[i].data[k].Latitude), parseFloat(lstGroup[i].data[k].Longitude))
+                                }
                                 if (lstGroup[i].data[k].Latitude != lstGroup[i].data[k - 1].Latitude || lstGroup[i].data[k].Latitude != lstGroup[i].data[k - 1].Latitude) {
                                     obj.LocateNumber = obj.LocateNumber + 1;
                                 }
