@@ -206,7 +206,7 @@ router.get('/GetVehicleAlarmByUser', function(req, res) {
 
     var offset = (parseInt(req.query.page) * limit);
 
-    query += " order by tp.Id DESC limit " + limit + " OFFSET " + offset;
+    query += " group by tp.Id order by tp.Id DESC limit " + limit + " OFFSET " + offset;
 
     connection.query(query, function(err, rows, fields) {
         if (!err) {
