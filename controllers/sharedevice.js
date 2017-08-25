@@ -65,6 +65,58 @@ router.post('/SaveSharedUser', jsonParser, function(req, res) {
     }
 })
 
+router.get('/ChangeSharedNotificationSetting', function(req, res) {
+
+    objHeader = req.headers;
+
+    var token = getToken(objHeader);
+    if (token) {
+        var decoded = jwt.decode(token, TokenKey);
+        var query = "Update tblsharedevice set IsSharedUserNotification=" + req.query.IsSharedUserNotification + ", IsNotification=" + req.query.IsNotification + " where id='" + req.query.id + "'";
+        connection.query(query, function(err, rows, fields) {
+            if (!err) {
+                res.json({ success: true, message: 'Main Notification Setting Changed Successfully.' });
+                funAuditLog.CreateAuditLog('ChangeMainShareNotification', decoded.username, 'Change Main Share Notification');
+                var objConnection = {
+                    id: req.query.id,
+                    UserId: req.query.idUser,
+                    IsSharedNotification: req.query.IsSharedUserNotification
+                }
+                io.sockets.emit('ShareNotification', JSON.stringify(objConnection));
+                io.sockets.emit(req.query.idUser + 'ShareNotification', JSON.stringify(objConnection));
+            } else {
+                console.log(err);
+                res.json({ success: false, message: 'Notification Setting could not Changed. Try again later.' });
+            }
+        })
+    } else {
+        res.json(InvalidToken);
+    }
+})
+
+router.get('/ChangeNotificationSetting', function(req, res) {
+
+    objHeader = req.headers;
+
+    var token = getToken(objHeader);
+    if (token) {
+        var decoded = jwt.decode(token, TokenKey);
+        var query = "Update tblsharedevice set IsNotification=" + req.query.IsNotification + " where id='" + req.query.id + "'";
+        console.log(query);
+        connection.query(query, function(err, rows, fields) {
+            if (!err) {
+                res.json({ success: true, message: 'Notification Setting Changed Successfully.' });
+                funAuditLog.CreateAuditLog('ChangeSubShareNotification', decoded.username, 'Change Sub Share Notification');
+            } else {
+                console.log(err);
+                res.json({ success: false, message: 'Notification Setting could not Changed. Try again later.' });
+            }
+        })
+    } else {
+        res.json(InvalidToken);
+    }
+})
+
 router.get('/RemoveSharedUser', function(req, res) {
     objHeader = req.headers;
     var token = getToken(objHeader);
