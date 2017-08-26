@@ -1333,8 +1333,9 @@ router.get('/GetAllParkingData', function(req, res) {
                                 obj.EndTime = momentz.utc(lstGroup[i].data[k].Date).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
                                 TotalParkingtime = TotalParkingtime + calcDateDiffCalInSec(moment((lstGroup[i].data[k].Date)), moment(lstGroup[i].data[ParkingStartPosition].Date));
                                 obj.ParkingTime = calhrminsecfromsec(calcDateDiffCalInSec(moment(lstGroup[i].data[k].Date), moment(lstGroup[i].data[ParkingStartPosition].Date)));
-                                obj.ParkingTime = calhrminsecfromsec(TotalParkingtime);
+                                //obj.ParkingTime = calhrminsecfromsec(TotalParkingtime);
                                 obj.e_id = lstGroup[i].data[k].Id;
+                                // console.log(obj.s_id, "----", obj.e_id)
                                 if (obj.ParkingTime != "0 sec") {
                                     Array.push(obj);
                                 }
@@ -1361,6 +1362,8 @@ router.get('/GetAllParkingData', function(req, res) {
                         obj.EndTime = momentz.utc(lstGroup[i].data[LastPosition].Date).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
                         obj.ParkingTime = calhrminsecfromsec(calcDateDiffCalInSec(moment(lstGroup[i].data[LastPosition].Date), moment(lstGroup[i].data[ParkingStartPosition].Date)));
                         obj.e_id = lstGroup[i].data[LastPosition].Id;
+                        //console.log(obj.s_id, "----", obj.e_id)
+                        console.log();
                         if (obj.ParkingTime != "0 sec") {
                             Array.push(obj);
                         }
