@@ -44,7 +44,7 @@ module.exports = function(sequelize, DataTypes) {
         IsFenceOnline: {
             type: DataTypes.BOOLEAN,
             allowNull: false,
-            defaultValue: '0'
+            defaultValue: '1'
         }
     }, {
         tableName: 'tblfence'
