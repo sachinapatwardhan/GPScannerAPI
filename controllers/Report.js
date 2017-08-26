@@ -1539,7 +1539,7 @@ router.get('/ExportParkingReport', function(req, res) {
                                 obj.EndTime = momentz.utc(lstGroup[i].data[k].Date).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
                                 TotalParkingtime = TotalParkingtime + calcDateDiffCalInSec(moment((lstGroup[i].data[k].Date)), moment(lstGroup[i].data[ParkingStartPosition].Date));
                                 obj.ParkingTime = calhrminsecfromsec(calcDateDiffCalInSec(moment(lstGroup[i].data[k].Date), moment(lstGroup[i].data[ParkingStartPosition].Date)));
-                                obj.ParkingTime = calhrminsecfromsec(TotalParkingtime);
+                                //obj.ParkingTime = calhrminsecfromsec(TotalParkingtime);
                                 obj.e_id = lstGroup[i].data[k].Id;
                                 if (obj.ParkingTime != "0 sec") {
                                     Array.push(obj);
