@@ -706,7 +706,7 @@ global.Command9955 = function(line, Callback) {
                                                 // var Alarmquery = "INSERT INTO tblalarm (Datetime,Latitude,Longitude,GPSPositioning,Speed,Direction,Status,ReservedSign,ReservedSelection,DeviceId,AlarmCode ) VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + Status + "', '" + Sign + "', '" + ReserveSection + "', '" + deviceID + "','" + AlarmCode + "');";
                                                 connection.query(Alarmquery, function(err1, Alarmrows, fields) {
 
-                                                    connection.query("SELECT * from tblsharedevice where idVehicle=" + objVehicle.id + " and IsSharedUserNotification==true and IsNotification==true", function(err, lstShareUser, fields) {
+                                                    connection.query("SELECT * from tblsharedevice where idVehicle=" + objVehicle.id + " and IsSharedUserNotification=true and IsNotification=true", function(err, lstShareUser, fields) {
                                                         var lstAllUser = [objVehicle.iduser];
                                                         var AllUser = objVehicle.iduser.toString();
                                                         if (!err && lstShareUser.length > 0) {
@@ -956,7 +956,7 @@ global.Command9999 = function(line, Callback) {
             connection.query("SELECT id,Name,iduser,deviceid from tblvehicle where deviceid=" + DeviceId + " and IsDelete=false", function(err, lstVehicle, fields) {
                 if (!err && lstVehicle.length > 0) {
                     var objVehicle = lstVehicle[0];
-                    connection.query("SELECT * from tblsharedevice where idVehicle=" + objVehicle.id + " and IsSharedUserNotification==true and IsNotification==true", function(err, lstShareUser, fields) {
+                    connection.query("SELECT * from tblsharedevice where idVehicle=" + objVehicle.id + " and IsSharedUserNotification=true and IsNotification=true", function(err, lstShareUser, fields) {
                         var lstAllUser = [objVehicle.iduser];
                         var AllUser = objVehicle.iduser.toString();
                         if (!err && lstShareUser.length > 0) {
@@ -1196,7 +1196,7 @@ router.get('/SendSpeedData', function(req, res) {
     var Sendflag = false;
 
     client.connect(SocketPort, SocketIPAddress, function() {
-        // console.log('G-Sensor send to ' + DeviceId);
+        // console.log('Speed send to ' + Data);
         client.write(Data, 'hex');
 
         client.setTimeout(10000, function() {
