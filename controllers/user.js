@@ -1465,7 +1465,7 @@
                                                  });
 
                                                  client.on('close', function() {
-                                                     console.log('Connection closed');
+                                                     //  console.log('Connection closed');
                                                  });
                                              }
                                              // else {
@@ -1649,7 +1649,7 @@
                                      var line = data.toString();
                                      if (Sendflag == false) {
                                          if (line.indexOf('BP12') > 0) {
-                                             console.log('Received: ' + line);
+                                             //  console.log('Received: ' + line);
 
                                              var deviceID = line.substring(1, 13);
                                              var SpeedDetail = line.substring(17, 25);
@@ -1683,7 +1683,7 @@
                                  });
 
                                  client.on('close', function() {
-                                     console.log('Connection closed');
+                                     //  console.log('Connection closed');
                                  });
                              } else {
                                  res.json({
@@ -2199,7 +2199,7 @@
                      response1.data = response.rows;
                      res.json(response1);
                  }).catch(function(error) {
-                     console.log(error);
+                     //  console.log(error);
                      res.json(error);
                  })
              }
@@ -2305,7 +2305,7 @@
                      response1.data = response.rows;
                      res.json(response1);
                  }).catch(function(error) {
-                     console.log(error);
+                     //  console.log(error);
                      res.json(error);
                  })
              }

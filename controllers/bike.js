@@ -80,7 +80,7 @@ router.get('/GetVehicleDetailById', function(req, res) {
         // console.log(query);
     connection.query(query, function(err, rows, fields) {
         if (!err) {
-            console.log(rows);
+            // console.log(rows);
             res.json({ success: true, data: rows[0] });
         } else {
             res.json({ success: false, data: [] });
@@ -372,7 +372,7 @@ router.get('/GetAllGPSByTimeZoneDate', function(req, res) {
 });
 
 router.get('/GetAllGPSByTimeZoneDateWithV', function(req, res) {
-
+    // console.log(req.query)
     var Startdate = req.query.TodayStartDateTime;
     var Enddate = req.query.TodayEndDateTime;
 
@@ -382,15 +382,16 @@ router.get('/GetAllGPSByTimeZoneDateWithV', function(req, res) {
     var convertDate = convertdateformatForUnix(Enddate);
     var unixEnddate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
 
-
-    var query = "select Datetime, Latitude, Longitude, GPSPositioning, Speed, Direction, DeviceId,IsEngine, Date from tblgpsdata where deviceid=" + req.query.DeviceId + " and Date >= '" + unixStartdate + "' and Date <= '" + unixEnddate + "' order by Date;"
+    // console.log(unixStartdate, "--", unixEnddate)
+    var query = "select Id,Datetime, Latitude, Longitude, GPSPositioning, Speed, Direction, DeviceId,IsEngine, Date from tblgpsdata where deviceid=" + req.query.DeviceId + " and Date >= '" + unixStartdate + "' and Date <= '" + unixEnddate + "' order by Date;"
+        // console.log(query);
     connection.query(query, function(err, lstGPSData, fields) {
         res.json(lstGPSData);
     });
 });
 
 function ConvertDateFormat(today) {
-    console.log(today)
+    // console.log(today)
     var year = today.getUTCFullYear();
     var month = today.getUTCMonth() + 1; // beware: January = 0; February = 1, etc.
     var day = today.getUTCDate();
@@ -804,7 +805,7 @@ router.get('/UpdateVehicleName', jsonParser, function(req, res) {
         if (!err) {
             res.json({ success: true, message: 'Vehicle No. Save Successfully.' });
         } else {
-            console.log(err);
+            // console.log(err);
             res.json({ success: false, message: 'Vehicle No. could not save. Try again later.' });
         }
     })
@@ -824,7 +825,7 @@ router.get('/UpdateVehicleShare', jsonParser, function(req, res) {
             io.sockets.emit('ShareStatus', JSON.stringify(objConnection));
             io.sockets.emit(req.query.DeviceId + 'ShareStatus', JSON.stringify(objConnection));
         } else {
-            console.log(err);
+            // console.log(err);
             res.json({ success: false, message: 'Vehicle No. could not save. Try again later.' });
         }
     })

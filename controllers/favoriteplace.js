@@ -23,7 +23,7 @@ router.get('/GetAllFavoritePlaceByDevice', function(req, res) {
 })
 
 router.get('/GetFavoritePlaceById', function(req, res) {
-    console.log(req.query);
+    // console.log(req.query);
     FavoritePlace.findOne({
         where: {
             id: req.query.id
@@ -50,14 +50,14 @@ router.post('/SaveFavoritePlace', jsonParser, function(req, res) {
     FavoritePlace.findOrCreate({ where: { DeviceId: objFavoritePlace.DeviceId, Name: objFavoritePlace.Name }, defaults: objFavoritePlace }).then(function(response) {
         if (response[0]) {
             var IsInFavoritePlace = false;
-            console.log("-----------------------------------------------------------------------")
+            // console.log("-----------------------------------------------------------------------")
             GPSData.findOne({
                 where: {
                     DeviceId: objFavoritePlace.DeviceId
                 },
                 order: 'id DESC'
             }).then(function(resGPS) {
-                console.log("-----------------------------------------------------------------------")
+                // console.log("-----------------------------------------------------------------------")
                 if (resGPS != null) {
                     var CheckPoints = {
                         latitude: parseFloat(resGPS.Latitude),
@@ -221,7 +221,7 @@ router.get('/DeleteFavoritePlace', function(req, res) {
 
 router.post('/UpdateFavoritePlaceNameById', jsonParser, function(req, res) {
     objFavorite = req.body;
-    console.log(objFavorite);
+    // console.log(objFavorite);
     FavoritePlace.findOne({
         where: {
             id: objFavorite.id

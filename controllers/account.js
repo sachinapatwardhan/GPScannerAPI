@@ -509,7 +509,7 @@ router.post('/OwnerRegister', jsonParser, function(req, res) {
                                 objOTP.To = objUserReg.phone;
                                 objOTP.body = 'Your Verification Code for logging into GPSINA is ' + objUserReg.OTP + '. Kindly do not share it with anyone else.';
                                 global.sendSMS(objOTP, function(responseOTP) {
-                                    console.log(responseOTP)
+                                    // console.log(responseOTP)
                                 });
 
                                 res.json({
@@ -537,7 +537,7 @@ router.post('/OwnerRegister', jsonParser, function(req, res) {
                                             objOTP.To = objUserReg.phone;
                                             objOTP.body = 'Your Verification Code for logging into GPSINA is ' + objUserReg.OTP + '. Kindly do not share it with anyone else.';
                                             global.sendSMS(objOTP, function(responseOTP) {
-                                                console.log(responseOTP)
+                                                // console.log(responseOTP)
                                             });
 
                                             res.json({
@@ -564,7 +564,7 @@ router.post('/OwnerRegister', jsonParser, function(req, res) {
                                                 objOTP.To = objUserReg.phone;
                                                 objOTP.body = 'Your Verification Code for logging into GPSINA is ' + objUserReg.OTP + '. Kindly do not share it with anyone else.';
                                                 global.sendSMS(objOTP, function(responseOTP) {
-                                                    console.log(responseOTP)
+                                                    // console.log(responseOTP)
                                                 });
 
                                                 res.json({
@@ -1253,7 +1253,7 @@ router.post('/MobileRegister', jsonParser, function(req, res) {
                         //         objOTP.To = objUserReg.phone;
                         //         objOTP.body = 'Your Verification Code for logging into GPSINA is ' + objUserReg.OTP + '. Kindly do not share it with anyone else.';
                         //         global.sendSMS(objOTP, function(responseOTP) {
-                        //             console.log(responseOTP)
+                        // console.log(responseOTP)
                         //         });
 
                         //         res.json({

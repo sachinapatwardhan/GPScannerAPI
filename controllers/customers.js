@@ -69,7 +69,7 @@ router.get('/SendOTP', function(req, res) {
         });
 
         res1.on('end', function() {
-            console.log(JSON.parse(responseData));
+            // console.log(JSON.parse(responseData));
             res.json(JSON.parse(responseData));
         });
     });
@@ -111,7 +111,7 @@ getToken = function(headers) {
 
 router.get('/EncodeData', function(req, res) {
     var Passwordaa = req.query.data;
-    console.log(Passwordaa)
+    // console.log(Passwordaa)
     var EncodePass = jwt.encode(Passwordaa, "bugz");
     // console.log(EncodePass)
     // var DecodePass = jwt.decode(EncodePass, "bugz");
