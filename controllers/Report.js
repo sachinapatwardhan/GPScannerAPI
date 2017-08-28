@@ -640,7 +640,7 @@ router.get('/GetAllEngineData', function(req, res) {
                 }
                 Array[j].Mileage = DatewiseTravelledDistance;
             }
-            console.log("Engineon time....", calhrminsecfromsec(TotalEngineOnTime))
+            //console.log("Engineon time....", calhrminsecfromsec(TotalEngineOnTime))
             res.json(Array);
             //res.json(response);
         } else {
@@ -1362,13 +1362,13 @@ router.get('/GetAllParkingData', function(req, res) {
                         obj.EndTime = momentz.utc(lstGroup[i].data[LastPosition].Date).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
                         obj.ParkingTime = calhrminsecfromsec(calcDateDiffCalInSec(moment(lstGroup[i].data[LastPosition].Date), moment(lstGroup[i].data[ParkingStartPosition].Date)));
                         obj.e_id = lstGroup[i].data[LastPosition].Id;
-                        //console.log(obj.s_id, "----", obj.e_id)
-                        console.log();
+                        // console.log(obj.s_id, "----", obj.e_id)
+                        // console.log();
                         if (obj.ParkingTime != "0 sec") {
                             Array.push(obj);
                         }
                     }
-                    console.log("parking time..", calhrminsecfromsec(TotalParkingtime))
+                    // console.log("parking time..", calhrminsecfromsec(TotalParkingtime))
 
                 }
             }
@@ -1571,7 +1571,7 @@ router.get('/ExportParkingReport', function(req, res) {
                             Array.push(obj);
                         }
                     }
-                    console.log("parking time..", calhrminsecfromsec(TotalParkingtime))
+                    // console.log("parking time..", calhrminsecfromsec(TotalParkingtime))
 
                 }
             }
@@ -2461,19 +2461,22 @@ router.get('/GetAllDailyStatDate', function(req, res) {
                                     IsParking = 0;
                                     TotalParkingtime = TotalParkingtime + calcDateDiffCalInSec(moment(lstGroup[i].data[k].Date), moment(lstGroup[i].data[ParkingStartPosition].Date));
                                 }
-
-                                if (parseFloat(lstGroup[i].data[k].Speed) > 1) {
-                                    if (IsDriving == 0) {
-                                        DrivingStartPosition = k;
-                                    }
-                                    IsDriving = 1;
-
-                                } else {
-                                    if (IsDriving == 1) {
-                                        IsDriving = 0;
-                                        TotalDrivingtime = TotalDrivingtime + calcDateDiffCalInSec(moment(lstGroup[i].data[k].Date), moment(lstGroup[i].data[DrivingStartPosition].Date));
-                                    }
+                                if (IsDriving == 0) {
+                                    DrivingStartPosition = k;
                                 }
+                                IsDriving = 1;
+                                // if (parseFloat(lstGroup[i].data[k].Speed) > 1) {
+                                //     if (IsDriving == 0) {
+                                //         DrivingStartPosition = k;
+                                //     }
+                                //     IsDriving = 1;
+
+                                // } else {
+                                //     if (IsDriving == 1) {
+                                //         IsDriving = 0;
+                                //         TotalDrivingtime = TotalDrivingtime + calcDateDiffCalInSec(moment(lstGroup[i].data[k].Date), moment(lstGroup[i].data[DrivingStartPosition].Date));
+                                //     }
+                                // }
                             } else {
                                 if (IsEngineOn == 1) {
                                     IsEngineOn = 0;
@@ -2708,19 +2711,22 @@ router.get('/ExportDailyStatReport', function(req, res) {
                                     IsParking = 0;
                                     TotalParkingtime = TotalParkingtime + calcDateDiffCalInSec(moment(lstGroup[i].data[k].Date), moment(lstGroup[i].data[ParkingStartPosition].Date));
                                 }
-
-                                if (parseFloat(lstGroup[i].data[k].Speed) > 1) {
-                                    if (IsDriving == 0) {
-                                        DrivingStartPosition = k;
-                                    }
-                                    IsDriving = 1;
-
-                                } else {
-                                    if (IsDriving == 1) {
-                                        IsDriving = 0;
-                                        TotalDrivingtime = TotalDrivingtime + calcDateDiffCalInSec(moment(lstGroup[i].data[k].Date), moment(lstGroup[i].data[DrivingStartPosition].Date));
-                                    }
+                                if (IsDriving == 0) {
+                                    DrivingStartPosition = k;
                                 }
+                                IsDriving = 1;
+                                // if (parseFloat(lstGroup[i].data[k].Speed) > 1) {
+                                //     if (IsDriving == 0) {
+                                //         DrivingStartPosition = k;
+                                //     }
+                                //     IsDriving = 1;
+
+                                // } else {
+                                //     if (IsDriving == 1) {
+                                //         IsDriving = 0;
+                                //         TotalDrivingtime = TotalDrivingtime + calcDateDiffCalInSec(moment(lstGroup[i].data[k].Date), moment(lstGroup[i].data[DrivingStartPosition].Date));
+                                //     }
+                                // }
                             } else {
                                 if (IsEngineOn == 1) {
                                     IsEngineOn = 0;
