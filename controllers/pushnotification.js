@@ -107,25 +107,48 @@ router.get('/UpdateUserIdByUdId', function(req, res) {
             // where: search
         }).then(function(UserExist) {
             if (UserExist != null) {
-                PushNotification.findOne({
-                    where: {
-                        udid: req.query.udid,
-                    }
-                    // where: searchPushNotification
-                }).then(function(response) {
-                    if (response) {
-                        response.updateAttributes({ iduser: req.query.UserId, Country: req.query.Country }).then(function(resUpdate) {
-                            res.json({
-                                success: true,
-                                message: "User Push notification data updated successfully...",
-                                data: response
+                if (req.query.UserType != null && req.query.UserType != undefined && req.query.UserType != '') {
+                    PushNotification.findOne({
+                        where: {
+                            udid: req.query.udid,
+                            UserType: req.query.UserType,
+                        }
+                        // where: searchPushNotification
+                    }).then(function(response) {
+                        if (response) {
+                            response.updateAttributes({ iduser: req.query.UserId, Country: req.query.Country }).then(function(resUpdate) {
+                                res.json({
+                                    success: true,
+                                    message: "User Push notification data updated successfully...",
+                                    data: response
+                                });
                             });
-                        });
-                    } else {
-                        res.json(RecordNotFound);
-                    }
+                        } else {
+                            res.json(RecordNotFound);
+                        }
 
-                })
+                    })
+                } else {
+                    PushNotification.findOne({
+                        where: {
+                            udid: req.query.udid,
+                        }
+                        // where: searchPushNotification
+                    }).then(function(response) {
+                        if (response) {
+                            response.updateAttributes({ iduser: req.query.UserId, Country: req.query.Country }).then(function(resUpdate) {
+                                res.json({
+                                    success: true,
+                                    message: "User Push notification data updated successfully...",
+                                    data: response
+                                });
+                            });
+                        } else {
+                            res.json(RecordNotFound);
+                        }
+
+                    })
+                }
             } else {
                 res.json(InvalidToken);
             }
