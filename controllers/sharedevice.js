@@ -131,9 +131,14 @@ router.get('/RemoveSharedUser', function(req, res) {
                     UserId: req.query.UserId,
                     DeviceId: req.query.DeviceId
                 }
-                io.sockets.emit('ShareStatus', JSON.stringify(objConnection));
                 io.sockets.emit(req.query.UserId + 'ShareStatus', JSON.stringify(objConnection));
-
+                if (req.query.idSharedUser) {
+                    var objConnection1 = {
+                        UserId: req.query.idSharedUser,
+                        DeviceId: req.query.DeviceId
+                    }
+                    io.sockets.emit(req.query.idSharedUser + 'UserShareStatus', JSON.stringify(objConnection1));
+                }
             } else {
                 res.json({ success: false, message: 'User not Removed.' });
             }
