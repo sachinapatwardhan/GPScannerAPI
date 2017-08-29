@@ -580,7 +580,7 @@ router.get('/GetAllEngineData', function(req, res) {
             search += " Where tblgpsdata.Date <= '" + unixEnddate + "'";
         }
     }
-    var query = "SELECT tblgpsdata.Id, tblgpsdata.Datetime, tblgpsdata.Date, tblgpsdata.Latitude, tblgpsdata.Longitude, tblgpsdata.DeviceId, tblgpsdata.IsEngine, tblgpsdata.Speed, tblvehicle.Name, tblvehicle.iduser FROM tblgpsdata LEFT JOIN tblvehicle ON tblvehicle.deviceid = tblgpsdata.DeviceId " + search;
+    var query = "SELECT tblgpsdata.Id, tblgpsdata.Datetime, tblgpsdata.Date, tblgpsdata.Latitude, tblgpsdata.Longitude, tblgpsdata.DeviceId, tblgpsdata.IsEngine, tblgpsdata.Speed,tblgpsdata.GPSPositioning, tblvehicle.Name, tblvehicle.iduser FROM tblgpsdata LEFT JOIN tblvehicle ON tblvehicle.deviceid = tblgpsdata.DeviceId " + search;
     query += Orderby;
 
     connection.query(query, function(err, response) {
@@ -588,19 +588,56 @@ router.get('/GetAllEngineData', function(req, res) {
             var Array = [];
             var COuntEngineOff = 0;
             var COuntEngineOn = 0;
+            var StartMilage = 0;
+            var Milageco = 0;
+            var Engineco = 0;
+            var TotalMileage = 0
             for (var k = 0; k < response.length; k++) {
                 if (response[k].IsEngine == 1) {
+                    if (Engineco == 0) {
+                        StartMilage = k;
+                        Engineco = 1;
+                    }
+                    if ((k != 0) && response[k].GPSPositioning == 'A') {
+                        if (parseFloat(response[k].Speed) > 1) {
+                            Milageco = 0;
+                            TotalMileage += distance(parseFloat(response[StartMilage].Latitude), parseFloat(response[StartMilage].Longitude), parseFloat(response[k].Latitude), parseFloat(response[k].Longitude));
+                            StartMilage = k;
+                        } else {
+                            if (Milageco == 0) {
+                                TotalMileage += distance(parseFloat(response[StartMilage].Latitude), parseFloat(response[StartMilage].Longitude), parseFloat(response[k].Latitude), parseFloat(response[k].Longitude));
+                                StartMilage = k;
+                            }
+                            Milageco = 1;
+                        }
+                    }
+
                     if (COuntEngineOn == 0) {
-                        response[k].StartTimeold = new Date(response[k].Date * 1000);
-                        response[k].Status = 'Engine On';
-                        response[k].StartTime = momentz.utc(new Date(response[k].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
+                        var obj = new Object();
+                        // response[k].StartTimeold = new Date(response[k].Date * 1000);
+                        // response[k].Status = 'Engine On';
+                        // response[k].StartTime = momentz.utc(new Date(response[k].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
                         //moment(new Date(response[k].Date * 1000)).format('DD-MM-YYYY hh:mm:ss a');
                         // console.log("on..", response[k].Id);
-                        Array.push(response[k]);
+                        // Array.push(response[k]);
+                        obj.Name = response[k].Name;
+                        obj.StartTimeold = new Date(response[k].Date * 1000);
+                        obj.Status = 'Engine On';
+                        obj.StartTime = momentz.utc(new Date(response[k].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
                     }
                     COuntEngineOff = 0;
-                    COuntEngineOn = COuntEngineOn + 1;
+                    COuntEngineOn = 1;
+                    // }
                 } else {
+                    if (COuntEngineOn != 0) {
+                        Engineco = 0;
+                        TotalMileage += distance(parseFloat(response[StartMilage].Latitude), parseFloat(response[StartMilage].Longitude), parseFloat(response[k].Latitude), parseFloat(response[k].Longitude));
+                        obj.Mileage = TotalMileage;
+                        Array.push(obj);
+                        TotalMileage = 0;
+
+                    }
+                    COuntEngineOn = 0;
                     if (COuntEngineOff == 0) {
                         response[k].Status = 'Engine Off';
                         // console.log(response[k].Id);
@@ -608,7 +645,7 @@ router.get('/GetAllEngineData', function(req, res) {
                         response[k].StartTime = momentz.utc(new Date(response[k].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
                         Array.push(response[k]);
                     }
-                    COuntEngineOn = 0;
+
                     COuntEngineOff = COuntEngineOff + 1;
                 }
             }
@@ -632,13 +669,13 @@ router.get('/GetAllEngineData', function(req, res) {
 
                 }
 
-                if (j != Array.length - 1) {
+                // if (j != Array.length - 1) {
 
-                    DatewiseTravelledDistance = distance(parseFloat(Array[j].Latitude), parseFloat(Array[j].Longitude), parseFloat(Array[j + 1].Latitude), parseFloat(Array[j + 1].Longitude))
-                } else {
-                    DatewiseTravelledDistance = 0;
-                }
-                Array[j].Mileage = DatewiseTravelledDistance;
+                //     DatewiseTravelledDistance = distance(parseFloat(Array[j].Latitude), parseFloat(Array[j].Longitude), parseFloat(Array[j + 1].Latitude), parseFloat(Array[j + 1].Longitude))
+                // } else {
+                //     DatewiseTravelledDistance = 0;
+                // }
+                // Array[j].Mileage = DatewiseTravelledDistance;
             }
             //console.log("Engineon time....", calhrminsecfromsec(TotalEngineOnTime))
             res.json(Array);
@@ -713,7 +750,9 @@ router.get('/ExportEngineReport', function(req, res) {
             search += " Where tblgpsdata.Date <= '" + unixEnddate + "'";
         }
     }
-    var query = "SELECT tblgpsdata.Id, tblgpsdata.Datetime, tblgpsdata.Date, tblgpsdata.Latitude, tblgpsdata.Longitude, tblgpsdata.DeviceId, tblgpsdata.IsEngine, tblgpsdata.Speed, tblvehicle.Name, tblvehicle.iduser FROM tblgpsdata LEFT JOIN tblvehicle ON tblvehicle.deviceid = tblgpsdata.DeviceId " + search;
+    // var query = "SELECT tblgpsdata.Id, tblgpsdata.Datetime, tblgpsdata.Date, tblgpsdata.Latitude, tblgpsdata.Longitude, tblgpsdata.DeviceId, tblgpsdata.IsEngine, tblgpsdata.Speed, tblvehicle.Name, tblvehicle.iduser FROM tblgpsdata LEFT JOIN tblvehicle ON tblvehicle.deviceid = tblgpsdata.DeviceId " + search;
+    // query += Orderby;
+    var query = "SELECT tblgpsdata.Id, tblgpsdata.Datetime, tblgpsdata.Date, tblgpsdata.Latitude, tblgpsdata.Longitude, tblgpsdata.DeviceId, tblgpsdata.IsEngine, tblgpsdata.Speed,tblgpsdata.GPSPositioning, tblvehicle.Name, tblvehicle.iduser FROM tblgpsdata LEFT JOIN tblvehicle ON tblvehicle.deviceid = tblgpsdata.DeviceId " + search;
     query += Orderby;
     connection.query(query, function(err, response) {
         var Array = [];
@@ -721,48 +760,97 @@ router.get('/ExportEngineReport', function(req, res) {
 
         if (response != undefined) {
             conf.rows = [];
-            var COuntEngineOff = 0;
-            var COuntEngineOn = 0;
             var Array = [];
             var COuntEngineOff = 0;
             var COuntEngineOn = 0;
+            var StartMilage = 0;
+            var Milageco = 0;
+            var Engineco = 0;
+            var TotalMileage = 0
             for (var k = 0; k < response.length; k++) {
                 if (response[k].IsEngine == 1) {
+                    if (Engineco == 0) {
+                        StartMilage = k;
+                        Engineco = 1;
+                    }
+                    if ((k != 0) && response[k].GPSPositioning == 'A') {
+                        if (parseFloat(response[k].Speed) > 1) {
+                            Milageco = 0;
+                            TotalMileage += distance(parseFloat(response[StartMilage].Latitude), parseFloat(response[StartMilage].Longitude), parseFloat(response[k].Latitude), parseFloat(response[k].Longitude));
+                            StartMilage = k;
+                        } else {
+                            if (Milageco == 0) {
+                                TotalMileage += distance(parseFloat(response[StartMilage].Latitude), parseFloat(response[StartMilage].Longitude), parseFloat(response[k].Latitude), parseFloat(response[k].Longitude));
+                                StartMilage = k;
+                            }
+                            Milageco = 1;
+                        }
+                    }
+
                     if (COuntEngineOn == 0) {
-                        response[k].Status = 'Engine On';
-                        response[k].StartTime = momentz.utc(new Date(response[k].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
+                        var obj = new Object();
+                        // response[k].StartTimeold = new Date(response[k].Date * 1000);
+                        // response[k].Status = 'Engine On';
+                        // response[k].StartTime = momentz.utc(new Date(response[k].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
                         //moment(new Date(response[k].Date * 1000)).format('DD-MM-YYYY hh:mm:ss a');
-                        Array.push(response[k]);
+                        // console.log("on..", response[k].Id);
+                        // Array.push(response[k]);
+                        obj.Name = response[k].Name;
+                        obj.StartTimeold = new Date(response[k].Date * 1000);
+                        obj.Status = 'Engine On';
+                        obj.StartTime = momentz.utc(new Date(response[k].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
                     }
                     COuntEngineOff = 0;
-                    COuntEngineOn = COuntEngineOn + 1;
+                    COuntEngineOn = 1;
+                    // }
                 } else {
+                    if (COuntEngineOn != 0) {
+                        Engineco = 0;
+                        TotalMileage += distance(parseFloat(response[StartMilage].Latitude), parseFloat(response[StartMilage].Longitude), parseFloat(response[k].Latitude), parseFloat(response[k].Longitude));
+                        obj.Mileage = TotalMileage;
+                        Array.push(obj);
+                        TotalMileage = 0;
+
+                    }
+                    COuntEngineOn = 0;
                     if (COuntEngineOff == 0) {
                         response[k].Status = 'Engine Off';
+                        // console.log(response[k].Id);
+                        response[k].StartTimeold = new Date(response[k].Date * 1000);
                         response[k].StartTime = momentz.utc(new Date(response[k].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
                         Array.push(response[k]);
                     }
-                    COuntEngineOn = 0;
+
                     COuntEngineOff = COuntEngineOff + 1;
                 }
             }
             var DatewiseTravelledDistance = 0;
+            var TotalEngineOnTime = 0;
             for (var j = 0; j < Array.length; j++) {
                 if (j != Array.length - 1) {
                     Array[j].EndTime = Array[j + 1].StartTime;
                     Array[j].ContinueTime = calcDateDiff(Array[j].EndTime, Array[j].StartTime);
+                    if (Array[j].Status == 'Engine On') {
+                        TotalEngineOnTime = TotalEngineOnTime + calcDateDiffCalInSec(moment(Array[j + 1].StartTimeold), moment(Array[j].StartTimeold));
+                    }
+
                 } else {
                     Array[j].EndTime = momentz.utc(new Date(response[response.length - 1].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
                     //momentz.utc(new Date(response[response.length - 1].Date * 1000)).format('DD-MM-YYYY hh:mm:ss a');
                     Array[j].ContinueTime = calcDateDiff(Array[j].EndTime, Array[j].StartTime);
+                    if (Array[j].Status == 'Engine On') {
+                        TotalEngineOnTime = TotalEngineOnTime + calcDateDiffCalInSec(moment(response[response.length - 1].StartTimeold), moment(Array[j].StartTimeold));
+                    }
+
                 }
 
-                if (j != Array.length - 1) {
-                    DatewiseTravelledDistance = distance(parseFloat(Array[j].Latitude), parseFloat(Array[j].Longitude), parseFloat(Array[j + 1].Latitude), parseFloat(Array[j + 1].Longitude))
-                } else {
-                    DatewiseTravelledDistance = 0;
-                }
-                Array[j].Mileage = DatewiseTravelledDistance;
+                // if (j != Array.length - 1) {
+
+                //     DatewiseTravelledDistance = distance(parseFloat(Array[j].Latitude), parseFloat(Array[j].Longitude), parseFloat(Array[j + 1].Latitude), parseFloat(Array[j + 1].Longitude))
+                // } else {
+                //     DatewiseTravelledDistance = 0;
+                // }
+                // Array[j].Mileage = DatewiseTravelledDistance;
             }
             if (Array.length > 0) {
                 var data = u.sortBy(Array, function(num) { return new Date(num.StartTime) }).reverse();
@@ -809,14 +897,17 @@ router.get('/ExportEngineReport', function(req, res) {
                     Name = lstEngine[i].Name;
                 }
 
-                if (lstEngine[i].IsEngine != null && lstEngine[i].IsEngine != '' && lstEngine[i].IsEngine != undefined) {
-                    if (lstEngine[i].IsEngine == 1) {
-                        Status = 'Engine On';
-                    } else {
-                        Status = 'Engine Off';
-                    }
-                } else {
-                    Status = 'Engine Off';
+                // if (lstEngine[i].IsEngine != null && lstEngine[i].IsEngine != '' && lstEngine[i].IsEngine != undefined) {
+                //     if (lstEngine[i].IsEngine == 1) {
+                //         Status = 'Engine On';
+                //     } else {
+                //         Status = 'Engine Off';
+                //     }
+                // } else {
+                //     Status = 'Engine Off';
+                // }
+                if (lstEngine[i].Status != null && lstEngine[i].Status != '' && lstEngine[i].Status != undefined) {
+                    Status = lstEngine[i].Status;
                 }
                 if (lstEngine[i].ContinueTime != null && lstEngine[i].ContinueTime != '' && lstEngine[i].ContinueTime != undefined) {
                     ContinueTime = lstEngine[i].ContinueTime;
