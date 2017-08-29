@@ -1073,7 +1073,7 @@ router.get('/GetAllWoringHourForReport', function(req, res) {
                             // console.log(s_id, "-$-", e_id);
                         }
 
-                        if (IsDriving == 0 && group[i].GPSPositioning == "A") {
+                        if (IsDriving == 0) {
                             DrivingStartPosition = i;
                         }
                         IsDriving = 1;
@@ -1356,7 +1356,7 @@ router.get('/ExportAllWoringHourForReport', function(req, res) {
                         // console.log(s_id, "-$-", e_id);
                     }
 
-                    if (IsDriving == 0 && group[i].GPSPositioning == "A") {
+                    if (IsDriving == 0) {
                         DrivingStartPosition = i;
                     }
                     IsDriving = 1;
@@ -2129,7 +2129,7 @@ router.get('/GetAllDriverReport', function(req, res) {
                             Array.push(obj);
                         }
                     }
-                    // console.log("Driving Time....", calhrminsecfromsec(TotalDrivingtime))
+                    console.log("Driving Time....", calhrminsecfromsec(TotalDrivingtime))
                 }
             }
 
