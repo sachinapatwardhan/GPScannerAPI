@@ -2659,7 +2659,7 @@ router.get('/ExportDailyStatReport', function(req, res) {
             caption: 'Asset Name',
             type: 'string'
         }, {
-            caption: 'Date Time',
+            caption: 'Date',
             type: 'string'
         }, {
             caption: 'Driving Time',
