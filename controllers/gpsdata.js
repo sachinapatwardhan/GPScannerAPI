@@ -2129,7 +2129,7 @@ router.get('/GetAllDriverReport', function(req, res) {
                             Array.push(obj);
                         }
                     }
-                    console.log("Driving Time....", calhrminsecfromsec(TotalDrivingtime))
+                    // console.log("Driving Time....", calhrminsecfromsec(TotalDrivingtime))
                 }
             }
 
