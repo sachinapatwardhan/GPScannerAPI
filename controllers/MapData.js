@@ -114,7 +114,7 @@ router.get('/ExportReport', function(req, res) {
                     Direction = lstTemp[i].Direction;
                 }
                 var latlng = Longitude + "/" + Longitude;
-                row.push(Datetime.toString(), latlng, GPSPositioning.toString(), Speed.toString(), Direction.toString());
+                row.push(Datetime.toString(), latlng, Speed.toString(), GPSPositioning.toString(),Direction.toString());
                 conf.rows.push(row);
                 GetData(i + 1);
             } else {

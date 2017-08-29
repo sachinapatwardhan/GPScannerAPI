@@ -557,7 +557,7 @@ router.get('/GetAllEngineData', function(req, res) {
 
 
 
-    if (objParam.DeviceId != null && objParam.DeviceId != 'All' && objParam.DeviceId != undefined) {
+    if (objParam.DeviceId != null && objParam.DeviceId != '' && objParam.DeviceId != undefined) {
         if (search != "") {
             search += " And tblgpsdata.DeviceId = " + objParam.DeviceId;
         } else {
@@ -690,7 +690,7 @@ router.get('/ExportEngineReport', function(req, res) {
     var unixEnddate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
 
 
-    if (objParam.DeviceId != null && objParam.DeviceId != 'All' && objParam.DeviceId != undefined) {
+    if (objParam.DeviceId != null && objParam.DeviceId != '' && objParam.DeviceId != undefined) {
         if (search != "") {
             search += " And tblgpsdata.DeviceId = " + objParam.DeviceId;
         } else {
