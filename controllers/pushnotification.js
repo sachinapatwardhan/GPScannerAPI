@@ -23,7 +23,7 @@ router.post('/Subscribe', jsonParser, function(req, res) {
     }).then(function(obj) {
         if (obj != null) {
             if (objPushNotification.Country) {
-                obj.updateAttributes({ PushNotificationId: objPushNotification.PushNotificationId, iduser: objPushNotification.iduser }).then(function(resUpdate) {
+                obj.updateAttributes({ Country: objPushNotification.Country, PushNotificationId: objPushNotification.PushNotificationId, iduser: objPushNotification.iduser }).then(function(resUpdate) {
                     res.json({
                         success: true,
                         message: "User Subscribe successfully...",
@@ -31,7 +31,7 @@ router.post('/Subscribe', jsonParser, function(req, res) {
                     });
                 });
             } else {
-                obj.updateAttributes({ Country: objPushNotification.Country, PushNotificationId: objPushNotification.PushNotificationId, iduser: objPushNotification.iduser }).then(function(resUpdate) {
+                obj.updateAttributes({ PushNotificationId: objPushNotification.PushNotificationId, iduser: objPushNotification.iduser }).then(function(resUpdate) {
                     res.json({
                         success: true,
                         message: "User Subscribe successfully...",
