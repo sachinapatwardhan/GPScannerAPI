@@ -522,7 +522,7 @@ router.get('/ExportFenceReport', function(req, res) {
                 } else {
                     var result = nodeExcel.execute(conf);
                     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-                    res.setHeader("Content-Disposition", "attachment; filename=FenceInOutDetail.xlsx");
+                    res.setHeader("Content-Disposition", "attachment; filename=FenceInOutReport.xlsx");
                     res.end(result, 'binary');
                 }
             }
@@ -956,7 +956,7 @@ router.get('/ExportEngineReport', function(req, res) {
             }
             var result = nodeExcel.execute(conf);
             res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-            res.setHeader("Content-Disposition", "attachment; filename=EngineOnOffDetail.xlsx");
+            res.setHeader("Content-Disposition", "attachment; filename=EngineOnOffReport.xlsx");
             res.end(result, 'binary');
         } else {
             var response1 = new Object()
@@ -1289,7 +1289,7 @@ router.get('/ExportLastPositionDataByUserId', function(req, res) {
             } else {
                 var result = nodeExcel.execute(conf);
                 res.setHeader('Content-Type', 'application/vnd.openxmlformats');
-                res.setHeader("Content-Disposition", "attachment; filename=" + "LastPositionData.xlsx");
+                res.setHeader("Content-Disposition", "attachment; filename=" + "LastPositionReport.xlsx");
                 res.end(result, 'binary');
             }
 
