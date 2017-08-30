@@ -2063,7 +2063,7 @@ router.get('/GetAllDriverReport', function(req, res) {
                                 Mileage += distance(parseFloat(lstGroup[i].data[StartMilage].Latitude), parseFloat(lstGroup[i].data[StartMilage].Longitude), parseFloat(lstGroup[i].data[k].Latitude), parseFloat(lstGroup[i].data[k].Longitude));
                                 // Milageco = 0;
                                 // }
-                                obj.Mileage = parseFloat(Mileage).toFixed(2);
+                                obj.Mileage = parseFloat(Mileage); //.toFixed(2);
                                 var sum = 0;
 
                                 for (var m = 0; m < objSpeed.length; m++) {
@@ -2129,7 +2129,7 @@ router.get('/GetAllDriverReport', function(req, res) {
                             Array.push(obj);
                         }
                     }
-                    // console.log("Driving Time....", calhrminsecfromsec(TotalDrivingtime))
+                    console.log("Driving Time....", calhrminsecfromsec(TotalDrivingtime))
                 }
             }
 
