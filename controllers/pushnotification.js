@@ -4,13 +4,8 @@ var geolib = require("geolib");
 //Tables
 var PushNotification = models.tblpushnotification;
 var User = models.tbluserinformation;
-var FacebookPostData = models.tblfacebookpostdata;
 
 //End of Tables
-
-
-
-
 
 router.post('/Subscribe', jsonParser, function(req, res) {
     objPushNotification = req.body;
@@ -23,7 +18,7 @@ router.post('/Subscribe', jsonParser, function(req, res) {
     }).then(function(obj) {
         if (obj != null) {
             if (objPushNotification.Country) {
-                obj.updateAttributes({ Country: objPushNotification.Country, PushNotificationId: objPushNotification.PushNotificationId, iduser: objPushNotification.iduser }).then(function(resUpdate) {
+                obj.updateAttributes({ Country: objPushNotification.Country, PushNotificationId: objPushNotification.PushNotificationId, iduser: objPushNotification.iduser, MessageCount: 0 }).then(function(resUpdate) {
                     res.json({
                         success: true,
                         message: "User Subscribe successfully...",
@@ -31,7 +26,7 @@ router.post('/Subscribe', jsonParser, function(req, res) {
                     });
                 });
             } else {
-                obj.updateAttributes({ PushNotificationId: objPushNotification.PushNotificationId, iduser: objPushNotification.iduser }).then(function(resUpdate) {
+                obj.updateAttributes({ PushNotificationId: objPushNotification.PushNotificationId, iduser: objPushNotification.iduser, MessageCount: 0 }).then(function(resUpdate) {
                     res.json({
                         success: true,
                         message: "User Subscribe successfully...",
@@ -101,9 +96,6 @@ router.get('/CheckSubscribe', function(req, res) {
     })
 })
 
-
-
-
 router.get('/UpdateUserIdByUdId', function(req, res) {
     objHeader = req.headers;
     var token = getToken(objHeader);
@@ -127,7 +119,7 @@ router.get('/UpdateUserIdByUdId', function(req, res) {
                         // where: searchPushNotification
                     }).then(function(response) {
                         if (response) {
-                            response.updateAttributes({ iduser: req.query.UserId, Country: req.query.Country }).then(function(resUpdate) {
+                            response.updateAttributes({ iduser: req.query.UserId, Country: req.query.Country, MessageCount: 0 }).then(function(resUpdate) {
                                 res.json({
                                     success: true,
                                     message: "User Push notification data updated successfully...",
@@ -147,7 +139,7 @@ router.get('/UpdateUserIdByUdId', function(req, res) {
                         // where: searchPushNotification
                     }).then(function(response) {
                         if (response) {
-                            response.updateAttributes({ iduser: req.query.UserId, Country: req.query.Country }).then(function(resUpdate) {
+                            response.updateAttributes({ iduser: req.query.UserId, Country: req.query.Country, MessageCount: 0 }).then(function(resUpdate) {
                                 res.json({
                                     success: true,
                                     message: "User Push notification data updated successfully...",
@@ -168,6 +160,19 @@ router.get('/UpdateUserIdByUdId', function(req, res) {
         res.json(InvalidToken);
     }
 });
+
+router.get('/UpdatePushnotificationCounter', function(req, res) {
+    connection.query("Update tblpushnotification set messagecount=0 where udid='" + req.query.udid + "' and UserType='" + req.query.UserType + "'", function(errupdate, updateresp, fields) {
+        res.json({
+            success: true,
+            message: "User Push notification data updated successfully...",
+            data: response
+        });
+    });
+
+});
+
+
 
 function clone(obj) {
     if (null == obj || "object" != typeof obj) return obj;
@@ -302,51 +307,5 @@ router.post('/SendPushNotification', jsonParser, function(req, res) {
         }
     });
 })
-
-
-//FacebookPostData
-
-router.get('/GetAllSentFqacebookFeeds', function(req, res) {
-
-    var objParam = req.query;
-    var objColumns = objParam.columns;
-    var objOrderBy = objParam.order;
-    var objSearch = objParam.search;
-    var objSearch = objParam.search.value;
-    var Orderby = objColumns[parseInt(objOrderBy[0].column)].data + ' ' + objOrderBy[0].dir;
-
-    var search = {};
-    if (objSearch != null && objSearch != '') {
-        search['$or'] = [];
-        for (var i = 0; i < objColumns.length; i++) {
-            if (objColumns[i].data != null && objColumns[i].data != '') {
-                var columnName = objColumns[i].data;
-                var obj = new Object();
-                obj[columnName] = {
-                    $like: '%' + objSearch + '%'
-                }
-                search['$or'].push(obj);
-            };
-        };
-    }
-
-    FacebookPostData.findAndCountAll({
-        where: search,
-        order: Orderby,
-        offset: parseInt(objParam.start),
-        limit: parseInt(objParam.length),
-    }).then(function(response) {
-        var response1 = new Object();
-        response1.draw = objParam.draw;
-        response1.recordsTotal = response.count;
-        response1.recordsFiltered = response.count;
-        response1.data = response.rows;
-        res.json(response1);
-    }).catch(function(error) {
-        res.json(error);
-    })
-})
-
-
 
 module.exports = router

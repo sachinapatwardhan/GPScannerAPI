@@ -331,7 +331,7 @@ router.get('/Mobilelogout', jsonParser, function(req, res) {
         }).then(function(response) {
             if (response != null) {
                 var objPushnotification = response;
-                objPushnotification.updateAttributes({ iduser: 0 }).then(function(resUpdate) {
+                objPushnotification.updateAttributes({ iduser: 0, MessageCount: 0 }).then(function(resUpdate) {
                     res.json({
                         success: true,
                         message: "Logout Successfully."
@@ -353,7 +353,7 @@ router.get('/Mobilelogout', jsonParser, function(req, res) {
         }).then(function(response) {
             if (response != null) {
                 var objPushnotification = response;
-                objPushnotification.updateAttributes({ iduser: 0 }).then(function(resUpdate) {
+                objPushnotification.updateAttributes({ iduser: 0, MessageCount: 0 }).then(function(resUpdate) {
                     res.json({
                         success: true,
                         message: "Logout Successfully."

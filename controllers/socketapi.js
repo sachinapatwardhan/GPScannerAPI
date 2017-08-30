@@ -61,14 +61,15 @@ function SendIOSPushNotification(DeviceId) {
     var UserId = 0;
     var data = {
         title: 'Alert',
-        message: '9787 is out of Home Fence.',
+        message: '9787 is out of Home Fence. 9787 is out of Home Fence. 9787 is out of Home Fence. 9787 is out of Home Fence. 9787 is out of Home Fence. 9787 is out of Home Fence. 9787 is out of Home Fence. 9787 is out of Home Fence. 9787 is out of Home Fence.',
         Fence: 'Default',
+        // messagecount: 2,
         otherfields: {
             deviceid: '123456',
             Id: 1,
             VehicleName: '9787',
             AlarmCode: '6',
-            Type: 'Alarm'
+            Type: 'Alarm',
         }
     };
 
@@ -106,6 +107,24 @@ router.get('/SendIOSPush', function(req, res) {
     res.send("Done")
 })
 
+router.get('/SendPushTest', function(req, res) {
+    var UserId = req.query.UserId;
+    var PushNotificationdata = {
+        title: 'Alert',
+        message: '9787 is out of Home Fence.',
+        Fence: 'Default',
+        otherfields: {
+            deviceid: 123456,
+            Id: 1,
+            VehicleName: '9787',
+            AlarmCode: '11',
+            Type: 'Alarm'
+        }
+    };
+    SendPushNotification(PushNotificationdata, UserId);
+    res.send("Done")
+})
+
 function clone(obj) {
     if (null == obj || "object" != typeof obj) return obj;
     var copy = obj.constructor();
@@ -117,12 +136,15 @@ function clone(obj) {
 
 function SendPushNotification(data, UserId) {
     // var deviceIds = [];
-    connection.query("SELECT PushNotificationId,Platform from tblpushnotification where iduser in (" + UserId + ") group by PushNotificationId, Platform", function(err, response, fields) {
+    connection.query("SELECT PushNotificationId,Platform,MessageCount,UserType,udid from tblpushnotification where iduser in (" + UserId + ") group by PushNotificationId, Platform", function(err, response, fields) {
         if (!err && response.length > 0) {
             // PushNotification.findAll({ where: { iduser: UserId } }).then(function(response) {
             function SendNotification(i) {
                 if (i < response.length) {
-
+                    var messagecount = 1;
+                    if (response[i].MessageCount) {
+                        messagecount = parseInt(response[i].MessageCount) + 1;
+                    }
                     // connection.query("SELECT * from tblsetting where Name ='" + PushNotificationType + "' ", function(err, lstSetting, fields) {
                     //     if (lstSetting[0].Value == 1) {
                     var deviceIds = [];
@@ -131,9 +153,11 @@ function SendPushNotification(data, UserId) {
                         // } else {
                         // console.log(deviceIds)
                     var objData = clone(data);
+
                     if (response[i].Platform == 'ios') {
                         objData.title = data.message;
                         objData.message = data.message;
+                        PushNotificationSettings.apn.badge = messagecount;
                         if (objData.Fence == 'FenceIn') {
                             PushNotificationSettings.apn.defaultData.sound = 'fencein.caf';
                         } else if (objData.Fence == 'FenceOut') {
@@ -141,7 +165,9 @@ function SendPushNotification(data, UserId) {
                         } else {
                             PushNotificationSettings.apn.defaultData.sound = 'default';
                         };
-                    };
+                    } else {
+                        PushNotificationSettings.gcm.msgcnt = messagecount;
+                    }
                     // console.log(response[i].Platform + "_______________________________________________________")
                     // console.log(objData)
                     objData.priority = 'high';
@@ -150,7 +176,10 @@ function SendPushNotification(data, UserId) {
 
                         objPushNotificationSend.send(deviceIds, objData, function(result) {
                             // console.log(result);
-                            SendNotification(i + 1);
+                            connection.query("Update tblpushnotification set messagecount=" + messagecount + " where udid='" + response[i].udid + "' and UserType='" + response[i].UserType + "'", function(errupdate, updateresp, fields) {
+                                console.log(errupdate)
+                                SendNotification(i + 1);
+                            });
                         });
                     } else {
                         SendNotification(i + 1);

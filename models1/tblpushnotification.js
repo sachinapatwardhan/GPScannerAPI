@@ -31,6 +31,11 @@ module.exports = function(sequelize, DataTypes) {
     UserType: {
       type: DataTypes.STRING,
       allowNull: true
+    },
+    MessageCount: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true,
+      defaultValue: '0'
     }
   }, {
     tableName: 'tblpushnotification'
