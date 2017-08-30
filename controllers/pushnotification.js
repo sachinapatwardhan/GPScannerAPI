@@ -166,7 +166,7 @@ router.get('/UpdatePushnotificationCounter', function(req, res) {
         res.json({
             success: true,
             message: "User Push notification data updated successfully...",
-            data: response
+            data: updateresp
         });
     });
 
