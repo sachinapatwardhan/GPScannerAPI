@@ -331,6 +331,7 @@ app.use('/telco', require('./controllers/telco'))
 app.use('/MapData', require('./controllers/MapData'))
 app.use('/homepage', require('./controllers/homepage'))
 app.use('/Report', require('./controllers/Report'));
+app.use('/appinfo', require('./controllers/appinfo'));
 
 //socket API End
 
