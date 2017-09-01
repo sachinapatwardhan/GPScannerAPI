@@ -2036,6 +2036,7 @@
          //you can get fields here
      });
      form.on('fileBegin', function(name, file) {
+         console.log(name, "------", file)
          var ext = file.name.substring(file.name.indexOf('.'), file.name.length);
          var NewName = GetUserNameFromDate();
          if (ext.indexOf('?') > -1) {
