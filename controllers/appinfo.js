@@ -202,6 +202,7 @@ router.post('/uploadFile', function(req, res) {
     var form = new formidable.IncomingForm();
     // console.log(req.query)
     form.uploadDir = __dirname + '/../MediaUploads/FileUpload';
+    // form.uploadDir2 = __dirname + '/../MediaUploads/UserUpload';
     var FileName = [];
     var lstUser = [];
 
@@ -214,7 +215,7 @@ router.post('/uploadFile', function(req, res) {
     });
     form.on('fileBegin', function(name, file) {
         // var ext = file.name.substring(file.name.indexOf('.'), file.name.length);
-        var NewName = file.name; //GetUserNameFromDate();
+        // var NewName = file.name; //GetUserNameFromDate();
         // if (ext.indexOf('?') > -1) {
         //     ext = ext.substring(0, ext.indexOf('?'));
         // };
@@ -227,13 +228,15 @@ router.post('/uploadFile', function(req, res) {
         var strarr = name.split(',');
 
         var ext = file.name.substring(file.name.indexOf('.'), file.name.length);
-        // var NewName = GetUserNameFromDate();
+        var NewName = GetUserNameFromDate();
         if (ext.indexOf('?') > -1) {
             ext = ext.substring(0, ext.indexOf('?'));
         };
         if (strarr[1] == "IC") {
             file.path = form.uploadDir + "/" + NewName + ext;
         } else if (strarr[1] == "IK") {
+            file.path = form.uploadDir + "/" + NewName + ext;
+        } else if (strarr[1] == "logo") {
             file.path = form.uploadDir + "/" + NewName + ext;
         }
         var obj = new Object();
@@ -254,27 +257,27 @@ router.post('/uploadFile', function(req, res) {
                 var Id = parseInt(lstUser[i]);
                 AppInfo.findOne({ where: { Id: Id } }).then(function(response) {
                     if (response != null) {
-                        //  if (req.query.UserType == 'Owner') {
-                        //      if (response.OwnerImage != '' && response.OwnerImage != null) {
-                        //          var oldFile = __dirname + '/../MediaUploads/UserUpload/' + response.OwnerImage;
-                        //          fs.exists(oldFile, function(exists) {
-                        //              if (exists) {
-                        //                  fs.unlink(oldFile);
-                        //              }
-                        //          });
-                        //      };
-                        //      response.updateAttributes({ OwnerImage: FileName[i] }).then(function(resUpdate) {
-                        //          if ((i + 1) == FileName.length) {
-                        //              res.json({ success: true, message: "Images Uploaded Successfully...", data: FileName[i] });
-                        //          } else {
-                        //              uploader(i + 1);
-                        //          };
-                        //      })
-                        //  } else {
-                        //  if (FileName[i].Type == "Document") {
+
+                        if (FileName[i].Type == "logo") {
+                            if (response.ImageLogo != '' && response.ImageLogo != null) {
+                                var oldFile = __dirname + '/../MediaUploads/FileUpload/' + response.ImageLogo;
+                                fs.exists(oldFile, function(exists) {
+                                    if (exists) {
+                                        fs.unlink(oldFile);
+                                    }
+                                });
+                            }
+                            response.updateAttributes({ ImageLogo: FileName[i].Name }).then(function(resUpdate) {
+                                if ((i + 1) == FileName.length) {
+                                    res.json({ success: true, message: "File Uploaded Successfully...", data: FileName[i] });
+                                } else {
+                                    uploader(i + 1);
+                                };
+                            })
+                        }
                         if (FileName[i].Type == "IC") {
                             if (response.IOSCertificate != '' && response.IOSCertificate != null) {
-                                var oldFile = __dirname + '/../MediaUploads/IOSCertificate/' + response.IOSCertificate;
+                                var oldFile = __dirname + '/../MediaUploads/FileUpload/' + response.IOSCertificate;
                                 fs.exists(oldFile, function(exists) {
                                     if (exists) {
                                         fs.unlink(oldFile);
@@ -291,7 +294,7 @@ router.post('/uploadFile', function(req, res) {
                         }
                         if (FileName[i].Type == "IK") {
                             if (response.IOSKey != '' && response.IOSKey != null) {
-                                var oldFile = __dirname + '/../MediaUploads/IOSKey/' + response.IOSKey;
+                                var oldFile = __dirname + '/../MediaUploads/FileUpload/' + response.IOSKey;
                                 fs.exists(oldFile, function(exists) {
                                     if (exists) {
                                         fs.unlink(oldFile);
