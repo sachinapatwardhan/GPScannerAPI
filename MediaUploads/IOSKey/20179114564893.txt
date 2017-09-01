@@ -1,0 +1,28 @@
+cordova -d plugin add D:\testttt_FB\com.phonegap.plugins.facebookconnect --variable APP_ID="1682444068696159" --variable APP_NAME="Celebrity"
+
+cordova -d plugin add D:\testttt_FB\com.phonegap.plugins.facebookconnect --variable APP_ID="308047986221061" --variable APP_NAME="IBOW"
+
+cordova -d plugin add D:\testttt_FB\com.phonegap.plugins.facebookconnect --variable APP_ID="1166037800150579" --variable APP_NAME="JV"
+
+cordova -d plugin add D:\testttt_FB\com.phonegap.plugins.PushPlugin
+
+Facebook New Hash key => x1XKCTMVjbYwgAjHGwdpgCzWsEo=
+
+cordova -d plugin add D:\testttt_FB\com.phonegap.plugins.PushPlugin --variable SENDER_ID="170751921265"
+
+cordova -d plugin add D:\testttt_FB\cordova-plugin-googlemaps --variable API_KEY_FOR_ANDROID="AIzaSyDXmqbTJJXQiS_Iytd-4PSK5zq28gPBMbU" --variable API_KEY_FOR_IOS="AIzaSyDXmqbTJJXQiS_Iytd-4PSK5zq28gPBMbU"
+
+
+ C:\Windows\Microsoft.NET\Framework \v4.0.30319\aspnet_regsql
+
+
+ID: ashish@bugzstudio.com
+Password : Desai123##
+
+
+103.25.131.156:9296
+username: ONEOTHREE\admin2
+passsword: qwe123QWE!@#
+
+http://www.facebook.com/video/embed?video_id=1252072274886518
+

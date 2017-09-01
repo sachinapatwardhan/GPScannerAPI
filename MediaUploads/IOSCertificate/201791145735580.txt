@@ -1,0 +1,166 @@
+CAACEdEose0cBAKyyCOr4AsMpD2FkZAuYjSBXusROWxHuHhPfq03P6JHB2ZBxT3QjPoAAOrJFejFgRdVLP5TKCBqwcKXrtEQaD0Eu4VZB0zE9Q6w2dVQcbMmT6ax0TXHbGtPoy3XwGrvJ4O6ohMnRpVxLltZCZCy5lZBYFM6BVD7tu34Mvu23j9F3dn5ZALK3Cw5ZCZCWjsnvJ3TIDZCsQFqk3z
+
+{
+  "name": "Disolutions Disolutions",
+  "id": "172201356498830"
+}
+
+
+
+curl -i -X GET \
+ "https://graph.facebook.com/v2.5/me?CAACEdEose0cBAKyyCOr4AsMpD2FkZAuYjSBXusROWxHuHhPfq03P6JHB2ZBxT3QjPoAAOrJFejFgRdVLP5TKCBqwcKXrtEQaD0Eu4VZB0zE9Q6w2dVQcbMmT6ax0TXHbGtPoy3XwGrvJ4O6ohMnRpVxLltZCZCy5lZBYFM6BVD7tu34Mvu23j9F3dn5ZALK3Cw5ZCZCWjsnvJ3TIDZCsQFqk3z&access_token=CAACEdEose0cBAKyyCOr4AsMpD2FkZAuYjSBXusROWxHuHhPfq03P6JHB2ZBxT3QjPoAAOrJFejFgRdVLP5TKCBqwcKXrtEQaD0Eu4VZB0zE9Q6w2dVQcbMmT6ax0TXHbGtPoy3XwGrvJ4O6ohMnRpVxLltZCZCy5lZBYFM6BVD7tu34Mvu23j9F3dn5ZALK3Cw5ZCZCWjsnvJ3TIDZCsQFqk3z"
+ 
+ 
+ BeingSalmanKhan
+ 
+ https://graph.facebook.com/v2.2/172201356498830/accounts?access_token=CAACEdEose0cBAKyyCOr4AsMpD2FkZAuYjSBXusROWxHuHhPfq03P6JHB2ZBxT3QjPoAAOrJFejFgRdVLP5TKCBqwcKXrtEQaD0Eu4VZB0zE9Q6w2dVQcbMmT6ax0TXHbGtPoy3XwGrvJ4O6ohMnRpVxLltZCZCy5lZBYFM6BVD7tu34Mvu23j9F3dn5ZALK3Cw5ZCZCWjsnvJ3TIDZCsQFqk3z
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ https://graph.facebook.com/BeingSalmanKhan/photos/uploaded?access_token=CAACEdEose0cBAKyyCOr4AsMpD2FkZAuYjSBXusROWxHuHhPfq03P6JHB2ZBxT3QjPoAAOrJFejFgRdVLP5TKCBqwcKXrtEQaD0Eu4VZB0zE9Q6w2dVQcbMmT6ax0TXHbGtPoy3XwGrvJ4O6ohMnRpVxLltZCZCy5lZBYFM6BVD7tu34Mvu23j9F3dn5ZALK3Cw5ZCZCWjsnvJ3TIDZCsQFqk3z
+ 
+ CAACEdEose0cBANA39VX4hUy9SYkoRo5u0Hr73iYPIizKJyyTI4RMSZAMCvF5NVZCvQDSiKhlwGaB7L1QhSoOwGs2mVLZBrqSV5c2QX9api6xNTxDVZCSDdI8sUqZCTQqbSWh6S8AFKAjdQPW9tVDQXUy8u24TrxjKtG92w1EesrEK0DigZBLiWsc0jZBBX1Hc3g1oxQTAKU0EX3uSeL0uED
+ 
+ 
+ 334873533267523/albums
+ 
+ 
+ 
+ curl -i -X GET \
+ "https://graph.facebook.com/v2.5/335663429855200/photos?fields=source&limit=200&access_token=CAACEdEose0cBADKcMKlVygIhVN387jOkGNEyjtuGdmsZBZBdZBzvrTU4bZBkYxEIWVaO10I2BNZCTtVFcCoO4aZAJyKfZAZAXK61m97rs2VgcAb79mCUzjyWn1hjBQT8sUZAKKVGlw8tZCwqfgjryAAtztZCLbZBiUrdZCdCm5ZCO0B9pe6ZB2MxHuVlIiTAusNpES9xCbICvp5z42nTDa9EucUudeI"
+ 
+ 
+ 1017822801639256/?fields=comments.order(reverse_chronological)
+ 
+ 
+ 
+ /me/feed returns a LIKES field
+
+I used a solution where I simply find the number of items in the array which display LIKES
+
+Object.keys(item.likes.data).length
+This returns the "length" of an object -- which is equal to the number of likes.
+
+
+
+
+https://graph.facebook.com/oauth/access_token?client_id=1020185121390312&client_secret=fb158d094868c54527a0c2af92e4a6aa&grant_type=fb_exchange_token&fb_exchange_token=CAACEdEose0cBAH4hivbU0IZCIzWDgFT1wGn9ZCVFImUHRhs7ZBqexvcOb58O9TmajQohit8OW58WOlWANzWirf69U0DeYMTHOpOZBAC03yg0ZCPTeBQFku7IGgYtzZAcAldZBSzsYQBf62LxoE4dIwbefjxw6O3MhwnZAMxZCXMyox4cGf9dxsgcLmsvkTZChcOM7uS7rO9cazykUBr1J3ahsr
+
+<Page-id>?fields=access_token
+334873533267523?fields=access_token
+
+oauth/access_token?client_id=1682444068696159&client_secret=03d1c1670a0c86ee43d9d133cd943cfc&grant_type=fb_exchange_token&fb_exchange_token=CAAX6LIkRsF8BAMhkWDL9NmHnc4ttX4hZB1MAwGFux5GscZCkBFkmgT7rqgM3mkJxxZCZCRoyuTOZA96DxfPl6xtCsk1TuBwq00q1Seiyje6aOUxqXv1PG3o1dPMV6wFkMxbuMP2hLIl6wEXX9a4YYdjBC0tJOJB4rGNORR5SL6TPPwq0myqfn2BiYy1Am917gbBJS7HY72Sb4FfZAMdU8Y
+
+{
+  "access_token": "CAAX6LIkRsF8BANnk7aqhqThpjeGLVzJdFW8Yu0ScnWSVZAZBB3IVf6wspApAfPmRYYS6yZCxFJ01kX4ZACLQsNXTQMNbOotum708oEs1FbZAXgIiMub9ausZA6GfMSfjUhmdwTyRqVC1MHbqlUyqZAciT6ZAJpQvssVWDqZBX8Ql4TGhVtKhR0RYq",
+  "token_type": "bearer",
+  "expires_in": 5184000
+}
+
+
+
+
+
+Get Token From Facebook Graph API 
+{
+	https://graph.facebook.com/v2.5/oauth/access_token?client_id=1682444068696159&client_secret=03d1c1670a0c86ee43d9d133cd943cfc&grant_type=fb_exchange_token&fb_exchange_token=CAAX6LIkRsF8BANnk7aqhqThpjeGLVzJdFW8Yu0ScnWSVZAZBB3IVf6wspApAfPmRYYS6yZCxFJ01kX4ZACLQsNXTQMNbOotum708oEs1FbZAXgIiMub9ausZA6GfMSfjUhmdwTyRqVC1MHbqlUyqZAciT6ZAJpQvssVWDqZBX8Ql4TGhVtKhR0RYq
+
+	Note:
+	  fb_exchange_token: is Used for recently Token used to Get New Access_Token 
+}
+
+
+
+
+
+------https://graph.facebook.com/me/accounts?access_token=CAAX6LIkRsF8BANnk7aqhqThpjeGLVzJdFW8Yu0ScnWSVZAZBB3IVf6wspApAfPmRYYS6yZCxFJ01kX4ZACLQsNXTQMNbOotum708oEs1FbZAXgIiMub9ausZA6GfMSfjUhmdwTyRqVC1MHbqlUyqZAciT6ZAJpQvssVWDqZBX8Ql4TGhVtKhR0RYq
+
+{
+   "data": [
+      {
+         "access_token": "CAAX6LIkRsF8BAJ9yIxfPTZACMZBRBc3gwe6PWhJDiJVi30nPJaCIRJCJl6cGXdOJ4oxFOnZArZCu4ZBCzJXZAGUb4MQWVZA4OREGwDTYHhDrUfbQvTbwcZCa4RIAc7Wsl6WeZC1nmVK1n5I8R2AUBtK0TZAyiWABGXOQ9Q4NuhewirjYDNCx9biU055pgbtZChKY3vsZAAjdbVv73AZDZD",
+         "category": "App Page",
+         "name": "Swaminarayan Katha",
+         "id": "942846929130858",
+         "perms": [
+            "ADMINISTER",
+            "EDIT_PROFILE",
+            "CREATE_CONTENT",
+            "MODERATE_CONTENT",
+            "CREATE_ADS",
+            "BASIC_ADMIN"
+         ]
+      }
+   ],
+   "paging": {
+      "cursors": {
+         "before": "OTQyODQ2OTI5MTMwODU4",
+         "after": "OTQyODQ2OTI5MTMwODU4"
+      }
+   }
+}
+
+
+
+
+
+
+
+
+
+
+
+User Profile
+
+https://graph.facebook.com/v2.5/BeingSalmanKhan?fields=picture.width(720).height(720) 
+
+
+https://graph.facebook.com/v2.5/334875709933972/picture?url&access_token=CAAX6LIkRsF8BAGFfxqhf0G1JpKZBEZBovcC6y06D3lu30lSpJUzMzX2hT2RU7Nkl0FVaBOHpyXcMBz0c61sY463Dn3CVaXZCdWNARd5WLf2zIyuClNqrvJnBjy1aEgcgp3wRZCOC9VdBHQQQZCEwZA9ImnErj5KHtZBXTzXud0TEjXTCwXQBQeewQsZA9j69mnuFyUjLTvFIWAZDZD
+
+
+ 
+https://graph.facebook.com/v2.5/100002492511520/albums?fields=count,name&access_token=CAAX6LIkRsF8BAJ9yIxfPTZACMZBRBc3gwe6PWhJDiJVi30nPJaCIRJCJl6cGXdOJ4oxFOnZArZCu4ZBCzJXZAGUb4MQWVZA4OREGwDTYHhDrUfbQvTbwcZCa4RIAc7Wsl6WeZC1nmVK1n5I8R2AUBtK0TZAyiWABGXOQ9Q4NuhewirjYDNCx9biU055pgbtZChKY3vsZAAjdbVv73AZDZD
+
+
+https://graph.facebook.com/v2.5/BeingSalmanKhan?fields=name&access_token=CAAX6LIkRsF8BAJ9yIxfPTZACMZBRBc3gwe6PWhJDiJVi30nPJaCIRJCJl6cGXdOJ4oxFOnZArZCu4ZBCzJXZAGUb4MQWVZA4OREGwDTYHhDrUfbQvTbwcZCa4RIAc7Wsl6WeZC1nmVK1n5I8R2AUBtK0TZAyiWABGXOQ9Q4NuhewirjYDNCx9biU055pgbtZChKY3vsZAAjdbVv73AZDZD
+
+
+
+
+Next-----------------------
+
+https://graph.facebook.com/oauth/access_token?client_id=1682444068696159&client_secret=03d1c1670a0c86ee43d9d133cd943cfc&grant_type=fb_exchange_token&fb_exchange_token=CAAX6LIkRsF8BAHZB1q3ISW4a8wMMrrgkxYjU87apMJrLYJmx4UcoEDYqjS9zCQdu1AQTVRrmXqqrnAQFDhSYz2SfKmbGNGz5WLZB4CMhbvhSVpgZBqdbypCkIYUo43pomiIw5SF95tZAwpsQXrMA3sPRTsVH9ZA3w32oWYYreRgWazrTlZAatthGwrF3enoVBVaTZC4yZBHYEOw3ZC7V57tBE
+
+
+https://graph.facebook.com/me/accounts?access_token=CAAX6LIkRsF8BAJs4aI8fdpQuSQrSXk1ZBIxgCSnicQShfMoL9S2tGfFZArIcc8R3woGUEAfSZB87waZAZAgV34bJgLov40jrE5Ct992qLCKSmCgcGexvNjM0XCypRjIcidSJ99DMNaiZCXZC08UsSZBgGgBHC2kjmBKXNYnaWAStgpCHluZBS56FupcZApo8ARGEEXhjM4GCKzvQZDZD
+
+
+{
+   "data": [
+      {
+         "access_token": "CAAX6LIkRsF8BAGFfxqhf0G1JpKZBEZBovcC6y06D3lu30lSpJUzMzX2hT2RU7Nkl0FVaBOHpyXcMBz0c61sY463Dn3CVaXZCdWNARd5WLf2zIyuClNqrvJnBjy1aEgcgp3wRZCOC9VdBHQQQZCEwZA9ImnErj5KHtZBXTzXud0TEjXTCwXQBQeewQsZA9j69mnuFyUjLTvFIWAZDZD",
+         "category": "App Page",
+         "name": "Swaminarayan Katha",
+         "id": "942846929130858",
+         "perms": [
+            "ADMINISTER",
+            "EDIT_PROFILE",
+            "CREATE_CONTENT",
+            "MODERATE_CONTENT",
+            "CREATE_ADS",
+            "BASIC_ADMIN"
+         ]
+      }
+   ],
+   "paging": {
+      "cursors": {
+         "before": "OTQyODQ2OTI5MTMwODU4",
+         "after": "OTQyODQ2OTI5MTMwODU4"
+      }
+   }
+}
