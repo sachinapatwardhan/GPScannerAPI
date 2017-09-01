@@ -7,6 +7,7 @@
  var Vehicle = models.tblvehicle;
  var Country = models.tblcountrymgmt;
  var State = models.tblcountrystatemgmt;
+ var AppInfo = models.tblappinfo;
  //End of Tables
 
  router.get('/GetAllUser', function(req, res) {
@@ -125,6 +126,12 @@
              allowNull: false
          }
      });
+     User.belongsTo(AppInfo, {
+         foreignKey: {
+             name: 'idApp',
+             allowNull: false
+         }
+     });
 
      User.findAndCountAll({
          where: search,
@@ -136,6 +143,9 @@
              include: [
                  Role
              ]
+         }, {
+             model: AppInfo,
+
          }]
      }).then(function(response) {
          var response1 = new Object();
