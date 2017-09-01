@@ -31,9 +31,6 @@ router.get('/GetAllAppInfo', function(req, res) {
         search = search + 'CreatedDate like "%' + objSearch + '%") ';
     }
 
-
-
-
     var qry = "Select * from tblappinfo " +
         search +
         " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
@@ -201,7 +198,6 @@ router.get('/DeleteAppInfo', function(req, res) {
     // });
 });
 
-
 router.post('/uploadFile', function(req, res) {
     var form = new formidable.IncomingForm();
     // console.log(req.query)
@@ -325,6 +321,14 @@ router.post('/uploadFile', function(req, res) {
         //when finish all process
     });
 });
+
+router.get('/GetAppInfoByName', function(req, res) {
+    AppInfo.findOne({ where: { AppName: req.query.AppName } }).then(function(response) {
+        res.json(response);
+    }).catch(function(error) {
+        res.json(error);
+    });
+})
 
 function GetUserNameFromDate() {
     var d = new Date();
