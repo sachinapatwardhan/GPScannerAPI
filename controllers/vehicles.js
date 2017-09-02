@@ -42,6 +42,13 @@ router.get('/GetAllDynamicVehicle', function(req, res) {
     } else {
         search += ' where vehicle.IsDelete = 0 ';
     }
+    if (objParam.appId != null && objParam.appId != '' && objParam.appId != undefined) {
+        if (search != "") {
+            search += ' and user.idApp =' + objParam.appId;
+        } else {
+            search += ' Where user.idApp =' + objParam.appId;
+        }
+    }
 
 
 
