@@ -86,7 +86,7 @@
      })
  })
 
- router.get('/GetAllDynamicUser', function(req, res) {
+ router.get('/GetAllDynamicUserOld', function(req, res) {
 
      var objParam = req.query;
      var objColumns = objParam.columns;
@@ -95,7 +95,7 @@
 
      var Orderby = objColumns[parseInt(objOrder[0].column)].data + ' ' + objOrder[0].dir;
      var search = {};
-
+     var search1 = {};
 
      if (objSearch != null && objSearch != '') {
          search['$or'] = [];
@@ -103,15 +103,15 @@
          for (var i = 0; i < objColumns.length; i++) {
              if (objColumns[i].data != null && objColumns[i].data != '') {
                  var columnName = objColumns[i].data;
+                 console.log(columnName);
 
                  if (columnName != 'createddate') {
                      search['$or'].push([columnName + ' like ?', "%" + objSearch + "%"]);
                  }
+
              };
          };
      }
-
-
 
      User.hasMany(UserInRole, {
          foreignKey: {
@@ -159,6 +159,72 @@
      })
  })
 
+ router.get('/GetAllDynamicUser', function(req, res) {
+
+     var objParam = req.query;
+     var objColumns = objParam.columns;
+     var objOrder = objParam.order;
+     var objSearch = objParam.search;
+
+
+     var Orderby = objColumns[parseInt(objOrder[0].column)].data + ' ' + objOrder[0].dir;
+     if (objOrder[0].column == 5) {
+         Orderby = 'tblrole.' + Orderby;
+     } else if (objOrder[0].column == 6) {
+         Orderby = 'tblappinfo.' + Orderby;
+     } else {
+         Orderby = 'tbluserinformation.' + Orderby;
+     }
+     var search = '';
+
+
+     if (objSearch != null && objSearch != '') {
+
+         search = 'Where (tbluserinformation.username like "%' + objSearch + '%" or ';
+         search = search + 'tbluserinformation.email like "%' + objSearch + '%" or ';
+         search = search + 'tbluserinformation.phone like "%' + objSearch + '%" or ';
+         search = search + 'tblrole.RoleName like "%' + objSearch + '%" or ';
+         search = search + 'tblappinfo.AppName like "%' + objSearch + '%") ';
+     }
+
+     if (search != "") {
+         search += ' and tbluserinformation.idApp = ' + objParam.appId;
+     } else {
+         search += ' where tbluserinformation.idApp = ' + objParam.appId;
+     }
+
+     var query = "Select tbluserinformation.image,tbluserinformation.username,tbluserinformation.email,tbluserinformation.phone,tblrole.RoleName,tblappinfo.AppName" +
+         " from tbluserinformation " +
+         " Left join tbluserinrole on tbluserinformation.id = tbluserinrole.userId" +
+         " Left join tblrole on tbluserinrole.roleId = tblrole.id " +
+         " left join tblappinfo on tbluserinformation.idApp = tblappinfo.id" + search +
+         " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
+     var Countqry = "SELECT count(tbluserinformation.id) as TotalRecord " +
+         " from tbluserinformation " +
+         " Left join tbluserinrole on tbluserinformation.id = tbluserinrole.userId" +
+         " Left join tblrole on tbluserinrole.roleId = tblrole.id " +
+         " left join tblappinfo on tbluserinformation.idApp = tblappinfo.id " + search;
+     connection.query(query, function(err, response) {
+
+         if (response != undefined) {
+             connection.query(Countqry, function(err, lstCount, fields) {
+                 var response1 = new Object();
+                 response1.draw = objParam.draw;
+                 response1.recordsTotal = lstCount[0].TotalRecord;
+                 response1.recordsFiltered = lstCount[0].TotalRecord;
+                 response1.data = response;
+                 res.json(response1);
+             });
+         } else {
+             var response1 = new Object();
+             response1.draw = objParam.draw;
+             response1.recordsTotal = 0;
+             response1.recordsFiltered = 0;
+             response1.data = [];
+             res.json(response1);
+         }
+     })
+ })
  router.get('/GetAllDynamicCustomer', function(req, res) {
      var objParam = req.query;
      var objColumns = objParam.columns;
@@ -1880,6 +1946,7 @@
          res.json(InvalidToken);
      }
  })
+
  router.post('/UpdateMobileUser', jsonParser, function(req, res) {
      objUser = req.body;
      objHeader = req.headers;
@@ -2046,7 +2113,6 @@
          //you can get fields here
      });
      form.on('fileBegin', function(name, file) {
-         console.log(name, "------", file)
          var ext = file.name.substring(file.name.indexOf('.'), file.name.length);
          var NewName = GetUserNameFromDate();
          if (ext.indexOf('?') > -1) {
@@ -2115,6 +2181,7 @@
  });
 
  router.get('/GetAllDynamicOwnerCustomer', function(req, res) {
+
      var objParam = req.query;
      var objColumns = objParam.columns;
      var objOrder = objParam.order;
@@ -2177,6 +2244,13 @@
                      };
                  }
                  search1['$and'].push(search2);
+                 if (objParam.appId != null && objParam.appId != '' && objParam.appId != undefined) {
+                     var obj = new Object();
+                     obj['idApp'] = {
+                         $eq: objParam.appId
+                     };
+                     search1['$and'].push(obj);
+                 }
 
                  User.hasMany(Vehicle, {
                      foreignKey: {
