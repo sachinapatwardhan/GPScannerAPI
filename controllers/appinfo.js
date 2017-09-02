@@ -326,7 +326,7 @@ router.post('/uploadFile', function(req, res) {
 });
 
 router.get('/GetAppInfoByName', function(req, res) {
-    AppInfo.findOne({ where: { id: req.query.appId } }).then(function(response) {
+    AppInfo.findOne({ where: { AppName: req.query.AppName } }).then(function(response) {
         res.json(response);
     }).catch(function(error) {
         res.json(error);
