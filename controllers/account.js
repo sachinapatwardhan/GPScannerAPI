@@ -86,6 +86,7 @@ router.get('/login', jsonParser, function(req, res) {
                     UserCountry: response.country,
                     UserRoles: lstRole,
                     RolewiseCountryList: lstRolewiseCountryList,
+                    appId: response.idApp,
                     message: "Login Successfully..."
                 });
             })
