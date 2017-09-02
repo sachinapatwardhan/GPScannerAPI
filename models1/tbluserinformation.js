@@ -68,6 +68,10 @@ module.exports = function(sequelize, DataTypes) {
     Type: {
       type: DataTypes.STRING,
       allowNull: true
+    },
+    idApp: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true
     }
   }, {
     tableName: 'tbluserinformation'
