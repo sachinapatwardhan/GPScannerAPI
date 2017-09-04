@@ -2,11 +2,6 @@ var express = require('express'),
     router = express.Router();
 //Tables
 var User = models.tbluserinformation;
-var Vehicle = models.tblvehicle;
-var UserInRole = models.tbluserinrole;
-var DrivingData = models.tbldrivingdata;
-var GPSData = models.tblgpsdata;
-var Alarm = models.tblalarm;
 var AppInfo = models.tblappinfo;
 //End of Tables
 

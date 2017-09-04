@@ -41,6 +41,69 @@
      })
  })
 
+ router.get('/GetAllUserByApp', function(req, res) {
+     User.hasMany(UserInRole, {
+         foreignKey: {
+             name: 'userId',
+             allowNull: false
+         }
+     });
+
+     UserInRole.belongsTo(Role, {
+         foreignKey: {
+             name: 'roleId',
+             allowNull: false
+         }
+     });
+     User.findAll({
+         include: [{
+             model: UserInRole,
+             include: [
+                 Role
+             ]
+         }],
+         order: 'createddate',
+
+     }).then(function(response) {
+         res.json(response);
+     }).catch(function(error) {
+         res.json(error);
+     })
+ })
+
+ router.get('/GetAllUserByAppNew', function(req, res) {
+     User.hasMany(UserInRole, {
+         foreignKey: {
+             name: 'userId',
+             allowNull: false
+         }
+     });
+
+     UserInRole.belongsTo(Role, {
+         foreignKey: {
+             name: 'roleId',
+             allowNull: false
+         }
+     });
+     User.findAll({
+         where: {
+             idApp: req.query.idApp,
+         },
+         include: [{
+             model: UserInRole,
+             include: [
+                 Role
+             ]
+         }],
+         order: 'createddate',
+
+     }).then(function(response) {
+         res.json(response);
+     }).catch(function(error) {
+         res.json(error);
+     })
+ })
+
  router.get('/GetAllUserBySalesRole', function(req, res) {
      User.hasMany(UserInRole, {
          foreignKey: {
@@ -796,10 +859,9 @@
          }
      });
 
-
      User.findOne({
          where: {
-             username: req.query.username
+             id: req.query.UserId,
          },
          include: [{
              model: UserInRole,
@@ -1915,6 +1977,38 @@
  router.post('/UpdateMobileUserOwner', jsonParser, function(req, res) {
      objUser = req.body;
      objHeader = req.headers;
+     var token = getToken(objHeader);
+     if (token) {
+         var decoded = jwt.decode(token, TokenKey);
+
+         User.findOne({
+             where: {
+                 username: decoded.username,
+                 password: decoded.password,
+             }
+         }).then(function(UserExist) {
+             if (UserExist != null) {
+                 UserExist.updateAttributes({ ProfileName: objUser.ProfileName, email: objUser.email, phone: objUser.phone }).then(function(responseUser) {
+                     funAuditLog.CreateAuditLog('UpdateMobileUserOwner', UserExist.username, 'Update User');
+                     res.json({
+                         success: true,
+                         message: "User updated successfully...",
+                         data: responseUser
+                     });
+                 })
+
+             } else {
+                 res.json(InvalidToken);
+             }
+         })
+     } else {
+         res.json(InvalidToken);
+     }
+ })
+
+ router.post('/UpdateMobileUserOwnerNew', jsonParser, function(req, res) {
+     objUser = req.body;
+     objHeader = req.headers;
 
      var token = getToken(objHeader);
      if (token) {
@@ -1923,12 +2017,11 @@
          User.findOne({
              where: {
                  username: decoded.username,
-                 password: decoded.password
+                 password: decoded.password,
+                 idApp: objUser.idApp,
              }
          }).then(function(UserExist) {
              if (UserExist != null) {
-
-
                  UserExist.updateAttributes({ ProfileName: objUser.ProfileName, email: objUser.email, phone: objUser.phone }).then(function(responseUser) {
                      funAuditLog.CreateAuditLog('UpdateMobileUserOwner', UserExist.username, 'Update User');
                      res.json({
