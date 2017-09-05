@@ -145,7 +145,6 @@ router.get('/GetAllGPSDeviceold', function(req, res) {
                         required: TelSearchflg,
                     }, {
                         model: User,
-                        where: { idApp: objParam.appId },
                         required: SalesAgSearchflg,
                     }],
                 }).then(function(response) {
