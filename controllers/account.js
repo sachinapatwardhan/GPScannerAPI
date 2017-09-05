@@ -1121,7 +1121,7 @@ router.get('/forgotpasswordfromOwnerCustomer', function(req, res) {
 
 //Start Mobile App
 
-router.get('/MobileAppLogin', jsonParser, function(req, res) {
+router.get('/MobileAppLoginOld', jsonParser, function(req, res) {
     var Encryptpassword = jwt.encode(req.query.password, "bugz");
     User.findOne({
         where: {
@@ -1286,7 +1286,7 @@ router.get('/MobileForgotPassword', function(req, res) {
         if (objUser != null) {
             SystemEmail.findOne().then(function(objSystemEmail) {
                 var NewPassword = customPassword();
-                console.log(NewPassword);
+                // console.log(NewPassword);
                 var EncryptNewpassword = jwt.encode(NewPassword, "bugz");
                 var search = { password: EncryptNewpassword };
                 objUser.updateAttributes(search).then(function(response) {
@@ -1454,8 +1454,9 @@ router.get('/MobileApplogout', jsonParser, function(req, res) {
 
 //New Mobile App wise
 
-router.get('/MobileAppLoginNew', jsonParser, function(req, res) {
+router.get('/MobileAppLogin', jsonParser, function(req, res) {
     var Encryptpassword = jwt.encode(req.query.password, "bugz");
+    // console.log(req.query)
     User.findOne({
         where: {
             $or: {
@@ -1467,6 +1468,7 @@ router.get('/MobileAppLoginNew', jsonParser, function(req, res) {
             idApp: req.query.idApp,
         }
     }).then(function(response) {
+        // console.log(response)
         if (response != null) {
             UserInRole.belongsTo(Role, {
                 foreignKey: {
@@ -1621,7 +1623,7 @@ router.get('/MobileForgotPasswordNew', function(req, res) {
         if (objUser != null) {
             SystemEmail.findOne().then(function(objSystemEmail) {
                 var NewPassword = customPassword();
-                console.log(NewPassword);
+                // console.log(NewPassword);
                 var EncryptNewpassword = jwt.encode(NewPassword, "bugz");
                 var search = { password: EncryptNewpassword };
                 objUser.updateAttributes(search).then(function(response) {
