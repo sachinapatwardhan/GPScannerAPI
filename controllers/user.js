@@ -11,7 +11,6 @@
  //End of Tables
 
  router.get('/GetAllUser', function(req, res) {
-
      User.hasMany(UserInRole, {
          foreignKey: {
              name: 'userId',
@@ -25,8 +24,8 @@
              allowNull: false
          }
      });
-
      User.findAll({
+         where: { idApp: req.query.idApp },
          include: [{
              model: UserInRole,
              include: [
@@ -149,7 +148,7 @@
      })
  })
 
- router.get('/GetAllDynamicUserOld', function(req, res) {
+ router.get('/GetAllDynamicUser', function(req, res) {
 
      var objParam = req.query;
      var objColumns = objParam.columns;
@@ -166,7 +165,6 @@
          for (var i = 0; i < objColumns.length; i++) {
              if (objColumns[i].data != null && objColumns[i].data != '') {
                  var columnName = objColumns[i].data;
-                 console.log(columnName);
 
                  if (columnName != 'createddate') {
                      search['$or'].push([columnName + ' like ?', "%" + objSearch + "%"]);
@@ -174,6 +172,14 @@
 
              };
          };
+     }
+     if (objParam.appId != null && objParam.appId != '' && objParam.appId != undefined) {
+         search['$and'] = [];
+         var obj = new Object();
+         obj['idApp'] = {
+             $eq: objParam.appId
+         };
+         search['$and'].push(obj);
      }
 
      User.hasMany(UserInRole, {
@@ -189,12 +195,7 @@
              allowNull: false
          }
      });
-     User.belongsTo(AppInfo, {
-         foreignKey: {
-             name: 'idApp',
-             allowNull: false
-         }
-     });
+
 
      User.findAndCountAll({
          where: search,
@@ -206,9 +207,6 @@
              include: [
                  Role
              ]
-         }, {
-             model: AppInfo,
-
          }]
      }).then(function(response) {
          var response1 = new Object();
@@ -222,7 +220,7 @@
      })
  })
 
- router.get('/GetAllDynamicUser', function(req, res) {
+ router.get('/GetAllDynamicUserOld', function(req, res) {
 
      var objParam = req.query;
      var objColumns = objParam.columns;
@@ -256,7 +254,7 @@
          search += ' where tbluserinformation.idApp = ' + objParam.appId;
      }
 
-     var query = "Select tbluserinformation.image,tbluserinformation.username,tbluserinformation.email,tbluserinformation.phone,tblrole.RoleName,tblappinfo.AppName" +
+     var query = "Select tbluserinrole.*,tbluserinformation.id,tbluserinformation.phone,tbluserinformation.image,tbluserinformation.username,tbluserinformation.email,tbluserinformation.phone,tblrole.RoleName,tblappinfo.AppName" +
          " from tbluserinformation " +
          " Left join tbluserinrole on tbluserinformation.id = tbluserinrole.userId" +
          " Left join tblrole on tbluserinrole.roleId = tblrole.id " +
@@ -577,7 +575,8 @@
          where: {
              username: {
                  $like: '%' + req.query.UserName + '%'
-             }
+             },
+             idApp: req.query.appId,
          },
          include: [{
              model: UserInRole,
@@ -969,6 +968,7 @@
                                                                          userId: objUser.id,
                                                                          roleId: objUser.roleId[i].id
                                                                      }
+
                                                                      UserInRole.create(objUserInRole).then(function(response) {
                                                                          if (objUser.roleId.length == (i + 1)) {
                                                                              funAuditLog.CreateAuditLog('SaveUser', UserExist.username, 'Update User');
