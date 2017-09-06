@@ -461,10 +461,10 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
             }
         }).then(function(UserExist) {
             if (UserExist != null) {
-                if (objVehicle.deviceid != '' && objVehicle.deviceid != null) {
+                if (objVehicle.IMEI != '' && objVehicle.IMEI != null) {
                     GpsDevice.findOne({
                         where: {
-                            DeviceId: objVehicle.deviceid,
+                            IMEI: objVehicle.IMEI,
                         }
                     }).then(function(objGpsDevice) {
                         if (objGpsDevice != null) {
