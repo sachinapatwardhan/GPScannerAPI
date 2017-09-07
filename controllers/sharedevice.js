@@ -3,10 +3,13 @@ var User = models.tbluserinformation;
 var SharedDevice = models.tblsharedevice;
 
 router.get('/GetAllSharedDeviceByUser', function(req, res) {
+    console.log("=============================================")
     SharedDevice.findAll({
         where: { DeviceId: req.query.DeviceId, $or: [{ idSharedUser: req.query.idSharedUser }, { idUser: req.query.idSharedUser }] },
         order: 'CreatedDate DESC'
     }).then(function(response) {
+        console.log("=============================================")
+
         res.json(response);
     }).catch(function(error) {
         res.json(error);
@@ -102,7 +105,6 @@ router.get('/ChangeNotificationSetting', function(req, res) {
     if (token) {
         var decoded = jwt.decode(token, TokenKey);
         var query = "Update tblsharedevice set IsNotification=" + req.query.IsNotification + " where id='" + req.query.id + "'";
-        console.log(query);
         connection.query(query, function(err, rows, fields) {
             if (!err) {
                 res.json({ success: true, message: 'Notification Setting Changed Successfully.' });

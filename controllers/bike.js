@@ -80,7 +80,6 @@ router.get('/GetVehicleDetailById', function(req, res) {
         // console.log(query);
     connection.query(query, function(err, rows, fields) {
         if (!err) {
-            // console.log(rows);
             res.json({ success: true, data: rows[0] });
         } else {
             res.json({ success: false, data: [] });
@@ -382,16 +381,13 @@ router.get('/GetAllGPSByTimeZoneDateWithV', function(req, res) {
     var convertDate = convertdateformatForUnix(Enddate);
     var unixEnddate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
 
-    // console.log(unixStartdate, "--", unixEnddate)
     var query = "select Id,Datetime, Latitude, Longitude, GPSPositioning, Speed, Direction, DeviceId,IsEngine, Date from tblgpsdata where deviceid=" + req.query.DeviceId + " and Date >= '" + unixStartdate + "' and Date <= '" + unixEnddate + "' order by Date;"
-        // console.log(query);
     connection.query(query, function(err, lstGPSData, fields) {
         res.json(lstGPSData);
     });
 });
 
 function ConvertDateFormat(today) {
-    // console.log(today)
     var year = today.getUTCFullYear();
     var month = today.getUTCMonth() + 1; // beware: January = 0; February = 1, etc.
     var day = today.getUTCDate();

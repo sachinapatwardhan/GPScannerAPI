@@ -129,7 +129,6 @@ router.get('/GetAllGPSDeviceold', function(req, res) {
                     }
                 });
 
-                // console.log("=================================================================0");
                 GPSDevice.findAndCountAll({
                     where: search1,
                     order: Orderby,
@@ -155,7 +154,6 @@ router.get('/GetAllGPSDeviceold', function(req, res) {
                     response1.data = response.rows;
                     res.json(response1);
                 }).catch(function(error) {
-                    console.log(error);
                     res.json({
                         success: false,
                         response: error
@@ -526,9 +524,6 @@ router.get('/GetAllPetbyCountry', function(req, res) {
                     }
                     CheckCountry(0);
                 }
-
-
-                console.log("****************")
                 if (!IsUserSuperAdmin && !IsCountryAll) {
                     Pet.findAndCountAll({
                         where: search,

@@ -117,18 +117,17 @@ router.get('/GetFenceById', function(req, res) {
 
 router.post('/SaveFence', jsonParser, function(req, res) {
     objFence = req.body;
-    console.log(objFence)
-        // objHeader = req.headers;
-        // var token = getToken(objHeader);
-        // if (token) {
-        //     var decoded = jwt.decode(token, TokenKey);
-        //     User.findOne({
-        //         where: {
-        //             username: decoded.username,
-        //             password: decoded.password
-        //         }
-        //     }).then(function(UserExist) {
-        //         if (UserExist != null) {
+    // objHeader = req.headers;
+    // var token = getToken(objHeader);
+    // if (token) {
+    //     var decoded = jwt.decode(token, TokenKey);
+    //     User.findOne({
+    //         where: {
+    //             username: decoded.username,
+    //             password: decoded.password
+    //         }
+    //     }).then(function(UserExist) {
+    //         if (UserExist != null) {
     Fence.findOrCreate({
         where: {
             deviceId: objFence.deviceId

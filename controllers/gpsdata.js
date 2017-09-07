@@ -10,7 +10,6 @@ var momentz = require('moment-timezone');
 router.get('/GetAllGpsDataOld', function(req, res) {
     var objParam = req.query;
     var objColumns = objParam.columns;
-    console.log(objColumns);
     var objOrderBy = objParam.order;
     var objSearch = objParam.search;
     var Orderby = objColumns[parseInt(objOrderBy[0].column)].data + ' ' + objOrderBy[0].dir;
@@ -101,7 +100,7 @@ router.get('/GetAllGpsData', function(req, res) {
     }
 
     var DeviceId = objParam.DeviceId;
-    if (DeviceId != null && DeviceId != '' && DeviceId != undefined) {
+    if (DeviceId != null && DeviceId != '' && DeviceId != 'All' && DeviceId != undefined) {
         if (search != "") {
             search += ' and tgps.DeviceId = ' + DeviceId;
         } else {
@@ -260,7 +259,7 @@ router.get('/GetAllAlarm', function(req, res) {
     }
 
     var DeviceId = objParam.DeviceId;
-    if (DeviceId != null && DeviceId != '' && DeviceId != undefined) {
+    if (DeviceId != null && DeviceId != '' && DeviceId != 'All' && DeviceId != undefined) {
         if (search != "") {
             search += ' and ta.DeviceId = ' + DeviceId;
         } else {
@@ -268,7 +267,7 @@ router.get('/GetAllAlarm', function(req, res) {
         }
     }
     var AlarmCode = objParam.AlarmCode;
-    if (AlarmCode != null && AlarmCode != undefined && AlarmCode != '') {
+    if (AlarmCode != null && AlarmCode != undefined && AlarmCode != '' && AlarmCode != 'All') {
         if (search != "") {
             search += ' and ta.AlarmCode = ' + parseInt(AlarmCode);
         } else {
@@ -306,8 +305,6 @@ router.get('/GetAllAlarm', function(req, res) {
     var query = "SELECT ta.*, tv.idUser, tu.idApp FROM tblalarm as ta left join tblvehicle as tv on tv.deviceid = ta.DeviceId left join tbluserinformation as tu on tv.idUser = tu.id " + search +
         " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
     var Countqry = "SELECT count(ta.id) as TotalRecord FROM tblalarm as ta left Join tblvehicle as tv on ta.DeviceId = tv.deviceid left join tbluserinformation as tu on tv.idUser = tu.id " + search;
-    console.log(query);
-    console.log(Countqry);
     connection.query(query, function(err, response) {
         if (response != undefined) {
             connection.query(Countqry, function(err, lstCount, fields) {
@@ -330,10 +327,13 @@ router.get('/GetAllAlarm', function(req, res) {
 })
 
 router.get('/GetAllGpsDevice', function(req, res) {
-    GpsDevice.findAll().then(function(response) {
-        res.json(response);
-    }).catch(function(err) {
-        res.json(err);
+    var query = "SELECT tgdevice.*, tv.iduser,tu.idApp FROM tblgpsdevice as tgdevice LEFT JOIN tblvehicle as tv ON tgdevice.DeviceId = tv.deviceid LEFT JOIN tbluserinformation AS tu ON tv.iduser = tu.id where tu.idApp = " + req.query.idApp;
+    connection.query(query, function(err, response) {
+        if (response != undefined) {
+            res.json(response);
+        } else {
+            res.json(err);
+        }
     })
 });
 
@@ -588,147 +588,139 @@ router.get('/ExportAlarm', function(req, res) {
         type: 'string'
     }];
 
-
-
     var objParam = req.query;
+    var objColumns = objParam.columns;
     var Orderby = 'Date desc';
-    var search = {};
-    search['$and'] = [];
-    var DeviceId = objParam.DeviceId;
-    if (DeviceId != null && DeviceId != '' && DeviceId != undefined && DeviceId != "All") {
-        var obj = new Object();
-        obj['DeviceId'] = {
-            $eq: DeviceId
-        };
-        search['$and'].push(obj);
+    var objSearch = objParam.search;
+    var search = "";
+    if (objSearch != '' && objSearch != null && objSearch != undefined) {
+        search = 'Where (ta.CreatedDate like "%' + objSearch + '%" or ';
+        search = search + 'ta.AlarmCode like "%' + objSearch + '%" or ';
+        search = search + 'ta.DeviceId like "%' + objSearch + '%" or ';
+        search = search + 'ta.Latitude like "%' + objSearch + '%" or ';
+        search = search + 'ta.Longitude like "%' + objSearch + '%" or ';
+        search = search + 'ta.GPSPositioning like "%' + objSearch + '%" or ';
+        search = search + 'ta.Status like "%' + objSearch + '%") ';
     }
-    var StartDate = convertdateUTCformat(objParam.StartDate);
-    var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
 
-    var EndDate = convertdateUTCformat(objParam.EndDate);
-    var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
-
-    /*if (objParam.StartDate != '' && objParam.EndDate != '') {
-        var obj = new Object();
-        obj['Date'] = {
-            $between: [unixStartdate, unixEndDate]
-        };
-        search['$and'].push(obj);
-    } else if (objParam.StartDate != null && objParam.StartDate != '') {
-        var obj = new Object();
-        obj['Date'] = {
-            $gt: unixStartdate
-        };
-        search['$and'].push(obj);
-    } else if (objParam.EndDate != null && objParam.EndDate != '') {
-        var obj = new Object();
-        obj['Date'] = {
-            $lt: unixEndDate
-        };
-        search['$and'].push(obj);
-    }*/
-    var StartDate = convertdateUTCformat(objParam.StartDate);
-    var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
-
-    var EndDate = convertdateUTCformat(objParam.EndDate);
-    var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
-
-    if (objParam.StartDate != '' && objParam.EndDate != '') {
-        var obj = new Object();
-        obj['Date'] = {
-            $between: [unixStartdate, unixEndDate]
-        };
-        search['$and'].push(obj);
-    } else if (objParam.StartDate != null && objParam.StartDate != '') {
-        var obj = new Object();
-        obj['Date'] = {
-            $gt: unixStartdate
-        };
-        search['$and'].push(obj);
-    } else if (objParam.EndDate != null && objParam.EndDate != '') {
-        var obj = new Object();
-        obj['Date'] = {
-            $lt: unixEndDate
-        };
-        search['$and'].push(obj);
+    var DeviceId = objParam.DeviceId;
+    if (DeviceId != null && DeviceId != '' && DeviceId != 'All' && DeviceId != undefined) {
+        if (search != "") {
+            search += ' and ta.DeviceId = ' + DeviceId;
+        } else {
+            search += ' where ta.DeviceId = ' + DeviceId;
+        }
     }
     var AlarmCode = objParam.AlarmCode;
-
-    if (AlarmCode != null && AlarmCode != undefined && AlarmCode != '' && AlarmCode != "All") {
-        var obj = new Object();
-        obj['AlarmCode'] = {
-            $eq: AlarmCode
-        };
-        search['$and'].push(obj);
+    if (AlarmCode != null && AlarmCode != undefined && AlarmCode != '' && AlarmCode != 'All') {
+        if (search != "") {
+            search += ' and ta.AlarmCode = ' + parseInt(AlarmCode);
+        } else {
+            search += ' where ta.AlarmCode = ' + parseInt(AlarmCode);
+        }
     }
 
-    Alarm.findAll({
-        where: search,
-        order: Orderby,
-    }).then(function(response) {
-        conf.rows = [];
-        var AlarmCode = '';
-        var DeviceId = '';
-        var Latitude = '';
-        var Longitude = '';
-        var GPSPositioning = '';
-        var Status = '';
-        var CreatedDate = '';
-        var DisplayDate = '';
-        GetAlarmData(0);
+    var StartDate = convertdateUTCformat(objParam.StartDate);
+    var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
 
-        function GetAlarmData(i) {
-            if (i < response.length) {
-                var row = [];
-                if (response[i].Date != null && response[i].Date != '' && response[i].Date != undefined) {
-                    var Dates = new Date(response[i].Date * 1000);
-                    DisplayDate = moment(Dates).format('DD-MM-YYYY hh:mm:ss a');
-                }
+    var EndDate = convertdateUTCformat(objParam.EndDate);
+    var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
 
-                if (response[i].AlarmCode != null && response[i].AlarmCode != '' && response[i].AlarmCode != undefined) {
-                    var list = AlarmCodedata();
-                    var obj = u.findWhere(list, { AlarmCode: response[i].AlarmCode });
-                    if (obj != null && obj != undefined && obj != '') {
-                        AlarmCode = obj.Alarm;
-                    }
-                }
-                if (response[i].DeviceId != null && response[i].DeviceId != '' && response[i].DeviceId != undefined) {
-                    DeviceId = response[i].DeviceId;
-                }
-
-                if (response[i].CreatedDate != null && response[i].CreatedDate != '' && response[i].CreatedDate != undefined) {
-                    CreatedDate = convertdateformat(response[i].CreatedDate, 2);
-                }
-
-                if (response[i].Latitude != null && response[i].Latitude != '' && response[i].Latitude != undefined) {
-                    Latitude = response[i].Latitude
-                }
-
-                if (response[i].Longitude != null && response[i].Longitude != '' && response[i].Longitude != undefined) {
-                    Longitude = response[i].Longitude;
-                }
-
-                if (response[i].GPSPositioning != null && response[i].GPSPositioning != '' && response[i].GPSPositioning != undefined) {
-                    GPSPositioning = response[i].GPSPositioning;
-                }
-
-                if (response[i].Status != null && response[i].Status != '' && response[i].Status != undefined) {
-                    Status = response[i].Status;
-                }
-
-
-                row.push(DisplayDate, AlarmCode, DeviceId, Latitude, Longitude, GPSPositioning, Status, CreatedDate);
-                conf.rows.push(row);
-                GetAlarmData(i + 1);
-            } else {
-                var result = nodeExcel.execute(conf);
-                res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-                res.setHeader("Content-Disposition", "attachment; filename=Alarm.xlsx");
-                res.end(result, 'binary');
-            }
-
+    if (objParam.StartDate != '') {
+        if (search != "") {
+            search += ' and ta.Date >= ' + unixStartdate;
+        } else {
+            search += ' where ta.Date >= ' + unixStartdate;
         }
-    });
+    }
+    if (objParam.EndDate != '') {
+        if (search != "") {
+            search += ' and ta.Date <= ' + unixEndDate;
+        } else {
+            search += ' where ta.Date <= ' + unixEndDate;
+        }
+    }
+
+    if (search != "") {
+        search += ' and tu.idApp = ' + objParam.idApp;
+    } else {
+        search += ' where tu.idApp = ' + objParam.idApp;
+    }
+
+    var query = "SELECT ta.*, tv.idUser, tu.idApp FROM tblalarm as ta left join tblvehicle as tv on tv.deviceid = ta.DeviceId left join tbluserinformation as tu on tv.idUser = tu.id " + search +
+        " order by " + Orderby;
+    connection.query(query, function(err, response) {
+        if (response != undefined) {
+            conf.rows = [];
+            var AlarmCode = '';
+            var DeviceId = '';
+            var Latitude = '';
+            var Longitude = '';
+            var GPSPositioning = '';
+            var Status = '';
+            var CreatedDate = '';
+            var DisplayDate = '';
+            GetAlarmData(0);
+
+            function GetAlarmData(i) {
+                if (i < response.length) {
+                    var row = [];
+                    if (response[i].Date != null && response[i].Date != '' && response[i].Date != undefined) {
+                        var Dates = new Date(response[i].Date * 1000);
+                        DisplayDate = moment(Dates).format('DD-MM-YYYY hh:mm:ss a');
+                    }
+
+                    if (response[i].AlarmCode != null && response[i].AlarmCode != '' && response[i].AlarmCode != undefined) {
+                        var list = AlarmCodedata();
+                        var obj = u.findWhere(list, { AlarmCode: response[i].AlarmCode });
+                        if (obj != null && obj != undefined && obj != '') {
+                            AlarmCode = obj.Alarm;
+                        }
+                    }
+                    if (response[i].DeviceId != null && response[i].DeviceId != '' && response[i].DeviceId != undefined) {
+                        DeviceId = response[i].DeviceId;
+                    }
+
+                    if (response[i].CreatedDate != null && response[i].CreatedDate != '' && response[i].CreatedDate != undefined) {
+                        CreatedDate = convertdateformat(response[i].CreatedDate, 2);
+                    }
+
+                    if (response[i].Latitude != null && response[i].Latitude != '' && response[i].Latitude != undefined) {
+                        Latitude = response[i].Latitude
+                    }
+
+                    if (response[i].Longitude != null && response[i].Longitude != '' && response[i].Longitude != undefined) {
+                        Longitude = response[i].Longitude;
+                    }
+
+                    if (response[i].GPSPositioning != null && response[i].GPSPositioning != '' && response[i].GPSPositioning != undefined) {
+                        GPSPositioning = response[i].GPSPositioning;
+                    }
+
+                    if (response[i].Status != null && response[i].Status != '' && response[i].Status != undefined) {
+                        Status = response[i].Status;
+                    }
+
+
+                    row.push(DisplayDate, AlarmCode, DeviceId, Latitude, Longitude, GPSPositioning, Status, CreatedDate);
+                    conf.rows.push(row);
+                    GetAlarmData(i + 1);
+                } else {
+                    var result = nodeExcel.execute(conf);
+                    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+                    res.setHeader("Content-Disposition", "attachment; filename=Alarm.xlsx");
+                    res.end(result, 'binary');
+                }
+
+            }
+        } else {
+            conf.rows = [];
+            var result = nodeExcel.execute(conf);
+            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            res.setHeader("Content-Disposition", "attachment; filename=NoData.xlsx");
+            res.end(result, 'binary');
+        }
+    })
 });
 
 function convertdateformat(date1, flg) {
@@ -2271,7 +2263,6 @@ router.get('/GetAllDriverReport', function(req, res) {
                             Array.push(obj);
                         }
                     }
-                    console.log("Driving Time....", calhrminsecfromsec(TotalDrivingtime))
                 }
             }
 

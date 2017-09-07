@@ -30,7 +30,7 @@ Date.prototype.addDays = function(days) {
     return this;
 };
 router.get('/GetAllWorkingBike', jsonParser, function(req, res) {
-    connection.query("SELECT tb.id,tb.deviceid,tb.Name,tb.IsOnline, tpg.IsEngine, tpg.Latitude,tpg.Longitude,tpg.Datetime, tpg.Date, tpg.Speed,tpg.Direction FROM tblvehicle tb Left JOIN tblgpsdata tpg INNER JOIN (SELECT DeviceId,MAX(Date) Date FROM tblgpsdata GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId  AND tpg.Date = b.Date ON tb.deviceid=tpg.DeviceId WHERE IsDelete=false;", function(err, rows, fields) {
+    connection.query("SELECT tb.id,tb.deviceid,tb.Name,tb.IsOnline, tpg.IsEngine, tpg.Latitude,tpg.Longitude,tpg.Datetime, tpg.Date, tpg.Speed,tpg.Direction, tu.idApp FROM tblvehicle tb Left Join tbluserinformation as tu on tb.iduser = tu.id Left JOIN tblgpsdata tpg INNER JOIN (SELECT DeviceId,MAX(Date) Date FROM tblgpsdata GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId  AND tpg.Date = b.Date ON tb.deviceid=tpg.DeviceId WHERE IsDelete=false and idApp=" + req.query.idApp, function(err, rows, fields) {
         if (!err) {
             res.json({ success: true, data: rows });
         } else {
@@ -48,6 +48,9 @@ router.get('/GetTotalCustomerByCountry', function(req, res) {
         }
     });
     Vehicle.findAll({
+        attributes: [
+            'deviceid', 'Name'
+        ],
         where: {
             IsDelete: '0',
             deviceid: {
@@ -58,8 +61,11 @@ router.get('/GetTotalCustomerByCountry', function(req, res) {
             model: User,
             attributes: [
                 [models.Sequelize.literal('COUNT(DISTINCT(iduser))'), 'Total'],
-                'country', 'Type'
-            ]
+                'country', 'Type', 'idApp'
+            ],
+            where: {
+                idApp: req.query.idApp
+            }
         }],
         group: ['country', 'Type'],
         order: 'country',
@@ -101,7 +107,12 @@ router.get('/GetGraphData', function(req, res) {
     var flg = true;
 
 
-    //search['$and'] = [];
+    search1['$and'] = [];
+    var obj = new Object();
+    obj['idApp'] = {
+        $eq: req.query.idApp
+    }
+    search1['$and'].push(obj);
 
     if (IsSuperAdmin == 'false' || IsSuperAdmin == false) {
         search1['$or'] = [];
@@ -143,7 +154,6 @@ router.get('/GetGraphData', function(req, res) {
     } else {
         flg = false;
     }
-
     User.findAll({
         // where: { country: CountryName },
         where: search1,
@@ -152,7 +162,7 @@ router.get('/GetGraphData', function(req, res) {
             [models.sequelize.fn('day', models.sequelize.col('createddate')), 'day'],
             [models.sequelize.fn('month', models.sequelize.col('createddate')), 'month'],
             [models.sequelize.fn('year', models.sequelize.col('createddate')), 'year'],
-            'Type', 'country'
+            'Type', 'country', 'idApp'
         ],
         group: ['Type', 'country', models.sequelize.fn('day', models.sequelize.col('createddate')), models.sequelize.fn('month', models.sequelize.col('createddate')), models.sequelize.fn('year', models.sequelize.col('createddate'))],
         order: ['year', 'month', 'day']
@@ -167,6 +177,7 @@ router.get('/GetGraphData', function(req, res) {
 })
 
 router.get('/GetDashboardData', function(req, res) {
+
     var CountryName = req.query.countryName;
     var CountryList = req.query.CountryList;
     if (CountryList == null || CountryList == "" || CountryList == undefined) {
@@ -199,7 +210,13 @@ router.get('/GetDashboardData', function(req, res) {
     var search1 = {};
 
     var flg = true;
-    search['$and'] = [];
+    search1['$and'] = [];
+    var obj = new Object();
+    obj['idApp'] = {
+        $eq: req.query.idApp,
+    }
+    search1['$and'].push(obj);
+
     if (IsSuperAdmin == 'false' || IsSuperAdmin == false) {
         search1['$or'] = [];
 
@@ -240,6 +257,7 @@ router.get('/GetDashboardData', function(req, res) {
     } else {
         flg = false;
     }
+
     User.count({ where: search1 }).then(function(TotalUser) {
         lstDashboard['TotalUser'] = TotalUser;
         res.json(lstDashboard);
@@ -314,119 +332,16 @@ router.get('/GetTotalCustomer', function(req, res) {
         },
         include: [{
             model: User,
+            attributes: ['id', 'idApp', 'username'],
+            where: {
+                idApp: req.query.idApp
+            }
         }]
     }).then(function(response) {
         res.json(response);
     })
 })
 
-
-router.get('/GetTotalDevice', function(req, res) {
-
-    Pet.belongsTo(User, {
-        foreignKey: {
-            name: 'iduser',
-            allowNull: false
-        }
-    });
-
-    PetDevice.belongsTo(Country, {
-        foreignKey: {
-            name: 'CountryId',
-            allowNull: false
-        }
-    });
-
-    var CountryName = req.query.countryName;
-    var IsSuperAdmin = req.query.IsSuperAdmin;
-    var CountryList = req.query.CountryList;
-    if (IsSuperAdmin == null || IsSuperAdmin == undefined || IsSuperAdmin == "") {
-        IsSuperAdmin = [];
-    }
-    if (CountryList == null || CountryList == undefined || CountryList == "") {
-        CountryList = [];
-    }
-    var search1 = {};
-    var IsCountryAll = false;
-    if (IsSuperAdmin == 'false' || IsSuperAdmin == false) {
-        search1['$or'] = [];
-
-        if (CountryList.length > 0) {
-            function checkcountry(z) {
-                if (z < CountryList.length) {
-                    if (CountryList[z] == "All") {
-                        IsCountryAll = true;
-                        checkcountry(CountryList.length);
-                    } else {
-                        var obj = new Object();
-
-                        obj['country'] = {
-                            $like: '%' + CountryList[z] + '%'
-                        }
-                        search1['$or'].push(obj);
-                        checkcountry(z + 1);
-                    }
-                } else {
-
-                    if (IsCountryAll) {
-                        search1 = {};
-                    }
-                    if (CountryList.length == 3 && CountryList == "All") {
-                        search1 = {};
-                    }
-                }
-            }
-            checkcountry(0);
-        } else {
-            var obj = new Object();
-            obj['country'] = {
-                $like: null
-            }
-            search1['$or'].push(obj);
-        }
-    }
-    var search = {};
-    var flg = true;
-    if (IsCountryAll || IsSuperAdmin == 'true') {
-        flg = false;
-        search1 = {};
-    } else {
-        search = {
-            CountryId: {
-                $ne: null
-            }
-        }
-    }
-
-    PetDevice.count({
-        where: search,
-        include: [{
-            model: Country,
-            required: flg,
-            where: search1,
-
-        }],
-    }).then(function(respetdevice) {
-
-        Pet.findAndCountAll({
-            attributes: ["IsOnline"],
-            where: {
-                IsDeleted: 0,
-                deviceid: {
-                    $ne: ''
-                }
-            },
-            include: [{
-                model: User,
-                where: search1
-            }]
-        }).then(function(respet) {
-            var bal_device = respetdevice - respet.count;
-            res.json({ DeviceStatus: respet.rows, BalanceDevice: bal_device });
-        })
-    })
-
-})
 router.get('/GetBikeTotalDevice', function(req, res) {
 
     Vehicle.belongsTo(User, {
@@ -619,7 +534,7 @@ router.get('/GetGraphCustomer', function(req, res) {
                     'IsDelete': 0,
                     deviceid: {
                         $ne: ''
-                    }
+                    },
                 }),
             }],
             // where: {
@@ -631,7 +546,7 @@ router.get('/GetGraphCustomer', function(req, res) {
             //     },
             //     country:CountryName
             // },
-            where: search1,
+            where: [{ idApp: req.query.idApp }, search1],
             attributes: [
                 [models.sequelize.fn('day', models.sequelize.col('tbluserinformation.createddate')), 'day'],
                 [models.sequelize.fn('month', models.sequelize.col('tbluserinformation.createddate')), 'month'],
@@ -653,17 +568,12 @@ router.get('/GetGraphCustomer', function(req, res) {
                     'IsDelete': 0,
                     deviceid: {
                         $ne: ''
-                    }
+                    },
                 }),
             }],
-            // where: {
-            //     $and: {
-            //         createddate: {
-            //             $gte: StartDate,
-            //             $lte: EndDate
-            //         }
-            //     },
-            // },
+            where: {
+                idApp: req.query.idApp
+            },
             attributes: [
                 [models.sequelize.fn('day', models.sequelize.col('tbluserinformation.createddate')), 'day'],
                 [models.sequelize.fn('month', models.sequelize.col('tbluserinformation.createddate')), 'month'],

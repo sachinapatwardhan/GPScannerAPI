@@ -1121,7 +1121,7 @@ router.get('/forgotpasswordfromOwnerCustomer', function(req, res) {
 
 //Start Mobile App
 
-router.get('/MobileAppLoginOld', jsonParser, function(req, res) {
+router.get('/MobileAppLogin', jsonParser, function(req, res) {
     var Encryptpassword = jwt.encode(req.query.password, "bugz");
     User.findOne({
         where: {
@@ -1286,7 +1286,7 @@ router.get('/MobileForgotPassword', function(req, res) {
         if (objUser != null) {
             SystemEmail.findOne().then(function(objSystemEmail) {
                 var NewPassword = customPassword();
-                // console.log(NewPassword);
+                console.log(NewPassword);
                 var EncryptNewpassword = jwt.encode(NewPassword, "bugz");
                 var search = { password: EncryptNewpassword };
                 objUser.updateAttributes(search).then(function(response) {
@@ -1324,7 +1324,6 @@ router.get('/MobileForgotPassword', function(req, res) {
                                     }
                                 });
                             } else {
-                                console.log("email template not get");
                                 res.json({
                                     success: false,
                                     message: "This Email template not found..."
@@ -1338,7 +1337,6 @@ router.get('/MobileForgotPassword', function(req, res) {
                         });
                     }
                 }).catch(function(error) {
-                    console.log("error in updating password")
                     res.json({
                         success: false,
                         message: error.errors[0].message + "..."
@@ -1454,7 +1452,7 @@ router.get('/MobileApplogout', jsonParser, function(req, res) {
 
 //New Mobile App wise
 
-router.get('/MobileAppLogin', jsonParser, function(req, res) {
+router.get('/MobileAppLoginNew', jsonParser, function(req, res) {
     var Encryptpassword = jwt.encode(req.query.password, "bugz");
     // console.log(req.query)
     User.findOne({
@@ -1623,7 +1621,7 @@ router.get('/MobileForgotPasswordNew', function(req, res) {
         if (objUser != null) {
             SystemEmail.findOne().then(function(objSystemEmail) {
                 var NewPassword = customPassword();
-                // console.log(NewPassword);
+                console.log(NewPassword);
                 var EncryptNewpassword = jwt.encode(NewPassword, "bugz");
                 var search = { password: EncryptNewpassword };
                 objUser.updateAttributes(search).then(function(response) {
@@ -1661,7 +1659,6 @@ router.get('/MobileForgotPasswordNew', function(req, res) {
                                     }
                                 });
                             } else {
-                                console.log("email template not get");
                                 res.json({
                                     success: false,
                                     message: "This Email template not found..."
@@ -1675,7 +1672,6 @@ router.get('/MobileForgotPasswordNew', function(req, res) {
                         });
                     }
                 }).catch(function(error) {
-                    console.log("error in updating password")
                     res.json({
                         success: false,
                         message: error.errors[0].message + "..."

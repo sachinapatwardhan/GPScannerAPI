@@ -25,7 +25,6 @@
          }
      });
      User.findAll({
-         where: { idApp: req.query.idApp },
          include: [{
              model: UserInRole,
              include: [
@@ -40,37 +39,7 @@
      })
  })
 
- router.get('/GetAllUserByApp', function(req, res) {
-     User.hasMany(UserInRole, {
-         foreignKey: {
-             name: 'userId',
-             allowNull: false
-         }
-     });
-
-     UserInRole.belongsTo(Role, {
-         foreignKey: {
-             name: 'roleId',
-             allowNull: false
-         }
-     });
-     User.findAll({
-         include: [{
-             model: UserInRole,
-             include: [
-                 Role
-             ]
-         }],
-         order: 'createddate',
-
-     }).then(function(response) {
-         res.json(response);
-     }).catch(function(error) {
-         res.json(error);
-     })
- })
-
- router.get('/GetAllUserByAppNew', function(req, res) {
+ router.get('/GetAllUserNew', function(req, res) {
      User.hasMany(UserInRole, {
          foreignKey: {
              name: 'userId',
