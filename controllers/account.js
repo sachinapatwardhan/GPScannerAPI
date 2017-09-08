@@ -1366,7 +1366,7 @@ router.post('/changeMobileUserPassword', jsonParser, function(req, res) {
     } else {
         User.findOne({
             where: {
-                id: objUser.UserId,
+                username: objUser.username
             }
         }).then(function(chkUserExist) {
             if (chkUserExist != null) {
@@ -1454,7 +1454,6 @@ router.get('/MobileApplogout', jsonParser, function(req, res) {
 
 router.get('/MobileAppLoginNew', jsonParser, function(req, res) {
     var Encryptpassword = jwt.encode(req.query.password, "bugz");
-    // console.log(req.query)
     User.findOne({
         where: {
             $or: {
@@ -1466,7 +1465,6 @@ router.get('/MobileAppLoginNew', jsonParser, function(req, res) {
             idApp: req.query.idApp,
         }
     }).then(function(response) {
-        // console.log(response)
         if (response != null) {
             UserInRole.belongsTo(Role, {
                 foreignKey: {
