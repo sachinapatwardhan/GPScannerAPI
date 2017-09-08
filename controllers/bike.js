@@ -444,8 +444,27 @@ function convertdateformatForUnix(date1) {
 //     objVehicle = req.body;
 router.get('/SaveVehicle', jsonParser, function(req, res) {
     objVehicle = req.query;
+    objVehicle.IsDelete = false;
+    console.log(objVehicle);
     objHeader = req.headers;
     var token = getToken(objHeader);
+    var search = {};
+    search['$and'] = [];
+    if (objVehicle.AppName != null && objVehicle.AppName != undefined && objVehicle.AppName != '') {
+        var obj = new Object();
+        obj['AppName'] = {
+            $eq: objVehicle.AppName
+        };
+        search['$and'].push(obj);
+    }
+
+    if (objVehicle.IMEI != null && objVehicle.IMEI != undefined && objVehicle.IMEI != '') {
+        var obj = new Object();
+        obj['IMEI'] = {
+            $eq: objVehicle.IMEI
+        };
+        search['$and'].push(obj);
+    }
 
     if (token) {
         var decoded = jwt.decode(token, TokenKey);
@@ -459,9 +478,7 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
             if (UserExist != null) {
                 if (objVehicle.IMEI != '' && objVehicle.IMEI != null) {
                     GpsDevice.findOne({
-                        where: {
-                            IMEI: objVehicle.IMEI,
-                        }
+                        where: search
                     }).then(function(objGpsDevice) {
                         if (objGpsDevice != null) {
                             if (objVehicle.id == 0) {
