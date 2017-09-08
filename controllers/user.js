@@ -829,6 +829,46 @@
 
      User.findOne({
          where: {
+             username: req.query.username,
+         },
+         include: [{
+             model: UserInRole,
+             include: [Role]
+         }]
+     }).then(function(response) {
+         if (response != null) {
+             res.json({
+                 success: true,
+                 message: "Record found...",
+                 data: response
+             });
+         } else {
+             res.json({
+                 success: false,
+                 message: "Record not found...",
+                 data: response
+             });
+         }
+     })
+ })
+
+ router.get('/GetUserProfileNew', function(req, res) {
+     User.hasMany(UserInRole, {
+         foreignKey: {
+             name: 'userId',
+             allowNull: false
+         }
+     });
+
+     UserInRole.belongsTo(Role, {
+         foreignKey: {
+             name: 'roleId',
+             allowNull: false
+         }
+     });
+
+     User.findOne({
+         where: {
              id: req.query.UserId,
          },
          include: [{
