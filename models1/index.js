@@ -18,8 +18,6 @@ var sequelize = new Sequelize(process.env.Mysqldatabase, process.env.Mysqluser, 
     define: {
         timestamps: false,
     }
-
-
 });
 
 var db = {};

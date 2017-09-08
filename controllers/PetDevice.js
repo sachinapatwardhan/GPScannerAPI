@@ -207,15 +207,17 @@ router.get('/GetAllGPSDevice', function(req, res) {
         }
 
         if (search != "") {
-            search += ' and tbluserinformation.idApp = ' + objParam.appId;
+            search += ' and tblgpsdevice.AppName = ' + objParam.AppName;
         } else {
-            search += ' where tbluserinformation.idApp = ' + objParam.appId;
+            search += ' where tblgpsdevice.AppName = ' + objParam.AppName;
         }
         var query = " select tblgpsdevice.DeviceId,tblgpsdevice.Type,tblgpsdevice.IMEI,tblgpsdevice.Version,tblgpsdevice.SimNum,tbltelco.Name,tbluserinformation.username,tblgpsdevice.ExpiryDate,tblgpsdevice.CreatedDate,tblgpsdevice.CreatedBy,tbluserinformation.idApp" +
             " from tblgpsdevice " +
-            " Left Join tbluserinformation on  tblgpsdevice.idSalesAgent=tbluserinformation.id " +
+            " Left Join tbluserinformation on tblgpsdevice.idSalesAgent=tbluserinformation.id " +
             " Left Join tbltelco on tblgpsdevice.TelCoId = tbltelco.id " + search +
             " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
+
+        console.log(query);
         var Countqry = "SELECT count(tblgpsdevice.id) as TotalRecord " +
             " from tblgpsdevice " +
             " Left Join tbluserinformation on  tblgpsdevice.idSalesAgent=tbluserinformation.id " +

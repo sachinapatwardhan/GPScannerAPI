@@ -3,7 +3,17 @@ var User = models.tbluserinformation;
 var SharedDevice = models.tblsharedevice;
 
 router.get('/GetAllSharedDeviceByUser', function(req, res) {
+    SharedDevice.belongsTo(User, {
+        foreignKey: {
+            name: 'idUser',
+            allowNull: false
+        }
+    });
     SharedDevice.findAll({
+        include: [{
+            model: User,
+            attributes: ['id', 'email', 'username'],
+        }],
         where: { DeviceId: req.query.DeviceId, $or: [{ idSharedUser: req.query.idSharedUser }, { idUser: req.query.idSharedUser }] },
         order: 'CreatedDate DESC'
     }).then(function(response) {
