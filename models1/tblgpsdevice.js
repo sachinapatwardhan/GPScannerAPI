@@ -68,6 +68,10 @@ module.exports = function(sequelize, DataTypes) {
     ExpiryDate: {
       type: DataTypes.DATE,
       allowNull: true
+    },
+    AppName: {
+      type: DataTypes.STRING,
+      allowNull: true
     }
   }, {
     tableName: 'tblgpsdevice'
