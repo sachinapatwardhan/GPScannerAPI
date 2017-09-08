@@ -185,67 +185,63 @@ router.get('/GetAllGPSDevice', function(req, res) {
 
     var UserRoles = objParam.UserRoles;
 
-    if (UserRoles.length > 0) {
-
-        if (objSearch != null && objSearch != '') {
-            search = 'Where (tblgpsdevice.DeviceId like "%' + objSearch + '%" or ';
-            search = search + 'tblgpsdevice.Type like "%' + objSearch + '%" or ';
-            search = search + 'tblgpsdevice.IMEI like "%' + objSearch + '%" or ';
-            search = search + 'tblgpsdevice.Version like "%' + objSearch + '%" or ';
-            search = search + 'tblgpsdevice.SimNum like "%' + objSearch + '%" or ';
-            search = search + 'tbltelco.Name like "%' + objSearch + '%" or ';
-            search = search + 'tblgpsdevice.ExpiryDate like "%' + objSearch + '%" or ';
-            search = search + 'tblgpsdevice.CreatedDate like "%' + objSearch + '%" or ';
-            search = search + 'tblgpsdevice.CreatedBy like "%' + objSearch + '%" or ';
-            search = search + 'tbluserinformation.username like "%' + objSearch + '%") ';
-        };
-
+    if (objSearch != null && objSearch != '') {
+        search = 'Where (tblgpsdevice.DeviceId like "%' + objSearch + '%" or ';
+        search = search + 'tblgpsdevice.Type like "%' + objSearch + '%" or ';
+        search = search + 'tblgpsdevice.IMEI like "%' + objSearch + '%" or ';
+        search = search + 'tblgpsdevice.Version like "%' + objSearch + '%" or ';
+        search = search + 'tblgpsdevice.SimNum like "%' + objSearch + '%" or ';
+        search = search + 'tbltelco.Name like "%' + objSearch + '%" or ';
+        search = search + 'tblgpsdevice.ExpiryDate like "%' + objSearch + '%" or ';
+        search = search + 'tblgpsdevice.CreatedDate like "%' + objSearch + '%" or ';
+        search = search + 'tblgpsdevice.CreatedBy like "%' + objSearch + '%" or ';
+        search = search + 'tbluserinformation.username like "%' + objSearch + '%") ';
+    };
+    if (objParam.UserId != null && objParam.UserId != undefined && objParam.UserId != '') {
         if (search != "") {
             search += " and tblgpsdevice.idSalesAgent =" + objParam.UserId;
         } else {
             search += " Where tblgpsdevice.idSalesAgent =" + objParam.UserId;
         }
+    }
 
-        if (search != "") {
-            search += ' and tblgpsdevice.AppName = ' + objParam.AppName;
-        } else {
-            search += ' where tblgpsdevice.AppName = ' + objParam.AppName;
-        }
-        var query = " select tblgpsdevice.DeviceId,tblgpsdevice.Type,tblgpsdevice.IMEI,tblgpsdevice.Version,tblgpsdevice.SimNum,tbltelco.Name,tbluserinformation.username,tblgpsdevice.ExpiryDate,tblgpsdevice.CreatedDate,tblgpsdevice.CreatedBy,tbluserinformation.idApp" +
-            " from tblgpsdevice " +
-            " Left Join tbluserinformation on tblgpsdevice.idSalesAgent=tbluserinformation.id " +
-            " Left Join tbltelco on tblgpsdevice.TelCoId = tbltelco.id " + search +
-            " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
+    if (search != "") {
+        search += ' and tblgpsdevice.AppName = "' + objParam.AppName + '"';
+    } else {
+        search += ' where tblgpsdevice.AppName = "' + objParam.AppName + '"';
+    }
+    var query = " select tblgpsdevice.*, tbltelco.Name, tbluserinformation.username, tbluserinformation.idApp" +
+        " from tblgpsdevice " +
+        " Left Join tbluserinformation on tblgpsdevice.idSalesAgent=tbluserinformation.id " +
+        " Left Join tbltelco on tblgpsdevice.TelCoId = tbltelco.id " + search +
+        " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
 
-        console.log(query);
-        var Countqry = "SELECT count(tblgpsdevice.id) as TotalRecord " +
-            " from tblgpsdevice " +
-            " Left Join tbluserinformation on  tblgpsdevice.idSalesAgent=tbluserinformation.id " +
-            " Left Join tbltelco on tblgpsdevice.TelCoId = tbltelco.id " + search;
-        // " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
-        connection.query(query, function(err, response) {
-            if (response != undefined) {
-                connection.query(Countqry, function(err, lstCount, fields) {
-                    var response1 = new Object();
-                    response1.draw = objParam.draw;
-                    response1.recordsTotal = lstCount[0].TotalRecord;
-                    response1.recordsFiltered = lstCount[0].TotalRecord;
-                    response1.data = response;
-                    res.json(response1);
-                });
-            } else {
+    console.log(query);
+    var Countqry = "SELECT count(tblgpsdevice.id) as TotalRecord " +
+        " from tblgpsdevice " +
+        " Left Join tbluserinformation on  tblgpsdevice.idSalesAgent=tbluserinformation.id " +
+        " Left Join tbltelco on tblgpsdevice.TelCoId = tbltelco.id " + search;
+    // " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
+    connection.query(query, function(err, response) {
+        if (response != undefined) {
+            connection.query(Countqry, function(err, lstCount, fields) {
                 var response1 = new Object();
                 response1.draw = objParam.draw;
-                response1.recordsTotal = 0;
-                response1.recordsFiltered = 0;
-                response1.data = [];
+                response1.recordsTotal = lstCount[0].TotalRecord;
+                response1.recordsFiltered = lstCount[0].TotalRecord;
+                response1.data = response;
                 res.json(response1);
-            }
-        })
+            });
+        } else {
+            var response1 = new Object();
+            response1.draw = objParam.draw;
+            response1.recordsTotal = 0;
+            response1.recordsFiltered = 0;
+            response1.data = [];
+            res.json(response1);
+        }
+    })
 
-
-        // CheckUserCountry(0)
-    }
 })
 
 router.get('/GetGPSDeviceById', function(req, res) {
