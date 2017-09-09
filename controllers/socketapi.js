@@ -109,20 +109,22 @@ router.get('/SendIOSPush', function(req, res) {
 
 router.get('/SendPushTest', function(req, res) {
     var UserId = req.query.UserId;
-    var PushNotificationdata = {
-        title: 'Alert',
-        message: '9787 is out of Home Fence.',
-        Fence: 'Default',
-        otherfields: {
-            deviceid: 123456,
-            Id: 1,
-            VehicleName: '9787',
-            AlarmCode: '11',
-            Type: 'Alarm'
-        }
-    };
-    SendPushNotification(PushNotificationdata, UserId);
-    res.send("Done")
+    connection.query("SELECT tu.id, tu.username, ta.AppName, ta.IOSCertificate, ta.IOSKey, ta.AndroidId, ta.AndroidSenderId FROM tbluserinformation as tu inner Join tblappinfo as ta ON ta.id = tu.idApp where tu.id=" + UserId, function(err, objAppInfo, fields) {
+        var PushNotificationdata = {
+            title: 'Alert',
+            message: '9787 is out of Home Fence.',
+            Fence: 'Default',
+            otherfields: {
+                deviceid: 123456,
+                Id: 1,
+                VehicleName: '9787',
+                AlarmCode: '11',
+                Type: 'Alarm'
+            }
+        };
+        SendPushNotification(PushNotificationdata, UserId, objAppInfo[0]);
+        res.send("Done");
+    })
 })
 
 function clone(obj) {
@@ -134,7 +136,7 @@ function clone(obj) {
     return copy;
 }
 
-function SendPushNotification(data, UserId) {
+function SendPushNotification(data, UserId, objAppInfo) {
     // var deviceIds = [];
     connection.query("SELECT PushNotificationId,Platform,MessageCount,UserType,udid from tblpushnotification where iduser in (" + UserId + ") group by PushNotificationId, Platform", function(err, response, fields) {
         if (!err && response.length > 0) {
@@ -157,7 +159,12 @@ function SendPushNotification(data, UserId) {
                     if (response[i].Platform == 'ios') {
                         objData.title = data.message;
                         objData.message = data.message;
+
+                        PushNotificationSettings.apn.options.cert = __dirname + '/../MediaUploads/FileUpload/' + objAppInfo.IOSCertificate;
+                        PushNotificationSettings.apn.options.key = __dirname + '/../MediaUploads/FileUpload/' + objAppInfo.IOSKey;
+
                         PushNotificationSettings.apn.badge = messagecount;
+
                         if (objData.Fence == 'FenceIn') {
                             PushNotificationSettings.apn.defaultData.sound = 'fencein.caf';
                         } else if (objData.Fence == 'FenceOut') {
@@ -165,8 +172,12 @@ function SendPushNotification(data, UserId) {
                         } else {
                             PushNotificationSettings.apn.defaultData.sound = 'default';
                         };
+
                     } else {
+
                         PushNotificationSettings.gcm.msgcnt = messagecount;
+                        PushNotificationSettings.gcm.id = objAppInfo.AndroidId;
+
                     }
                     // console.log(response[i].Platform + "_______________________________________________________")
                     // console.log(objData)
@@ -744,50 +755,53 @@ global.Command9955 = function(line, Callback) {
                                                                 AllUser = AllUser + ',' + lstShareUser[i].idUser;
                                                             }
                                                         }
-                                                        var PushNotificationdata = {
-                                                            title: 'Alert',
-                                                            message: Message,
-                                                            Fence: 'Default',
-                                                            otherfields: {
-                                                                deviceid: DeviceId,
-                                                                Id: objVehicle.id,
-                                                                VehicleName: objVehicle.Name,
-                                                                AlarmCode: AlarmCode,
-                                                                Type: 'Alarm'
+                                                        connection.query("SELECT tu.id, tu.username, ta.AppName, ta.IOSCertificate, ta.IOSKey, ta.AndroidId, ta.AndroidSenderId FROM tbluserinformation as tu inner Join tblappinfo as ta ON ta.id = tu.idApp where tu.id=" + objVehicle.iduser, function(err, objAppInfo, fields) {
+
+                                                            var PushNotificationdata = {
+                                                                title: 'Alert',
+                                                                message: Message,
+                                                                Fence: 'Default',
+                                                                otherfields: {
+                                                                    deviceid: DeviceId,
+                                                                    Id: objVehicle.id,
+                                                                    VehicleName: objVehicle.Name,
+                                                                    AlarmCode: AlarmCode,
+                                                                    Type: 'Alarm'
+                                                                }
+                                                            };
+
+                                                            SendPushNotification(PushNotificationdata, AllUser, objAppInfo[0]);
+
+                                                            // var objConnection = {
+                                                            //     AlarmCode: AlarmCode.toString(),
+                                                            //     DeviceId: DeviceId,
+                                                            //     Datetime: GPSDateTime,
+                                                            //     Date: unixDateStemp,
+                                                            //     IdUser: objVehicle.iduser,
+                                                            //     Name: objVehicle.Name,
+                                                            //     FenceName: rows[j].name
+                                                            // }
+
+
+                                                            // // io.sockets.emit('DeviceAlarm', JSON.stringify(objConnection));
+                                                            // io.sockets.emit(objVehicle.iduser + 'DeviceAlarm', JSON.stringify(objConnection));
+
+                                                            for (var i = 0; i < lstAllUser.length; i++) {
+                                                                var objConnection = {
+                                                                    AlarmCode: AlarmCode.toString(),
+                                                                    DeviceId: DeviceId,
+                                                                    Datetime: GPSDateTime,
+                                                                    Date: unixDateStemp,
+                                                                    IdUser: objVehicle.iduser,
+                                                                    Name: objVehicle.Name,
+                                                                    FenceName: rows[j].name
+                                                                }
+
+                                                                io.sockets.emit(lstAllUser[i] + 'DeviceAlarm', JSON.stringify(objConnection));
                                                             }
-                                                        };
-                                                        SendPushNotification(PushNotificationdata, AllUser);
 
-                                                        // var objConnection = {
-                                                        //     AlarmCode: AlarmCode.toString(),
-                                                        //     DeviceId: DeviceId,
-                                                        //     Datetime: GPSDateTime,
-                                                        //     Date: unixDateStemp,
-                                                        //     IdUser: objVehicle.iduser,
-                                                        //     Name: objVehicle.Name,
-                                                        //     FenceName: rows[j].name
-                                                        // }
-
-
-                                                        // // io.sockets.emit('DeviceAlarm', JSON.stringify(objConnection));
-                                                        // io.sockets.emit(objVehicle.iduser + 'DeviceAlarm', JSON.stringify(objConnection));
-
-                                                        for (var i = 0; i < lstAllUser.length; i++) {
-                                                            var objConnection = {
-                                                                AlarmCode: AlarmCode.toString(),
-                                                                DeviceId: DeviceId,
-                                                                Datetime: GPSDateTime,
-                                                                Date: unixDateStemp,
-                                                                IdUser: objVehicle.iduser,
-                                                                Name: objVehicle.Name,
-                                                                FenceName: rows[j].name
-                                                            }
-
-                                                            io.sockets.emit(lstAllUser[i] + 'DeviceAlarm', JSON.stringify(objConnection));
-                                                        }
-
-                                                        checkFence(j + 1);
-
+                                                            checkFence(j + 1);
+                                                        });
                                                     });
                                                 });
                                             });
@@ -994,74 +1008,73 @@ global.Command9999 = function(line, Callback) {
                                 AllUser = AllUser + ',' + lstShareUser[i].idUser;
                             }
                         }
+                        connection.query("SELECT tu.id, tu.username, ta.AppName, ta.IOSCertificate, ta.IOSKey, ta.AndroidId, ta.AndroidSenderId FROM tbluserinformation as tu inner Join tblappinfo as ta ON ta.id = tu.idApp where tu.id=" + objVehicle.iduser, function(err, objAppInfo, fields) {
 
-                        var Message = "";
+                            var Message = "";
 
-                        if (AlarmCode == '04') {
-                            Message = 'Vehicle ' + objVehicle.Name + ' Engine ON alert! Please check!';
-                        } else if (AlarmCode == '03') {
-                            Message = 'Vehicle ' + objVehicle.Name + ' Door Open alert! Please check!';
-                        } else if (AlarmCode == '10') {
-                            Message = 'Vehicle ' + objVehicle.Name + ' Low Bettry alert! Please check!';
-                        } else if (AlarmCode == '11') {
-                            Message = 'Vehicle ' + objVehicle.Name + ' Max Speed alert! Please check!';
-                        } else if (AlarmCode == '12') {
-                            Message = 'Vehicle ' + objVehicle.Name + ' Movement alert! Please check!';
-                        } else if (AlarmCode == '30') {
-                            Message = 'Vehicle ' + objVehicle.Name + ' Vibration alert! Please check!';
-                        } else if (AlarmCode == '50') {
-                            Message = 'Vehicle ' + objVehicle.Name + ' External Power Cut alert! Please check!';
-                        } else if (AlarmCode == '05') {
-                            Message = 'Vehicle ' + objVehicle.Name + ' Original Triggering alert! Please check!';
-                        } else if (AlarmCode == '02') {
-                            Message = 'Vehicle ' + objVehicle.Name + ' Line Broken alert! Please check!';
-                        } else if (AlarmCode == '52') {
-                            Message = 'Vehicle ' + objVehicle.Name + ' Veer Report alert! Please check!';
-                        } else if (AlarmCode == '60') {
-                            Message = 'Vehicle ' + objVehicle.Name + ' Fuel Driving alert! Please check!';
-                        } else if (AlarmCode == '71') {
-                            Message = 'Vehicle ' + objVehicle.Name + ' Crash alert! Please check!';
-                        } else if (AlarmCode == '72') {
-                            Message = 'Vehicle ' + objVehicle.Name + ' Acceleration alert! Please check!';
-                        } else if (AlarmCode == '81') {
-                            Message = 'Vehicle ' + objVehicle.Name + ' Fuel Loss alert! Please check!';
-                        }
-
-                        var PushNotificationdata = {
-                            title: 'Alert',
-                            message: Message,
-                            Fence: 'Default',
-                            otherfields: {
-                                deviceid: DeviceId,
-                                Id: objVehicle.id,
-                                VehicleName: objVehicle.Name,
-                                AlarmCode: AlarmCode,
-                                Type: 'Alarm'
-                            }
-                        };
-                        console.log(AllUser)
-                        SendPushNotification(PushNotificationdata, AllUser);
-
-
-
-
-                        // if (new Date(GPSDateTime) <= new Date()) {
-                        // io.sockets.emit('DeviceAlarm', JSON.stringify(objConnection));
-                        for (var i = 0; i < lstAllUser.length; i++) {
-                            var objConnection = {
-                                AlarmCode: AlarmCode.toString(),
-                                DeviceId: DeviceId,
-                                Datetime: GPSDateTime,
-                                Date: unixDateStemp,
-                                IdUser: lstAllUser[i],
-                                Name: objVehicle.Name
+                            if (AlarmCode == '04') {
+                                Message = 'Vehicle ' + objVehicle.Name + ' Engine ON alert! Please check!';
+                            } else if (AlarmCode == '03') {
+                                Message = 'Vehicle ' + objVehicle.Name + ' Door Open alert! Please check!';
+                            } else if (AlarmCode == '10') {
+                                Message = 'Vehicle ' + objVehicle.Name + ' Low Bettry alert! Please check!';
+                            } else if (AlarmCode == '11') {
+                                Message = 'Vehicle ' + objVehicle.Name + ' Max Speed alert! Please check!';
+                            } else if (AlarmCode == '12') {
+                                Message = 'Vehicle ' + objVehicle.Name + ' Movement alert! Please check!';
+                            } else if (AlarmCode == '30') {
+                                Message = 'Vehicle ' + objVehicle.Name + ' Vibration alert! Please check!';
+                            } else if (AlarmCode == '50') {
+                                Message = 'Vehicle ' + objVehicle.Name + ' External Power Cut alert! Please check!';
+                            } else if (AlarmCode == '05') {
+                                Message = 'Vehicle ' + objVehicle.Name + ' Original Triggering alert! Please check!';
+                            } else if (AlarmCode == '02') {
+                                Message = 'Vehicle ' + objVehicle.Name + ' Line Broken alert! Please check!';
+                            } else if (AlarmCode == '52') {
+                                Message = 'Vehicle ' + objVehicle.Name + ' Veer Report alert! Please check!';
+                            } else if (AlarmCode == '60') {
+                                Message = 'Vehicle ' + objVehicle.Name + ' Fuel Driving alert! Please check!';
+                            } else if (AlarmCode == '71') {
+                                Message = 'Vehicle ' + objVehicle.Name + ' Crash alert! Please check!';
+                            } else if (AlarmCode == '72') {
+                                Message = 'Vehicle ' + objVehicle.Name + ' Acceleration alert! Please check!';
+                            } else if (AlarmCode == '81') {
+                                Message = 'Vehicle ' + objVehicle.Name + ' Fuel Loss alert! Please check!';
                             }
 
-                            io.sockets.emit(lstAllUser[i] + 'DeviceAlarm', JSON.stringify(objConnection));
-                        }
-                        // }
+                            var PushNotificationdata = {
+                                title: 'Alert',
+                                message: Message,
+                                Fence: 'Default',
+                                otherfields: {
+                                    deviceid: DeviceId,
+                                    Id: objVehicle.id,
+                                    VehicleName: objVehicle.Name,
+                                    AlarmCode: AlarmCode,
+                                    Type: 'Alarm'
+                                }
+                            };
+                            console.log(AllUser)
+                            SendPushNotification(PushNotificationdata, AllUser, objAppInfo[0]);
 
-                    });
+                            // if (new Date(GPSDateTime) <= new Date()) {
+                            // io.sockets.emit('DeviceAlarm', JSON.stringify(objConnection));
+                            for (var i = 0; i < lstAllUser.length; i++) {
+                                var objConnection = {
+                                    AlarmCode: AlarmCode.toString(),
+                                    DeviceId: DeviceId,
+                                    Datetime: GPSDateTime,
+                                    Date: unixDateStemp,
+                                    IdUser: lstAllUser[i],
+                                    Name: objVehicle.Name
+                                }
+
+                                io.sockets.emit(lstAllUser[i] + 'DeviceAlarm', JSON.stringify(objConnection));
+                            }
+                            // }
+
+                        });
+                    })
                 }
             });
 
