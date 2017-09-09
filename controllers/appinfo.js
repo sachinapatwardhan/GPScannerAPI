@@ -230,6 +230,7 @@ router.post('/uploadFile', function(req, res) {
         if (strarr[1] == "IC") {
             file.path = form.uploadDir + "/" + NewName + ext;
         } else if (strarr[1] == "IK") {
+            NewName = parseInt(NewName) + 2;
             file.path = form.uploadDir + "/" + NewName + ext;
         } else if (strarr[1] == "logo") {
             file.path = form.uploadDir + "/" + NewName + ext;
