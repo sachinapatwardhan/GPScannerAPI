@@ -89,7 +89,7 @@ router.get('/login', jsonParser, function(req, res) {
                     Role: lstRole
                 }
                 if (response.idApp == req.query.appId) {
-                    console.log("he......");
+                    // console.log("he......");
                     var token = jwt.encode(user, "bugz");
                     res.json({
                         success: true,
@@ -103,7 +103,7 @@ router.get('/login', jsonParser, function(req, res) {
                         message: "Login Successfully..."
                     });
                 } else {
-                    console.log("he.....@@@@.");
+                    // console.log("he.....@@@@.");
                     if (rol) {
                         var token = jwt.encode(user, "bugz");
                         res.json({
