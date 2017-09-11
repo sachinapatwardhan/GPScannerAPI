@@ -505,6 +505,12 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                                     message: "Vehicle created successfully...",
                                                     data: objVehicle
                                                 });
+                                            } else {
+                                                res.json({
+                                                    success: false,
+                                                    message: "Vehicle is Not created...",
+                                                    data: objVehicle
+                                                });
                                             }
                                         })
                                     } else {
@@ -566,6 +572,12 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                                     message: "Vehicle updated successfully...",
                                                     data: objVehicle
                                                 });
+                                            } else {
+                                                res.json({
+                                                    success: false,
+                                                    message: "Vehicle is Not updated...",
+                                                    data: objVehicle
+                                                });
                                             }
                                         })
                                     }
@@ -580,56 +592,120 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                         }
                     })
                 } else {
-                    if (objVehicle.id == 0) {
-                        objVehicle.IsOnline = false;
-                        objVehicle.HandshakDatetime = null;
-                        objVehicle.CreatedDate = GetCurrentDate();
-                        Vehicle.create(objVehicle).then(function(response) {
-                            if (response) {
-                                funAuditLog.CreateAuditLog('SaveVehicle', UserExist.username, 'Create Vehicle');
-                                res.json({
-                                    success: true,
-                                    message: "Vehicle created successfully...",
-                                    data: response
-                                });
-                            } else {
-                                res.json({
-                                    success: false,
-                                    message: "Tracker No. is already assign to other pet...",
-                                    data: null
-                                });
-                            }
-                        })
-                    } else {
-                        Vehicle.findOne({
-                            where: {
-                                id: objVehicle.id
-                            }
-                        }).then(function(objVehicleExist) {
-                            if (objVehicleExist != null && objVehicleExist.id != objVehicle.id && objVehicleExist.IsDelete == false) {
-                                res.json({
-                                    success: false,
-                                    message: "Tracker No. is already assign to other Vehicle...",
-                                    data: objVehicleExist
-                                });
-                            } else {
-                                Vehicle.update(objVehicle, {
+                    GpsDevice.findOne({
+                        where: { AppName: objVehicle.AppName, DeviceId: objVehicle.deviceid }
+                    }).then(function(objGpsDevice) {
+                        if (objGpsDevice != null) {
+                            if (objVehicle.id == 0) {
+                                objVehicle.IsOnline = false;
+                                objVehicle.CreatedDate = GetCurrentDate();
+                                objVehicle.DeviceType = objGpsDevice.Type;
+                                Vehicle.findOne({
                                     where: {
-                                        id: objVehicle.id
+                                        deviceid: objVehicle.deviceid,
+                                        IsDelete: true
                                     }
-                                }).then(function(response) {
-                                    if (response[0]) {
-                                        funAuditLog.CreateAuditLog('SaveBike', UserExist.username, 'Update Vehicle');
+                                }).then(function(objVehicleExist) {
+                                    if (objVehicleExist) {
+                                        objVehicle.id = objVehicleExist.id;
+                                        Vehicle.update(objVehicle, {
+                                            where: {
+                                                id: objVehicle.id
+                                            }
+                                        }).then(function(response) {
+                                            if (response[0]) {
+                                                funAuditLog.CreateAuditLog('SaveVehicle', UserExist.username, 'Create Vehicle');
+                                                res.json({
+                                                    success: true,
+                                                    message: "Vehicle created successfully...",
+                                                    data: objVehicle
+                                                });
+                                            } else {
+                                                res.json({
+                                                    success: false,
+                                                    message: "Vehicle is Not created...",
+                                                    data: objVehicle
+                                                });
+                                            }
+                                        })
+                                    } else {
+                                        Vehicle.findOne({
+                                            where: {
+                                                deviceid: objVehicle.deviceid,
+                                                IsDelete: false
+                                            }
+                                        }).then(function(objNewPetExist) {
+                                            if (objNewPetExist) {
+                                                res.json({
+                                                    success: false,
+                                                    message: "Tracker No. is already assign to other Vehicle...",
+                                                    data: null
+                                                });
+                                            } else {
+                                                Vehicle.create(objVehicle).then(function(response) {
+                                                    if (response) {
+                                                        funAuditLog.CreateAuditLog('SaveVehicle', UserExist.username, 'Create Vehicle');
+                                                        res.json({
+                                                            success: true,
+                                                            message: "Vehicle created successfully...",
+                                                            data: response
+                                                        });
+                                                    } else {
+                                                        res.json({
+                                                            success: false,
+                                                            message: "Tracker No. is already assign to other Vehicle...",
+                                                            data: null
+                                                        });
+                                                    }
+                                                })
+                                            }
+                                        })
+                                    }
+                                })
+                            } else {
+                                Vehicle.findOne({
+                                    where: {
+                                        deviceid: objVehicle.deviceid
+                                    }
+                                }).then(function(objVehicleExist) {
+                                    if (objVehicleExist != null && objVehicleExist.id != objVehicle.id && objVehicleExist.IsDeleted == false) {
                                         res.json({
-                                            success: true,
-                                            message: "Vehicle updated successfully...",
-                                            data: objVehicle
+                                            success: false,
+                                            message: "Tracker No. is already assign to other Vehicle...",
+                                            data: objVehicleExist
                                         });
+                                    } else {
+                                        Vehicle.update(objVehicle, {
+                                            where: {
+                                                id: objVehicle.id
+                                            }
+                                        }).then(function(response) {
+                                            if (response[0]) {
+                                                funAuditLog.CreateAuditLog('SaveVehicle', UserExist.username, 'Update Vehicle');
+                                                res.json({
+                                                    success: true,
+                                                    message: "Vehicle updated successfully...",
+                                                    data: objVehicle
+                                                });
+                                            } else {
+                                                res.json({
+                                                    success: false,
+                                                    message: "Vehicle is Not updated...",
+                                                    data: objVehicle
+                                                });
+                                            }
+                                        })
                                     }
                                 })
                             }
-                        })
-                    }
+                        } else {
+                            res.json({
+                                success: false,
+                                message: "Invalid Tracker No., Please insert valid Tracker No.",
+                                data: ""
+                            });
+                        }
+                    })
                 }
             } else {
                 res.json(InvalidToken);
