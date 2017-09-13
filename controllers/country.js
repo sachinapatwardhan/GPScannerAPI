@@ -7,6 +7,7 @@ var Address = models.address;
 var BillingAddress = models.tblbillingaddress;
 var DeliveryAddress = models.tbldeliveryaddress;
 var Order = models.tblorder;
+var Countrycode = models.tblcountrycode;
 //End of Tables
 
 router.get('/GetAllCountry', function(req, res) {
@@ -219,5 +220,13 @@ router.get('/DeleteCountry', function(req, res) {
         }
     });
 });
+
+router.get('/GetCountryCode', function(req, res) {
+    Countrycode.findAll().then(function(response) {
+        res.json(response);
+    }).catch(function(error) {
+        res.json(error);
+    })
+})
 
 module.exports = router
