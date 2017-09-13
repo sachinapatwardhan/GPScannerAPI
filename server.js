@@ -89,8 +89,8 @@ global.PushNotificationSettings = {
             sound: 'bass.caf'
         },
         options: {
-            // cert: __dirname + "/certs/certdevelopment.pem",
-            // key: __dirname + "/certs/keyDevelopment.pem",
+            cert: __dirname + "/certs/certdevelopment.pem",
+            key: __dirname + "/certs/keyDevelopment.pem",
             // production: true
         }
     },
