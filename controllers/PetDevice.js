@@ -6,6 +6,7 @@ var Pet = models.tblpet;
 var Carrier = models.tblcarrier;
 var Country = models.tblcountrymgmt;
 var TelCo = models.tbltelco;
+var SimService = models.tblsimdetails;
 //End of Tables
 
 router.get('/GetAllGPSDeviceold', function(req, res) {
@@ -216,7 +217,6 @@ router.get('/GetAllGPSDevice', function(req, res) {
         " Left Join tbltelco on tblgpsdevice.TelCoId = tbltelco.id " + search +
         " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
 
-    console.log(query);
     var Countqry = "SELECT count(tblgpsdevice.id) as TotalRecord " +
         " from tblgpsdevice " +
         " Left Join tbluserinformation on  tblgpsdevice.idSalesAgent=tbluserinformation.id " +
@@ -632,6 +632,8 @@ router.post('/SaveGPSDevice', jsonParser, function(req, res) {
                                         if (response[0]) {
                                             funAuditLog.CreateAuditLog('SaveGPSDevice', UserExist.username, 'Update Pet Device');
                                             res.json({ success: true, message: "Tracker updated successfully", data: response });
+                                        } else {
+                                            res.json({ success: false, message: "Tracker Is Not updated", data: response });
                                         }
                                     })
                                 }
@@ -809,6 +811,50 @@ router.get('/DownloadTemplate', function(req, res) {
     res.setHeader('Content-Type', 'application/vnd.openxmlformats');
     res.setHeader("Content-Disposition", "attachment; filename=" + "TrackersManagement_Template.xlsx");
     res.end(result, 'binary');
+})
+
+router.get('/GetGPSDeviceByIMEI', function(req, res) {
+    GPSDevice.findOne({ where: { IMEI: req.query.IMEI } }).then(function(response) {
+        if (response != null) {
+            res.json({ success: true, data: response });
+        } else {
+            res.json({ success: false, data: response });
+        }
+    }).catch(function(err) {
+        res.json({ success: false, data: err });
+    })
+})
+
+router.get('/GetSIMDetailBySerialNum', function(req, res) {
+    SimService.findOne({ where: { SerialNum: req.query.SerialNum } }).then(function(response) {
+        if (response != null) {
+            GPSDevice.findOne({ where: { idSim: response.id } }).then(function(response1) {
+                if (response1 != null) {
+                    res.json({ success: false, message: 'SIM Is Already assigned.', data: response1 });
+                } else {
+                    res.json({ success: true, message: 'Success', data: response });
+                }
+            })
+        } else {
+            res.json({ success: false, message: 'Invalid Serial Number.', data: response });
+        }
+    }).catch(function(err) {
+        res.json({ success: false, data: err });
+    })
+})
+
+router.get('/SaveSimServiceToIMEI', function(req, res) {
+
+    var query = "UPDATE tblgpsdevice SET idSim = " + req.query.idSim + " where IMEI = '" + req.query.IMEI + "' ";
+    console.log(query);
+
+    connection.query(query, function(err, response) {
+        if (response != undefined) {
+            res.json({ success: true, message: 'SIM Serial Num Attached SuccessFully', data: response });
+        } else {
+            res.json({ success: false, message: 'Please Try Again Later', data: err });
+        }
+    })
 })
 
 module.exports = router
