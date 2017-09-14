@@ -30,7 +30,18 @@ Date.prototype.addDays = function(days) {
     return this;
 };
 router.get('/GetAllWorkingBike', jsonParser, function(req, res) {
-    connection.query("SELECT tb.id,tb.deviceid,tb.Name,tb.IsOnline, tpg.IsEngine, tpg.Latitude,tpg.Longitude,tpg.Datetime, tpg.Date, tpg.Speed,tpg.Direction, tu.idApp FROM tblvehicle tb Left Join tbluserinformation as tu on tb.iduser = tu.id Left JOIN tblgpsdata tpg INNER JOIN (SELECT DeviceId,MAX(Date) Date FROM tblgpsdata GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId  AND tpg.Date = b.Date ON tb.deviceid=tpg.DeviceId WHERE IsDelete=false and idApp=" + req.query.idApp, function(err, rows, fields) {
+    connection.query("SELECT tb.id,tb.deviceid,tb.Name,tb.IsOnline, tpg.IsEngine, tpg.Latitude,tpg.Longitude,tpg.Datetime, tpg.Date, tpg.Speed,tpg.Direction, tu.idApp FROM tblvehicle tb Left Join tbluserinformation as tu on tb.iduser = tu.id Left JOIN tblgpsdata tpg INNER JOIN (SELECT DeviceId,MAX(Date) Date FROM tblgpsdata GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId  AND tpg.Date = b.Date ON tb.deviceid=tpg.DeviceId WHERE IsDelete=false and idApp=" + req.query.idApp + " group by tb.DeviceId", function(err, rows, fields) {
+        if (!err) {
+            res.json({ success: true, data: rows });
+        } else {
+            res.json({ success: false, data: [] });
+        }
+    })
+
+})
+
+router.get('/GetAllDeviceForDashboard', jsonParser, function(req, res) {
+    connection.query("SELECT tv.id,tv.deviceid,tv.Name,tv.IsOnline,  tu.idApp, b.IsEngine, b.Latitude, b.Longitude, b.Datetime, b.Speed, b.Direction, b.Date FROM tblvehicle as tv left join tbluserinformation as tu ON tv.iduser = tu.id left JOIN (SELECT DeviceId, IsEngine, Latitude, Longitude, Datetime, Speed, Direction, MAX(Date) Date FROM tblgpsdata GROUP BY DeviceId) b ON tv.DeviceId = b.DeviceId where tv.IsDelete = false and tu.idApp = " + req.query.idApp, function(err, rows, fields) {
         if (!err) {
             res.json({ success: true, data: rows });
         } else {
