@@ -333,7 +333,7 @@ app.use('/Report', require('./controllers/Report'));
 app.use('/appinfo', require('./controllers/appinfo'));
 app.use('/appversion', require('./controllers/appversion'));
 app.use('/sim', require('./controllers/sim'));
-
+app.use('/appsetting', require('./controllers/appsetting'));
 //socket API End
 
 http.listen(process.env.APIPort, function() {
