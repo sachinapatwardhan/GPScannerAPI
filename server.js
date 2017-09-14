@@ -332,6 +332,7 @@ app.use('/homepage', require('./controllers/homepage'))
 app.use('/Report', require('./controllers/Report'));
 app.use('/appinfo', require('./controllers/appinfo'));
 app.use('/appversion', require('./controllers/appversion'));
+app.use('/sim', require('./controllers/sim'));
 
 //socket API End
 
