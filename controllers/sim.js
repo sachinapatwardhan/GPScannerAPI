@@ -40,7 +40,7 @@ router.post('/SaveSIMInfo', jsonParser, function(req, res) {
                         } else {
                             res.json({
                                 success: false,
-                                message: "SIm Info is already Exist...",
+                                message: "SIM Info is already Exist...",
                                 data: response
                             });
                         }
@@ -48,7 +48,7 @@ router.post('/SaveSIMInfo', jsonParser, function(req, res) {
                 } else {
                     SIM.update(objSIMInfo, {
                         where: {
-                            Id: objSIMInfo.Id
+                            id: objSIMInfo.Id
                         }
                     }).then(function(response) {
                         if (response[0]) {
