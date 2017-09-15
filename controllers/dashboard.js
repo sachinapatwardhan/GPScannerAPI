@@ -48,7 +48,6 @@ router.get('/GetAllDeviceForDashboard', jsonParser, function(req, res) {
             res.json({ success: false, data: [] });
         }
     })
-
 })
 
 router.get('/GetTotalCustomerByCountry', function(req, res) {
@@ -229,9 +228,9 @@ router.get('/GetDashboardData', function(req, res) {
     search1['$and'].push(obj);
 
     if (IsSuperAdmin == 'false' || IsSuperAdmin == false) {
-        search1['$or'] = [];
-
         if (CountryList.length > 0) {
+            search1['$or'] = [];
+
             function checkcountry(z) {
                 if (z < CountryList.length) {
                     if (CountryList[z] == "All") {
@@ -248,28 +247,29 @@ router.get('/GetDashboardData', function(req, res) {
                         checkcountry(z + 1);
                     }
                 } else {
-
                     if (IsCountryAll) {
-                        search1 = {};
+                        search1['$or'] = [];
                     }
                     if (CountryList.length == 3 && CountryList == "All") {
-                        search1 = {};
+                        search1['$or'] = [];
                     }
                 }
             }
             checkcountry(0);
-        } else {
-            var obj = new Object();
-            obj['country'] = {
-                $like: null
-            }
-            search1['$or'].push(obj);
         }
+        // else {
+        //     var obj = new Object();
+        //     obj['country'] = {
+        //         $like: ''
+        //     }
+        //     search1['$or'].push(obj);
+        // }
     } else {
         flg = false;
     }
-
+    console.log("=======================================================================")
     User.count({ where: search1 }).then(function(TotalUser) {
+        console.log("=======================================================================")
         lstDashboard['TotalUser'] = TotalUser;
         res.json(lstDashboard);
     })
