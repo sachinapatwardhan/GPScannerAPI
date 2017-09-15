@@ -140,8 +140,30 @@ router.get('/CheckRights', function(req, res) {
     if (token) {
         var objUser = jwt.decode(token, TokenKey);
         if (objUser) {
+            var search = {};
+            search['$and'] = [];
+
+            var obj = new Object();
+            obj['username'] = {
+                $eq: objUser.username
+            };
+            search['$and'].push(obj);
+
+            var obj1 = new Object();
+            obj1['password'] = {
+                $eq: objUser.password
+            };
+            search['$and'].push(obj1);
+
+            if (req.query.idApp != null && req.query.idApp != '' && req.query.idApp != undefined) {
+                var obj2 = new Object();
+                obj2['idApp'] = {
+                    $eq: req.query.idApp
+                };
+                search['$and'].push(obj2);
+            }
             //Check User Exist or not
-            User.findOne({ where: { username: objUser.username, password: objUser.password } }).then(function(UserExist) {
+            User.findOne({ where: search }).then(function(UserExist) {
 
                 if (UserExist != null) {
 
@@ -234,27 +256,46 @@ router.get('/GetAllPageRights', function(req, res) {
 
     var PermissionFlag = false;
     var token = getToken(objHeader);
-
     if (token) {
         var objUser = jwt.decode(token, TokenKey);
+
+        var search = {};
+        search['$and'] = [];
+
+        var obj = new Object();
+        obj['username'] = {
+            $eq: objUser.username
+        };
+        search['$and'].push(obj);
+
+        var obj1 = new Object();
+        obj1['password'] = {
+            $eq: objUser.password
+        };
+        search['$and'].push(obj1);
+
+        if (req.query.idApp != null && req.query.idApp != '' && req.query.idApp != undefined) {
+            var obj2 = new Object();
+            obj2['idApp'] = {
+                $eq: req.query.idApp
+            };
+            search['$and'].push(obj2);
+        }
         if (objUser) {
             //Check User Exist or not
-            User.findOne({ where: { username: objUser.username, password: objUser.password } }).then(function(UserExist) {
-
+            User.findOne({ where: search }).then(function(UserExist) {
                 if (UserExist != null) {
-
                     // var tablename = req.query.tablename;
                     // var permission = req.query.permission;
                     var username = objUser.username;
-
                     //Get Module
-
                     UserInRole.belongsTo(Role, {
                         foreignKey: {
                             name: 'roleId',
                             allowNull: false
                         }
                     });
+
                     UserInRole.findAll({
                         where: { userId: UserExist.id },
                         include: [{
@@ -341,12 +382,33 @@ router.get('/CheckRightsbyPage', function(req, res) {
 
     if (token) {
         var objUser = jwt.decode(token, TokenKey);
+        var search = {};
+        search['$and'] = [];
+
+        var obj = new Object();
+        obj['username'] = {
+            $eq: objUser.username
+        };
+        search['$and'].push(obj);
+
+        var obj1 = new Object();
+        obj1['password'] = {
+            $eq: objUser.password
+        };
+        search['$and'].push(obj1);
+
+        if (req.query.idApp != null && req.query.idApp != '' && req.query.idApp != undefined) {
+            var obj2 = new Object();
+            obj2['idApp'] = {
+                $eq: req.query.idApp
+            };
+            search['$and'].push(obj2);
+        }
+
         if (objUser) {
             //Check User Exist or not
-            User.findOne({ where: { username: objUser.username, password: objUser.password } }).then(function(UserExist) {
-
+            User.findOne({ where: search }).then(function(UserExist) {
                 if (UserExist != null) {
-
                     var tablename = req.query.tablename;
                     // var permission = req.query.permission;
                     var username = objUser.username;

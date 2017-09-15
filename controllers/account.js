@@ -11,142 +11,6 @@ var PushNotification = models.tblpushnotification;
 var Setting = models.tblsetting;
 //End of Tables
 
-router.get('/loginNew', jsonParser, function(req, res) {
-    var Encryptpassword = jwt.encode(req.query.password, "bugz");
-    User.hasMany(UserInRole, {
-        foreignKey: {
-            name: 'userId',
-            allowNull: false
-        }
-    });
-
-    UserInRole.belongsTo(Role, {
-        foreignKey: {
-            name: 'roleId',
-            allowNull: false
-        }
-    });
-    User.findAll({
-        include: [{
-            model: UserInRole,
-            include: [{
-                model: Role,
-                where: { RoleName: 'Super Admin' }
-            }]
-        }],
-        where: {
-            $or: {
-                username: req.query.username,
-                email: req.query.username,
-            },
-            password: Encryptpassword
-        }
-    }).then(function(response) {
-        if (response.length > 0) {
-            var rol = false;
-            var lstRole = [];
-            var lstRolewiseCountryList = [];
-            for (var i = 0; i < response[0].tbluserinroles.length; i++) {
-                var objRole = response[0].tbluserinroles[i].tblrole.RoleName;
-                console.log(objRole)
-                if (objRole == 'Super Admin') {
-                    rol = true;
-                }
-                lstRole.push(objRole);
-
-                var objCountry = response[0].tbluserinroles[i].tblrole.Country;
-                lstRolewiseCountryList.push(objCountry);
-            }
-            var user = {
-                username: req.query.username,
-                password: response[0].password,
-                Role: lstRole
-            }
-            var token = jwt.encode(user, "bugz");
-            if (rol) {
-                res.json({
-                    success: true,
-                    token: 'JWT ' + token,
-                    UserId: response[0].id,
-                    UserImage: response[0].image,
-                    UserCountry: response[0].country,
-                    UserRoles: lstRole,
-                    RolewiseCountryList: lstRolewiseCountryList,
-                    appId: response[0].idApp,
-                    message: "Login Successfully..."
-                });
-            } else {
-                res.json({
-                    success: false,
-                    message: "Invalid Username or Password..."
-                });
-            }
-
-        } else {
-            console.log("@@@@@@@@@@@@@@@/..............")
-            User.findAll({
-                include: [{
-                    model: UserInRole,
-                    include: [{
-                        model: Role,
-                    }]
-                }],
-                where: {
-                    $or: {
-                        username: req.query.username,
-                        email: req.query.username,
-                    },
-                    $and: {
-                        password: Encryptpassword,
-                        idApp: req.query.appId,
-                    }
-
-                }
-            }).then(function(response) {
-                if (response.length > 0) {
-                    var rol = false;
-                    var lstRole = [];
-                    var lstRolewiseCountryList = [];
-                    for (var i = 0; i < response[0].tbluserinroles.length; i++) {
-                        var objRole = response[0].tbluserinroles[i].tblrole.RoleName;
-                        if (objRole == 'Super Admin') {
-                            rol = true;
-                        }
-                        lstRole.push(objRole);
-
-                        var objCountry = response[0].tbluserinroles[i].tblrole.Country;
-                        lstRolewiseCountryList.push(objCountry);
-                    }
-                    var user = {
-                        username: req.query.username,
-                        password: response[0].password,
-                        Role: lstRole
-                    }
-                    var token = jwt.encode(user, "bugz");
-
-                    res.json({
-                        success: true,
-                        token: 'JWT ' + token,
-                        UserId: response[0].id,
-                        UserImage: response[0].image,
-                        UserCountry: response[0].country,
-                        UserRoles: lstRole,
-                        RolewiseCountryList: lstRolewiseCountryList,
-                        appId: response[0].idApp,
-                        message: "Login Successfully..."
-                    });
-
-                } else {
-                    res.json({
-                        success: false,
-                        message: "Invalid Username or Password..."
-                    });
-                }
-            })
-
-        }
-    })
-})
 router.get('/login', jsonParser, function(req, res) {
     var Encryptpassword = jwt.encode(req.query.password, "bugz");
 
@@ -225,7 +89,6 @@ router.get('/login', jsonParser, function(req, res) {
                     Role: lstRole
                 }
                 if (response.idApp == req.query.appId) {
-                    // console.log("he......");
                     var token = jwt.encode(user, "bugz");
                     res.json({
                         success: true,
@@ -292,6 +155,120 @@ router.get('/login', jsonParser, function(req, res) {
                 success: false,
                 message: "Invalid Username or Password..."
             });
+        }
+    })
+})
+
+router.get('/loginNew', jsonParser, function(req, res) {
+    var Encryptpassword = jwt.encode(req.query.password, "bugz");
+    User.hasMany(UserInRole, {
+        foreignKey: {
+            name: 'userId',
+            allowNull: false
+        }
+    });
+    UserInRole.belongsTo(Role, {
+        foreignKey: {
+            name: 'roleId',
+            allowNull: false
+        }
+    });
+    User.findOne({
+        where: {
+            $or: {
+                username: req.query.username,
+                email: req.query.username,
+            },
+            password: Encryptpassword
+        },
+        include: [{
+            model: UserInRole,
+            include: [{
+                model: Role,
+                where: { RoleName: 'Super Admin', }
+            }]
+        }],
+    }).then(function(response) {
+        if (response != null) {
+            var lstRole = [];
+            var lstRolewiseCountryList = [];
+
+            for (var i = 0; i < response.tbluserinroles.length; i++) {
+                var objRole = response.tbluserinroles[i].tblrole.RoleName;
+                lstRole.push(objRole);
+                var objCountry = response.tbluserinroles[i].tblrole.Country;
+                lstRolewiseCountryList.push(objCountry);
+            }
+            var user = {
+                username: response.username,
+                password: response.password,
+                Role: lstRole
+            }
+            var token = jwt.encode(user, "bugz");
+            res.json({
+                success: true,
+                token: 'JWT ' + token,
+                UserId: response.id,
+                UserImage: response.image,
+                UserCountry: response.country,
+                UserRoles: lstRole,
+                RolewiseCountryList: lstRolewiseCountryList,
+                appId: response.idApp,
+                message: "Login Successfully..."
+            });
+        } else {
+            User.findOne({
+                where: {
+                    $or: {
+                        username: req.query.username,
+                        email: req.query.username,
+                    },
+                    password: Encryptpassword,
+                    idApp: req.query.appId,
+                },
+                include: [{
+                    model: UserInRole,
+                    include: [{
+                        model: Role,
+                    }]
+                }],
+            }).then(function(resUser) {
+                // res.json(resUser);
+                if (resUser != null) {
+                    var lstRole = [];
+                    var lstRolewiseCountryList = [];
+                    for (var i = 0; i < resUser.tbluserinroles.length; i++) {
+                        var objRole = resUser.tbluserinroles[i].tblrole.RoleName;
+                        lstRole.push(objRole);
+
+                        var objCountry = resUser.tbluserinroles[i].tblrole.Country;
+                        lstRolewiseCountryList.push(objCountry);
+                    }
+                    var user = {
+                        username: resUser.username,
+                        password: resUser.password,
+                        Role: lstRole
+                    }
+
+                    var token = jwt.encode(user, "bugz");
+                    res.json({
+                        success: true,
+                        token: 'JWT ' + token,
+                        UserId: resUser.id,
+                        UserImage: resUser.image,
+                        UserCountry: resUser.country,
+                        UserRoles: lstRole,
+                        RolewiseCountryList: lstRolewiseCountryList,
+                        appId: resUser.idApp,
+                        message: "Login Successfully..."
+                    });
+                } else {
+                    res.json({
+                        success: false,
+                        message: "Invalid Username or Password..."
+                    });
+                }
+            })
         }
     })
 })
@@ -730,9 +707,7 @@ router.post('/OwnerRegister', jsonParser, function(req, res) {
                                 var objOTP = new Object();
                                 objOTP.To = objUserReg.phone;
                                 objOTP.body = 'Your Verification Code for logging into GPSINA is ' + objUserReg.OTP + '. Kindly do not share it with anyone else.';
-                                global.sendSMS(objOTP, function(responseOTP) {
-                                    // console.log(responseOTP)
-                                });
+                                global.sendSMS(objOTP, function(responseOTP) {});
 
                                 res.json({
                                     success: true,
@@ -1226,40 +1201,83 @@ router.get('/forgotpasswordNew', function(req, res) {
             allowNull: false
         }
     });
-    User.findAll({
+    User.findOne({
+        where: { email: req.query.email, },
         include: [{
             model: UserInRole,
-            include: [
-                Role
-            ]
+            include: [{
+                model: Role,
+                attributes: ['id', 'RoleName'],
+                where: { RoleName: 'Super Admin' }
+            }]
         }],
-        where: {
-            email: req.query.email,
-        }
     }).then(function(response) {
-        if (response.length > 0) {
-            for (var i = 0; i < response.length; i++) {
-                if (response[i].tbluserinroles[0].tblrole.RoleName == "Super Admin") {
-                    flgChangePass = true;
-                    var objUser = response[i];
-                    break;
-                } else {
-                    if (response[i].idApp == req.query.idApp) {
-                        var objUser = response[i];
-                        flgChangePass = true;
-                        break;
-                    } else {
-                        flgChangePass = false;
-                    }
-                }
-            }
 
-            if (flgChangePass) {
+        if (response != null) {
+            SystemEmail.findOne().then(function(objSystemEmail) {
+                var NewPassword = customPassword();
+                console.log(NewPassword);
+                var EncryptNewpassword = jwt.encode(NewPassword, "bugz");
+                response.updateAttributes({ password: EncryptNewpassword }).then(function(response) {
+                    if (response != null) {
+                        EmailTemplate.findOne({
+                            where: {
+                                Type: "Forgot Password Email",
+                            }
+                        }).then(function(objEmailTemplate) {
+                            if (objEmailTemplate != null) {
+                                var Name = response.username;
+                                var Password = NewPassword;
+
+                                var body = objEmailTemplate.EmailBody.replace(/{UserName}/g, Name).replace("{Password}", Password);
+                                var mail = {
+                                    from: objSystemEmail.DefaultEmailFrom,
+                                    to: response.email, // + ', ' + objSystemEmail.NotificationEmailTo,
+                                    subject: objEmailTemplate.EmailSubject,
+                                    html: body
+                                };
+                                transporter.sendMail(mail, function(error, response) {
+                                    if (error) {
+                                        res.json(error);
+                                    } else {
+                                        funAuditLog.CreateAuditLog('forgotpassword', objUser.username, 'forgot User Password');
+                                        res.json({
+                                            success: true,
+                                            message: "Password sent to your email successfully...",
+                                            data: response
+                                        });
+                                    }
+                                });
+                            } else {
+                                res.json({
+                                    success: false,
+                                    message: "This Email template not found..."
+                                })
+                            }
+                        });
+                    } else {
+                        res.json({
+                            success: false,
+                            message: "This system Email not found..."
+                        });
+                    }
+                }).catch(function(error) {
+                    res.json({
+                        success: false,
+                        message: error.errors[0].message + "..."
+                    });
+                })
+            })
+
+        } else {
+            User.findOne({
+                where: { email: req.query.email, idApp: req.query.idApp },
+            }).then(function(response1) {
                 SystemEmail.findOne().then(function(objSystemEmail) {
                     var NewPassword = customPassword();
                     console.log(NewPassword);
                     var EncryptNewpassword = jwt.encode(NewPassword, "bugz");
-                    objUser.updateAttributes({ password: EncryptNewpassword }).then(function(response) {
+                    response1.updateAttributes({ password: EncryptNewpassword }).then(function(response) {
                         if (response != null) {
                             EmailTemplate.findOne({
                                 where: {
@@ -1267,13 +1285,13 @@ router.get('/forgotpasswordNew', function(req, res) {
                                 }
                             }).then(function(objEmailTemplate) {
                                 if (objEmailTemplate != null) {
-                                    var Name = objUser.username;
+                                    var Name = response1.username;
                                     var Password = NewPassword;
 
                                     var body = objEmailTemplate.EmailBody.replace(/{UserName}/g, Name).replace("{Password}", Password);
                                     var mail = {
                                         from: objSystemEmail.DefaultEmailFrom,
-                                        to: objUser.email, // + ', ' + objSystemEmail.NotificationEmailTo,
+                                        to: response1.email, // + ', ' + objSystemEmail.NotificationEmailTo,
                                         subject: objEmailTemplate.EmailSubject,
                                         html: body
                                     };
@@ -1309,12 +1327,7 @@ router.get('/forgotpasswordNew', function(req, res) {
                         });
                     })
                 })
-            }
-        } else {
-            res.json({
-                success: false,
-                message: "This Email is not registered with us..."
-            });
+            })
         }
     })
 });
@@ -2090,7 +2103,6 @@ router.get('/MobileAppLoginScannerApp', jsonParser, function(req, res) {
             allowNull: false
         }
     });
-    console.log("========================================================")
     User.findOne({
         where: {
             $or: {
@@ -2111,7 +2123,6 @@ router.get('/MobileAppLoginScannerApp', jsonParser, function(req, res) {
             }]
         }],
     }).then(function(response) {
-        console.log("========================================================");
         if (response != null) {
             var lstRole = [];
             for (var i = 0; i < response.tbluserinroles.length; i++) {
