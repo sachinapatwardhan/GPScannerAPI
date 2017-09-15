@@ -196,6 +196,8 @@ router.get('/GetAllGPSDevice', function(req, res) {
         search = search + 'tblgpsdevice.ExpiryDate like "%' + objSearch + '%" or ';
         search = search + 'tblgpsdevice.CreatedDate like "%' + objSearch + '%" or ';
         search = search + 'tblgpsdevice.CreatedBy like "%' + objSearch + '%" or ';
+        search = search + 'tblsimdetails.SerialNum like "%' + objSearch + '%" or ';
+        search = search + 'tblsimdetails.PhoneNum like "%' + objSearch + '%" or ';
         search = search + 'tbluserinformation.username like "%' + objSearch + '%") ';
     };
     if (objParam.UserId != null && objParam.UserId != undefined && objParam.UserId != '') {
@@ -211,15 +213,18 @@ router.get('/GetAllGPSDevice', function(req, res) {
     } else {
         search += ' where tblgpsdevice.AppName = "' + objParam.AppName + '"';
     }
-    var query = " select tblgpsdevice.*, tbltelco.Name, tbluserinformation.username, tbluserinformation.idApp" +
+    var query = " select tblgpsdevice.*, tbltelco.Name, tbluserinformation.username, tbluserinformation.idApp,tblsimdetails.SerialNum,tblsimdetails.PhoneNum" +
         " from tblgpsdevice " +
         " Left Join tbluserinformation on tblgpsdevice.idSalesAgent=tbluserinformation.id " +
+        " Left Join tblsimdetails on tblsimdetails.id = tblgpsdevice.idSim" +
         " Left Join tbltelco on tblgpsdevice.TelCoId = tbltelco.id " + search +
         " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
+
 
     var Countqry = "SELECT count(tblgpsdevice.id) as TotalRecord " +
         " from tblgpsdevice " +
         " Left Join tbluserinformation on  tblgpsdevice.idSalesAgent=tbluserinformation.id " +
+        " Left Join tblsimdetails on tblsimdetails.id = tblgpsdevice.idSim" +
         " Left Join tbltelco on tblgpsdevice.TelCoId = tbltelco.id " + search;
     // " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
     connection.query(query, function(err, response) {
