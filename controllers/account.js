@@ -11,27 +11,155 @@ var PushNotification = models.tblpushnotification;
 var Setting = models.tblsetting;
 //End of Tables
 
+router.get('/loginNew', jsonParser, function(req, res) {
+    var Encryptpassword = jwt.encode(req.query.password, "bugz");
+    User.hasMany(UserInRole, {
+        foreignKey: {
+            name: 'userId',
+            allowNull: false
+        }
+    });
+
+    UserInRole.belongsTo(Role, {
+        foreignKey: {
+            name: 'roleId',
+            allowNull: false
+        }
+    });
+    User.findAll({
+        include: [{
+            model: UserInRole,
+            include: [{
+                model: Role,
+                where: { RoleName: 'Super Admin' }
+            }]
+        }],
+        where: {
+            $or: {
+                username: req.query.username,
+                email: req.query.username,
+            },
+            password: Encryptpassword
+        }
+    }).then(function(response) {
+        if (response.length > 0) {
+            var rol = false;
+            var lstRole = [];
+            var lstRolewiseCountryList = [];
+            for (var i = 0; i < response[0].tbluserinroles.length; i++) {
+                var objRole = response[0].tbluserinroles[i].tblrole.RoleName;
+                console.log(objRole)
+                if (objRole == 'Super Admin') {
+                    rol = true;
+                }
+                lstRole.push(objRole);
+
+                var objCountry = response[0].tbluserinroles[i].tblrole.Country;
+                lstRolewiseCountryList.push(objCountry);
+            }
+            var user = {
+                username: req.query.username,
+                password: response[0].password,
+                Role: lstRole
+            }
+            var token = jwt.encode(user, "bugz");
+            if (rol) {
+                res.json({
+                    success: true,
+                    token: 'JWT ' + token,
+                    UserId: response[0].id,
+                    UserImage: response[0].image,
+                    UserCountry: response[0].country,
+                    UserRoles: lstRole,
+                    RolewiseCountryList: lstRolewiseCountryList,
+                    appId: response[0].idApp,
+                    message: "Login Successfully..."
+                });
+            } else {
+                res.json({
+                    success: false,
+                    message: "Invalid Username or Password..."
+                });
+            }
+
+        } else {
+            console.log("@@@@@@@@@@@@@@@/..............")
+            User.findAll({
+                include: [{
+                    model: UserInRole,
+                    include: [{
+                        model: Role,
+                    }]
+                }],
+                where: {
+                    $or: {
+                        username: req.query.username,
+                        email: req.query.username,
+                    },
+                    $and: {
+                        password: Encryptpassword,
+                        idApp: req.query.appId,
+                    }
+
+                }
+            }).then(function(response) {
+                if (response.length > 0) {
+                    var rol = false;
+                    var lstRole = [];
+                    var lstRolewiseCountryList = [];
+                    for (var i = 0; i < response[0].tbluserinroles.length; i++) {
+                        var objRole = response[0].tbluserinroles[i].tblrole.RoleName;
+                        if (objRole == 'Super Admin') {
+                            rol = true;
+                        }
+                        lstRole.push(objRole);
+
+                        var objCountry = response[0].tbluserinroles[i].tblrole.Country;
+                        lstRolewiseCountryList.push(objCountry);
+                    }
+                    var user = {
+                        username: req.query.username,
+                        password: response[0].password,
+                        Role: lstRole
+                    }
+                    var token = jwt.encode(user, "bugz");
+
+                    res.json({
+                        success: true,
+                        token: 'JWT ' + token,
+                        UserId: response[0].id,
+                        UserImage: response[0].image,
+                        UserCountry: response[0].country,
+                        UserRoles: lstRole,
+                        RolewiseCountryList: lstRolewiseCountryList,
+                        appId: response[0].idApp,
+                        message: "Login Successfully..."
+                    });
+
+                } else {
+                    res.json({
+                        success: false,
+                        message: "Invalid Username or Password..."
+                    });
+                }
+            })
+
+        }
+    })
+})
 router.get('/login', jsonParser, function(req, res) {
     var Encryptpassword = jwt.encode(req.query.password, "bugz");
 
     var search = {};
 
-    search['$and'] = [];
 
+    search['$or'] = [];
     var obj = new Object();
     obj['username'] = {
         $eq: req.query.username
     };
-    search['$and'].push(obj);
-
-
-    search['$or'] = [];
-
-    var obj = new Object();
-    obj['password'] = {
-        $eq: Encryptpassword
-    };
     search['$or'].push(obj);
+
 
     var obj = new Object();
     obj['email'] = {
@@ -39,12 +167,20 @@ router.get('/login', jsonParser, function(req, res) {
     };
     search['$or'].push(obj);
 
+    // search['$or'] = [];
+    search['$and'] = [];
+    var obj = new Object();
+    obj['password'] = {
+        $eq: Encryptpassword
+    };
+    search['$and'].push(obj);
+
+
     // var obj = new Object();
     // obj['idApp'] = {
     //     $eq: req.query.appId
     // };
     // search['$and'].push(obj);
-
     User.findOne({
         // where: {
         //     username: req.query.username,
@@ -103,7 +239,6 @@ router.get('/login', jsonParser, function(req, res) {
                         message: "Login Successfully..."
                     });
                 } else {
-                    // console.log("he.....@@@@.");
                     if (rol) {
                         var token = jwt.encode(user, "bugz");
                         res.json({
@@ -127,16 +262,17 @@ router.get('/login', jsonParser, function(req, res) {
                         User.findOne({
                             where: search
                         }).then(function(response1) {
+
                             if (response1 != null) {
                                 res.json({
                                     success: true,
                                     token: 'JWT ' + token,
-                                    UserId: response.id,
-                                    UserImage: response.image,
-                                    UserCountry: response.country,
+                                    UserId: response1.id,
+                                    UserImage: response1.image,
+                                    UserCountry: response1.country,
                                     UserRoles: lstRole,
                                     RolewiseCountryList: lstRolewiseCountryList,
-                                    appId: response.idApp,
+                                    appId: response1.idApp,
                                     message: "Login Successfully..."
                                 });
                             } else {
