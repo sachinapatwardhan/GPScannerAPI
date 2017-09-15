@@ -34,8 +34,8 @@ router.get('/login', jsonParser, function(req, res) {
     search['$or'].push(obj);
 
     var obj = new Object();
-    obj['password'] = {
-        $eq: Encryptpassword
+    obj['email'] = {
+        $eq: req.query.username
     };
     search['$or'].push(obj);
 
