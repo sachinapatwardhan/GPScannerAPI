@@ -895,6 +895,7 @@
  router.post('/SaveUser', jsonParser, function(req, res) {
      objUser = req.body;
      objHeader = req.headers;
+     console.log(objUser);
      //Set Parameter for User Permission
      req.query['tablename'] = req.headers['x-requested-with'];
 
@@ -908,7 +909,9 @@
              }
          }).then(function(UserExist) {
              if (UserExist != null) {
+                 console.log("UserExist")
                  if (objUser.id != 0) {
+                     console.log("id not 0");
                      //set Parameter
                      req.query['permission'] = "Modified";
 
@@ -1077,6 +1080,7 @@
                          }
                      });
                  } else {
+                     console.log("id 0");
 
                      //set Parameter
                      req.query['permission'] = "Added";
@@ -1250,6 +1254,214 @@
                                              }
                                          });
                                      }
+                                 }
+                             })
+                         } else {
+                             res.json(NoAccessPermission);
+                         }
+                     });
+                 }
+             } else {
+                 res.json(InvalidToken);
+             }
+         })
+     } else {
+         res.json(InvalidToken);
+     }
+ })
+
+ router.post('/SaveUserNew', jsonParser, function(req, res) {
+     objUser = req.body;
+     objHeader = req.headers;
+     //Set Parameter for User Permission
+     req.query['tablename'] = req.headers['x-requested-with'];
+
+     var token = getToken(objHeader);
+     if (token) {
+         var decoded = jwt.decode(token, TokenKey);
+         User.findOne({
+             where: {
+                 username: decoded.username,
+                 password: decoded.password
+             }
+         }).then(function(UserExist) {
+             if (UserExist != null) {
+                 if (objUser.id != 0) {
+                     //set Parameter
+                     req.query['permission'] = "Modified";
+
+                     var obj = {};
+                     obj.headers = req.headers;
+                     obj.query = req.query;
+
+                     funAccessPermission.CheckUserAccessPermission(obj, function(responseAccessPermission) {
+                         var AccessPermission = responseAccessPermission.success;
+                         if (AccessPermission) {
+                             User.findOne({
+                                 where: {
+                                     $or: [{ email: objUser.email }, { phone: objUser.phone }, { username: objUser.username }],
+                                     $and: [{
+                                         id: { $ne: objUser.id },
+                                         idApp: objUser.idApp,
+                                     }]
+                                 }
+                             }).then(function(objUserExist) {
+                                 if (objUserExist != null) {
+                                     if (objUserExist.phone == objUser.phone) {
+                                         res.json({
+                                             success: false,
+                                             message: "Phone is already Exist..."
+                                         });
+                                     } else if (objUserExist.email == objUser.email) {
+                                         res.json({
+                                             success: false,
+                                             message: "Email is already Exist...",
+                                             data: objUserExist
+                                         });
+                                     } else {
+                                         res.json({
+                                             success: false,
+                                             message: "UserName is already Exist...",
+                                             data: objUserExist
+                                         });
+                                     }
+                                 } else {
+                                     User.update(objUser, {
+                                         where: {
+                                             id: objUser.id
+                                         }
+                                     }).then(function(responseUser) {
+                                         UserInRole.destroy({
+                                             where: {
+                                                 userId: objUser.id
+                                             }
+                                         }).then(function(response) {
+                                             if (objUser.roleId.length > 0) {
+                                                 function uploader(i) {
+                                                     if (i < objUser.roleId.length) {
+                                                         var objUserInRole = {
+                                                             userId: objUser.id,
+                                                             roleId: objUser.roleId[i].id
+                                                         }
+
+                                                         UserInRole.create(objUserInRole).then(function(response) {
+                                                             if (objUser.roleId.length == (i + 1)) {
+                                                                 funAuditLog.CreateAuditLog('SaveUser', UserExist.username, 'Update User');
+
+                                                                 res.json({
+                                                                     success: true,
+                                                                     message: "User updated successfully...",
+                                                                     data: response
+                                                                 });
+                                                             } else {
+                                                                 uploader(i + 1);
+                                                             }
+                                                         })
+
+                                                     }
+                                                 }
+                                                 uploader(0);
+                                             } else {
+                                                 res.json({
+                                                     success: false,
+                                                     message: "Please Select atleast One Role..."
+                                                 });
+                                             }
+                                         })
+                                     })
+                                 }
+                             })
+                         } else {
+                             res.json(NoAccessPermission);
+                         }
+                     });
+                 } else {
+                     //set Parameter
+                     req.query['permission'] = "Added";
+
+                     var obj = {};
+                     obj.headers = req.headers;
+                     obj.query = req.query;
+
+                     funAccessPermission.CheckUserAccessPermission(obj, function(responseAccessPermission) {
+                         var AccessPermission = responseAccessPermission.success;
+                         if (AccessPermission) {
+                             User.findOne({
+                                 where: {
+                                     $or: [{ email: objUser.email }, { phone: objUser.phone }, { username: objUser.username }],
+                                     $and: [{
+                                         idApp: objUser.idApp,
+                                     }]
+                                 },
+                             }).then(function(objUserExist) {
+                                 if (objUserExist != null) {
+                                     if (objUserExist.phone == objUser.phone) {
+                                         res.json({
+                                             success: false,
+                                             message: "Phone is already Exist..."
+                                         });
+                                     } else if (objUserExist.email == objUser.email) {
+                                         res.json({
+                                             success: false,
+                                             message: "Email is already Exist...",
+                                             data: objUserExist
+                                         });
+                                     } else {
+                                         res.json({
+                                             success: false,
+                                             message: "UserName is already Exist...",
+                                             data: objUserExist
+                                         });
+                                     }
+                                 } else {
+                                     var UserPassword = customPassword();
+                                     var EncryptUserpassword = jwt.encode(UserPassword, "bugz");
+
+                                     User.findOrCreate({
+                                         where: {
+                                             username: objUser.username,
+                                             password: EncryptUserpassword
+                                         },
+                                         defaults: objUser
+                                     }).then(function(responseObjUser) {
+                                         //
+                                         UserInRole.destroy({
+                                             where: {
+                                                 userId: responseObjUser[0].id
+                                             }
+                                         }).then(function(response) {
+                                             if (objUser.roleId.length > 0) {
+                                                 function uploader(i) {
+                                                     if (i < objUser.roleId.length) {
+                                                         var objUserInRole = {
+                                                             userId: responseObjUser[0].id,
+                                                             roleId: objUser.roleId[i].id
+                                                         }
+                                                         UserInRole.create(objUserInRole).then(function(response) {
+                                                             if (objUser.roleId.length == (i + 1)) {
+                                                                 funAuditLog.CreateAuditLog('SaveUser', UserExist.username, 'Create User');
+                                                                 res.json({
+                                                                     success: true,
+                                                                     message: "User created successfully...",
+                                                                     data: response
+                                                                 });
+                                                             } else {
+                                                                 uploader(i + 1);
+                                                             }
+                                                         })
+                                                     }
+                                                 }
+                                                 uploader(0);
+                                             } else {
+                                                 res.json({
+                                                     success: false,
+                                                     message: "Please Select atleast One Role..."
+                                                 });
+                                             }
+                                         })
+
+                                         //
+                                     })
                                  }
                              })
                          } else {
