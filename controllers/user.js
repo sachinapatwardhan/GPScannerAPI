@@ -895,7 +895,6 @@
  router.post('/SaveUser', jsonParser, function(req, res) {
      objUser = req.body;
      objHeader = req.headers;
-
      //Set Parameter for User Permission
      req.query['tablename'] = req.headers['x-requested-with'];
 
@@ -910,7 +909,6 @@
          }).then(function(UserExist) {
              if (UserExist != null) {
                  if (objUser.id != 0) {
-
                      //set Parameter
                      req.query['permission'] = "Modified";
 
@@ -921,7 +919,6 @@
                      funAccessPermission.CheckUserAccessPermission(obj, function(responseAccessPermission) {
                          var AccessPermission = responseAccessPermission.success;
                          if (AccessPermission) {
-
                              User.findOne({
                                  where: {
                                      username: objUser.username
@@ -935,7 +932,6 @@
                                          data: objUserExist
                                      });
                                  } else {
-
                                      if (objUser.phone && objUser.phone != '') {
                                          User.findOne({
                                              where: {
