@@ -118,10 +118,36 @@ router.get('/login', jsonParser, function(req, res) {
                             message: "Login Successfully..."
                         });
                     } else {
-                        res.json({
-                            success: false,
-                            message: "Invalid Username or Password..."
-                        });
+                        var obj = new Object();
+                        obj['idApp'] = {
+                            $eq: req.query.appId
+                        };
+                        search['$and'].push(obj);
+
+                        User.findOne({
+                            where: search
+                        }).then(function(response1) {
+                            if (response1 != null) {
+                                res.json({
+                                    success: true,
+                                    token: 'JWT ' + token,
+                                    UserId: response.id,
+                                    UserImage: response.image,
+                                    UserCountry: response.country,
+                                    UserRoles: lstRole,
+                                    RolewiseCountryList: lstRolewiseCountryList,
+                                    appId: response.idApp,
+                                    message: "Login Successfully..."
+                                });
+                            } else {
+                                res.json({
+                                    success: false,
+                                    message: "Invalid Username or Password..."
+                                });
+                            }
+                        })
+
+
                     }
                 }
             })
