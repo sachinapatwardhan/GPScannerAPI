@@ -63,7 +63,6 @@ router.post('/ChangePermission', jsonParser, function(req, res) {
     }
 })
 
-
 router.post('/ChangeAllPermissions', jsonParser, function(req, res) {
     objUserPermission = req.body;
     objHeader = req.headers;
@@ -436,9 +435,19 @@ router.get('/CheckRightsbyPage', function(req, res) {
                                 for (var i = 0; i < strRole.length; i++) {
                                     lstUserRole.push(strRole[i].tblrole.RoleName);
                                 }
-
                                 if (lstUserRole.length > 0) {
-                                    UserPermission.findOne({ where: { idModule: objModule.id, RoleName: { $in: lstUserRole } } }).then(function(objUserPermission) {
+                                    UserPermission.findOne({
+                                        where: {
+                                            idModule: objModule.id,
+                                            RoleName: {
+                                                $in: lstUserRole
+                                            },
+                                            Show: true,
+                                            Added: true,
+                                            Modified: true,
+                                            Deleted: true,
+                                        }
+                                    }).then(function(objUserPermission) {
                                         if (objUserPermission != null) {
                                             res.json({ success: true, message: "Permission to Access...", data: objUserPermission });
                                             // if (permission == "Added") {
@@ -503,4 +512,5 @@ router.get('/CheckRightsbyPage', function(req, res) {
         res.json(InvalidToken);
     }
 });
+
 module.exports = router

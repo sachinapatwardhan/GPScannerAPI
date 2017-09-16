@@ -99,82 +99,84 @@ router.get('/GetTotalCustomerByCountry', function(req, res) {
 
 router.get('/GetGraphData', function(req, res) {
 
-    var CountryName = req.query.countryName;
+    // var CountryName = req.query.countryName;
 
-    var CountryList = req.query.CountryList;
-    if (CountryList == null || CountryList == "" || CountryList == undefined) {
-        CountryList = [];
-    }
-    var IsSuperAdmin = req.query.IsSuperAdmin;
-    if (IsSuperAdmin == null || IsSuperAdmin == "" || IsSuperAdmin == undefined) {
-        IsSuperAdmin = false;
-    }
-    var IsCountryAll = false;
+    // var CountryList = req.query.CountryList;
+    // if (CountryList == null || CountryList == "" || CountryList == undefined) {
+    //     CountryList = [];
+    // }
+    // var IsSuperAdmin = req.query.IsSuperAdmin;
+    // if (IsSuperAdmin == null || IsSuperAdmin == "" || IsSuperAdmin == undefined) {
+    //     IsSuperAdmin = false;
+    // }
+    // var IsCountryAll = false;
 
-    var search1 = {};
-    //var flg = false;
+    // var search1 = {};
+    // //var flg = false;
 
-    var flg = true;
+    // var flg = true;
 
 
-    search1['$and'] = [];
-    var obj = new Object();
-    obj['idApp'] = {
-        $eq: req.query.idApp
-    }
-    search1['$and'].push(obj);
+    // search1['$and'] = [];
+    // var obj = new Object();
+    // obj['idApp'] = {
+    //     $eq: req.query.idApp
+    // }
+    // search1['$and'].push(obj);
 
-    if (IsSuperAdmin == 'false' || IsSuperAdmin == false) {
-        search1['$or'] = [];
+    // if (IsSuperAdmin == 'false' || IsSuperAdmin == false) {
+    //     if (CountryList.length > 0) {
+    //         search1['$or'] = [];
 
-        if (CountryList.length > 0) {
-            function checkcountry(z) {
-                if (z < CountryList.length) {
-                    if (CountryList[z] == "All") {
-                        IsCountryAll = true;
-                        flg = false;
-                        checkcountry(CountryList.length);
-                    } else {
-                        var obj = new Object();
+    //         function checkcountry(z) {
+    //             if (z < CountryList.length) {
+    //                 if (CountryList[z] == "All") {
+    //                     IsCountryAll = true;
+    //                     flg = false;
+    //                     checkcountry(CountryList.length);
+    //                 } else {
+    //                     var obj = new Object();
 
-                        obj['country'] = {
-                            $like: '%' + CountryList[z] + '%'
-                        }
-                        search1['$or'].push(obj);
-                        checkcountry(z + 1);
-                    }
-                } else {
+    //                     obj['country'] = {
+    //                         $like: '%' + CountryList[z] + '%'
+    //                     }
+    //                     search1['$or'].push(obj);
+    //                     checkcountry(z + 1);
+    //                 }
+    //             } else {
 
-                    if (IsCountryAll) {
-                        search1 = {};
-                    }
-                    if (CountryList.length == 3 && CountryList == "All") {
-                        search1 = {};
-                    }
-                }
-            }
-            checkcountry(0);
-        } else {
-            var obj = new Object();
-            obj['country'] = {
-                $like: null
-            }
-            search1['$or'].push(obj);
-        }
-    } else {
-        flg = false;
-    }
+    //                 if (IsCountryAll) {
+    //                     search1 = {};
+    //                 }
+    //                 if (CountryList.length == 3 && CountryList == "All") {
+    //                     search1 = {};
+    //                 }
+    //             }
+    //         }
+    //         checkcountry(0);
+    //     }
+    //     // else {
+    //     //     var obj = new Object();
+    //     //     obj['country'] = {
+    //     //         $like: null
+    //     //     }
+    //     //     search1['$or'].push(obj);
+    //     // }
+    // } else {
+    //     flg = false;
+    // }
+
     User.findAll({
         // where: { country: CountryName },
-        where: search1,
+        where: { idApp: req.query.idApp },
         attributes: [
             [models.sequelize.fn('count', 'id'), 'Total'],
             [models.sequelize.fn('day', models.sequelize.col('createddate')), 'day'],
             [models.sequelize.fn('month', models.sequelize.col('createddate')), 'month'],
             [models.sequelize.fn('year', models.sequelize.col('createddate')), 'year'],
-            'Type', 'country', 'idApp'
+            'idApp'
         ],
-        group: ['Type', 'country', models.sequelize.fn('day', models.sequelize.col('createddate')), models.sequelize.fn('month', models.sequelize.col('createddate')), models.sequelize.fn('year', models.sequelize.col('createddate'))],
+        group: [models.sequelize.fn('day', models.sequelize.col('createddate')), models.sequelize.fn('month', models.sequelize.col('createddate')), models.sequelize.fn('year', models.sequelize.col('createddate'))],
         order: ['year', 'month', 'day']
     }).then(function(resUser) {
         res.json({
@@ -188,88 +190,37 @@ router.get('/GetGraphData', function(req, res) {
 
 router.get('/GetDashboardData', function(req, res) {
 
-    var CountryName = req.query.countryName;
-    var CountryList = req.query.CountryList;
-    if (CountryList == null || CountryList == "" || CountryList == undefined) {
-        CountryList = [];
-    }
-    var IsSuperAdmin = req.query.IsSuperAdmin;
-    if (IsSuperAdmin == null || IsSuperAdmin == "" || IsSuperAdmin == undefined) {
-        IsSuperAdmin = false;
-    }
-    var IsCountryAll = false;
+    // var CountryName = req.query.countryName;
+    // var CountryList = req.query.CountryList;
+    // if (CountryList == null || CountryList == "" || CountryList == undefined) {
+    //     CountryList = [];
+    // }
+    // var IsSuperAdmin = req.query.IsSuperAdmin;
+    // if (IsSuperAdmin == null || IsSuperAdmin == "" || IsSuperAdmin == undefined) {
+    //     IsSuperAdmin = false;
+    // }
+    // var IsCountryAll = false;
+
+    // var currentDate = new Date();
+    // var StartDate = convertdateformat(currentDate, 3);
+    // var EndDate = convertdateformat(currentDate, 3);
+
+    // //var Last7days = currentDate.addDays(-7);
+    // var LastWeek1 = convertdateformat(currentDate.addDays(-7), 3);
+    // var firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+    // var lastDay = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+    // var firstDayMonth = convertdateformat(firstDay, 3);
+    // var lastDayMonth = convertdateformat(lastDay, 3);
+
+    // firstDate = new Date(new Date().getFullYear(), 0, 1);
+    // lastDate = new Date(new Date().getFullYear(), 11, 31);
+
+    // var firstDateYear = convertdateformat(firstDate, 3);
+    // var lastDateYear = convertdateformat(lastDate, 3);
+
+    // var flg = true;
     var lstDashboard = {};
-    var currentDate = new Date();
-    var StartDate = convertdateformat(currentDate, 3);
-    var EndDate = convertdateformat(currentDate, 3);
-
-    //var Last7days = currentDate.addDays(-7);
-    var LastWeek1 = convertdateformat(currentDate.addDays(-7), 3);
-    var firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-    var lastDay = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
-    var firstDayMonth = convertdateformat(firstDay, 3);
-    var lastDayMonth = convertdateformat(lastDay, 3);
-
-    firstDate = new Date(new Date().getFullYear(), 0, 1);
-    lastDate = new Date(new Date().getFullYear(), 11, 31);
-
-    var firstDateYear = convertdateformat(firstDate, 3);
-    var lastDateYear = convertdateformat(lastDate, 3);
-
-    var search = {};
-    var search1 = {};
-
-    var flg = true;
-    search1['$and'] = [];
-    var obj = new Object();
-    obj['idApp'] = {
-        $eq: req.query.idApp,
-    }
-    search1['$and'].push(obj);
-
-    if (IsSuperAdmin == 'false' || IsSuperAdmin == false) {
-        if (CountryList.length > 0) {
-            search1['$or'] = [];
-
-            function checkcountry(z) {
-                if (z < CountryList.length) {
-                    if (CountryList[z] == "All") {
-                        IsCountryAll = true;
-                        flg = false;
-                        checkcountry(CountryList.length);
-                    } else {
-                        var obj = new Object();
-
-                        obj['country'] = {
-                            $like: '%' + CountryList[z] + '%'
-                        }
-                        search1['$or'].push(obj);
-                        checkcountry(z + 1);
-                    }
-                } else {
-                    if (IsCountryAll) {
-                        search1['$or'] = [];
-                    }
-                    if (CountryList.length == 3 && CountryList == "All") {
-                        search1['$or'] = [];
-                    }
-                }
-            }
-            checkcountry(0);
-        }
-        // else {
-        //     var obj = new Object();
-        //     obj['country'] = {
-        //         $like: ''
-        //     }
-        //     search1['$or'].push(obj);
-        // }
-    } else {
-        flg = false;
-    }
-    console.log("=======================================================================")
-    User.count({ where: search1 }).then(function(TotalUser) {
-        console.log("=======================================================================")
+    User.count({ where: { idApp: req.query.idApp } }).then(function(TotalUser) {
         lstDashboard['TotalUser'] = TotalUser;
         res.json(lstDashboard);
     })
@@ -277,60 +228,24 @@ router.get('/GetDashboardData', function(req, res) {
 })
 
 router.get('/GetTotalCustomer', function(req, res) {
+    // var CountryName = req.query.countryName;
+    // var IsSuperAdmin = req.query.IsSuperAdmin;
+    // var CountryList = req.query.CountryList;
+    // if (IsSuperAdmin == null || IsSuperAdmin == undefined || IsSuperAdmin == "") {
+    //     IsSuperAdmin = [];
+    // }
+    // if (CountryList == null || CountryList == undefined || CountryList == "") {
+    //     CountryList = [];
+    // }
+    // var search1 = {};
+    // var IsCountryAll = false;
+
     Vehicle.belongsTo(User, {
         foreignKey: {
             name: 'iduser',
             allowNull: false
         }
     });
-    var CountryName = req.query.countryName;
-    var IsSuperAdmin = req.query.IsSuperAdmin;
-    var CountryList = req.query.CountryList;
-    if (IsSuperAdmin == null || IsSuperAdmin == undefined || IsSuperAdmin == "") {
-        IsSuperAdmin = [];
-    }
-    if (CountryList == null || CountryList == undefined || CountryList == "") {
-        CountryList = [];
-    }
-    var search1 = {};
-    var IsCountryAll = false;
-    if (IsSuperAdmin == 'false' || IsSuperAdmin == false) {
-        search1['$or'] = [];
-
-        if (CountryList.length > 0) {
-            function checkcountry(z) {
-                if (z < CountryList.length) {
-                    if (CountryList[z] == "All") {
-                        IsCountryAll = true;
-                        checkcountry(CountryList.length);
-                    } else {
-                        var obj = new Object();
-
-                        obj['country'] = {
-                            $like: '%' + CountryList[z] + '%'
-                        }
-                        search1['$or'].push(obj);
-                        checkcountry(z + 1);
-                    }
-                } else {
-
-                    if (IsCountryAll) {
-                        search1 = {};
-                    }
-                    if (CountryList.length == 3 && CountryList == "All") {
-                        search1 = {};
-                    }
-                }
-            }
-            checkcountry(0);
-        } else {
-            var obj = new Object();
-            obj['country'] = {
-                $like: null
-            }
-            search1['$or'].push(obj);
-        }
-    }
     Vehicle.findAll({
         attributes: [
             [models.sequelize.literal('COUNT(DISTINCT(iduser))'), 'Count'],
@@ -344,9 +259,7 @@ router.get('/GetTotalCustomer', function(req, res) {
         include: [{
             model: User,
             attributes: ['id', 'idApp', 'username'],
-            where: {
-                idApp: req.query.idApp
-            }
+            where: { idApp: req.query.idApp }
         }]
     }).then(function(response) {
         res.json(response);
@@ -461,75 +374,72 @@ router.get('/GetBikeTotalDevice', function(req, res) {
 })
 
 router.get('/GetGraphCustomer', function(req, res) {
+    // var CountryName = req.query.countryName;
+    // var StartDate = (new Date()).addDays(-30);
+    // var EndDate = new Date();
 
-    var CountryName = req.query.countryName;
-    var StartDate = (new Date()).addDays(-30);
-    var EndDate = new Date();
-
-    var IsSuperAdmin = req.query.IsSuperAdmin;
-    var CountryList = req.query.CountryList;
-    if (IsSuperAdmin == null || IsSuperAdmin == undefined || IsSuperAdmin == "") {
-        IsSuperAdmin = [];
-    }
-    if (CountryList == null || CountryList == undefined || CountryList == "") {
-        CountryList = [];
-    }
-    var search1 = {};
+    // var IsSuperAdmin = req.query.IsSuperAdmin;
+    // var CountryList = req.query.CountryList;
+    // if (IsSuperAdmin == null || IsSuperAdmin == undefined || IsSuperAdmin == "") {
+    //     IsSuperAdmin = [];
+    // }
+    // if (CountryList == null || CountryList == undefined || CountryList == "") {
+    //     CountryList = [];
+    // }
+    // var search1 = {};
     var search = {};
-    var flg = true;
-    var IsCountryAll = false;
-    if (IsSuperAdmin == 'false' || IsSuperAdmin == false) {
-        search1['$or'] = [];
+    // var flg = true;
+    // var IsCountryAll = false;
+    // if (IsSuperAdmin == 'false' || IsSuperAdmin == false) {
+    //     if (CountryList.length > 0) {
+    //         search1['$or'] = [];
 
-        if (CountryList.length > 0) {
-            function checkcountry(z) {
-                if (z < CountryList.length) {
-                    if (CountryList[z] == "All") {
-                        IsCountryAll = true;
-                        flg = false;
-                        checkcountry(CountryList.length);
-                    } else {
-                        var obj = new Object();
+    //         function checkcountry(z) {
+    //             if (z < CountryList.length) {
+    //                 if (CountryList[z] == "All") {
+    //                     IsCountryAll = true;
+    //                     flg = false;
+    //                     checkcountry(CountryList.length);
+    //                 } else {
+    //                     var obj = new Object();
 
-                        obj['country'] = {
-                            $like: '%' + CountryList[z] + '%'
-                        }
-                        search1['$or'].push(obj);
-                        checkcountry(z + 1);
-                    }
-                } else {
+    //                     obj['country'] = {
+    //                         $like: '%' + CountryList[z] + '%'
+    //                     }
+    //                     search1['$or'].push(obj);
+    //                     checkcountry(z + 1);
+    //                 }
+    //             } else {
 
-                    if (IsCountryAll) {
-                        search1 = {};
-                    }
-                    if (CountryList.length == 3 && CountryList == "All") {
-                        search1 = {};
-                    }
-                }
-            }
-            checkcountry(0);
-        } else {
-            var obj = new Object();
-            obj['country'] = {
-                $like: null
-            }
-            search1['$or'].push(obj);
-        }
-    } else {
-        flg = false;
-    }
+    //                 if (IsCountryAll) {
+    //                     search1 = {};
+    //                 }
+    //                 if (CountryList.length == 3 && CountryList == "All") {
+    //                     search1 = {};
+    //                 }
+    //             }
+    //         }
+    //         checkcountry(0);
+    //     }
+    //     // else {
+    //     //     var obj = new Object();
+    //     //     obj['country'] = {
+    //     //         $like: null
+    //     //     }
+    //     //     search1['$or'].push(obj);
+    //     // }
+    // } else {
+    //     flg = false;
+    // }
 
-    search['$and'] = [];
-    var obj = new Object();
-    obj['createddate'] = {
-        $gte: StartDate,
-        $lte: EndDate
-    }
+    // search['$and'] = [];
+    // var obj = new Object();
+    // obj['createddate'] = {
+    //     $gte: StartDate,
+    //     $lte: EndDate
+    // }
 
-    search['$and'].push(obj);
-
-    search1['$and'] = [];
-    search1['$and'].push(search);
+    // search['$and'].push(obj);
 
     User.hasMany(Vehicle, {
         foreignKey: {
@@ -537,68 +447,59 @@ router.get('/GetGraphCustomer', function(req, res) {
             allowNull: false
         }
     });
-    if (IsSuperAdmin == 'false' || IsSuperAdmin == false && flg == true) {
-        User.findAll({
-            include: [{
-                model: Vehicle,
-                where: models.sequelize.and({
-                    'IsDelete': 0,
-                    deviceid: {
-                        $ne: ''
-                    },
-                }),
-            }],
-            // where: {
-            //     $and: {
-            //         createddate: {
-            //             $gte: StartDate,
-            //             $lte: EndDate
-            //         },
-            //     },
-            //     country:CountryName
-            // },
-            where: [{ idApp: req.query.idApp }, search1],
-            attributes: [
-                [models.sequelize.fn('day', models.sequelize.col('tbluserinformation.createddate')), 'day'],
-                [models.sequelize.fn('month', models.sequelize.col('tbluserinformation.createddate')), 'month'],
-                [models.sequelize.fn('year', models.sequelize.col('tbluserinformation.createddate')), 'year']
-            ],
-            // group: ['year', 'month', 'day'],
-            order: ['year', 'month', 'day'],
-        }).then(function(resUser) {
-            res.json({
-                success: true,
-                UserData: resUser
-            });
-        })
-    } else {
-        User.findAll({
-            include: [{
-                model: Vehicle,
-                where: models.sequelize.and({
-                    'IsDelete': 0,
-                    deviceid: {
-                        $ne: ''
-                    },
-                }),
-            }],
+    // if (IsSuperAdmin == 'false' || IsSuperAdmin == false && flg == true) {
+    User.findAll({
+        include: [{
+            model: Vehicle,
             where: {
-                idApp: req.query.idApp
+                IsDelete: 0,
+                deviceid: {
+                    $ne: ''
+                },
             },
-            attributes: [
-                [models.sequelize.fn('day', models.sequelize.col('tbluserinformation.createddate')), 'day'],
-                [models.sequelize.fn('month', models.sequelize.col('tbluserinformation.createddate')), 'month'],
-                [models.sequelize.fn('year', models.sequelize.col('tbluserinformation.createddate')), 'year'], 'country', 'Type'
-            ],
-            // group: ['year', 'month', 'day'],
-            order: ['year', 'month', 'day'],
-        }).then(function(resUser) {
-            res.json({
-                success: true,
-                UserData: resUser
-            });
-        })
-    }
+        }],
+        where: [{ idApp: req.query.idApp }],
+        attributes: [
+            [models.sequelize.fn('day', models.sequelize.col('tbluserinformation.createddate')), 'day'],
+            [models.sequelize.fn('month', models.sequelize.col('tbluserinformation.createddate')), 'month'],
+            [models.sequelize.fn('year', models.sequelize.col('tbluserinformation.createddate')), 'year']
+        ],
+        // group: ['year', 'month', 'day'],
+        order: ['year', 'month', 'day'],
+    }).then(function(resUser) {
+        res.json({
+            success: true,
+            UserData: resUser
+        });
+    });
+    // } else {
+    //     User.findAll({
+    //         include: [{
+    //             model: Vehicle,
+    //             where: models.sequelize.and({
+    //                 'IsDelete': 0,
+    //                 deviceid: {
+    //                     $ne: ''
+    //                 },
+    //             }),
+    //         }],
+    //         where: {
+    //             idApp: req.query.idApp
+    //         },
+    //         attributes: [
+    //             [models.sequelize.fn('day', models.sequelize.col('tbluserinformation.createddate')), 'day'],
+    //             [models.sequelize.fn('month', models.sequelize.col('tbluserinformation.createddate')), 'month'],
+    //             [models.sequelize.fn('year', models.sequelize.col('tbluserinformation.createddate')), 'year'], 'country', 'Type'
+    //         ],
+    //         // group: ['year', 'month', 'day'],
+    //         order: ['year', 'month', 'day'],
+    //     }).then(function(resUser) {
+    //         res.json({
+    //             success: true,
+    //             UserData: resUser
+    //         });
+    //     })
+    // }
 
 })
 
