@@ -26,7 +26,7 @@ router.get('/GetAllAppInfo', function(req, res) {
         search = search + 'CreatedDate like "%' + objSearch + '%") ';
     }
 
-    var qry = "Select * from tblappinfo " +
+    var qry = "Select tblappinfo.* ,CONVERT_TZ(tblappinfo.CreatedDate,'+00:00','" + CurrentOffset + "') as DisplyCreatedDate from tblappinfo " +
         search +
         " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
     // console.log(qry);
@@ -67,10 +67,10 @@ router.post('/SaveAppInfo', jsonParser, function(req, res) {
                 password: decoded.password
             }
         }).then(function(UserExist) {
-            // console.log("$$$$$", UserExist);
+
             if (UserExist != null) {
                 if (objAppInfo.Id == 0) {
-                    objAppInfo.CreatedDate = new Date();
+                    // objAppInfo.CreatedDate = new Date();
                     objAppInfo.CreatedBy = decoded.username;
                     AppInfo.findOrCreate({ where: { AppName: objAppInfo.AppName }, defaults: objAppInfo }).then(function(response) {
                         if (response[0]) {

@@ -7,6 +7,7 @@ var UserInRole = models.tbluserinrole;
 var DrivingData = models.tbldrivingdata;
 var GPSData = models.tblgpsdata;
 var Alarm = models.tblalarm;
+
 //End of Tables
 
 router.get('/GetAllDynamicVehicle', function(req, res) {
@@ -52,7 +53,7 @@ router.get('/GetAllDynamicVehicle', function(req, res) {
 
 
 
-    var qry = "Select vehicle.*, " +
+    var qry = "Select vehicle.*,CONVERT_TZ(vehicle.HandshakDatetime,'+00:00','" + CurrentOffset + "') as DisplyHandshakDate,  " +
         "user.username AS username " +
         "FROM tblvehicle AS vehicle " +
         "LEFT JOIN tbluserinformation AS user ON vehicle.iduser = user.id " + search +
