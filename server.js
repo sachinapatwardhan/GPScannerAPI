@@ -8,7 +8,9 @@ Promise.config({
     longStackTraces: true,
     warnings: true
 })
-
+var x = new Date();
+var offset = -x.getTimezoneOffset();
+global.CurrentOffset = (('00' + offset).slice(-2) >= 0 ? "+" : "-") + ('00' + parseInt(offset / 60).toString()).slice(-2) + ":" + offset % 60;
 global.bodyParser = require('body-parser');
 global.jsonParser = bodyParser.json();
 global.passport = require('passport');
