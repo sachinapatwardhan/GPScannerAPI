@@ -2565,7 +2565,7 @@
                  User.hasMany(Vehicle, {
                      foreignKey: {
                          name: 'iduser',
-                         allowNull: false
+                         allowNull: true,
                      }
                  });
                  User.findAndCountAll({
@@ -2574,18 +2574,18 @@
                      order: Orderby,
                      offset: parseInt(objParam.start),
                      limit: parseInt(objParam.length),
-                     include: [{
-                         model: Vehicle,
-                         attributes: [
-                             [('DISTINCT', models.sequelize.col('iduser')), 'iduser']
-                         ],
-                         where: [searchUser, {
-                             IsDelete: 0,
-                             deviceid: {
-                                 $ne: '',
-                             }
-                         }],
-                     }],
+                     //  include: [{
+                     //      model: Vehicle,
+                     //      attributes: [
+                     //          [('DISTINCT', models.sequelize.col('iduser')), 'iduser']
+                     //      ],
+                     //      where: [searchUser, {
+                     //          IsDelete: 0,
+                     //          deviceid: {
+                     //              $ne: '',
+                     //          }
+                     //      }],
+                     //  }],
                  }).then(function(response) {
                      var response1 = new Object();
                      response1.draw = objParam.draw;
