@@ -1114,7 +1114,6 @@ router.post('/changeUserPassword', jsonParser, function(req, res) {
 });
 
 router.get('/forgotpassword', function(req, res) {
-    console.log(req.query)
     User.findOne({
         where: {
             // email: req.query.email,
