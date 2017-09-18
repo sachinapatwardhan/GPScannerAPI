@@ -213,13 +213,15 @@ router.get('/GetAllGPSDevice', function(req, res) {
     } else {
         search += ' where tblgpsdevice.AppName = "' + objParam.AppName + '"';
     }
-    var query = " select tblgpsdevice.*, tbltelco.Name, tbluserinformation.username, tbluserinformation.idApp,tblsimdetails.SerialNum,tblsimdetails.PhoneNum" +
+    var query = " select tblgpsdevice.id,tblgpsdevice.IsActive,tblgpsdevice.DeviceId,tblgpsdevice.Type,tblgpsdevice.IMEI,tblgpsdevice.Version,tblgpsdevice.SimNum,tblgpsdevice.CreatedBy," +
+        " CONVERT_TZ(tblgpsdevice.CreatedDate,'+00:00','" + CurrentOffset + "') as CreatedDate," +
+        " CONVERT_TZ(tblgpsdevice.ExpiryDate,'+00:00','" + CurrentOffset + "') as ExpiryDate," +
+        " tbltelco.Name, tbluserinformation.username, tbluserinformation.idApp,tblsimdetails.SerialNum,tblsimdetails.PhoneNum" +
         " from tblgpsdevice " +
         " Left Join tbluserinformation on tblgpsdevice.idSalesAgent=tbluserinformation.id " +
         " Left Join tblsimdetails on tblsimdetails.id = tblgpsdevice.idSim" +
         " Left Join tbltelco on tblgpsdevice.TelCoId = tbltelco.id " + search +
         " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
-
 
     var Countqry = "SELECT count(tblgpsdevice.id) as TotalRecord " +
         " from tblgpsdevice " +
@@ -237,6 +239,198 @@ router.get('/GetAllGPSDevice', function(req, res) {
                 response1.data = response;
                 res.json(response1);
             });
+        } else {
+            var response1 = new Object();
+            response1.draw = objParam.draw;
+            response1.recordsTotal = 0;
+            response1.recordsFiltered = 0;
+            response1.data = [];
+            res.json(response1);
+        }
+    })
+
+})
+router.get('/ExportTracker', function(req, res) {
+    var objParam = req.query;
+    var conf = {};
+    conf.name = "Sheet1";
+    conf.cols = [{
+        caption: 'Device Id',
+        type: 'string'
+    }, {
+        caption: 'Type',
+        type: 'string'
+    }, {
+        caption: 'IMEI',
+        type: 'String'
+    }, {
+        caption: 'Version',
+        type: 'string'
+    }, {
+        caption: 'SIM Serial Number',
+        type: 'string'
+    }, {
+        caption: 'SIM phone Number',
+        type: 'string'
+    }, {
+        caption: 'Tel Company',
+        type: 'string'
+    }, {
+        caption: 'Sales Agent',
+        type: 'string'
+    }, {
+        caption: 'Expiry Date',
+        type: 'string'
+    }, {
+        caption: 'Date',
+        type: 'string'
+    }, {
+        caption: 'Is Active',
+        type: 'string'
+    }];
+
+    var objColumns = objParam.columns;
+    var objOrderBy = objParam.order;
+    var objSearch = objParam.search;
+    // var Orderby = objColumns[parseInt(objOrderBy[0].column)].data + ' ' + objOrderBy[0].dir;
+    var Orderby = ' tblgpsdevice.CreatedDate desc'
+    var search = '';
+
+    var TelSearchflg = false;
+    var SalesAgSearchflg = false;
+
+    var IsUserSuperAdmin = false;
+    var IsCountryAll = false;
+    var CountryList = objParam.CountryList;
+    if (CountryList == undefined || CountryList == null || CountryList == "") {
+        CountryList = [];
+    }
+
+    var UserRoles = objParam.UserRoles;
+
+    if (objSearch != null && objSearch != '') {
+        search = 'Where (tblgpsdevice.DeviceId like "%' + objSearch + '%" or ';
+        search = search + 'tblgpsdevice.Type like "%' + objSearch + '%" or ';
+        search = search + 'tblgpsdevice.IMEI like "%' + objSearch + '%" or ';
+        search = search + 'tblgpsdevice.Version like "%' + objSearch + '%" or ';
+        search = search + 'tblgpsdevice.SimNum like "%' + objSearch + '%" or ';
+        search = search + 'tbltelco.Name like "%' + objSearch + '%" or ';
+        search = search + 'tblgpsdevice.ExpiryDate like "%' + objSearch + '%" or ';
+        search = search + 'tblgpsdevice.CreatedDate like "%' + objSearch + '%" or ';
+        search = search + 'tblgpsdevice.CreatedBy like "%' + objSearch + '%" or ';
+        search = search + 'tblsimdetails.SerialNum like "%' + objSearch + '%" or ';
+        search = search + 'tblsimdetails.PhoneNum like "%' + objSearch + '%" or ';
+        search = search + 'tbluserinformation.username like "%' + objSearch + '%") ';
+    };
+    if (objParam.UserId != null && objParam.UserId != undefined && objParam.UserId != '') {
+        if (search != "") {
+            search += " and tblgpsdevice.idSalesAgent =" + objParam.UserId;
+        } else {
+            search += " Where tblgpsdevice.idSalesAgent =" + objParam.UserId;
+        }
+    }
+
+    if (objParam.UserId != null && objParam.UserId != undefined && objParam.UserId != '') {
+        if (search != "") {
+            search += " and tblgpsdevice.idSalesAgent =" + objParam.UserId;
+        } else {
+            search += " Where tblgpsdevice.idSalesAgent =" + objParam.UserId;
+        }
+    }
+
+    if (search != "") {
+        search += ' and tblgpsdevice.AppName = "' + objParam.AppName + '"';
+    } else {
+        search += ' where tblgpsdevice.AppName = "' + objParam.AppName + '"';
+    }
+    var query = " select tblgpsdevice.id,tblgpsdevice.IsActive,tblgpsdevice.DeviceId,tblgpsdevice.Type,tblgpsdevice.IMEI,tblgpsdevice.Version,tblgpsdevice.SimNum,tblgpsdevice.CreatedBy," +
+        " CONVERT_TZ(tblgpsdevice.CreatedDate,'+00:00','" + CurrentOffset + "') as CreatedDate," +
+        " CONVERT_TZ(tblgpsdevice.ExpiryDate,'+00:00','" + CurrentOffset + "') as ExpiryDate," +
+        " tbltelco.Name, tbluserinformation.username, tbluserinformation.idApp,tblsimdetails.SerialNum,tblsimdetails.PhoneNum" +
+        " from tblgpsdevice " +
+        " Left Join tbluserinformation on tblgpsdevice.idSalesAgent=tbluserinformation.id " +
+        " Left Join tblsimdetails on tblsimdetails.id = tblgpsdevice.idSim" +
+        " Left Join tbltelco on tblgpsdevice.TelCoId = tbltelco.id " + search +
+        " order by " + Orderby;
+
+    connection.query(query, function(err, response) {
+        if (response != undefined) {
+            conf.rows = [];
+
+            GetTrackerData(0);
+
+            function GetTrackerData(i) {
+                var DeviceId = '';
+                var Type = '';
+                var IMEI = '';
+                var Version = '';
+                var SimSerialNum = '';
+                var SimPhoneNum = '';
+                var TelCompany = '';
+                var SalesAgent = '';
+                var ExpiryDate = '';
+                var Date = '';
+                var CreatedBy = '';
+                var isActive = 'false';
+                if (i < response.length) {
+                    var row = [];
+                    if (response[i].DeviceId != null && response[i].DeviceId != '' && response[i].DeviceId != undefined) {
+                        DeviceId = response[i].DeviceId;
+                    }
+
+                    if (response[i].Type != null && response[i].Type != '' && response[i].Type != undefined) {
+                        Type = response[i].Type;
+                    }
+                    if (response[i].IMEI != null && response[i].IMEI != '' && response[i].IMEI != undefined) {
+                        IMEI = response[i].IMEI;
+                    }
+
+                    if (response[i].Version != null && response[i].Version != '' && response[i].Version != undefined) {
+                        Version = response[i].Version;
+                    }
+
+                    if (response[i].SerialNum != null && response[i].SerialNum != '' && response[i].SerialNum != undefined) {
+                        SimSerialNum = response[i].SerialNum
+                    }
+
+                    if (response[i].PhoneNum != null && response[i].PhoneNum != '' && response[i].PhoneNum != undefined) {
+                        SimPhoneNum = response[i].PhoneNum;
+                    }
+
+                    if (response[i].Name != null && response[i].Name != '' && response[i].Name != undefined) {
+                        TelCompany = response[i].Name;
+                    }
+
+                    if (response[i].username != null && response[i].username != '' && response[i].username != undefined) {
+                        SalesAgent = response[i].username;
+                    }
+                    if (response[i].ExpiryDate != null && response[i].ExpiryDate != '' && response[i].ExpiryDate != undefined) {
+                        ExpiryDate = moment(response[i].ExpiryDate).format('DD-MM-YYYY');
+                    }
+                    if (response[i].CreatedDate != null && response[i].CreatedDate != '' && response[i].CreatedDate != undefined) {
+                        Date = moment(response[i].CreatedDate).format('DD-MM-YYYY');
+                    }
+                    if (response[i].IsActive != null && response[i].IsActive != '' && response[i].IsActive != undefined) {
+                        if (response[i].IsActive == 1) {
+                            response[i].IsActive = 'true';
+                        }
+                        if (response[i].IsActive == 0) {
+                            response[i].IsActive = 'false';
+                        }
+                        isActive = response[i].IsActive;
+                    }
+                    row.push(DeviceId, Type, IMEI, Version, SimSerialNum, SimPhoneNum, TelCompany, SalesAgent, ExpiryDate, Date, isActive);
+                    conf.rows.push(row);
+                    GetTrackerData(i + 1);
+                } else {
+                    var result = nodeExcel.execute(conf);
+                    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+                    res.setHeader("Content-Disposition", "attachment; filename=GPSTracker.xlsx");
+                    res.end(result, 'binary');
+                }
+
+            }
+
         } else {
             var response1 = new Object();
             response1.draw = objParam.draw;
