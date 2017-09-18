@@ -1116,8 +1116,9 @@ router.post('/changeUserPassword', jsonParser, function(req, res) {
 router.get('/forgotpassword', function(req, res) {
     User.findOne({
         where: {
-            email: req.query.email,
-            idApp: req.query.idApp
+            // email: req.query.email,
+            // idApp: req.query.idApp
+            id: ireq.query.id,
         }
     }).then(function(objUser) {
         if (objUser != null) {
@@ -1136,25 +1137,32 @@ router.get('/forgotpassword', function(req, res) {
                             if (objEmailTemplate != null) {
                                 var Name = objUser.username;
                                 var Password = NewPassword;
-
-                                var body = objEmailTemplate.EmailBody.replace(/{UserName}/g, Name).replace("{Password}", Password);
-                                var mail = {
-                                    from: objSystemEmail.DefaultEmailFrom,
-                                    to: objUser.email, // + ', ' + objSystemEmail.NotificationEmailTo,
-                                    subject: objEmailTemplate.EmailSubject,
-                                    html: body
-                                };
-                                transporter.sendMail(mail, function(error, response) {
-                                    if (error) {
-                                        res.json(error);
-                                    } else {
-                                        funAuditLog.CreateAuditLog('forgotpassword', objUser.username, 'forgot User Password');
-                                        res.json({
-                                            success: true,
-                                            message: "Password sent to your email successfully...",
-                                            data: response
-                                        });
+                                Setting.findOne({
+                                    where: {
+                                        Name: 'NotificationEmailTo'
                                     }
+                                }).then(function(objSetting) {
+                                    var body = objEmailTemplate.EmailBody.replace(/{UserName}/g, Name).replace("{Password}", Password);
+                                    var mail = {
+                                        from: objSystemEmail.DefaultEmailFrom,
+                                        to: objUser.email, // + ', ' + objSystemEmail.NotificationEmailTo,
+                                        cc: objSetting.Value,
+                                        subject: objEmailTemplate.EmailSubject,
+                                        html: body
+                                    };
+                                    console.log(mail);
+                                    transporter.sendMail(mail, function(error, response) {
+                                        if (error) {
+                                            res.json(error);
+                                        } else {
+                                            funAuditLog.CreateAuditLog('forgotpassword', objUser.username, 'forgot User Password');
+                                            res.json({
+                                                success: true,
+                                                message: "Password sent to your email successfully...",
+                                                data: response
+                                            });
+                                        }
+                                    });
                                 });
                             } else {
                                 res.json({
@@ -1334,7 +1342,9 @@ router.get('/forgotpasswordNew', function(req, res) {
 router.get('/forgotpasswordfromOwnerCustomer', function(req, res) {
     User.findOne({
         where: {
-            email: req.query.email
+            // email: req.query.email,
+            // idApp: req.query.idApp
+            id: req.query.id,
         }
     }).then(function(objUser) {
         if (objUser != null) {
@@ -1370,11 +1380,10 @@ router.get('/forgotpasswordfromOwnerCustomer', function(req, res) {
                                         var mail = {
                                             from: objSystemEmail.DefaultEmailFrom,
                                             to: objUser.email,
-                                            bcc: objSetting.Value,
+                                            cc: objSetting.Value,
                                             subject: objEmailTemplate.EmailSubject,
                                             html: body
                                         };
-
                                         transporter.sendMail(mail, function(error, response) {
                                             if (error) {
                                                 res.json(error);
