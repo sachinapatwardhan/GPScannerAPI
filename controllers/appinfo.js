@@ -337,6 +337,15 @@ router.get('/GetAppInfoByName', function(req, res) {
     });
 })
 
+
+router.get('/GetAllInfoList', function(req, res) {
+    AppInfo.findAll().then(function(response) {
+        res.json(response);
+    }).catch(function(error) {
+        res.json(error);
+    });
+})
+
 function GetUserNameFromDate() {
     var d = new Date();
     var curr_date = d.getDate();
