@@ -894,6 +894,7 @@ router.post('/uploadExcelDevice', function(req, res) {
     var CreatedBy;
     var CountryId;
     var CarrierId;
+    var AppName;
 
     //Set Parameter for User Permission
     req.query['tablename'] = req.headers['x-requested-with'];
@@ -908,6 +909,7 @@ router.post('/uploadExcelDevice', function(req, res) {
         CreatedBy = fields.CreatedBy;
         CountryId = fields.CountryId;
         CarrierId = fields.CarrierId;
+        AppName = fields.AppName;
     });
 
     form.on('fileBegin', function(name, file) {
@@ -939,6 +941,7 @@ router.post('/uploadExcelDevice', function(req, res) {
                                 obj.Direction = '323.87';
                                 obj.Type = DeviceType;
                                 obj.IsOldDevice = IsOldDevice;
+                                obj.AppName = AppName;
                                 obj.CreatedBy = CreatedBy;
                                 obj.CountryId = CountryId;
                                 if (CarrierId == 'null') {
