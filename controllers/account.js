@@ -185,14 +185,13 @@ router.get('/loginNew', jsonParser, function(req, res) {
             model: UserInRole,
             include: [{
                 model: Role,
-                where: { RoleName: 'Super Admin', }
+                where: { RoleName: 'Super Admin' }
             }]
         }],
     }).then(function(response) {
         if (response != null) {
             var lstRole = [];
             var lstRolewiseCountryList = [];
-
             for (var i = 0; i < response.tbluserinroles.length; i++) {
                 var objRole = response.tbluserinroles[i].tblrole.RoleName;
                 lstRole.push(objRole);
@@ -2118,7 +2117,7 @@ router.get('/MobileAppLoginScannerApp', jsonParser, function(req, res) {
                 model: Role,
                 attributes: ['id', 'RoleName'],
                 where: {
-                    RoleName: 'Super Admin'
+                    RoleName: ['Super Admin', 'Scanner']
                 }
             }]
         }],

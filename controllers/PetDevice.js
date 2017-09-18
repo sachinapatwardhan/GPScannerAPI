@@ -208,12 +208,15 @@ router.get('/GetAllGPSDevice', function(req, res) {
         }
     }
 
-    if (search != "") {
-        search += ' and tblgpsdevice.AppName = "' + objParam.AppName + '"';
-    } else {
-        search += ' where tblgpsdevice.AppName = "' + objParam.AppName + '"';
+    if (objParam.AppName != null && objParam.AppName != undefined && objParam.AppName != '') {
+        if (search != "") {
+            search += ' and tblgpsdevice.AppName = "' + objParam.AppName + '"';
+        } else {
+            search += ' where tblgpsdevice.AppName = "' + objParam.AppName + '"';
+        }
     }
-    var query = " select tblgpsdevice.id,tblgpsdevice.IsActive,tblgpsdevice.DeviceId,tblgpsdevice.Type,tblgpsdevice.IMEI,tblgpsdevice.Version,tblgpsdevice.SimNum,tblgpsdevice.CreatedBy," +
+
+    var query = " select tblgpsdevice.id, tblgpsdevice.AppName, tblgpsdevice.IsActive,tblgpsdevice.DeviceId,tblgpsdevice.Type,tblgpsdevice.IMEI,tblgpsdevice.Version,tblgpsdevice.SimNum,tblgpsdevice.CreatedBy," +
         " CONVERT_TZ(tblgpsdevice.CreatedDate,'+00:00','" + CurrentOffset + "') as CreatedDate," +
         " CONVERT_TZ(tblgpsdevice.ExpiryDate,'+00:00','" + CurrentOffset + "') as ExpiryDate," +
         " tbltelco.Name, tbluserinformation.username, tbluserinformation.idApp,tblsimdetails.SerialNum,tblsimdetails.PhoneNum" +
@@ -240,6 +243,7 @@ router.get('/GetAllGPSDevice', function(req, res) {
                 res.json(response1);
             });
         } else {
+            console.log(err);
             var response1 = new Object();
             response1.draw = objParam.draw;
             response1.recordsTotal = 0;
@@ -322,13 +326,6 @@ router.get('/ExportTracker', function(req, res) {
         search = search + 'tblsimdetails.PhoneNum like "%' + objSearch + '%" or ';
         search = search + 'tbluserinformation.username like "%' + objSearch + '%") ';
     };
-    if (objParam.UserId != null && objParam.UserId != undefined && objParam.UserId != '') {
-        if (search != "") {
-            search += " and tblgpsdevice.idSalesAgent =" + objParam.UserId;
-        } else {
-            search += " Where tblgpsdevice.idSalesAgent =" + objParam.UserId;
-        }
-    }
 
     if (objParam.UserId != null && objParam.UserId != undefined && objParam.UserId != '') {
         if (search != "") {
@@ -338,10 +335,12 @@ router.get('/ExportTracker', function(req, res) {
         }
     }
 
-    if (search != "") {
-        search += ' and tblgpsdevice.AppName = "' + objParam.AppName + '"';
-    } else {
-        search += ' where tblgpsdevice.AppName = "' + objParam.AppName + '"';
+    if (objParam.AppName != null && objParam.AppName != undefined && objParam.AppName != '') {
+        if (search != "") {
+            search += ' and tblgpsdevice.AppName = "' + objParam.AppName + '"';
+        } else {
+            search += ' where tblgpsdevice.AppName = "' + objParam.AppName + '"';
+        }
     }
     var query = " select tblgpsdevice.id,tblgpsdevice.IsActive,tblgpsdevice.DeviceId,tblgpsdevice.Type,tblgpsdevice.IMEI,tblgpsdevice.Version,tblgpsdevice.SimNum,tblgpsdevice.CreatedBy," +
         " CONVERT_TZ(tblgpsdevice.CreatedDate,'+00:00','" + CurrentOffset + "') as CreatedDate," +
@@ -1115,31 +1114,83 @@ router.get('/GetSIMDetailBySerialNum', function(req, res) {
         if (response != null) {
             GPSDevice.findOne({ where: { idSim: response.id } }).then(function(response1) {
                 if (response1 != null) {
-                    res.json({ success: false, message: 'SIM Is Already assigned.', data: response1 });
+                    res.json({ success: false, message: 'SIM Is Already assigned.', data: 1 });
                 } else {
                     res.json({ success: true, message: 'Success', data: response });
                 }
             })
         } else {
-            res.json({ success: false, message: 'Invalid Serial Number.', data: response });
+            res.json({ success: false, message: 'Invalid Serial Number.', data: 0 });
         }
     }).catch(function(err) {
         res.json({ success: false, data: err });
     })
 })
 
-router.get('/SaveSimServiceToIMEI', function(req, res) {
+router.post('/SaveSimServiceToIMEI', jsonParser, function(req, res) {
+    var objIMEI = req.body;
+    objHeader = req.headers;
+    var token = getToken(objHeader);
+    if (token) {
+        var decoded = jwt.decode(token, TokenKey);
 
-    var query = "UPDATE tblgpsdevice SET idSim = " + req.query.idSim + " where IMEI = '" + req.query.IMEI + "' ";
-    console.log(query);
-
-    connection.query(query, function(err, response) {
-        if (response != undefined) {
-            res.json({ success: true, message: 'SIM Serial Num Attached SuccessFully', data: response });
+        objIMEI.CreatedDate = new Date();
+        objIMEI.CreatedBy = decoded.username;
+        if (objIMEI.IsNewSIM) {
+            SimService.create(objIMEI).then(function(response) {
+                if (response) {
+                    objIMEI.idSim = response.id;
+                    if (objIMEI.IsNewIMEI) {
+                        GPSDevice.create(objIMEI).then(function(resIMEI) {
+                            if (resIMEI) {
+                                res.json({ success: true, message: "SIM Serial Num Attached SuccessFully", data: resIMEI });
+                            } else {
+                                res.json({ success: false, message: "Something Went wrong Please Try Again Later..", data: respose });
+                            }
+                        })
+                    } else {
+                        GPSDevice.findOne({ where: { IMEI: objIMEI.IMEI } }).then(function(objIMEIExist) {
+                            if (objIMEIExist != null) {
+                                objIMEIExist.updateAttributes({ idSim: objIMEI.idSim, }).then(function(response) {
+                                    if (response) {
+                                        res.json({ success: true, message: "SIM Serial Num Attached SuccessFully..", data: response });
+                                    } else {
+                                        res.json({ success: false, message: "Something Went wrong Please Try Again Later..", data: resIMEI });
+                                    }
+                                })
+                            }
+                        })
+                    }
+                } else {
+                    res.json({ success: false, message: "Something Went wrong Please Try Again Later..", data: respose });
+                }
+            })
         } else {
-            res.json({ success: false, message: 'Please Try Again Later', data: err });
+            if (objIMEI.IsNewIMEI) {
+                GPSDevice.create(objIMEI).then(function(resIMEI) {
+                    if (resIMEI) {
+                        res.json({ success: true, message: "SIM Serial Num Attached SuccessFully", data: resIMEI });
+                    } else {
+                        res.json({ success: false, message: "Something Went wrong Please Try Again Later..", data: respose });
+                    }
+                })
+            } else {
+                GPSDevice.findOne({ where: { IMEI: objIMEI.IMEI } }).then(function(objIMEIExist) {
+                    if (objIMEIExist != null) {
+                        objIMEIExist.updateAttributes({ idSim: objIMEI.idSim, }).then(function(response) {
+                            if (response) {
+                                res.json({ success: true, message: "SIM Serial Num Attached SuccessFully..", data: response });
+                            } else {
+                                res.json({ success: false, message: "Something Went wrong Please Try Again Later..", data: resIMEI });
+                            }
+                        })
+                    }
+                });
+            }
         }
-    })
+    } else {
+        res.json(InvalidToken);
+    }
 })
 
 

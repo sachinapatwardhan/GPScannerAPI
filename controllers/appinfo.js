@@ -54,6 +54,14 @@ router.get('/GetAllAppInfo', function(req, res) {
     })
 });
 
+router.get('/GetAllInfoList', function(req, res) {
+    AppInfo.findAll({
+        attributes: ['id', 'AppName']
+    }).then(function(response) {
+        res.json(response);
+    })
+})
+
 router.post('/SaveAppInfo', jsonParser, function(req, res) {
     // console.log(req.body)
     objAppInfo = req.body;
