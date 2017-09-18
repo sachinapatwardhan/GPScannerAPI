@@ -895,6 +895,7 @@ router.post('/uploadExcelDevice', function(req, res) {
     var CountryId;
     var CarrierId;
     var AppName;
+    var Importerror = [];
 
     //Set Parameter for User Permission
     req.query['tablename'] = req.headers['x-requested-with'];
@@ -926,14 +927,14 @@ router.post('/uploadExcelDevice', function(req, res) {
             var worksheet = workbook.Sheets[first_sheet_name];
             if (worksheet != null && worksheet != undefined && worksheet != '') {
                 var Firstcolumn = worksheet.A1.v;
-                if (Firstcolumn == "DeviceId") {
+                if (Firstcolumn == "IMEI") {
                     lst = XLSX.utils.sheet_to_json(worksheet);
                     if (lst.length > 0) {
                         function addDevice(i) {
                             if (i < lst.length) {
                                 var obj = new Object();
-                                obj.DeviceId = lst[i].DeviceId.trim();
-                                obj.IMEI = lst[i].DeviceId.trim();
+                                obj.DeviceId = lst[i].IMEI.trim();
+                                obj.IMEI = lst[i].IMEI.trim();
                                 obj.CreatedDate = new Date();
                                 obj.Latitude = '22.54967667';
                                 obj.Longitude = '114.0822583';
@@ -941,27 +942,100 @@ router.post('/uploadExcelDevice', function(req, res) {
                                 obj.Direction = '323.87';
                                 obj.Type = DeviceType;
                                 obj.IsOldDevice = IsOldDevice;
-                                obj.AppName = AppName;
                                 obj.CreatedBy = CreatedBy;
                                 obj.CountryId = CountryId;
+                                obj.Version = lst[i].Version;
+                                obj.AppName = AppName;
                                 if (CarrierId == 'null') {
                                     obj.CarrierId = null;
                                 } else {
                                     obj.CarrierId = CarrierId;
                                 }
+                                if (lst[i].SIMSerialnumber != null && lst[i].SIMSerialnumber != undefined && lst[i].SIMSerialnumber != '') {
+                                    SimService.findOne({
+                                        where: {
+                                            SerialNum: lst[i].SIMSerialnumber.trim()
+                                        }
+                                    }).then(function(ExistSim) {
+                                        if (ExistSim != null) {
+                                            obj.idSim = ExistSim.id;
+                                            GPSDevice.findOrCreate({
+                                                where: { DeviceId: obj.DeviceId },
+                                                defaults: obj
+                                            }).then(function(response) {
+                                                if ((response[1])) {
+                                                    addDevice(i + 1);
+                                                } else {
+                                                    Importerror.push(lst[i].SerialNumber);
+                                                    addDevice(i + 1);
+                                                }
+                                            })
+                                        } else {
+                                            var Simobj = new Object();
+                                            Simobj.SerialNum = lst[i].SIMSerialnumber.trim();
+                                            Simobj.PhoneNum = lst[i].SIMPhoneno.trim();
+                                            Simobj.CreatedDate = new Date();
+                                            SimService.findOrCreate({
+                                                where: {
+                                                    SerialNum: lst[i].SIMSerialnumber
+                                                },
+                                                defaults: Simobj
+                                            }).then(function(resSerial) {
+                                                if ((resSerial[1])) {
+                                                    obj.idSim = resSerial[0].dataValues.id;
+                                                    GPSDevice.findOrCreate({
+                                                        where: { DeviceId: obj.DeviceId },
+                                                        defaults: obj
+                                                    }).then(function(response) {
+                                                        if ((response[1])) {
+                                                            addDevice(i + 1);
+                                                        } else {
+                                                            Importerror.push(lst[i].SerialNumber);
+                                                            addDevice(i + 1);
+                                                        }
+                                                    })
+                                                } else {
+                                                    GPSDevice.findOrCreate({
+                                                        where: { DeviceId: obj.DeviceId },
+                                                        defaults: obj
+                                                    }).then(function(response) {
+                                                        if ((response[1])) {
+                                                            addDevice(i + 1);
+                                                        } else {
+                                                            Importerror.push(lst[i].SerialNumber);
+                                                            addDevice(i + 1);
+                                                        }
+                                                    })
+                                                }
+                                            })
+                                        }
 
-                                GPSDevice.findOrCreate({
-                                    where: { DeviceId: obj.DeviceId },
-                                    defaults: obj
-                                }).then(function(response) {
-                                    addDevice(i + 1);
-                                })
-
+                                    })
+                                } else {
+                                    GPSDevice.findOrCreate({
+                                        where: { DeviceId: obj.DeviceId },
+                                        defaults: obj
+                                    }).then(function(response) {
+                                        if ((response[1])) {
+                                            addDevice(i + 1);
+                                        } else {
+                                            Importerror.push(lst[i].SerialNumber);
+                                            addDevice(i + 1);
+                                        }
+                                    })
+                                }
                             } else {
-                                res.json({
-                                    success: true,
-                                    message: "Excel File uploaded successfully..",
-                                });
+                                if (Importerror.length == 0) {
+                                    res.json({
+                                        success: true,
+                                        message: "Excel File uploaded successfully..",
+                                    });
+                                } else {
+                                    res.json({
+                                        success: true,
+                                        message: "Excel File uploaded successfully..Failed To Import : " + Importerror.length,
+                                    });
+                                }
                             }
                         }
                         addDevice(0)
@@ -998,7 +1072,16 @@ router.get('/DownloadTemplate', function(req, res) {
     var conf = {};
     conf.name = "Sheet1";
     conf.cols = [{
-        caption: 'DeviceId',
+        caption: 'IMEI',
+        type: 'string'
+    }, {
+        caption: 'SIMSerialnumber',
+        type: 'string'
+    }, {
+        caption: 'SIMPhoneno',
+        type: 'string'
+    }, {
+        caption: 'Version',
         type: 'string'
     }];
 
@@ -1058,5 +1141,6 @@ router.get('/SaveSimServiceToIMEI', function(req, res) {
         }
     })
 })
+
 
 module.exports = router
