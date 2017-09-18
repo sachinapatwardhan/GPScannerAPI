@@ -1114,11 +1114,12 @@ router.post('/changeUserPassword', jsonParser, function(req, res) {
 });
 
 router.get('/forgotpassword', function(req, res) {
+    console.log(req.query)
     User.findOne({
         where: {
             // email: req.query.email,
             // idApp: req.query.idApp
-            id: ireq.query.id,
+            id: req.query.id,
         }
     }).then(function(objUser) {
         if (objUser != null) {
@@ -1150,7 +1151,6 @@ router.get('/forgotpassword', function(req, res) {
                                         subject: objEmailTemplate.EmailSubject,
                                         html: body
                                     };
-                                    console.log(mail);
                                     transporter.sendMail(mail, function(error, response) {
                                         if (error) {
                                             res.json(error);
