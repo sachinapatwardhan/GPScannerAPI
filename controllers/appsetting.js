@@ -145,4 +145,12 @@ router.get('/DeleteAppVersion', function(req, res) {
     }
 
 });
+router.get('/GetAllAppInfo', function(req, res) {
+    AppInfo.findAll().then(function(response) {
+        res.json(response);
+    }).catch(function(error) {
+        res.json(error);
+    })
+});
+
 module.exports = router
