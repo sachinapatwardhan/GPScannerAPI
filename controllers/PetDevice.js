@@ -274,7 +274,7 @@ router.get('/ExportTracker', function(req, res) {
         caption: 'SIM Serial Number',
         type: 'string'
     }, {
-        caption: 'SIM phone Number',
+        caption: 'SIM Phone Number',
         type: 'string'
     }, {
         caption: 'Tel Company',
