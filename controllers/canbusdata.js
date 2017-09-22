@@ -244,7 +244,7 @@ router.get('/ExportAllCanbusData', function(req, res) {
 
                 if (response[i].Datetime != null && response[i].Datetime != '' && response[i].Datetime != undefined) {
                     // Datetime = convertdateformat(response[i].Datetime, 2);
-                    Datetime = momentz(new Date(response[i].Datetime * 1000)).format('DD/MM/YYYY hh:mm a');
+                    Datetime = momentz.utc(new Date(response[i].Datetime * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm a');
                 }
 
                 if (response[i].BatteryVoltage != null && response[i].BatteryVoltage != '' && response[i].BatteryVoltage != undefined) {
@@ -532,7 +532,8 @@ router.get('/ExportAllDrivingData', function(req, res) {
                 }
 
                 if (response[i].Datetime != null && response[i].Datetime != '' && response[i].Datetime != undefined) {
-                    Datetime = momentz(new Date(response[i].Datetime * 1000)).format('DD/MM/YYYY hh:mm a');
+                    Datetime = momentz.utc(new Date(response[i].Datetime * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm a');
+                    //momentz(new Date(response[i].Datetime * 1000)).format('DD/MM/YYYY hh:mm a');
                     // convertdateformat(response[i].Datetime, 2);
                 }
 
