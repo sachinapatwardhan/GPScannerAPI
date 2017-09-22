@@ -94,58 +94,58 @@ router.get('/ExportAllCanbusData', function(req, res) {
     var conf = {};
     conf.name = "Sheet1";
     conf.cols = [{
-        caption: 'DeviceId',
+        caption: 'Device Id',
         type: 'string'
     }, {
-        caption: 'Datetime',
+        caption: 'Date Time',
         type: 'string'
     }, {
-        caption: 'BatteryVoltage',
+        caption: 'Battery Voltage',
         type: 'string'
     }, {
-        caption: 'EngineSpeed',
+        caption: 'Engine Speed',
         type: 'string'
     }, {
-        caption: 'RunningSpeed',
+        caption: 'Running Speed',
         type: 'string'
     }, {
-        caption: 'CoolantTemperature',
+        caption: 'Coolant Temperature',
         type: 'string'
     }, {
-        caption: 'ThrottleOpeningWidth',
+        caption: 'Throttle Opening Width',
         type: 'string'
     }, {
-        caption: 'EngineLoad',
+        caption: 'Engine Load',
         type: 'string'
     }, {
-        caption: 'InstantaneousFuelConsumption',
+        caption: 'Instantaneous Fuel Consumption',
         type: 'string'
     }, {
-        caption: 'AverageFuelConsumption',
+        caption: 'Average Fuel Consumption',
         type: 'string'
     }, {
-        caption: 'DrivingRange',
+        caption: 'Driving Range',
         type: 'string'
     }, {
-        caption: 'TotalMileage',
+        caption: 'Total Mileage',
         type: 'string'
     }, {
-        caption: 'SingleFuelConsumptionVolume',
+        caption: 'Single Fuel Consumption Volume',
         type: 'string'
     }, {
-        caption: 'TotalFuelConsumptionVolume',
+        caption: 'Total Fuel Consumption Volume',
         type: 'string'
     }, {
-        caption: 'CurrentErrorCodeNumbers',
+        caption: 'Current Error Code Numbers',
         type: 'string'
     }, {
-        caption: 'CreatedDate',
+        caption: 'Created Date',
         type: 'string'
     }, {
-        caption: 'HarshAccelerationNo',
+        caption: 'Harsh Acceleration No',
         type: 'string'
     }, {
-        caption: 'HarshBrakeNo',
+        caption: 'Harsh Brake No',
         type: 'string'
     }];
 
@@ -233,84 +233,80 @@ router.get('/ExportAllCanbusData', function(req, res) {
             var HarshAccelerationNo = '0';
             var HarshBrakeNo = '0';
             var CreatedDate = '';
-            GetCanbusData(0);
+            // GetCanbusData(0);
 
-            function GetCanbusData(i) {
-                if (i < response.length) {
-                    var row = [];
-                    if (response[i].DeviceId != null && response[i].DeviceId != '' && response[i].DeviceId != undefined) {
-                        DeviceId = response[i].DeviceId;
-                    }
-
-                    if (response[i].Datetime != null && response[i].Datetime != '' && response[i].Datetime != undefined) {
-                        Datetime = convertdateformat(response[i].Datetime, 2);
-                    }
-
-                    if (response[i].BatteryVoltage != null && response[i].BatteryVoltage != '' && response[i].BatteryVoltage != undefined) {
-                        BatteryVoltage = response[i].BatteryVoltage.toString()
-                    }
-
-                    if (response[i].EngineSpeed != null && response[i].EngineSpeed != '' && response[i].EngineSpeed != undefined) {
-                        EngineSpeed = response[i].EngineSpeed.toString();
-                    }
-
-                    if (response[i].RunningSpeed != null && response[i].RunningSpeed != '' && response[i].RunningSpeed != undefined) {
-                        RunningSpeed = response[i].RunningSpeed.toString();
-                    }
-
-                    if (response[i].CoolantTemperature != null && response[i].CoolantTemperature != '' && response[i].CoolantTemperature != undefined) {
-                        CoolantTemperature = response[i].CoolantTemperature.toString();
-                    }
-
-                    if (response[i].ThrottleOpeningWidth != null && response[i].ThrottleOpeningWidth != '' && response[i].ThrottleOpeningWidth != undefined) {
-                        ThrottleOpeningWidth = response[i].ThrottleOpeningWidth.toString();
-                    }
-
-                    if (response[i].EngineLoad != null && response[i].EngineLoad != '' && response[i].EngineLoad != undefined) {
-                        EngineLoad = response[i].EngineLoad.toString();
-                    }
-
-                    if (response[i].InstantaneousFuelConsumption != null && response[i].InstantaneousFuelConsumption != '' && response[i].InstantaneousFuelConsumption != undefined) {
-                        InstantaneousFuelConsumption = response[i].InstantaneousFuelConsumption.toString();
-                    }
-                    if (response[i].AverageFuelConsumption != null && response[i].AverageFuelConsumption != '' && response[i].AverageFuelConsumption != undefined) {
-                        AverageFuelConsumption = response[i].AverageFuelConsumption.toString();
-                    }
-                    if (response[i].DrivingRange != null && response[i].DrivingRange != '' && response[i].DrivingRange != undefined) {
-                        DrivingRange = response[i].DrivingRange.toString();
-                    }
-                    if (response[i].TotalMileage != null && response[i].TotalMileage != '' && response[i].TotalMileage != undefined) {
-                        TotalMileage = response[i].TotalMileage.toString();
-                    }
-                    if (response[i].SingleFuelConsumptionVolume != null && response[i].SingleFuelConsumptionVolume != '' && response[i].SingleFuelConsumptionVolume != undefined) {
-                        SingleFuelConsumptionVolume = response[i].SingleFuelConsumptionVolume.toString();
-                    }
-                    if (response[i].TotalFuelConsumptionVolume != null && response[i].TotalFuelConsumptionVolume != '' && response[i].TotalFuelConsumptionVolume != undefined) {
-                        TotalFuelConsumptionVolume = response[i].TotalFuelConsumptionVolume.toString();
-                    }
-                    if (response[i].CurrentErrorCodeNumbers != null && response[i].CurrentErrorCodeNumbers != '' && response[i].CurrentErrorCodeNumbers != undefined) {
-                        CurrentErrorCodeNumbers = response[i].CurrentErrorCodeNumbers.toString();
-                    }
-                    if (response[i].CreatedDate != null && response[i].CreatedDate != '' && response[i].CreatedDate != undefined) {
-                        CreatedDate = convertdateformat(response[i].CreatedDate, 2);
-                    }
-                    if (response[i].HarshAccelerationNo != null && response[i].HarshAccelerationNo != '' && response[i].HarshAccelerationNo != undefined) {
-                        HarshAccelerationNo = response[i].HarshAccelerationNo.toString();
-                    }
-                    if (response[i].HarshBrakeNo != null && response[i].HarshBrakeNo != '' && response[i].HarshBrakeNo != undefined) {
-                        HarshBrakeNo = response[i].HarshBrakeNo.toString();
-                    }
-                    row.push(DeviceId, Datetime, BatteryVoltage, EngineSpeed, RunningSpeed, CoolantTemperature, ThrottleOpeningWidth, EngineLoad, InstantaneousFuelConsumption, AverageFuelConsumption, DrivingRange, TotalMileage, SingleFuelConsumptionVolume, TotalFuelConsumptionVolume, CurrentErrorCodeNumbers, CreatedDate, HarshAccelerationNo, HarshBrakeNo);
-                    conf.rows.push(row);
-                    GetCanbusData(i + 1);
-                } else {
-                    var result = nodeExcel.execute(conf);
-                    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-                    res.setHeader("Content-Disposition", "attachment; filename=CanbusData.xlsx");
-                    res.end(result, 'binary');
+            for (var i = 0; i < response.length; i++) {
+                var row = [];
+                if (response[i].DeviceId != null && response[i].DeviceId != '' && response[i].DeviceId != undefined) {
+                    DeviceId = response[i].DeviceId;
                 }
 
+                if (response[i].Datetime != null && response[i].Datetime != '' && response[i].Datetime != undefined) {
+                    Datetime = convertdateformat(response[i].Datetime, 2);
+                }
+
+                if (response[i].BatteryVoltage != null && response[i].BatteryVoltage != '' && response[i].BatteryVoltage != undefined) {
+                    BatteryVoltage = response[i].BatteryVoltage.toString()
+                }
+
+                if (response[i].EngineSpeed != null && response[i].EngineSpeed != '' && response[i].EngineSpeed != undefined) {
+                    EngineSpeed = response[i].EngineSpeed.toString();
+                }
+
+                if (response[i].RunningSpeed != null && response[i].RunningSpeed != '' && response[i].RunningSpeed != undefined) {
+                    RunningSpeed = response[i].RunningSpeed.toString();
+                }
+
+                if (response[i].CoolantTemperature != null && response[i].CoolantTemperature != '' && response[i].CoolantTemperature != undefined) {
+                    CoolantTemperature = response[i].CoolantTemperature.toString();
+                }
+
+                if (response[i].ThrottleOpeningWidth != null && response[i].ThrottleOpeningWidth != '' && response[i].ThrottleOpeningWidth != undefined) {
+                    ThrottleOpeningWidth = response[i].ThrottleOpeningWidth.toString();
+                }
+
+                if (response[i].EngineLoad != null && response[i].EngineLoad != '' && response[i].EngineLoad != undefined) {
+                    EngineLoad = response[i].EngineLoad.toString();
+                }
+
+                if (response[i].InstantaneousFuelConsumption != null && response[i].InstantaneousFuelConsumption != '' && response[i].InstantaneousFuelConsumption != undefined) {
+                    InstantaneousFuelConsumption = response[i].InstantaneousFuelConsumption.toString();
+                }
+                if (response[i].AverageFuelConsumption != null && response[i].AverageFuelConsumption != '' && response[i].AverageFuelConsumption != undefined) {
+                    AverageFuelConsumption = response[i].AverageFuelConsumption.toString();
+                }
+                if (response[i].DrivingRange != null && response[i].DrivingRange != '' && response[i].DrivingRange != undefined) {
+                    DrivingRange = response[i].DrivingRange.toString();
+                }
+                if (response[i].TotalMileage != null && response[i].TotalMileage != '' && response[i].TotalMileage != undefined) {
+                    TotalMileage = response[i].TotalMileage.toString();
+                }
+                if (response[i].SingleFuelConsumptionVolume != null && response[i].SingleFuelConsumptionVolume != '' && response[i].SingleFuelConsumptionVolume != undefined) {
+                    SingleFuelConsumptionVolume = response[i].SingleFuelConsumptionVolume.toString();
+                }
+                if (response[i].TotalFuelConsumptionVolume != null && response[i].TotalFuelConsumptionVolume != '' && response[i].TotalFuelConsumptionVolume != undefined) {
+                    TotalFuelConsumptionVolume = response[i].TotalFuelConsumptionVolume.toString();
+                }
+                if (response[i].CurrentErrorCodeNumbers != null && response[i].CurrentErrorCodeNumbers != '' && response[i].CurrentErrorCodeNumbers != undefined) {
+                    CurrentErrorCodeNumbers = response[i].CurrentErrorCodeNumbers.toString();
+                }
+                if (response[i].CreatedDate != null && response[i].CreatedDate != '' && response[i].CreatedDate != undefined) {
+                    CreatedDate = convertdateformat(response[i].CreatedDate, 2);
+                }
+                if (response[i].HarshAccelerationNo != null && response[i].HarshAccelerationNo != '' && response[i].HarshAccelerationNo != undefined) {
+                    HarshAccelerationNo = response[i].HarshAccelerationNo.toString();
+                }
+                if (response[i].HarshBrakeNo != null && response[i].HarshBrakeNo != '' && response[i].HarshBrakeNo != undefined) {
+                    HarshBrakeNo = response[i].HarshBrakeNo.toString();
+                }
+                row.push(DeviceId, Datetime, BatteryVoltage, EngineSpeed, RunningSpeed, CoolantTemperature, ThrottleOpeningWidth, EngineLoad, InstantaneousFuelConsumption, AverageFuelConsumption, DrivingRange, TotalMileage, SingleFuelConsumptionVolume, TotalFuelConsumptionVolume, CurrentErrorCodeNumbers, CreatedDate, HarshAccelerationNo, HarshBrakeNo);
+                conf.rows.push(row);
+                // GetCanbusData(i + 1);
             }
+            var result = nodeExcel.execute(conf);
+            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            res.setHeader("Content-Disposition", "attachment; filename=CanbusData.xlsx");
+            res.end(result, 'binary');
         } else {
             conf.rows = [];
             var result = nodeExcel.execute(conf);
