@@ -3,6 +3,7 @@ var User = models.tbluserinformation;
 var GpsDevice = models.tblgpsdevice;
 var CanBus = models.tblcanbusdata;
 var DrivingBehavior = models.tbldrivingdata;
+var momentz = require('moment-timezone');
 
 router.get('/GetAllCanbusData', function(req, res) {
     var objParam = req.query;
@@ -242,8 +243,8 @@ router.get('/ExportAllCanbusData', function(req, res) {
                 }
 
                 if (response[i].Datetime != null && response[i].Datetime != '' && response[i].Datetime != undefined) {
-
-                    Datetime = convertdateformat(response[i].Datetime, 2);
+                    // Datetime = convertdateformat(response[i].Datetime, 2);
+                    Datetime = momentz(new Date(response[i].Datetime * 1000)).format('DD/MM/YYYY hh:mm a');
                 }
 
                 if (response[i].BatteryVoltage != null && response[i].BatteryVoltage != '' && response[i].BatteryVoltage != undefined) {
@@ -293,6 +294,7 @@ router.get('/ExportAllCanbusData', function(req, res) {
                 }
                 if (response[i].CreatedDate != null && response[i].CreatedDate != '' && response[i].CreatedDate != undefined) {
                     CreatedDate = convertdateformat(response[i].CreatedDate, 2);
+                    //momentz(new Date(response[i].Datetime)).format('DD/MM/YYYY hh:mm a');
                 }
                 if (response[i].HarshAccelerationNo != null && response[i].HarshAccelerationNo != '' && response[i].HarshAccelerationNo != undefined) {
                     HarshAccelerationNo = response[i].HarshAccelerationNo.toString();
@@ -517,7 +519,7 @@ router.get('/ExportAllDrivingData', function(req, res) {
             var HistoryHighestSpeed = '';
             var HistoryHighestRotation = '';
             var TotalHarshAcceleration = '';
-            var TotalHarshBrake = '';
+            var TotalHarshBrake = '0';
             var CreatedDate = '';
             // GetDriverBehaviorData(0);
 
@@ -530,7 +532,8 @@ router.get('/ExportAllDrivingData', function(req, res) {
                 }
 
                 if (response[i].Datetime != null && response[i].Datetime != '' && response[i].Datetime != undefined) {
-                    Datetime = convertdateformat(response[i].Datetime, 2);
+                    Datetime = momentz(new Date(response[i].Datetime * 1000)).format('DD/MM/YYYY hh:mm a');
+                    // convertdateformat(response[i].Datetime, 2);
                 }
 
                 if (response[i].TotalIgnition != null && response[i].TotalIgnition != '' && response[i].TotalIgnition != undefined) {
@@ -598,12 +601,13 @@ function convertdateformat(date1, flg) {
     var firstdayHours = date.getHours();
     var firstdayMinutes = date.getMinutes();
     var firstdaySeconds = date.getSeconds();
+    var amPM = (firstdayHours > 11) ? "pm" : "am";
     if (flg == 1) {
         return ("0000" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("00" + firstdayDay.toString()).slice(-2) + " " + "23:59:59";
     } else if (flg == "Excel Export") {
         return ("0000" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("00" + firstdayDay.toString()).slice(-2) + " " + ("00" + firstdayHours.toString()).slice(-2) + ':' + ("00" + firstdayMinutes.toString()).slice(-2) + ':' + ("00" + firstdaySeconds.toString()).slice(-2);
     } else if (flg == 2) {
-        return ("00" + firstdayDay.toString()).slice(-2) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("0000" + firstdayYear.toString()).slice(-4);
+        return ("00" + firstdayDay.toString()).slice(-2) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("0000" + firstdayYear.toString()).slice(-4) + " " + ("00" + firstdayHours.toString()).slice(-2) + ':' + ("00" + firstdayMinutes.toString()).slice(-2) + "" + amPM;
     } else {
         //return ("0000" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("00" + firstdayDay.toString()).slice(-2) + " " + "00:00:00";
         return ("0000" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("00" + firstdayDay.toString()).slice(-2);
