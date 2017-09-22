@@ -566,10 +566,10 @@ router.get('/ExportAlarm', function(req, res) {
         caption: 'Date Time',
         type: 'string'
     }, {
-        caption: 'AlarmCode',
+        caption: 'Alarm',
         type: 'string'
     }, {
-        caption: 'DeviceId',
+        caption: 'Device Id',
         type: 'string'
     }, {
         caption: 'Latitude',
@@ -578,13 +578,13 @@ router.get('/ExportAlarm', function(req, res) {
         caption: 'Longitude',
         type: 'string'
     }, {
-        caption: 'GPSPositioning',
+        caption: 'GPS Positioning',
         type: 'string'
     }, {
         caption: 'Status',
         type: 'string'
     }, {
-        caption: 'CreatedDate',
+        caption: 'Created Date',
         type: 'string'
     }];
 
@@ -660,9 +660,10 @@ router.get('/ExportAlarm', function(req, res) {
             var Status = '';
             var CreatedDate = '';
             var DisplayDate = '';
-            GetAlarmData(0);
+            // GetAlarmData(0);
 
-            function GetAlarmData(i) {
+            // function GetAlarmData(i) {
+            for (var i = 0; i < response.length; i++) {
                 if (i < response.length) {
                     var row = [];
                     if (response[i].Date != null && response[i].Date != '' && response[i].Date != undefined) {
@@ -704,7 +705,7 @@ router.get('/ExportAlarm', function(req, res) {
 
                     row.push(DisplayDate, AlarmCode, DeviceId, Latitude, Longitude, GPSPositioning, Status, CreatedDate);
                     conf.rows.push(row);
-                    GetAlarmData(i + 1);
+                    // GetAlarmData(i + 1);
                 } else {
                     var result = nodeExcel.execute(conf);
                     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
