@@ -6,15 +6,26 @@ var SIM = models.tblsimdetails;
 //End of Tables
 
 router.get('/GetAllSIMInfo', function(req, res) {
-    SIM.findAll({
-        order: [
-            ['CreatedDate', 'DESC'],
-        ]
-    }).then(function(response) {
-        res.json(response);
-    }).catch(function(error) {
-        res.json(error);
-    })
+    var query = "SELECT ts.*, tt.Name as TelName from tblsimdetails as ts LEFT JOIN tbltelco as tt ON ts.idTelCo = tt.id ORDER BY CreatedDate DESC";
+
+    connection.query(query, function(err, response) {
+        if (response != undefined) {
+            res.json(response);
+        } else {
+            console.log(err);
+            var response1 = new Object();
+            res.json(response1);
+        }
+    });
+    // SIM.findAll({
+    //     order: [
+    //         ['CreatedDate', 'DESC'],
+    //     ]
+    // }).then(function(response) {
+    //     res.json(response);
+    // }).catch(function(error) {
+    //     res.json(error);
+    // })
 });
 
 router.post('/SaveSIMInfo', jsonParser, function(req, res) {
@@ -332,6 +343,7 @@ router.get('/Export', function(req, res) {
         res.json(error);
     })
 });
+
 function convertdateformat(date1, flg) {
     var date = new Date(date1);
     var firstdayMonth = date.getMonth() + 1;

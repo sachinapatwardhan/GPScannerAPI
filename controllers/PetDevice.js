@@ -198,7 +198,7 @@ router.get('/GetAllGPSDevice', function(req, res) {
         search = search + 'tblgpsdevice.CreatedBy like "%' + objSearch + '%" or ';
         search = search + 'tblsimdetails.SerialNum like "%' + objSearch + '%" or ';
         search = search + 'tblsimdetails.PhoneNum like "%' + objSearch + '%" or ';
-        search = search + 'tbluserinformation.username like "%' + objSearch + '%") ';
+        search = search + 'tblgpsdevice.AppName like "%' + objSearch + '%") ';
     };
     if (objParam.UserId != null && objParam.UserId != undefined && objParam.UserId != '') {
         if (search != "") {
@@ -216,21 +216,21 @@ router.get('/GetAllGPSDevice', function(req, res) {
         }
     }
 
-    var query = " select tblgpsdevice.id, tblgpsdevice.AppName, tblgpsdevice.IsActive,tblgpsdevice.DeviceId,tblgpsdevice.Type,tblgpsdevice.IMEI,tblgpsdevice.Version,tblgpsdevice.SimNum,tblgpsdevice.CreatedBy," +
+    var query = " select tblgpsdevice.*, " +
         " CONVERT_TZ(tblgpsdevice.CreatedDate,'+00:00','" + CurrentOffset + "') as CreatedDate," +
         " CONVERT_TZ(tblgpsdevice.ExpiryDate,'+00:00','" + CurrentOffset + "') as ExpiryDate," +
         " tbltelco.Name, tbluserinformation.username, tbluserinformation.idApp,tblsimdetails.SerialNum,tblsimdetails.PhoneNum" +
         " from tblgpsdevice " +
         " Left Join tbluserinformation on tblgpsdevice.idSalesAgent=tbluserinformation.id " +
         " Left Join tblsimdetails on tblsimdetails.id = tblgpsdevice.idSim" +
-        " Left Join tbltelco on tblgpsdevice.TelCoId = tbltelco.id " + search +
+        " Left Join tbltelco on tblsimdetails.idTelCo = tbltelco.id " + search +
         " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
 
     var Countqry = "SELECT count(tblgpsdevice.id) as TotalRecord " +
         " from tblgpsdevice " +
         " Left Join tbluserinformation on  tblgpsdevice.idSalesAgent=tbluserinformation.id " +
         " Left Join tblsimdetails on tblsimdetails.id = tblgpsdevice.idSim" +
-        " Left Join tbltelco on tblgpsdevice.TelCoId = tbltelco.id " + search;
+        " Left Join tbltelco on tblsimdetails.idTelCo = tbltelco.id " + search;
     // " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
     connection.query(query, function(err, response) {
         if (response != undefined) {
@@ -965,14 +965,20 @@ router.post('/uploadExcelDevice', function(req, res) {
                                                 if ((response[1])) {
                                                     addDevice(i + 1);
                                                 } else {
-                                                    Importerror.push(lst[i].SerialNumber);
-                                                    addDevice(i + 1);
+                                                    GPSDevice.update(obj, { where: { id: response[0].id } }).then(function(resUpdate) {
+                                                        addDevice(i + 1);
+                                                    });
+                                                    // Importerror.push(lst[i].SerialNumber); 
                                                 }
                                             })
                                         } else {
                                             var Simobj = new Object();
                                             Simobj.SerialNum = lst[i].SIMSerialnumber.trim();
-                                            Simobj.PhoneNum = lst[i].SIMPhoneno.trim();
+                                            if (lst[i].SIMPhoneno != null && lst[i].SIMPhoneno != undefined) {
+                                                Simobj.PhoneNum = lst[i].SIMPhoneno.trim();
+                                            } else {
+                                                Simobj.PhoneNum = null;
+                                            }
                                             Simobj.CreatedDate = new Date();
                                             SimService.findOrCreate({
                                                 where: {
@@ -989,22 +995,30 @@ router.post('/uploadExcelDevice', function(req, res) {
                                                         if ((response[1])) {
                                                             addDevice(i + 1);
                                                         } else {
-                                                            Importerror.push(lst[i].SerialNumber);
-                                                            addDevice(i + 1);
+                                                            // Importerror.push(lst[i].SerialNumber);
+                                                            GPSDevice.update(obj, { where: { id: response[0].id } }).then(function(resUpdate) {
+                                                                addDevice(i + 1);
+                                                            });
                                                         }
                                                     })
                                                 } else {
-                                                    GPSDevice.findOrCreate({
-                                                        where: { DeviceId: obj.DeviceId },
-                                                        defaults: obj
-                                                    }).then(function(response) {
-                                                        if ((response[1])) {
-                                                            addDevice(i + 1);
-                                                        } else {
-                                                            Importerror.push(lst[i].SerialNumber);
-                                                            addDevice(i + 1);
-                                                        }
-                                                    })
+                                                    SimService.update(oSimobjbj, { where: { id: resSerial[0].id } }).then(function(resUpdateSim) {
+                                                        obj.idSim = resSerial[0].id;
+                                                        GPSDevice.findOrCreate({
+                                                            where: { DeviceId: obj.DeviceId },
+                                                            defaults: obj
+                                                        }).then(function(response) {
+                                                            if ((response[1])) {
+                                                                addDevice(i + 1);
+                                                            } else {
+                                                                // Importerror.push(lst[i].SerialNumber);
+                                                                GPSDevice.update(obj, { where: { id: response[0].id } }).then(function(resUpdate) {
+                                                                    addDevice(i + 1);
+                                                                });
+                                                            }
+                                                        })
+                                                    });
+
                                                 }
                                             })
                                         }
@@ -1018,8 +1032,10 @@ router.post('/uploadExcelDevice', function(req, res) {
                                         if ((response[1])) {
                                             addDevice(i + 1);
                                         } else {
-                                            Importerror.push(lst[i].SerialNumber);
-                                            addDevice(i + 1);
+                                            // Importerror.push(lst[i].SerialNumber);
+                                            GPSDevice.update(obj, { where: { id: response[0].id } }).then(function(resUpdate) {
+                                                addDevice(i + 1);
+                                            });
                                         }
                                     })
                                 }
@@ -1192,6 +1208,5 @@ router.post('/SaveSimServiceToIMEI', jsonParser, function(req, res) {
         res.json(InvalidToken);
     }
 })
-
 
 module.exports = router
