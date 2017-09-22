@@ -649,7 +649,6 @@ router.get('/ExportAlarm', function(req, res) {
 
     var query = "SELECT ta.*, tv.idUser, tu.idApp FROM tblalarm as ta left join tblvehicle as tv on tv.deviceid = ta.DeviceId left join tbluserinformation as tu on tv.idUser = tu.id " + search +
         " order by " + Orderby;
-
     connection.query(query, function(err, response) {
         if (response != undefined) {
             conf.rows = [];
