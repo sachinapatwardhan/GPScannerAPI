@@ -6,8 +6,7 @@ var SIM = models.tblsimdetails;
 //End of Tables
 
 router.get('/GetAllSIMInfo', function(req, res) {
-    var query = "SELECT ts.*, tt.Name as TelName from tblsimdetails as ts LEFT JOIN tbltelco as tt ON ts.idTelCo = tt.id ORDER BY CreatedDate DESC";
-
+    var query = "SELECT ts.id,ts.SerialNum,ts.PhoneNum,CONVERT_TZ(ts.CreatedDate,'+00:00','" + CurrentOffset + "') as CreatedDate, tt.Name as TelName from tblsimdetails as ts LEFT JOIN tbltelco as tt ON ts.idTelCo = tt.id ORDER BY CreatedDate DESC";
     connection.query(query, function(err, response) {
         if (response != undefined) {
             res.json(response);
@@ -288,13 +287,23 @@ router.get('/Export', function(req, res) {
         {
             caption: 'PhoneNumber',
             type: 'string'
+        }, {
+            caption: 'Telephone Company',
+            type: 'string'
         },
         {
             caption: 'CreatedDate',
             type: 'string'
-        },
+        }
+
     ];
-    SIM.findAll().then(function(response) {
+    // SIM.findAll({
+    //     order: [
+    //         ['CreatedDate', 'DESC'],
+    //     ]
+    // }).then(function(response) {
+    var query = "SELECT ts.id,ts.SerialNum,ts.PhoneNum,CONVERT_TZ(ts.CreatedDate,'+00:00','" + CurrentOffset + "') as CreatedDate, tt.Name as TelName from tblsimdetails as ts LEFT JOIN tbltelco as tt ON ts.idTelCo = tt.id ORDER BY CreatedDate DESC";
+    connection.query(query, function(err, response) {
         conf.rows = [];
         if (response.length > 0) {
             function setdata(i) {
@@ -303,6 +312,7 @@ router.get('/Export', function(req, res) {
                     var SerialNumber = '';
                     var PhoneNumber = '';
                     var CreatedDate = '';
+                    var TelName = '';
                     if (response[i].SerialNum != null && response[i].SerialNum != undefined && response[i].SerialNum != '') {
                         SerialNumber = response[i].SerialNum.toString();
                     } else {
@@ -313,13 +323,18 @@ router.get('/Export', function(req, res) {
                     } else {
                         PhoneNumber = "";
                     }
+                    if (response[i].TelName != null && response[i].TelName != undefined && response[i].TelName != '') {
+                        TelName = response[i].TelName.toString();
+                    } else {
+                        TelName = "";
+                    }
 
                     if (response[i].CreatedDate != null && response[i].CreatedDate != undefined && response[i].CreatedDate != '') {
                         CreatedDate = convertdateformat(response[i].CreatedDate, "Excel Export");
                     } else {
                         CreatedDate = "";
                     }
-                    row.push(SerialNumber, PhoneNumber, CreatedDate);
+                    row.push(SerialNumber, PhoneNumber, TelName, CreatedDate);
 
                     conf.rows.push(row);
 
@@ -339,9 +354,7 @@ router.get('/Export', function(req, res) {
             res.setHeader("Content-Disposition", "attachment; filename=" + "SIM.xlsx");
             res.end(result, 'binary');
         }
-    }).catch(function(error) {
-        res.json(error);
-    })
+    });
 });
 
 function convertdateformat(date1, flg) {
