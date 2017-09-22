@@ -494,7 +494,6 @@ router.get('/OwnerMobilelogout', jsonParser, function(req, res) {
         }
     })
 })
-
 router.get('/Mobilelogout', jsonParser, function(req, res) {
     if (req.query.UserType != null && req.query.UserType != undefined && req.query.UserType != '') {
         PushNotification.findOne({
@@ -642,133 +641,6 @@ router.post('/register', jsonParser, function(req, res) {
                                             }
                                             UserInRole.create(objUserInRole).then(function(resUserInRole) {
                                                 funAuditLog.CreateAuditLog('register', resUserReg.username, 'Create New User');
-                                                res.json({
-                                                    success: true,
-                                                    message: "User Registered Successfully..."
-                                                });
-                                            })
-                                        })
-                                    }
-                                })
-                            }).catch(function(error) {
-                                res.json({
-                                    success: false,
-                                    message: error.Error[0].message + "..."
-                                });
-                            })
-                        }
-                    }
-                })
-            }
-        })
-    }
-});
-
-router.post('/OwnerRegister', jsonParser, function(req, res) {
-    objUserReg = req.body
-    objUserReg.password = jwt.encode(objUserReg.password, "bugz");
-    objUserReg.password = objUserReg.password
-
-    if (!validator.isEmail(objUserReg.email)) {
-        res.json({
-            success: false,
-            message: "Invalid Email..."
-        });
-    } else {
-        User.findOne({
-            where: {
-                username: objUserReg.username
-            }
-        }).then(function(chkUserExist) {
-            if (chkUserExist != null && (chkUserExist.Type == objUserReg.Type || chkUserExist.Type == 'Both')) {
-                res.json({
-                    success: false,
-                    message: "Username is already Exist..."
-                });
-            } else {
-                User.findOne({
-                    where: {
-                        $or: [{ email: objUserReg.email }]
-                    }
-                }).then(function(chkEmailExist) {
-                    if (chkEmailExist != null && (chkEmailExist.Type == objUserReg.Type || chkEmailExist.Type == 'Both')) {
-                        res.json({
-                            success: false,
-                            message: "Email is already Exist..."
-                        });
-                    } else {
-                        if (chkEmailExist != null) {
-                            objUserReg.Type = 'Both';
-                            chkEmailExist.updateAttributes({ Type: 'Both', password: objUserReg.password, MaxSpeed: objUserReg.MaxSpeed }).then(function(resUser) {
-                                funAuditLog.CreateAuditLog('register', chkEmailExist.username, 'Create New User in Both');
-
-                                //Send OTP
-                                var objOTP = new Object();
-                                objOTP.To = objUserReg.phone;
-                                objOTP.body = 'Your Verification Code for logging into GPSINA is ' + objUserReg.OTP + '. Kindly do not share it with anyone else.';
-                                global.sendSMS(objOTP, function(responseOTP) {});
-
-                                res.json({
-                                    success: true,
-                                    message: "User Registered Successfully..."
-                                });
-                            })
-                        } else {
-                            User.create(objUserReg).then(function(resUserReg) {
-                                Role.findOne({
-                                    where: {
-                                        RoleName: "User"
-                                    }
-                                }).then(function(objRole) {
-                                    if (objRole != null) {
-                                        var objUserInRole = {
-                                            userId: resUserReg.id,
-                                            roleId: objRole.id,
-                                        }
-                                        UserInRole.create(objUserInRole).then(function(resUserInRole) {
-                                            funAuditLog.CreateAuditLog('register', resUserReg.username, 'Create New User');
-
-                                            //Send OTP
-                                            var objOTP = new Object();
-                                            objOTP.To = objUserReg.phone;
-                                            objOTP.body = 'Your Verification Code for logging into GPSINA is ' + objUserReg.OTP + '. Kindly do not share it with anyone else.';
-                                            global.sendSMS(objOTP, function(responseOTP) {
-                                                // console.log(responseOTP)
-                                            });
-
-                                            res.json({
-                                                success: true,
-                                                message: "User Registered Successfully..."
-                                            });
-                                        })
-                                    } else {
-                                        var objRole = {
-                                            RoleName: "User",
-                                            Description: null
-                                        }
-                                        Role.create(objRole).then(function(resRole) {
-
-                                            var objUserInRole = {
-                                                userId: resUserReg.id,
-                                                roleId: resRole.id,
-                                            }
-                                            UserInRole.create(objUserInRole).then(function(resUserInRole) {
-                                                funAuditLog.CreateAuditLog('register', resUserReg.username, 'Create New User');
-
-                                                //Send OTP
-                                                var objOTP = new Object();
-                                                objOTP.To = objUserReg.phone;
-                                                objOTP.body = 'Your Verification Code for logging into GPSINA is ' + objUserReg.OTP + '. Kindly do not share it with anyone else.';
-                                                global.sendSMS(objOTP, function(responseOTP) {
-                                                    // console.log(responseOTP)
-                                                });
-
-                                                res.json({
-                                                    success: true,
-                                                    message: "User Registered Successfully..."
-                                                });
-
-
                                                 res.json({
                                                     success: true,
                                                     message: "User Registered Successfully..."
@@ -1431,7 +1303,6 @@ router.get('/forgotpasswordfromOwnerCustomer', function(req, res) {
     })
 });
 
-
 //Start Mobile App
 
 router.get('/MobileAppLogin', jsonParser, function(req, res) {
@@ -1540,7 +1411,7 @@ router.post('/MobileRegister', jsonParser, function(req, res) {
                     //Send OTP
                     // var objOTP = new Object();
                     // objOTP.To = objUserReg.phone;
-                    // objOTP.body = 'Your Verification Code for logging into GPSINA is ' + objUserReg.OTP + '. Kindly do not share it with anyone else.';
+                    // objOTP.body = 'Your Verification Code for logging is ' + objUserReg.OTP + '. Kindly do not share it with anyone else.';
                     // global.sendSMS(objOTP, function(responseOTP) {
                     //     console.log(responseOTP)
                     // });
@@ -1567,7 +1438,7 @@ router.post('/MobileRegister', jsonParser, function(req, res) {
                         //Send OTP
                         // var objOTP = new Object();
                         // objOTP.To = objUserReg.phone;
-                        // objOTP.body = 'Your Verification Code for logging into GPSINA is ' + objUserReg.OTP + '. Kindly do not share it with anyone else.';
+                        // objOTP.body = 'Your Verification Code for logging is ' + objUserReg.OTP + '. Kindly do not share it with anyone else.';
                         // global.sendSMS(objOTP, function(responseOTP) {
                         //     console.log(responseOTP)
                         // });
@@ -1873,7 +1744,7 @@ router.post('/MobileRegisterNew', jsonParser, function(req, res) {
                     //Send OTP
                     // var objOTP = new Object();
                     // objOTP.To = objUserReg.phone;
-                    // objOTP.body = 'Your Verification Code for logging into GPSINA is ' + objUserReg.OTP + '. Kindly do not share it with anyone else.';
+                    // objOTP.body = 'Your Verification Code for logging into is ' + objUserReg.OTP + '. Kindly do not share it with anyone else.';
                     // global.sendSMS(objOTP, function(responseOTP) {
                     //     console.log(responseOTP)
                     // });
@@ -1900,7 +1771,7 @@ router.post('/MobileRegisterNew', jsonParser, function(req, res) {
                         //Send OTP
                         // var objOTP = new Object();
                         // objOTP.To = objUserReg.phone;
-                        // objOTP.body = 'Your Verification Code for logging into GPSINA is ' + objUserReg.OTP + '. Kindly do not share it with anyone else.';
+                        // objOTP.body = 'Your Verification Code for logging into is ' + objUserReg.OTP + '. Kindly do not share it with anyone else.';
                         // global.sendSMS(objOTP, function(responseOTP) {
                         //     console.log(responseOTP)
                         // });
@@ -2093,7 +1964,6 @@ router.get('/MobileApplogoutNew', jsonParser, function(req, res) {
         })
     }
 })
-
 
 router.get('/MobileAppLoginScannerApp', jsonParser, function(req, res) {
     var Encryptpassword = jwt.encode(req.query.password, "bugz");
