@@ -242,6 +242,7 @@ router.get('/ExportAllCanbusData', function(req, res) {
                 }
 
                 if (response[i].Datetime != null && response[i].Datetime != '' && response[i].Datetime != undefined) {
+
                     Datetime = convertdateformat(response[i].Datetime, 2);
                 }
 
@@ -404,42 +405,45 @@ router.get('/ExportAllDrivingData', function(req, res) {
     var conf = {};
     conf.name = "Sheet1";
     conf.cols = [{
-        caption: 'DeviceId',
-        type: 'string'
-    }, {
-        caption: 'Datetime',
-        type: 'string'
-    }, {
-        caption: 'TotalIgnition',
-        type: 'string'
-    }, {
-        caption: 'TotalDrivingTime',
-        type: 'string'
-    }, {
-        caption: 'TotalIdlingTime',
-        type: 'string'
-    }, {
-        caption: 'AverageHotStartTime',
-        type: 'string'
-    }, {
-        caption: 'AverageSpeed',
-        type: 'string'
-    }, {
-        caption: 'HistoryHighestSpeed',
-        type: 'string'
-    }, {
-        caption: 'HistoryHighestRotation',
-        type: 'string'
-    }, {
-        caption: 'TotalHarshAcceleration',
-        type: 'string'
-    }, {
-        caption: 'TotalHarshBrake',
-        type: 'string'
-    }, {
-        caption: 'CreatedDate',
-        type: 'string'
-    }];
+            caption: 'Device Id',
+            type: 'string'
+        }, {
+            caption: 'Date Time',
+            type: 'string'
+        }, {
+            caption: 'Total Ignition',
+            type: 'string'
+        }, {
+            caption: 'Total Driving Time',
+            type: 'string'
+        }, {
+            caption: 'Total Idling Time',
+            type: 'string'
+        }, {
+            caption: 'Average Hot Start Time',
+            type: 'string'
+        }, {
+            caption: 'Average Speed',
+            type: 'string'
+        }, {
+            caption: 'History Highest Speed',
+            type: 'string'
+        }, {
+            caption: 'History Highest Rotation',
+            type: 'string'
+        }, {
+            caption: 'Total Harsh Acceleration',
+            type: 'string'
+        },
+        {
+            caption: 'Total Harsh Brake',
+            type: 'string'
+        }
+        //    , {
+        //        caption: 'CreatedDate',
+        //        type: 'string'
+        //    }
+    ];
 
     var objParam = req.query;
     var objColumns = objParam.columns;
@@ -515,69 +519,67 @@ router.get('/ExportAllDrivingData', function(req, res) {
             var TotalHarshAcceleration = '';
             var TotalHarshBrake = '';
             var CreatedDate = '';
-            GetDriverBehaviorData(0);
+            // GetDriverBehaviorData(0);
 
-            function GetDriverBehaviorData(i) {
-                if (i < response.length) {
-                    var row = [];
-                    if (response[i].DeviceId != null && response[i].DeviceId != '' && response[i].DeviceId != undefined) {
-                        DeviceId = response[i].DeviceId;
-                    }
-
-                    if (response[i].Datetime != null && response[i].Datetime != '' && response[i].Datetime != undefined) {
-                        Datetime = convertdateformat(response[i].Datetime, 2);
-                    }
-
-                    if (response[i].TotalIgnition != null && response[i].TotalIgnition != '' && response[i].TotalIgnition != undefined) {
-                        TotalIgnition = response[i].TotalIgnition.toString()
-                    }
-
-                    if (response[i].TotalDrivingTime != null && response[i].TotalDrivingTime != '' && response[i].TotalDrivingTime != undefined) {
-                        TotalDrivingTime = response[i].TotalDrivingTime.toString();
-                    }
-
-                    if (response[i].TotalIdlingTime != null && response[i].TotalIdlingTime != '' && response[i].TotalIdlingTime != undefined) {
-                        TotalIdlingTime = response[i].TotalIdlingTime.toString();
-                    }
-
-                    if (response[i].TotalIdlingTime != null && response[i].TotalIdlingTime != '' && response[i].TotalIdlingTime != undefined) {
-                        TotalIdlingTime = response[i].TotalIdlingTime.toString();
-                    }
-
-                    if (response[i].AverageHotStartTime != null && response[i].AverageHotStartTime != '' && response[i].AverageHotStartTime != undefined) {
-                        AverageHotStartTime = response[i].AverageHotStartTime.toString();
-                    }
-
-                    if (response[i].AverageSpeed != null && response[i].AverageSpeed != '' && response[i].AverageSpeed != undefined) {
-                        AverageSpeed = response[i].AverageSpeed.toString();
-                    }
-
-                    if (response[i].HistoryHighestSpeed != null && response[i].HistoryHighestSpeed != '' && response[i].HistoryHighestSpeed != undefined) {
-                        HistoryHighestSpeed = response[i].HistoryHighestSpeed.toString();
-                    }
-                    if (response[i].HistoryHighestRotation != null && response[i].HistoryHighestRotation != '' && response[i].HistoryHighestRotation != undefined) {
-                        HistoryHighestRotation = response[i].HistoryHighestRotation.toString();
-                    }
-                    if (response[i].TotalHarshAcceleration != null && response[i].TotalHarshAcceleration != '' && response[i].TotalHarshAcceleration != undefined) {
-                        TotalHarshAcceleration = response[i].TotalHarshAcceleration.toString();
-                    }
-                    if (response[i].TotalHarshBrake != null && response[i].TotalHarshBrake != '' && response[i].TotalHarshBrake != undefined) {
-                        TotalHarshBrake = response[i].TotalHarshBrake.toString();
-                    }
-                    if (response[i].CreatedDate != null && response[i].CreatedDate != '' && response[i].CreatedDate != undefined) {
-                        CreatedDate = convertdateformat(response[i].CreatedDate, 2);
-                    }
-                    row.push(DeviceId, Datetime, TotalIgnition, TotalDrivingTime, TotalIdlingTime, AverageHotStartTime, AverageSpeed, HistoryHighestSpeed, HistoryHighestRotation, TotalHarshAcceleration, TotalHarshBrake, CreatedDate);
-                    conf.rows.push(row);
-                    GetDriverBehaviorData(i + 1);
-                } else {
-                    var result = nodeExcel.execute(conf);
-                    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-                    res.setHeader("Content-Disposition", "attachment; filename=DrivingBehavior.xlsx");
-                    res.end(result, 'binary');
+            // function GetDriverBehaviorData(i) {
+            // if (i < response.length) {
+            for (var i = 0; i < response.length; i++) {
+                var row = [];
+                if (response[i].DeviceId != null && response[i].DeviceId != '' && response[i].DeviceId != undefined) {
+                    DeviceId = response[i].DeviceId;
                 }
 
+                if (response[i].Datetime != null && response[i].Datetime != '' && response[i].Datetime != undefined) {
+                    Datetime = convertdateformat(response[i].Datetime, 2);
+                }
+
+                if (response[i].TotalIgnition != null && response[i].TotalIgnition != '' && response[i].TotalIgnition != undefined) {
+                    TotalIgnition = response[i].TotalIgnition.toString()
+                }
+
+                if (response[i].TotalDrivingTime != null && response[i].TotalDrivingTime != '' && response[i].TotalDrivingTime != undefined) {
+                    TotalDrivingTime = response[i].TotalDrivingTime.toString();
+                }
+
+                if (response[i].TotalIdlingTime != null && response[i].TotalIdlingTime != '' && response[i].TotalIdlingTime != undefined) {
+                    TotalIdlingTime = response[i].TotalIdlingTime.toString();
+                }
+
+                if (response[i].TotalIdlingTime != null && response[i].TotalIdlingTime != '' && response[i].TotalIdlingTime != undefined) {
+                    TotalIdlingTime = response[i].TotalIdlingTime.toString();
+                }
+
+                if (response[i].AverageHotStartTime != null && response[i].AverageHotStartTime != '' && response[i].AverageHotStartTime != undefined) {
+                    AverageHotStartTime = response[i].AverageHotStartTime.toString();
+                }
+
+                if (response[i].AverageSpeed != null && response[i].AverageSpeed != '' && response[i].AverageSpeed != undefined) {
+                    AverageSpeed = response[i].AverageSpeed.toString();
+                }
+
+                if (response[i].HistoryHighestSpeed != null && response[i].HistoryHighestSpeed != '' && response[i].HistoryHighestSpeed != undefined) {
+                    HistoryHighestSpeed = response[i].HistoryHighestSpeed.toString();
+                }
+                if (response[i].HistoryHighestRotation != null && response[i].HistoryHighestRotation != '' && response[i].HistoryHighestRotation != undefined) {
+                    HistoryHighestRotation = response[i].HistoryHighestRotation.toString();
+                }
+                if (response[i].TotalHarshAcceleration != null && response[i].TotalHarshAcceleration != '' && response[i].TotalHarshAcceleration != undefined) {
+                    TotalHarshAcceleration = response[i].TotalHarshAcceleration.toString();
+                }
+                if (response[i].TotalHarshBrake != null && response[i].TotalHarshBrake != '' && response[i].TotalHarshBrake != undefined) {
+                    TotalHarshBrake = response[i].TotalHarshBrake.toString();
+                }
+                if (response[i].CreatedDate != null && response[i].CreatedDate != '' && response[i].CreatedDate != undefined) {
+                    CreatedDate = convertdateformat(response[i].CreatedDate, 2);
+                }
+                row.push(DeviceId, Datetime, TotalIgnition, TotalDrivingTime, TotalIdlingTime, AverageHotStartTime, AverageSpeed, HistoryHighestSpeed, HistoryHighestRotation, TotalHarshAcceleration, TotalHarshBrake, CreatedDate);
+                conf.rows.push(row);
+                // GetDriverBehaviorData(i + 1);
             }
+            var result = nodeExcel.execute(conf);
+            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            res.setHeader("Content-Disposition", "attachment; filename=DrivingBehavior.xlsx");
+            res.end(result, 'binary');
         } else {
             conf.rows = [];
             var result = nodeExcel.execute(conf);
