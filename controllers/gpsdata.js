@@ -664,56 +664,53 @@ router.get('/ExportAlarm', function(req, res) {
 
             // function GetAlarmData(i) {
             for (var i = 0; i < response.length; i++) {
-                if (i < response.length) {
-                    var row = [];
-                    if (response[i].Date != null && response[i].Date != '' && response[i].Date != undefined) {
-                        var Dates = new Date(response[i].Date * 1000);
-                        DisplayDate = moment(Dates).format('DD-MM-YYYY hh:mm:ss a');
-                    }
-
-                    if (response[i].AlarmCode != null && response[i].AlarmCode != '' && response[i].AlarmCode != undefined) {
-                        var list = AlarmCodedata();
-                        var obj = u.findWhere(list, { AlarmCode: response[i].AlarmCode });
-                        if (obj != null && obj != undefined && obj != '') {
-                            AlarmCode = obj.Alarm;
-                        }
-                    }
-                    if (response[i].DeviceId != null && response[i].DeviceId != '' && response[i].DeviceId != undefined) {
-                        DeviceId = response[i].DeviceId;
-                    }
-
-                    if (response[i].CreatedDate != null && response[i].CreatedDate != '' && response[i].CreatedDate != undefined) {
-                        CreatedDate = convertdateformat(response[i].CreatedDate, 2);
-                    }
-
-                    if (response[i].Latitude != null && response[i].Latitude != '' && response[i].Latitude != undefined) {
-                        Latitude = response[i].Latitude
-                    }
-
-                    if (response[i].Longitude != null && response[i].Longitude != '' && response[i].Longitude != undefined) {
-                        Longitude = response[i].Longitude;
-                    }
-
-                    if (response[i].GPSPositioning != null && response[i].GPSPositioning != '' && response[i].GPSPositioning != undefined) {
-                        GPSPositioning = response[i].GPSPositioning;
-                    }
-
-                    if (response[i].Status != null && response[i].Status != '' && response[i].Status != undefined) {
-                        Status = response[i].Status;
-                    }
-
-
-                    row.push(DisplayDate, AlarmCode, DeviceId, Latitude, Longitude, GPSPositioning, Status, CreatedDate);
-                    conf.rows.push(row);
-                    // GetAlarmData(i + 1);
-                } else {
-                    var result = nodeExcel.execute(conf);
-                    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-                    res.setHeader("Content-Disposition", "attachment; filename=Alarm.xlsx");
-                    res.end(result, 'binary');
+                var row = [];
+                if (response[i].Date != null && response[i].Date != '' && response[i].Date != undefined) {
+                    var Dates = new Date(response[i].Date * 1000);
+                    DisplayDate = moment(Dates).format('DD-MM-YYYY hh:mm:ss a');
                 }
 
+                if (response[i].AlarmCode != null && response[i].AlarmCode != '' && response[i].AlarmCode != undefined) {
+                    var list = AlarmCodedata();
+                    var obj = u.findWhere(list, { AlarmCode: response[i].AlarmCode });
+                    if (obj != null && obj != undefined && obj != '') {
+                        AlarmCode = obj.Alarm;
+                    }
+                }
+                if (response[i].DeviceId != null && response[i].DeviceId != '' && response[i].DeviceId != undefined) {
+                    DeviceId = response[i].DeviceId;
+                }
+
+                if (response[i].CreatedDate != null && response[i].CreatedDate != '' && response[i].CreatedDate != undefined) {
+                    CreatedDate = convertdateformat(response[i].CreatedDate, 2);
+                }
+
+                if (response[i].Latitude != null && response[i].Latitude != '' && response[i].Latitude != undefined) {
+                    Latitude = response[i].Latitude
+                }
+
+                if (response[i].Longitude != null && response[i].Longitude != '' && response[i].Longitude != undefined) {
+                    Longitude = response[i].Longitude;
+                }
+
+                if (response[i].GPSPositioning != null && response[i].GPSPositioning != '' && response[i].GPSPositioning != undefined) {
+                    GPSPositioning = response[i].GPSPositioning;
+                }
+
+                if (response[i].Status != null && response[i].Status != '' && response[i].Status != undefined) {
+                    Status = response[i].Status;
+                }
+
+
+                row.push(DisplayDate, AlarmCode, DeviceId, Latitude, Longitude, GPSPositioning, Status, CreatedDate);
+                conf.rows.push(row);
+                // GetAlarmData(i + 1);
             }
+            var result = nodeExcel.execute(conf);
+            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            res.setHeader("Content-Disposition", "attachment; filename=Alarm.xlsx");
+            res.end(result, 'binary');
+
         } else {
             conf.rows = [];
             var result = nodeExcel.execute(conf);
