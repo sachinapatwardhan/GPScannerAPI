@@ -649,6 +649,7 @@ router.get('/ExportAlarm', function(req, res) {
 
     var query = "SELECT ta.*, tv.idUser, tu.idApp FROM tblalarm as ta left join tblvehicle as tv on tv.deviceid = ta.DeviceId left join tbluserinformation as tu on tv.idUser = tu.id " + search +
         " order by " + Orderby;
+
     connection.query(query, function(err, response) {
         if (response != undefined) {
             conf.rows = [];
@@ -674,7 +675,11 @@ router.get('/ExportAlarm', function(req, res) {
                     var list = AlarmCodedata();
                     var obj = u.findWhere(list, { AlarmCode: response[i].AlarmCode });
                     if (obj != null && obj != undefined && obj != '') {
-                        AlarmCode = obj.Alarm;
+                        if (response[i].AlarmCode == '66' || response[i].AlarmCode == '6') {
+                            AlarmCode = response[i].FenceName + " " + obj.Alarm;
+                        } else {
+                            AlarmCode = obj.Alarm;
+                        }
                     }
                 }
                 if (response[i].DeviceId != null && response[i].DeviceId != '' && response[i].DeviceId != undefined) {
