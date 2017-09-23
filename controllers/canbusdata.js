@@ -449,7 +449,7 @@ router.get('/ExportAllDrivingData', function(req, res) {
 
     var objParam = req.query;
     var objColumns = objParam.columns;
-    var objOrderBy = "CreatedDate desc";
+    var objOrderBy = "Datetime desc";
     var objSearch = objParam.search;
     var search = "";
 
@@ -503,7 +503,10 @@ router.get('/ExportAllDrivingData', function(req, res) {
         search += ' where tu.idApp = ' + objParam.idApp;
     }
 
-    var query = "SELECT td.*, tv.iduser, tu.idApp FROM tbldrivingdata as td left join tblvehicle as tv ON td.DeviceId = tv.deviceid left join tbluserinformation as tu ON tv.iduser = tu.id " + search +
+    // var query = "SELECT td.*, tv.iduser, tu.idApp FROM tbldrivingdata as td left join tblvehicle as tv ON td.DeviceId = tv.deviceid left join tbluserinformation as tu ON tv.iduser = tu.id " + search +
+    //     " order by " + objOrderBy;
+    var query = "SELECT td.DeviceId, td.TotalIgnition, td.TotalDrivingTime, td.TotalIdlingTime, td.AverageHotStartTime, td.AverageSpeed, td.HistoryHighestSpeed, td.HistoryHighestRotation, " +
+        " td.TotalHarshAcceleration, td.TotalHarshBrake, td.Datetime, tu.idApp FROM tbldrivingdata as td left join tblvehicle as tv ON td.DeviceId = tv.deviceid left join tbluserinformation as tu ON tv.iduser = tu.id " + search +
         " order by " + objOrderBy;
 
     connection.query(query, function(err, response) {
@@ -522,7 +525,6 @@ router.get('/ExportAllDrivingData', function(req, res) {
             var TotalHarshBrake = '0';
             var CreatedDate = '';
             // GetDriverBehaviorData(0);
-
             // function GetDriverBehaviorData(i) {
             // if (i < response.length) {
             for (var i = 0; i < response.length; i++) {
@@ -573,10 +575,7 @@ router.get('/ExportAllDrivingData', function(req, res) {
                 if (response[i].TotalHarshBrake != null && response[i].TotalHarshBrake != '' && response[i].TotalHarshBrake != undefined) {
                     TotalHarshBrake = response[i].TotalHarshBrake.toString();
                 }
-                if (response[i].CreatedDate != null && response[i].CreatedDate != '' && response[i].CreatedDate != undefined) {
-                    CreatedDate = convertdateformat(response[i].CreatedDate, 2);
-                }
-                row.push(DeviceId, Datetime, TotalIgnition, TotalDrivingTime, TotalIdlingTime, AverageHotStartTime, AverageSpeed, HistoryHighestSpeed, HistoryHighestRotation, TotalHarshAcceleration, TotalHarshBrake, CreatedDate);
+                row.push(DeviceId, Datetime, TotalIgnition, TotalDrivingTime, TotalIdlingTime, AverageHotStartTime, AverageSpeed, HistoryHighestSpeed, HistoryHighestRotation, TotalHarshAcceleration, TotalHarshBrake);
                 conf.rows.push(row);
                 // GetDriverBehaviorData(i + 1);
             }

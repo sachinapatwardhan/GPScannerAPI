@@ -133,10 +133,15 @@ router.get('/GetAllGpsData', function(req, res) {
         search += ' where tu.idApp = ' + objParam.idApp;
     }
 
-    var qry = "SELECT tgps.*, tv.iduser, tu.idApp FROM tblgpsdata as tgps left Join tblvehicle as tv on tgps.DeviceId = tv.deviceid left join tbluserinformation as tu on tv.idUser = tu.id " + search +
-        " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
-    var Countqry = "SELECT count(tgps.id) as TotalRecord FROM tblgpsdata as tgps left Join tblvehicle as tv on tgps.DeviceId = tv.deviceid left join tbluserinformation as tu on tv.idUser = tu.id " + search;
+    // var qry = "SELECT tgps.*, tv.iduser, tu.idApp FROM tblgpsdata as tgps left Join tblvehicle as tv on tgps.DeviceId = tv.deviceid left join tbluserinformation as tu on tv.idUser = tu.id " + search +
+    //     " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
 
+    var qry = "SELECT tgps.DeviceId, tgps.Date, tgps.Latitude, tgps.Longitude, tgps.Speed, tgps.Direction, tu.idApp, tgps.GPSPositioning, tgps.Speed, tgps.Direction, tgps.Status, " +
+        " tgps.IsRelayToStopTheCar, tgps.IsSirenSound, tgps.IsDoor, tgps.IsEngine, tgps.IsLockTheDoor, tgps.IsUnlockTheDoor, tgps.IsSOS, tgps.AD1, tgps.AD2, tgps.Altitude, tgps.OdoMeter FROM tblgpsdata as tgps left Join tblvehicle as tv on tgps.DeviceId = tv.deviceid" +
+        " left join tbluserinformation as tu on tv.idUser = tu.id " + search +
+        " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
+
+    var Countqry = "SELECT count(tgps.id) as TotalRecord FROM tblgpsdata as tgps left Join tblvehicle as tv on tgps.DeviceId = tv.deviceid left join tbluserinformation as tu on tv.idUser = tu.id " + search;
     connection.query(qry, function(err, response) {
         if (response != undefined) {
             connection.query(Countqry, function(err, lstCount, fields) {
@@ -336,7 +341,6 @@ router.get('/GetAllGpsDevice', function(req, res) {
         }
     })
 });
-
 
 router.get('/ExportAllGpsData', function(req, res) {
     var conf = {};
