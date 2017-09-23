@@ -667,7 +667,7 @@ router.get('/ExportAlarm', function(req, res) {
                 var row = [];
                 if (response[i].Date != null && response[i].Date != '' && response[i].Date != undefined) {
                     var Dates = new Date(response[i].Date * 1000);
-                    DisplayDate = momentz.utc(new Date(response[i].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm a');
+                    DisplayDate = momentz.utc(new Date(response[i].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
                 }
 
                 if (response[i].AlarmCode != null && response[i].AlarmCode != '' && response[i].AlarmCode != undefined) {
