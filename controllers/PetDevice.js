@@ -258,7 +258,7 @@ router.get('/ExportTracker', function(req, res) {
     var objParam = req.query;
     var conf = {};
     conf.name = "Sheet1";
-
+    var UserRoles = objParam.UserRoles;
     if (UserRoles == 'Super Admin') {
         conf.cols = [{
             caption: 'Device Id',
@@ -345,7 +345,7 @@ router.get('/ExportTracker', function(req, res) {
         CountryList = [];
     }
 
-    var UserRoles = objParam.UserRoles;
+
 
     if (objSearch != null && objSearch != '') {
         search = 'Where (tblgpsdevice.DeviceId like "%' + objSearch + '%" or ';
