@@ -360,16 +360,16 @@ router.get('/GetAllDrivingBehavior', function(req, res) {
 
     if (objParam.StartDate != '') {
         if (search != "") {
-            search += ' and td.Date >= ' + unixStartdate;
+            search += ' and td.Datetime >= ' + unixStartdate;
         } else {
-            search += ' where td.Date >= ' + unixStartdate;
+            search += ' where td.Datetime >= ' + unixStartdate;
         }
     }
     if (objParam.EndDate != '') {
         if (search != "") {
-            search += ' and td.Date <= ' + unixEndDate;
+            search += ' and td.Datetime <= ' + unixEndDate;
         } else {
-            search += ' where td.Date <= ' + unixEndDate;
+            search += ' where td.Datetime <= ' + unixEndDate;
         }
     }
 
