@@ -330,7 +330,7 @@ router.get('/Export', function(req, res) {
                     }
 
                     if (response[i].CreatedDate != null && response[i].CreatedDate != undefined && response[i].CreatedDate != '') {
-                        CreatedDate = moment(moment.utc(response[i].CreatedDate).toDate()).format("DD-MM-YYYY hh:mm:ss");
+                        CreatedDate = moment(moment.utc(response[i].CreatedDate).toDate()).format("DD-MM-YYYY hh:mm a");
                         //convertdateformat(response[i].CreatedDate, "Excel Export");
                     } else {
                         CreatedDate = "";
