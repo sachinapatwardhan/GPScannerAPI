@@ -378,8 +378,8 @@ router.get('/ExportTracker', function(req, res) {
         }
     }
     var query = " select tblgpsdevice.*, " +
-        " CONVERT_TZ(tblgpsdevice.CreatedDate,'+00:00','" + CurrentOffset + "') as CreatedDate," +
-        " CONVERT_TZ(tblgpsdevice.ExpiryDate,'+00:00','" + CurrentOffset + "') as ExpiryDate," +
+        " CONVERT_TZ(tblgpsdevice.CreatedDate,'+00:00','" + req.query.CurrentOffset + "') as CreatedDate," +
+        " CONVERT_TZ(tblgpsdevice.ExpiryDate,'+00:00','" + req.query.CurrentOffset + "') as ExpiryDate," +
         " tbltelco.Name, tbluserinformation.username, tbluserinformation.idApp,tblsimdetails.SerialNum,tblsimdetails.PhoneNum" +
         " from tblgpsdevice " +
         " Left Join tbluserinformation on tblgpsdevice.idSalesAgent=tbluserinformation.id " +
@@ -441,10 +441,10 @@ router.get('/ExportTracker', function(req, res) {
                 //     SalesAgent = response[i].username;
                 // }
                 if (response[i].ExpiryDate != null && response[i].ExpiryDate != '' && response[i].ExpiryDate != undefined) {
-                    ExpiryDate = moment(response[i].ExpiryDate).format('DD-MM-YYYY');
+                    ExpiryDate = moment(response[i].ExpiryDate).format('DD-MM-YYYY hh:mm:ss a');
                 }
                 if (response[i].CreatedDate != null && response[i].CreatedDate != '' && response[i].CreatedDate != undefined) {
-                    Date = moment(response[i].CreatedDate).format('DD-MM-YYYY');
+                    Date = moment(response[i].CreatedDate).format('DD-MM-YYYY hh:mm:ss a');
                 }
                 if (response[i].IsActive != null && response[i].IsActive != '' && response[i].IsActive != undefined) {
                     if (response[i].IsActive == 1) {
