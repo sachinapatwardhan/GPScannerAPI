@@ -307,7 +307,7 @@ router.get('/GetAllAlarm', function(req, res) {
         search += ' where tu.idApp = ' + objParam.idApp;
     }
 
-    var query = "SELECT ta.*, tv.idUser, tu.idApp FROM tblalarm as ta left join tblvehicle as tv on tv.deviceid = ta.DeviceId left join tbluserinformation as tu on tv.idUser = tu.id " + search +
+    var query = "SELECT ta.*, CONVERT_TZ(ta.CreatedDate,'+00:00','" + CurrentOffset + "') as CreatedDate,tv.idUser, tu.idApp FROM tblalarm as ta left join tblvehicle as tv on tv.deviceid = ta.DeviceId left join tbluserinformation as tu on tv.idUser = tu.id " + search +
         " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
     var Countqry = "SELECT count(ta.id) as TotalRecord FROM tblalarm as ta left Join tblvehicle as tv on ta.DeviceId = tv.deviceid left join tbluserinformation as tu on tv.idUser = tu.id " + search;
     connection.query(query, function(err, response) {
@@ -651,7 +651,7 @@ router.get('/ExportAlarm', function(req, res) {
         search += ' where tu.idApp = ' + objParam.idApp;
     }
 
-    var query = "SELECT ta.*, tv.idUser, tu.idApp FROM tblalarm as ta left join tblvehicle as tv on tv.deviceid = ta.DeviceId left join tbluserinformation as tu on tv.idUser = tu.id " + search +
+    var query = "SELECT ta.*,CONVERT_TZ(ta.CreatedDate,'+00:00','" + req.query.CurrentOffset + "') as CreatedDate, tv.idUser, tu.idApp FROM tblalarm as ta left join tblvehicle as tv on tv.deviceid = ta.DeviceId left join tbluserinformation as tu on tv.idUser = tu.id " + search +
         " order by " + Orderby;
     connection.query(query, function(err, response) {
         if (response != undefined) {
@@ -690,7 +690,8 @@ router.get('/ExportAlarm', function(req, res) {
                 }
 
                 if (response[i].CreatedDate != null && response[i].CreatedDate != '' && response[i].CreatedDate != undefined) {
-                    CreatedDate = convertdateformat(response[i].CreatedDate, 2);
+                    // CreatedDate = convertdateformat(response[i].CreatedDate, "Excel Export");
+                    CreatedDate = moment(moment.utc(response[i].CreatedDate).toDate()).format("DD-MM-YYYY hh:mm:ss a");
                 }
 
                 if (response[i].Latitude != null && response[i].Latitude != '' && response[i].Latitude != undefined) {
