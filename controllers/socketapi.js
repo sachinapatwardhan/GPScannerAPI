@@ -62,7 +62,7 @@ function SendIOSPushNotification(DeviceId) {
     var data = {
         title: 'Alert',
         message: '9787 is out of Home Fence. 9787 is out of Home Fence. 9787 is out of Home Fence. 9787 is out of Home Fence. 9787 is out of Home Fence. 9787 is out of Home Fence. 9787 is out of Home Fence. 9787 is out of Home Fence. 9787 is out of Home Fence.',
-        Fence: 'Default',
+        soundname: 'sound50',
         // messagecount: 2,
         otherfields: {
             deviceid: '123456',
@@ -75,7 +75,7 @@ function SendIOSPushNotification(DeviceId) {
 
     // PushNotification.findAll({ where: { iduser: UserId } }).then(function(response) {
 
-    //PushNotificationSettings.apn.defaultData.sound = 'jinglebellssms.caf';
+    PushNotificationSettings.apn.defaultData.sound = data.soundname + '.caf';
 
     var objPushNotificationSend = new PushNotifications(PushNotificationSettings);
 
@@ -165,12 +165,10 @@ function SendPushNotification(data, UserId, objAppInfo) {
 
                         PushNotificationSettings.apn.badge = messagecount;
 
-                        if (objData.Fence == 'FenceIn') {
-                            PushNotificationSettings.apn.defaultData.sound = 'fencein.caf';
-                        } else if (objData.Fence == 'FenceOut') {
-                            PushNotificationSettings.apn.defaultData.sound = 'fenceout.caf';
-                        } else {
+                        if (objData.soundname == 'Default') {
                             PushNotificationSettings.apn.defaultData.sound = 'default';
+                        } else {
+                            PushNotificationSettings.apn.defaultData.sound = objData.soundname + '.caf';
                         };
 
                     } else {
@@ -723,6 +721,7 @@ global.Command9955 = function(line, Callback) {
                                         if (IsPetInFence != rows[j].IsInFence && rows[j].IsFenceOnline) {
                                             var AlarmCode = '6';
                                             var Message = '';
+                                            var soundname = "";
 
                                             if (IsPetInFence == false) {
                                                 AlarmCode = '66';
@@ -731,6 +730,7 @@ global.Command9955 = function(line, Callback) {
                                                 } else {
                                                     Message = objVehicle.Name + ' is out of Fence.';
                                                 }
+                                                soundname = "Default";
                                             } else {
                                                 AlarmCode = '6';
                                                 if (rows[j].name != null && rows[j].name != '' && rows[j].name != undefined) {
@@ -738,6 +738,7 @@ global.Command9955 = function(line, Callback) {
                                                 } else {
                                                     Message = objVehicle.Name + ' is in Fence.';
                                                 }
+                                                soundname = "Default";
                                             }
                                             // console.log(unixDateStemp);
                                             connection.query('UPDATE tblfence set IsInFence=' + IsPetInFence + ' WHERE id=' + rows[j].id, function(err, rowsFence, fields) {
@@ -760,7 +761,8 @@ global.Command9955 = function(line, Callback) {
                                                             var PushNotificationdata = {
                                                                 title: 'Alert',
                                                                 message: Message,
-                                                                Fence: 'Default',
+                                                                // Fence: 'Default',
+                                                                soundname: soundname,
                                                                 otherfields: {
                                                                     deviceid: DeviceId,
                                                                     Id: objVehicle.id,
@@ -1011,41 +1013,59 @@ global.Command9999 = function(line, Callback) {
                         connection.query("SELECT tu.id, tu.username, ta.AppName, ta.IOSCertificate, ta.IOSKey, ta.AndroidId, ta.AndroidSenderId FROM tbluserinformation as tu inner Join tblappinfo as ta ON ta.id = tu.idApp where tu.id=" + objVehicle.iduser, function(err, objAppInfo, fields) {
 
                             var Message = "";
+                            var soundname = "";
 
                             if (AlarmCode == '04') {
                                 Message = 'Vehicle ' + objVehicle.Name + ' Engine ON alert! Please check!';
+                                soundname = 'Default';
                             } else if (AlarmCode == '03') {
                                 Message = 'Vehicle ' + objVehicle.Name + ' Door Open alert! Please check!';
+                                soundname = 'Default';
                             } else if (AlarmCode == '10') {
                                 Message = 'Vehicle ' + objVehicle.Name + ' Low Bettry alert! Please check!';
+                                soundname = 'Default';
                             } else if (AlarmCode == '11') {
                                 Message = 'Vehicle ' + objVehicle.Name + ' Max Speed alert! Please check!';
+                                soundname = 'Default';
                             } else if (AlarmCode == '12') {
                                 Message = 'Vehicle ' + objVehicle.Name + ' Movement alert! Please check!';
+                                soundname = 'Default';
                             } else if (AlarmCode == '30') {
                                 Message = 'Vehicle ' + objVehicle.Name + ' Vibration alert! Please check!';
+                                soundname = 'Default';
                             } else if (AlarmCode == '50') {
                                 Message = 'Vehicle ' + objVehicle.Name + ' External Power Cut alert! Please check!';
+                                soundname = 'sound50';
                             } else if (AlarmCode == '05') {
                                 Message = 'Vehicle ' + objVehicle.Name + ' Original Triggering alert! Please check!';
+                                soundname = 'Default';
                             } else if (AlarmCode == '02') {
                                 Message = 'Vehicle ' + objVehicle.Name + ' Line Broken alert! Please check!';
+                                soundname = 'Default';
                             } else if (AlarmCode == '52') {
                                 Message = 'Vehicle ' + objVehicle.Name + ' Veer Report alert! Please check!';
+                                soundname = 'Default';
                             } else if (AlarmCode == '60') {
                                 Message = 'Vehicle ' + objVehicle.Name + ' Fuel Driving alert! Please check!';
+                                soundname = 'Default';
                             } else if (AlarmCode == '71') {
                                 Message = 'Vehicle ' + objVehicle.Name + ' Crash alert! Please check!';
+                                soundname = 'Default';
                             } else if (AlarmCode == '72') {
                                 Message = 'Vehicle ' + objVehicle.Name + ' Acceleration alert! Please check!';
+                                soundname = 'Default';
                             } else if (AlarmCode == '81') {
                                 Message = 'Vehicle ' + objVehicle.Name + ' Fuel Loss alert! Please check!';
+                                soundname = 'Default';
+                            } else {
+                                soundname = 'Default';
                             }
 
                             var PushNotificationdata = {
                                 title: 'Alert',
                                 message: Message,
-                                Fence: 'Default',
+                                // Fence: 'Default',
+                                soundname: soundname,
                                 otherfields: {
                                     deviceid: DeviceId,
                                     Id: objVehicle.id,
@@ -2730,7 +2750,7 @@ var IsOnlineDeviceCheck = schedule.scheduleJob(rule, function() {
                     var timeDiff = Math.abs(date2.getTime() - date1.getTime());
                     var min = Math.floor(timeDiff / 60000);
                     console.log(resVehicle[i].deviceid + "    = " + min);
-                    if (min > 20) {
+                    if (min > 5) {
                         var objVehicleExist = resVehicle[i];
                         Vehicle.findOne({
                             where: {
