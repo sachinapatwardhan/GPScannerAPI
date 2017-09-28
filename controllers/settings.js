@@ -465,7 +465,7 @@ router.get('/GetAllDynamickHandshake', function(req, res) {
         search += ' where tu.idApp = ' + objParam.idApp;
     }
 
-    var query = "SELECT th.*, tv.iduser, tu.idApp FROM tblhandshake as th LEFT JOIN tblvehicle as tv ON th.DeviceId = tv.deviceid LEFT JOIN tbluserinformation AS tu ON tv.iduser = tu.id " + search +
+    var query = "SELECT th.Id,th.DeviceId,CONVERT_TZ(th.Datetime,'+00:00','" + CurrentOffset + "') as Datetime, tv.iduser, tu.idApp FROM tblhandshake as th LEFT JOIN tblvehicle as tv ON th.DeviceId = tv.deviceid LEFT JOIN tbluserinformation AS tu ON tv.iduser = tu.id " + search +
         " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
     var Countqry = "SELECT count(th.id) as TotalRecord FROM tblhandshake as th LEFT JOIN tblvehicle as tv ON th.DeviceId = tv.deviceid LEFT JOIN tbluserinformation AS tu ON tv.iduser = tu.id " + search;
     connection.query(query, function(err, response) {
