@@ -73,6 +73,8 @@ global.PushNotifications = require('node-pushnotifications');
 global.PushNotificationSettings = {
     gcm: {
         id: process.env.PushNotificationgcmid, // PUT YOUR GCM SERVER API KEY,
+        // id: 'AIzaSyDlPocDJjvWweDY_uaOmEkzqZQIUDbCGV8',
+        // id: 'AIzaSyD1uMEJM2cfegBmWOgqg3iJYFOlN6PWLE0',
         msgcnt: 1,
         dataDefaults: {
             delayWhileIdle: false,
@@ -93,6 +95,8 @@ global.PushNotificationSettings = {
         options: {
             cert: __dirname + "/certs/certdevelopment.pem",
             key: __dirname + "/certs/keyDevelopment.pem",
+            // cert: __dirname + "/certs/HCDevelopmnetCert.pem",
+            // key: __dirname + "/certs/HCDevelopmentKey.pem",
             // production: true
         }
     },
