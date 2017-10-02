@@ -489,7 +489,7 @@ router.get('/ExportTracker', function(req, res) {
 router.get('/GetGPSDeviceById', function(req, res) {
     GPSDevice.findOne({
         where: {
-            DeviceId: req.query.DeviceId
+            IMEI: req.query.IMEI
         }
     }).then(function(response) {
         res.json(response);
@@ -894,7 +894,7 @@ router.post('/SaveGPSDevice', jsonParser, function(req, res) {
     }
 });
 
-router.get('/UpdateStatus', function(req, res) {
+router.get('/UpdateStatusold', function(req, res) {
     objHeader = req.headers;
     var ExpiryDate = null;
     var ActivationDate = null;
@@ -926,6 +926,73 @@ router.get('/UpdateStatus', function(req, res) {
                         res.json({ success: true, message: "Tracker Status Updated successfully", data: response });
                     }
                 })
+            }
+        })
+    }
+})
+
+
+router.get('/UpdateStatus', function(req, res) {
+    objHeader = req.headers;
+    var ExpiryDate = null;
+    var ActivationDate = null;
+    if (req.query.IsActive == 1) {
+        var d = new Date();
+        var year = d.getFullYear();
+        var month = d.getMonth();
+        var day = d.getDate();
+        var c = new Date(year + 1, month, day)
+        ExpiryDate = c;
+        ActivationDate = d;
+    }
+    // var d = new Date();
+    // var year = d.getFullYear();
+    // var month = d.getMonth();
+    // var day = d.getDate();
+    // var c = new Date(year + 1, month, day)
+    // ExpiryDate = c;
+    // ActivationDate = d;
+
+    //Set parameters for user permission
+    req.query['tablename'] = req.headers['x-requested-with'];
+    var token = getToken(objHeader);
+    if (token) {
+        GPSDevice.findOne({
+            where: {
+                id: req.query.id,
+            }
+        }).then(function(ObjExist) {
+            if (ObjExist) {
+                // ObjExist.updateAttributes({
+                //     IsActive: req.query.IsActive,
+                //     ExpiryDate: ExpiryDate,
+                //     ActivationDate: ActivationDate
+                // }).then(function(response) {
+                //     if (response) {
+                //         res.json({ success: true, message: "Tracker Status Updated successfully", data: response });
+                //     }
+                // })
+
+                if ((req.query.flg == true || req.query.flg == 'true') || (req.query.dateFlag == true || req.query.dateFlag == 'true')) {
+                    ObjExist.updateAttributes({
+                        IsActive: req.query.IsActive,
+                        ExpiryDate: ExpiryDate,
+                        ActivationDate: ActivationDate
+                    }).then(function(response) {
+                        if (response) {
+                            res.json({ success: true, message: "Tracker Status Updated successfully", data: response });
+                        }
+                    })
+
+                } else {
+                    ObjExist.updateAttributes({
+                        IsActive: req.query.IsActive,
+                    }).then(function(response) {
+                        if (response) {
+                            res.json({ success: true, message: "Tracker Status Updated successfully", data: response });
+                        }
+                    })
+                }
             }
         })
     }
