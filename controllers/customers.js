@@ -1846,7 +1846,6 @@ var IsActiveDeviceCheck = schedule.scheduleJob('1 0 0 1,16 * *', function() {
         "inner join tblsimdetails tsd on tgd.idSim = tsd.id inner join tbltelco ttc on ttc.id = tsd.idTelCo " +
         "where ActivationDate between '" + Date1 + "' and '" + Date2 + "' and IsActive = true";
 
-    console.log('query', query)
     var lstDevice = [];
     connection.query(query, function(err, response, fields) {
         if (!err && response.length > 0) {
@@ -1944,7 +1943,6 @@ rule.second = 0;
 var ExpiryDateDeviceCheck = schedule.scheduleJob(rule, function() {
     var date = new Date();
     var Date1 = convertdateformat(date.setMonth(date.getMonth() + 1), 4);
-    console.log(Date1);
     //var Date2 = convertdateformat(new Date(), 2);
 
     //Expire After 1 month notification
@@ -1954,15 +1952,12 @@ var ExpiryDateDeviceCheck = schedule.scheduleJob(rule, function() {
         "inner join tblsimdetails tsd on tgd.idSim = tsd.id inner join tbltelco ttc on ttc.id = tsd.idTelCo " +
         "where Date(ExpiryDate) = '" + Date1 + "' and IsActive = true";
 
-    console.log('query1', query1)
 
     connection.query(query1, function(err, GpsExpirydevice, fields) {
-        console.log(GpsExpirydevice.length)
         if (!err && GpsExpirydevice.length > 0) {
             function SendExpiryNotification1(i) {
                 if (i < GpsExpirydevice.length) {
                     if (GpsExpirydevice[i].ExpiryDate != null) {
-                        console.log(GpsExpirydevice[i].DeviceId)
                         connection.query("SELECT id,Name,iduser,deviceid from tblvehicle where deviceid=" + GpsExpirydevice[i].DeviceId + " and IsDelete=false", function(err, Bikerows, fields) {
                             if (!err && Bikerows.length > 0) {
                                 var objVehicle = Bikerows[0];
@@ -2017,14 +2012,12 @@ var ExpiryDateDeviceCheck = schedule.scheduleJob(rule, function() {
         "inner join tblsimdetails tsd on tgd.idSim = tsd.id inner join tbltelco ttc on ttc.id = tsd.idTelCo " +
         "where Date(ExpiryDate) = '" + convertdateformat(new Date(new Date().getTime() + (15 * 24 * 60 * 60 * 1000)), 4) + "' and IsActive = true";
 
-    console.log('query2', query2)
 
     connection.query(query2, function(err, GpsExpirydevice, fields) {
         if (!err && GpsExpirydevice.length > 0) {
             function SendExpiryNotification2(i) {
                 if (i < GpsExpirydevice.length) {
                     if (GpsExpirydevice[i].ExpiryDate != null) {
-                        console.log(GpsExpirydevice[i].DeviceId)
                         connection.query("SELECT id,Name,iduser,deviceid from tblvehicle where deviceid=" + GpsExpirydevice[i].DeviceId + " and IsDelete=false", function(err, Bikerows, fields) {
                             if (!err && Bikerows.length > 0) {
                                 var objVehicle = Bikerows[0];
@@ -2079,14 +2072,12 @@ var ExpiryDateDeviceCheck = schedule.scheduleJob(rule, function() {
         "inner join tblsimdetails tsd on tgd.idSim = tsd.id inner join tbltelco ttc on ttc.id = tsd.idTelCo " +
         "where Date(ExpiryDate) = '" + convertdateformat(new Date(new Date().getTime() + (2 * 24 * 60 * 60 * 1000)), 4) + "' and IsActive = true";
 
-    console.log('query3', query3)
 
     connection.query(query3, function(err, GpsExpirydevice, fields) {
         if (!err && GpsExpirydevice.length > 0) {
             function SendExpiryNotification3(i) {
                 if (i < GpsExpirydevice.length) {
                     if (GpsExpirydevice[i].ExpiryDate != null) {
-                        console.log(GpsExpirydevice[i].DeviceId)
                         connection.query("SELECT id,Name,iduser,deviceid from tblvehicle where deviceid=" + GpsExpirydevice[i].DeviceId + " and IsDelete=false", function(err, Bikerows, fields) {
                             if (!err && Bikerows.length > 0) {
                                 var objVehicle = Bikerows[0];
@@ -2141,14 +2132,12 @@ var ExpiryDateDeviceCheck = schedule.scheduleJob(rule, function() {
         "inner join tblsimdetails tsd on tgd.idSim = tsd.id inner join tbltelco ttc on ttc.id = tsd.idTelCo " +
         "where Date(ExpiryDate) = '" + convertdateformat(new Date(), 4) + "' and IsActive = true";
 
-    console.log('query4', query4)
 
     connection.query(query4, function(err, GpsExpirydevice, fields) {
         if (!err && GpsExpirydevice.length > 0) {
             function SendExpiryNotification4(i) {
                 if (i < GpsExpirydevice.length) {
                     if (GpsExpirydevice[i].ExpiryDate != null) {
-                        console.log(GpsExpirydevice[i].DeviceId)
                         connection.query("SELECT id,Name,iduser,deviceid from tblvehicle where deviceid=" + GpsExpirydevice[i].DeviceId + " and IsDelete=false", function(err, Bikerows, fields) {
                             if (!err && Bikerows.length > 0) {
                                 var objVehicle = Bikerows[0];
