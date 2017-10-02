@@ -76,8 +76,11 @@ router.get('/GetVehicleById', function(req, res) {
 })
 
 router.get('/GetVehicleDetailById', function(req, res) {
-    var query = "SELECT tv.*, tgd.ExpiryDate, tgd.IsActive From tblvehicle as tv LEFT JOIN tblgpsdevice as tgd ON tgd.DeviceId = tv.deviceid WHERE tv.id = " + req.query.idVehicle + " LIMIT 1"
-        // console.log(query);
+    var query = "SELECT tv.*, tgd.ExpiryDate, tgd.IsActive, " +
+        " CONVERT_TZ(tv.InsurenceDate,'+00:00','" + CurrentOffset + "') as DisplayInsurenceDate, " +
+        " CONVERT_TZ(tv.PUCDate,'+00:00','" + CurrentOffset + "') as DisplayPUCDate, " +
+        " CONVERT_TZ(tv.PUCDate,'+00:00','" + CurrentOffset + "') as DisplayExpiryDate " +
+        " From tblvehicle as tv LEFT JOIN tblgpsdevice as tgd ON tgd.DeviceId = tv.deviceid WHERE tv.id = " + req.query.idVehicle + " LIMIT 1"
     connection.query(query, function(err, rows, fields) {
         if (!err) {
             res.json({ success: true, data: rows[0] });
@@ -530,6 +533,26 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                                 Vehicle.create(objVehicle).then(function(response) {
                                                     if (response) {
                                                         funAuditLog.CreateAuditLog('SaveVehicle', UserExist.username, 'Create Vehicle');
+                                                        GpsDevice.findOne({ where: { DeviceId: response.deviceid } }).then(function(GpsDataExist) {
+                                                            if (GpsDataExist) {
+                                                                var ExpiryDate = null;
+                                                                var ActivationDate = null;
+                                                                var d = new Date();
+                                                                var year = d.getFullYear();
+                                                                var month = d.getMonth();
+                                                                var day = d.getDate();
+                                                                var c = new Date(year + 1, month, day)
+                                                                ExpiryDate = c;
+                                                                ActivationDate = d;
+                                                                GpsDataExist.updateAttributes({
+                                                                    IsActive: 1,
+                                                                    ExpiryDate: ExpiryDate,
+                                                                    ActivationDate: ActivationDate,
+                                                                }).then(function(response1) {
+
+                                                                })
+                                                            }
+                                                        })
                                                         res.json({
                                                             success: true,
                                                             message: "Vehicle created successfully...",
@@ -920,6 +943,38 @@ router.get('/UpdateVehicleShare', jsonParser, function(req, res) {
     })
 
 })
+
+
+router.get('/UpdateInsurenceDate', jsonParser, function(req, res) {
+    var convertDate = convertdateformatForUnix(req.query.InsurenceDate);
+    var InsurenceDate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
+    console.log("Update tblvehicle set InsurenceDate='" + req.query.InsurenceDate + "' where deviceid=deviceid='" + req.query.DeviceId + "'")
+    connection.query("Update tblvehicle set InsurenceDate='" + req.query.InsurenceDate + "' where deviceid='" + req.query.DeviceId + "'", function(err, rows, fields) {
+        if (!err) {
+            res.json({ success: true, message: 'Insurence Date Save Successfully.' });
+        } else {
+            // console.log(err);
+            res.json({ success: false, message: 'Insurence Date could not save. Try again later.' });
+        }
+    })
+
+})
+
+router.get('/UpdatePUCDate', jsonParser, function(req, res) {
+    var convertDate = convertdateformatForUnix(req.query.PUCDate);
+    var PUCDate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
+    console.log("Update tblvehicle set PUCDate='" + req.query.PUCDate + "' where deviceid=deviceid='" + req.query.DeviceId + "'")
+    connection.query("Update tblvehicle set PUCDate='" + req.query.PUCDate + "' where deviceid='" + req.query.DeviceId + "'", function(err, rows, fields) {
+        if (!err) {
+            res.json({ success: true, message: 'PUC Date  Save Successfully.' });
+        } else {
+            // console.log(err);
+            res.json({ success: false, message: 'PUC Date could not save. Try again later.' });
+        }
+    })
+
+})
+
 
 
 module.exports = router
