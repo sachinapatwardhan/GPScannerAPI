@@ -7,7 +7,7 @@ var UserInRole = models.tbluserinrole;
 var DrivingData = models.tbldrivingdata;
 var GPSData = models.tblgpsdata;
 var Alarm = models.tblalarm;
-
+var DefaultValue = models.tbldefaultvalue;
 //End of Tables
 
 router.get('/GetAllDynamicVehicle', function(req, res) {
@@ -51,12 +51,11 @@ router.get('/GetAllDynamicVehicle', function(req, res) {
         }
     }
 
-
-
-    var qry = "Select vehicle.*,CONVERT_TZ(vehicle.HandshakDatetime,'+00:00','" + CurrentOffset + "') as DisplyHandshakDate,  " +
+    var qry = "Select vehicle.*,gpsdevice.IMEI,CONVERT_TZ(vehicle.HandshakDatetime,'+00:00','" + CurrentOffset + "') as DisplyHandshakDate,  " +
         "user.username AS username " +
         "FROM tblvehicle AS vehicle " +
-        "LEFT JOIN tbluserinformation AS user ON vehicle.iduser = user.id " + search +
+        " left join tblgpsdevice as gpsdevice on gpsdevice.DeviceId =vehicle.deviceid " +
+        " LEFT JOIN tbluserinformation AS user ON vehicle.iduser = user.id " + search +
         " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
     var Countqry = "SELECT count(vehicle.id) as TotalRecord " +
         "FROM tblvehicle AS vehicle " +
@@ -334,4 +333,96 @@ function convertdateformatForUnix(date1) {
 
 }
 
+router.get('/GetAllOnlineVehicle', function(req, res) {
+    var objParam = req.query;
+    var objColumns = objParam.columns;
+    var objOrderBy = objParam.order;
+    var objSearch = objParam.search;
+
+    var Orderby = objColumns[parseInt(objOrderBy[0].column)].data + ' ' + objOrderBy[0].dir;
+
+    var search = "";
+
+    if (objSearch != '' && objSearch != null && objSearch != undefined) {
+        search = 'Where (vehicle.Name like "%' + objSearch + '%" or ';
+        search = search + 'user.username like "%' + objSearch + '%" or ';
+        search = search + 'vehicle.deviceid like "%' + objSearch + '%" or ';
+        search = search + 'vehicle.BatteryPercentage like "%' + objSearch + '%" or ';
+        search = search + 'vehicle.HandshakDatetime like "%' + objSearch + '%" or ';
+        search = search + 'vehicle.DeviceType like "%' + objSearch + '%" ) ';
+        // search = search + 'vehicle.IsOnline like "%' + objSearch + '%") ';
+    }
+    // search = " where vehicle.IsOnline = 1";
+
+    if (objParam.UserId != null && objParam.UserId != '' && objParam.UserId != undefined) {
+        if (search != "") {
+            search += ' and vehicle.idSalesAgent = ' + objParam.UserId;
+        } else {
+            search += ' where vehicle.idSalesAgent = ' + objParam.UserId;
+        }
+    }
+
+    if (search != "") {
+        search += ' and vehicle.IsDelete = 0 ';
+    } else {
+        search += ' where vehicle.IsDelete = 0 ';
+    }
+    if (objParam.appId != null && objParam.appId != '' && objParam.appId != undefined) {
+        if (search != "") {
+            search += ' and user.idApp =' + objParam.appId;
+        } else {
+            search += ' Where user.idApp =' + objParam.appId;
+        }
+    }
+
+
+
+    var qry = "Select vehicle.*,CONVERT_TZ(vehicle.HandshakDatetime,'+00:00','" + CurrentOffset + "') as DisplyHandshakDate,  " +
+        "user.username AS username " +
+        "FROM tblvehicle AS vehicle " +
+        "LEFT JOIN tbluserinformation AS user ON vehicle.iduser = user.id " + search +
+        " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
+    console.log(qry)
+    var Countqry = "SELECT count(vehicle.id) as TotalRecord " +
+        "FROM tblvehicle AS vehicle " +
+        "LEFT JOIN tbluserinformation AS user ON vehicle.iduser = user.id " + search;
+
+    connection.query(qry, function(err, response) {
+        if (response != undefined) {
+            connection.query(Countqry, function(err, lstCount, fields) {
+                var response1 = new Object();
+                response1.draw = objParam.draw;
+                response1.recordsTotal = lstCount[0].TotalRecord;
+                response1.recordsFiltered = lstCount[0].TotalRecord;
+                response1.data = response;
+                res.json(response1);
+            });
+        } else {
+            var response1 = new Object();
+            response1.draw = objParam.draw;
+            response1.recordsTotal = 0;
+            response1.recordsFiltered = 0;
+            response1.data = [];
+            res.json(response1);
+        }
+    })
+});
+
+router.get('/getAllDefaultValue', function(req, res) {
+
+    DefaultValue.findAll().then(function(response) {
+        res.json(response);
+    });
+})
+
+router.get('/UpdateDefultValue', function(req, res) {
+    DefaultValue.findOne({ where: { Type: req.query.Type } }).then(function(objexist) {
+        objexist.updateAttributes({
+            Value: req.query.Value
+        }).then(function(response) {
+            res.json({ success: true, message: ' updated successfully', data: response });
+        });
+    })
+
+})
 module.exports = router
