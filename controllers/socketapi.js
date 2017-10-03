@@ -1438,7 +1438,7 @@ router.get('/SendCommandToDevice', function(req, res) {
                 uploader(i + 1);
             })
         } else {
-            res.json({ success: false, message: 'Default value send to device successfully.' });
+            res.json({ success: true, message: 'Default value send to device successfully.' });
         }
     }
     uploader(0);
