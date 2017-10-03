@@ -1383,6 +1383,57 @@ router.get('/GetCurrentLocation', function(req, res) {
 
 })
 
+router.get('/SendCommandToDevice', function(req, res) {
+    var objDevice = req.query.objDevice;
+
+    function uploader(i) {
+        if (i < objDevice.length) {
+            // var objMaxSpeed = new Object();
+            // objMaxSpeed.DeviceId = objDevice[i];
+            // objMaxSpeed.MaxSpeed = req.query.MaxSpeed;
+            // SetMaxSpeed(objMaxSpeed, function(data) {})
+            var objMaxSpeed = new Object();
+            objMaxSpeed.DeviceId = objDevice[i];
+            objMaxSpeed.Speed = req.query.MaxSpeed;
+            SendSpeedData(objMaxSpeed, function(data) {})
+
+            var objSleepMode = new Object();
+            objSleepMode.DeviceId = objDevice[i];
+            objSleepMode.SleepMode = req.query.SleepMode;
+            SetSleepMode(objSleepMode, function(data) {})
+
+            var objGPRSInterval = new Object();
+            objGPRSInterval.DeviceId = objDevice[i];
+            objGPRSInterval.TimeInterval = req.query.TimeInterval;
+            SetGPRSInterval(objGPRSInterval, function(data) {})
+
+            var objArm = new Object();
+            objArm.DeviceId = objDevice[i];
+            objArm.Arm = req.query.Arm;
+            SetArmSettings(objArm, function(data) {})
+
+            var objOdoMeter = new Object();
+            objOdoMeter.DeviceId = objDevice[i];
+            objOdoMeter.odometer = req.query.odometer;
+            SetOdometerSetting(objOdoMeter, function(data) {})
+
+            var objHeartbeatInterval = new Object();
+            objHeartbeatInterval.DeviceId = objDevice[i];
+            objHeartbeatInterval.TimeInterval = req.query.HeartbeatInterval;
+            SetHeartBeatInterval(objHeartbeatInterval, function(data) {})
+
+            var objGPRSStopInterval = new Object();
+            objGPRSStopInterval.DeviceId = objDevice[i];
+            objGPRSStopInterval.TimeInterval = req.query.GPRSStopInterval;
+            SetGPRSIntervalStopCar(objGPRSStopInterval, function(data) {
+                res.json({ success: false, message: 'Default value send to device successfully.' });
+                uploader(i + 1);
+            })
+        }
+    }
+    uploader(0);
+})
+
 //Set GPRS Interval Settings
 router.get('/SetGPRSInterval', function(req, res) {
     req.setTimeout(3600000);
