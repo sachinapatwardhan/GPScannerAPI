@@ -1249,8 +1249,21 @@ router.get('/SendSpeedData', function(req, res) {
     req.setTimeout(3600000);
     //GetLookAtMeDP3110a0f
     //Test Device 075034699503
-    var DeviceId = req.query.DeviceId;
-    var Speed = ('00' + decimalToHexString(parseInt(req.query.Speed) / 10)).slice(-2);
+    var obj = new Object();
+    obj.DeviceId = req.query.DeviceId;
+    obj.Speed = req.query.Speed;
+    SendSpeedData(obj, function(data) {
+        res.json(data);
+    })
+
+
+})
+
+//Set GPRS Interval Settings
+global.SendSpeedData = function(objdata, Callback) {
+
+    var DeviceId = objdata.DeviceId;
+    var Speed = ('00' + decimalToHexString(parseInt(objdata.Speed) / 10)).slice(-2);
 
     var Data = "40400012" + DeviceId + "4105" + Speed;
     Data = Data + CalculateCRCbyHex(Data) + '0D0A';
@@ -1266,7 +1279,7 @@ router.get('/SendSpeedData', function(req, res) {
                 Sendflag = true;
 
                 client.destroy();
-                res.json({ success: false, message: 'Device not connected. Try after 5 minute.' });
+                Callback({ success: false, message: 'Device not connected. Try after 5 minute.' });
                 // SendGSensorCommand(i + 1);
             };
 
@@ -1284,18 +1297,18 @@ router.get('/SendSpeedData', function(req, res) {
                 // res.json(objNavigation);
                 client.destroy(); // kill client after server's response
                 if (StatusCode == '01') {
-                    connection.query("Update tblvehicle set MaxSpeed=" + req.query.Speed + " where deviceid=" + DeviceId, function(err, rows, fields) {
-                        res.json({ success: true, message: 'Speed Settings Save Successfully.' });
+                    connection.query("Update tblvehicle set MaxSpeed=" + objdata.Speed + " where deviceid=" + DeviceId, function(err, rows, fields) {
+                        Callback({ success: true, message: 'Speed Settings Save Successfully.' });
                     });
                 } else {
-                    res.json({ success: false, message: 'Speed Settings could not save. Try again later.' });
+                    Callback({ success: false, message: 'Speed Settings could not save. Try again later.' });
                 }
 
             } else {
                 Sendflag = true;
 
                 client.destroy();
-                res.json({ success: false, message: 'Speed Settings could not save. Try again later.' });
+                Callback({ success: false, message: 'Speed Settings could not save. Try again later.' });
                 // SendGSensorCommand(i + 1);
             }
         };
@@ -1306,9 +1319,7 @@ router.get('/SendSpeedData', function(req, res) {
     client.on('close', function() {
         console.log('Connection closed');
     });
-
-
-})
+}
 
 //Get Current Location
 router.get('/GetCurrentLocation', function(req, res) {
@@ -1377,8 +1388,21 @@ router.get('/SetGPRSInterval', function(req, res) {
     req.setTimeout(3600000);
     //GetLookAtMeDP3110a0f
     //Test Device 075034699503
-    var DeviceId = req.query.DeviceId;
-    var TimeInterval = ('0000' + decimalToHexString(parseInt(req.query.TimeInterval) / 10)).slice(-4);
+    var obj = new Object();
+    obj.DeviceId = req.query.DeviceId;
+    obj.TimeInterval = req.query.TimeInterval;
+    SetGPRSInterval(obj, function(data) {
+        res.json(data);
+    })
+
+
+})
+
+//Set GPRS Interval Settings
+global.SetGPRSInterval = function(objdata, Callback) {
+
+    var DeviceId = objdata.DeviceId;
+    var TimeInterval = ('0000' + decimalToHexString(parseInt(objdata.TimeInterval) / 10)).slice(-4);
 
     var Data = "40400013" + DeviceId + "4102" + TimeInterval;
     Data = Data + CalculateCRCbyHex(Data) + '0D0A';
@@ -1394,7 +1418,7 @@ router.get('/SetGPRSInterval', function(req, res) {
                 Sendflag = true;
 
                 client.destroy();
-                res.json({ success: false, message: 'Device not connected. Try after 5 minute.' });
+                Callback({ success: false, message: 'Device not connected. Try after 5 minute.' });
                 // SendGSensorCommand(i + 1);
             };
 
@@ -1412,18 +1436,18 @@ router.get('/SetGPRSInterval', function(req, res) {
                 // res.json(objNavigation);
                 client.destroy(); // kill client after server's response
                 if (StatusCode == '01') {
-                    connection.query("Update tblvehicle set GPRSInterval=" + req.query.TimeInterval + " where deviceid=" + DeviceId, function(err, rows, fields) {
-                        res.json({ success: true, message: 'GPRS Interval Settings Save Successfully.' });
+                    connection.query("Update tblvehicle set GPRSInterval=" + objdata.TimeInterval + " where deviceid=" + DeviceId, function(err, rows, fields) {
+                        Callback({ success: true, message: 'GPRS Interval Settings Save Successfully.' });
                     });
                 } else {
-                    res.json({ success: false, message: 'GPRS Interval Settings could not save. Try again later.' });
+                    Callback({ success: false, message: 'GPRS Interval Settings could not save. Try again later.' });
                 }
 
             } else {
                 Sendflag = true;
 
                 client.destroy();
-                res.json({ success: false, message: 'GPRS Interval Settings could not save. Try again later.' });
+                Callback({ success: false, message: 'GPRS Interval Settings could not save. Try again later.' });
                 // SendGSensorCommand(i + 1);
             }
         };
@@ -1434,9 +1458,7 @@ router.get('/SetGPRSInterval', function(req, res) {
     client.on('close', function() {
         console.log('Connection closed');
     });
-
-
-})
+}
 
 //Factory Restet
 router.get('/FectoryReset', function(req, res) {
@@ -1575,8 +1597,19 @@ router.get('/SetSleepMode', function(req, res) {
     req.setTimeout(3600000);
     //GetLookAtMeDP3110a0f
     //Test Device 075034699503
-    var DeviceId = req.query.DeviceId;
-    var SleepMode = ('00' + decimalToHexString(parseInt(req.query.SleepMode))).slice(-2);
+    var obj = new Object();
+    obj.DeviceId = req.query.DeviceId;
+    obj.SleepMode = req.query.SleepMode;
+    SetSleepMode(obj, function(data) {
+        res.json(data);
+    })
+})
+
+//Set Sleep Mode
+global.SetSleepMode = function(objdata, Callback) {
+
+    var DeviceId = objdata.DeviceId;
+    var SleepMode = ('00' + decimalToHexString(parseInt(objdata.SleepMode))).slice(-2);
 
     var Data = "40400012" + DeviceId + "4113" + SleepMode;
     Data = Data + CalculateCRCbyHex(Data) + '0D0A';
@@ -1593,7 +1626,7 @@ router.get('/SetSleepMode', function(req, res) {
                 Sendflag = true;
 
                 client.destroy();
-                res.json({ success: false, message: 'Device not connected. Try after 5 minute.' });
+                Callback({ success: false, message: 'Device not connected. Try after 5 minute.' });
                 // SendGSensorCommand(i + 1);
             };
 
@@ -1611,18 +1644,18 @@ router.get('/SetSleepMode', function(req, res) {
                 // res.json(objNavigation);
                 client.destroy(); // kill client after server's response
                 if (StatusCode == '01') {
-                    connection.query("Update tblvehicle set SleepMode=" + req.query.SleepMode + " where deviceid=" + DeviceId, function(err, rows, fields) {
-                        res.json({ success: true, message: 'Sleep Mode Save Successfully.' });
+                    connection.query("Update tblvehicle set SleepMode=" + objdata.SleepMode + " where deviceid=" + DeviceId, function(err, rows, fields) {
+                        Callback({ success: true, message: 'Sleep Mode Save Successfully.' });
                     });
                 } else {
-                    res.json({ success: false, message: 'Sleep Mode could not save. Try again later.' });
+                    Callback({ success: false, message: 'Sleep Mode could not save. Try again later.' });
                 }
 
             } else {
                 Sendflag = true;
 
                 client.destroy();
-                res.json({ success: false, message: 'Sleep Mode could not save. Try again later.' });
+                Callback({ success: false, message: 'Sleep Mode could not save. Try again later.' });
                 // SendGSensorCommand(i + 1);
             }
         };
@@ -1633,9 +1666,7 @@ router.get('/SetSleepMode', function(req, res) {
     client.on('close', function() {
         console.log('Connection closed');
     });
-
-
-})
+}
 
 //Set Output Control Settings
 router.get('/SetOutputControl', function(req, res) {
@@ -1830,8 +1861,21 @@ router.get('/SetGPRSIntervalStopCar', function(req, res) {
     req.setTimeout(3600000);
     //GetLookAtMeDP3110a0f
     //Test Device 075034699503
-    var DeviceId = req.query.DeviceId;
-    var TimeInterval = ('0000' + decimalToHexString(parseInt(req.query.TimeInterval) / 10)).slice(-4);
+    var obj = new Object();
+    obj.DeviceId = req.query.DeviceId;
+    obj.TimeInterval = req.query.TimeInterval;
+    SetGPRSIntervalStopCar(obj, function(data) {
+        res.json(data);
+    })
+
+
+})
+
+//Set GPRS Interval Settings When Car in Stop
+global.SetGPRSIntervalStopCar = function(objdata, Callback) {
+
+    var DeviceId = objdata.DeviceId;
+    var TimeInterval = ('0000' + decimalToHexString(parseInt(objdata.TimeInterval) / 10)).slice(-4);
 
     var Data = "40400013" + DeviceId + "4126" + TimeInterval;
     Data = Data + CalculateCRCbyHex(Data) + '0D0A';
@@ -1847,7 +1891,7 @@ router.get('/SetGPRSIntervalStopCar', function(req, res) {
                 Sendflag = true;
 
                 client.destroy();
-                res.json({ success: false, message: 'Device not connected. Try after 5 minute.' });
+                Callback({ success: false, message: 'Device not connected. Try after 5 minute.' });
                 // SendGSensorCommand(i + 1);
             };
 
@@ -1865,18 +1909,18 @@ router.get('/SetGPRSIntervalStopCar', function(req, res) {
                 // res.json(objNavigation);
                 client.destroy(); // kill client after server's response
                 if (StatusCode == '01') {
-                    connection.query("Update tblvehicle set GPRSStopInterval=" + req.query.TimeInterval + " where deviceid=" + DeviceId, function(err, rows, fields) {
-                        res.json({ success: true, message: 'GPRS Interval Settings for Stop Car Save Successfully.' });
+                    connection.query("Update tblvehicle set GPRSStopInterval=" + objdata.TimeInterval + " where deviceid=" + DeviceId, function(err, rows, fields) {
+                        Callback({ success: true, message: 'GPRS Interval Settings for Stop Car Save Successfully.' });
                     });
                 } else {
-                    res.json({ success: false, message: 'GPRS Interval Settings for Stop Car could not save. Try again later.' });
+                    Callback({ success: false, message: 'GPRS Interval Settings for Stop Car could not save. Try again later.' });
                 }
 
             } else {
                 Sendflag = true;
 
                 client.destroy();
-                res.json({ success: false, message: 'GPRS Interval Settings for Stop Car could not save. Try again later.' });
+                Callback({ success: false, message: 'GPRS Interval Settings for Stop Car could not save. Try again later.' });
                 // SendGSensorCommand(i + 1);
             }
         };
@@ -1887,9 +1931,7 @@ router.get('/SetGPRSIntervalStopCar', function(req, res) {
     client.on('close', function() {
         console.log('Connection closed');
     });
-
-
-})
+}
 
 //Set TimeZone Settings
 router.get('/SetTimeZone', function(req, res) {
@@ -1969,8 +2011,21 @@ router.get('/SetOdometerSetting', function(req, res) {
     req.setTimeout(3600000);
     //GetLookAtMeDP3110a0f
     //Test Device 075034699503
-    var DeviceId = req.query.DeviceId;
-    var odometer = a2hex(('0000' + req.query.odometer).slice(-4));
+    var obj = new Object();
+    obj.DeviceId = req.query.DeviceId;
+    obj.odometer = req.query.odometer;
+    SetOdometerSetting(obj, function(data) {
+        res.json(data);
+    })
+
+
+})
+
+//Set Initial ODOmeter Settings
+global.SetOdometerSetting = function(objdata, Callback) {
+
+    var DeviceId = objdata.DeviceId;
+    var odometer = a2hex(('0000' + objdata.odometer).slice(-4));
 
     var Data = "40400015" + DeviceId + "4145" + odometer;
     Data = Data + CalculateCRCbyHex(Data) + '0D0A';
@@ -1987,7 +2042,7 @@ router.get('/SetOdometerSetting', function(req, res) {
                 Sendflag = true;
 
                 client.destroy();
-                res.json({ success: false, message: 'Device not connected. Try after 5 minute.' });
+                Callback({ success: false, message: 'Device not connected. Try after 5 minute.' });
                 // SendGSensorCommand(i + 1);
             };
 
@@ -2005,10 +2060,10 @@ router.get('/SetOdometerSetting', function(req, res) {
                 // res.json(objNavigation);
                 client.destroy(); // kill client after server's response
                 if (StatusCode == '01') {
-                    res.json({ success: true, message: 'Odometer settings Save Successfully.' });
+                    Callback({ success: true, message: 'Odometer settings Save Successfully.' });
                 } else {
-                    connection.query("Update tblvehicle set OdoMeter=" + req.query.odometer + " where deviceid=" + DeviceId, function(err, rows, fields) {
-                        res.json({ success: false, message: 'Odometer settings could not save. Try again later.' });
+                    connection.query("Update tblvehicle set OdoMeter=" + objdata.odometer + " where deviceid=" + DeviceId, function(err, rows, fields) {
+                        Callback({ success: false, message: 'Odometer settings could not save. Try again later.' });
                     });
                 }
 
@@ -2016,7 +2071,7 @@ router.get('/SetOdometerSetting', function(req, res) {
                 Sendflag = true;
 
                 client.destroy();
-                res.json({ success: false, message: 'Odometer settings could not save. Try again later.' });
+                Callback({ success: false, message: 'Odometer settings could not save. Try again later.' });
                 // SendGSensorCommand(i + 1);
             }
         };
@@ -2028,8 +2083,7 @@ router.get('/SetOdometerSetting', function(req, res) {
         console.log('Connection closed');
     });
 
-
-})
+}
 
 //Set HeartBeat Interval Settings
 router.get('/SetHeartBeatInterval', function(req, res) {
@@ -2037,9 +2091,22 @@ router.get('/SetHeartBeatInterval', function(req, res) {
     //GetLookAtMeDP3110a0f
     //Test Device 075034699503  
     //404018580420800457925119326b320d0a
+    var obj = new Object();
+    obj.DeviceId = req.query.DeviceId;
+    obj.TimeInterval = req.query.TimeInterval;
+    SetHeartBeatInterval(obj, function(data) {
+        res.json(data);
+    })
+
+
+})
+
+//Set HeartBeat Interval Settings
+global.SetHeartBeatInterval = function(objdata, Callback) {
+
     var packetLength = 17;
-    var DeviceId = req.query.DeviceId;
-    var TimeInterval = a2hex(req.query.TimeInterval);
+    var DeviceId = objdata.DeviceId;
+    var TimeInterval = a2hex(objdata.TimeInterval);
     packetLength = packetLength + (TimeInterval.length / 2);
 
     var Data = "4040" + ('0000' + packetLength.toString(16)).slice(-4) + DeviceId + "5119" + TimeInterval;
@@ -2056,7 +2123,7 @@ router.get('/SetHeartBeatInterval', function(req, res) {
                 Sendflag = true;
 
                 client.destroy();
-                res.json({ success: false, message: 'Device not connected. Try after 5 minute.' });
+                Callback({ success: false, message: 'Device not connected. Try after 5 minute.' });
                 // SendGSensorCommand(i + 1);
             };
 
@@ -2074,18 +2141,18 @@ router.get('/SetHeartBeatInterval', function(req, res) {
                 // res.json(objNavigation);
                 client.destroy(); // kill client after server's response
                 if (StatusCode == '01') {
-                    connection.query("Update tblvehicle set HeartbeatInterval=" + req.query.TimeInterval + " where deviceid=" + DeviceId, function(err, rows, fields) {
-                        res.json({ success: true, message: 'HeartBeat Interval Settings Save Successfully.' });
+                    connection.query("Update tblvehicle set HeartbeatInterval=" + objdata.TimeInterval + " where deviceid=" + DeviceId, function(err, rows, fields) {
+                        Callback({ success: true, message: 'HeartBeat Interval Settings Save Successfully.' });
                     });
                 } else {
-                    res.json({ success: false, message: 'HeartBeat Interval Settings could not save. Try again later.' });
+                    Callback({ success: false, message: 'HeartBeat Interval Settings could not save. Try again later.' });
                 }
 
             } else {
                 Sendflag = true;
 
                 client.destroy();
-                res.json({ success: false, message: 'HeartBeat Interval Settings could not save. Try again later.' });
+                Callback({ success: false, message: 'HeartBeat Interval Settings could not save. Try again later.' });
                 // SendGSensorCommand(i + 1);
             }
         };
@@ -2097,8 +2164,7 @@ router.get('/SetHeartBeatInterval', function(req, res) {
         console.log('Connection closed');
     });
 
-
-})
+}
 
 //Clear data Logger
 router.get('/ClearDataLogger', function(req, res) {
