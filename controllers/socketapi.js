@@ -1259,7 +1259,7 @@ router.get('/SendSpeedData', function(req, res) {
 
 })
 
-//Set GPRS Interval Settings
+//Send Speed Data
 global.SendSpeedData = function(objdata, Callback) {
 
     var DeviceId = objdata.DeviceId;
