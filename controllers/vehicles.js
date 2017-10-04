@@ -352,7 +352,7 @@ router.get('/GetAllOnlineVehicle', function(req, res) {
         search = search + 'vehicle.DeviceType like "%' + objSearch + '%" ) ';
         // search = search + 'vehicle.IsOnline like "%' + objSearch + '%") ';
     }
-    // search = " where vehicle.IsOnline = 1";
+    search = " where vehicle.IsOnline = 1";
 
     if (objParam.UserId != null && objParam.UserId != '' && objParam.UserId != undefined) {
         if (search != "") {
@@ -425,4 +425,31 @@ router.get('/UpdateDefultValue', function(req, res) {
     })
 
 })
+
+router.get('/GetAllNotAssignDevice', function(req, res) {
+    var query = "select id, DeviceId from tblgpsdevice  where DeviceId not in (select deviceid from tblvehicle)";
+    connection.query(query, function(err, rows, fields) {
+        if (!err) {
+            res.json({ success: true, data: rows });
+        } else {
+            res.json({ success: false, data: [] });
+        }
+    })
+})
+
+
+router.get('/TransferDevicetoUser', function(req, res) {
+    // var query = "Update tblvehicle set deviceid = '" + req.query.deviceid + "' where iduser = '" + req.query.iduser + "' and deviceid = '" + req.query.olddeviceid + "'";
+    // var query = "Update tblvehicle set deviceid = '" + req.query.deviceid + "', MaxSpeed='0.0' where id = '" + req.query.id + "'";
+    var query = "update tblvehicle left join tblfence on tblvehicle.deviceid = tblfence.deviceId set  tblvehicle.deviceid='" + req.query.deviceid + "' ,tblfence.deviceId  = '" + req.query.deviceid + "' ,tblvehicle.MaxSpeed = 0 where tblvehicle.id= '" + req.query.id + "'"
+    connection.query(query, function(err, rows, fields) {
+        if (!err) {
+            res.json({ success: true, message: "Device Trasfer successfully..", data: rows });
+        } else {
+            res.json({ success: false, data: [] });
+        }
+    })
+})
+
+
 module.exports = router
