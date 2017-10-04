@@ -444,7 +444,7 @@ router.get('/TransferDevicetoUser', function(req, res) {
     var query = "update tblvehicle left join tblfence on tblvehicle.deviceid = tblfence.deviceId set  tblvehicle.deviceid='" + req.query.deviceid + "' ,tblfence.deviceId  = '" + req.query.deviceid + "' ,tblvehicle.MaxSpeed = 0 where tblvehicle.id= '" + req.query.id + "'"
     connection.query(query, function(err, rows, fields) {
         if (!err) {
-            res.json({ success: true, message: "Device Trasfer successfully..", data: rows });
+            res.json({ success: true, message: "Device Transfer successfully..", data: rows });
         } else {
             res.json({ success: false, data: [] });
         }
