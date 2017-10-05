@@ -494,7 +494,8 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                         if (objGpsDevice != null) {
                             if (objVehicle.id == 0) {
                                 objVehicle.IsOnline = false;
-                                objVehicle.CreatedDate = GetCurrentDate();
+                                // objVehicle.CreatedDate = GetCurrentDate();
+                                objVehicle.CreatedDate = new Date();
                                 objVehicle.DeviceType = objGpsDevice.Type;
                                 Vehicle.findOne({
                                     where: {
