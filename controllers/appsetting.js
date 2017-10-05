@@ -56,6 +56,7 @@ router.post('/SaveAppVesionInfo', jsonParser, function(req, res) {
                 if (objAppVersion.id == 0) {
                     AppVersion.create(objAppVersion).then(function(response) {
                         if (response) {
+                            funAuditLog.CreateAuditLog('Save App Version', decoded.username, 'Save App Version');
                             res.json({
                                 success: true,
                                 message: "App Version created successfully...",
@@ -76,7 +77,7 @@ router.post('/SaveAppVesionInfo', jsonParser, function(req, res) {
                         }
                     }).then(function(response) {
                         if (response[0]) {
-                            // funAuditLog.CreateAuditLog('SaveVehicle', decoded.username, 'Update Vehicle');
+                            funAuditLog.CreateAuditLog('Update App Version', decoded.username, 'Update App Version');
                             res.json({
                                 success: true,
                                 message: "App Version updated successfully...",
@@ -120,7 +121,7 @@ router.get('/DeleteAppVersion', function(req, res) {
                         }
                     }).then(function(response) {
                         if (response) {
-                            funAuditLog.CreateAuditLog('DeleteSim', UserExist.username, 'Delete SIm');
+                            funAuditLog.CreateAuditLog('Delete Version', UserExist.username, 'Delete Version');
                             res.json({
                                 success: true,
                                 message: "App Version successfully...",

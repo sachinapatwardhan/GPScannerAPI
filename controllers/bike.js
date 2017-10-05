@@ -448,10 +448,18 @@ function convertdateformatForUnix(date1) {
 router.get('/SaveVehicle', jsonParser, function(req, res) {
     objVehicle = req.query;
     objVehicle.IsDelete = false;
-    console.log(objVehicle);
     objHeader = req.headers;
     var token = getToken(objHeader);
     var search = {};
+    var ExpiryDate = null;
+    var ActivationDate = null;
+    var d = new Date();
+    var year = d.getFullYear();
+    var month = d.getMonth();
+    var day = d.getDate();
+    var c = new Date(year + 1, month, day)
+    ExpiryDate = c;
+    ActivationDate = d;
     search['$and'] = [];
     if (objVehicle.AppName != null && objVehicle.AppName != undefined && objVehicle.AppName != '') {
         var obj = new Object();
@@ -502,7 +510,19 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                             }
                                         }).then(function(response) {
                                             if (response[0]) {
-                                                funAuditLog.CreateAuditLog('SaveVehicle', UserExist.username, 'Create Vehicle');
+                                                funAuditLog.CreateAuditLog('SaveVehicle(IMEI:' + objVehicle.IMEI + ')', UserExist.username, 'Create Vehicle');
+                                                GpsDevice.findOne({ where: { DeviceId: objVehicle.deviceid } }).then(function(GpsDataExist) {
+                                                    if (GpsDataExist) {
+                                                        funAuditLog.CreateAuditLog('SaveDate', UserExist.username, 'Save Vehicle Expiry & Activation Date');
+                                                        GpsDataExist.updateAttributes({
+                                                            IsActive: 1,
+                                                            ExpiryDate: ExpiryDate,
+                                                            ActivationDate: ActivationDate,
+                                                        }).then(function(response1) {
+
+                                                        })
+                                                    }
+                                                })
                                                 res.json({
                                                     success: true,
                                                     message: "Vehicle created successfully...",
@@ -532,18 +552,20 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                             } else {
                                                 Vehicle.create(objVehicle).then(function(response) {
                                                     if (response) {
-                                                        funAuditLog.CreateAuditLog('SaveVehicle', UserExist.username, 'Create Vehicle');
+                                                        funAuditLog.CreateAuditLog('SaveVehicle(IMEI:' + objVehicle.IMEI + ')', UserExist.username, 'Create Vehicle');
                                                         GpsDevice.findOne({ where: { DeviceId: response.deviceid } }).then(function(GpsDataExist) {
                                                             if (GpsDataExist) {
-                                                                var ExpiryDate = null;
-                                                                var ActivationDate = null;
-                                                                var d = new Date();
-                                                                var year = d.getFullYear();
-                                                                var month = d.getMonth();
-                                                                var day = d.getDate();
-                                                                var c = new Date(year + 1, month, day)
-                                                                ExpiryDate = c;
-                                                                ActivationDate = d;
+                                                                funAuditLog.CreateAuditLog('SaveDate', UserExist.username, 'Save Vehicle Expiry & Activation Date');
+
+                                                                // var ExpiryDate = null;
+                                                                // var ActivationDate = null;
+                                                                // var d = new Date();
+                                                                // var year = d.getFullYear();
+                                                                // var month = d.getMonth();
+                                                                // var day = d.getDate();
+                                                                // var c = new Date(year + 1, month, day)
+                                                                // ExpiryDate = c;
+                                                                // ActivationDate = d;
                                                                 GpsDataExist.updateAttributes({
                                                                     IsActive: 1,
                                                                     ExpiryDate: ExpiryDate,

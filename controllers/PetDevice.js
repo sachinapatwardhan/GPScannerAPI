@@ -845,7 +845,7 @@ router.post('/SaveGPSDevice', jsonParser, function(req, res) {
                             objGPSDevice.CreatedBy = decoded.username;
                             GPSDevice.findOrCreate({ where: { DeviceId: objGPSDevice.DeviceId }, defaults: objGPSDevice }).then(function(response) {
                                 if ((response[1])) {
-                                    funAuditLog.CreateAuditLog('SaveGPSDevice', UserExist.username, 'Create Pet Device');
+                                    funAuditLog.CreateAuditLog('SaveGPSDevice', UserExist.username, 'Create GPS Tracker Device');
                                     res.json({ success: true, message: "Tracker created successfully...", data: response });
                                 } else {
                                     res.json({ success: false, message: "Tracker already exist...", data: response });
@@ -872,7 +872,7 @@ router.post('/SaveGPSDevice', jsonParser, function(req, res) {
                                 } else {
                                     GPSDevice.update(objGPSDevice, { where: { id: objGPSDevice.id } }).then(function(response) {
                                         if (response[0]) {
-                                            funAuditLog.CreateAuditLog('SaveGPSDevice', UserExist.username, 'Update Pet Device');
+                                            funAuditLog.CreateAuditLog('SaveGPSDevice', UserExist.username, 'Update GPS Tracker Device');
                                             res.json({ success: true, message: "Tracker updated successfully", data: response });
                                         } else {
                                             res.json({ success: false, message: "Tracker Is Not updated", data: response });
@@ -980,15 +980,18 @@ router.get('/UpdateStatus', function(req, res) {
                         ActivationDate: ActivationDate
                     }).then(function(response) {
                         if (response) {
+                            funAuditLog.CreateAuditLog('update tracker status', UserExist.username, 'update tracker status IsActive');
                             res.json({ success: true, message: "Tracker Status Updated successfully", data: response });
                         }
                     })
 
                 } else {
+
                     ObjExist.updateAttributes({
                         IsActive: req.query.IsActive,
                     }).then(function(response) {
                         if (response) {
+                            funAuditLog.CreateAuditLog('update tracker status', UserExist.username, 'update tracker status IsActive');
                             res.json({ success: true, message: "Tracker Status Updated successfully", data: response });
                         }
                     })

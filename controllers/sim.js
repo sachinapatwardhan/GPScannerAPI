@@ -6,12 +6,11 @@ var SIM = models.tblsimdetails;
 //End of Tables
 
 router.get('/GetAllSIMInfo', function(req, res) {
-    var query = "SELECT ts.id,ts.SerialNum,ts.PhoneNum,CONVERT_TZ(ts.CreatedDate,'+00:00','" + CurrentOffset + "') as CreatedDate, tt.Name as TelName from tblsimdetails as ts LEFT JOIN tbltelco as tt ON ts.idTelCo = tt.id ORDER BY CreatedDate DESC";
+    var query = "SELECT ts.id,ts.SerialNum,ts.PhoneNum,CONVERT_TZ(ts.CreatedDate,'+00:00','" + CurrentOffset + "') as CreatedDate, tt.Name as TelName,tt.id as idTelCo from tblsimdetails as ts LEFT JOIN tbltelco as tt ON ts.idTelCo = tt.id ORDER BY CreatedDate DESC";
     connection.query(query, function(err, response) {
         if (response != undefined) {
             res.json(response);
         } else {
-            console.log(err);
             var response1 = new Object();
             res.json(response1);
         }
@@ -62,6 +61,7 @@ router.post('/SaveSIMInfo', jsonParser, function(req, res) {
 
                     SIM.findOrCreate({ where: { SerialNum: objSIMInfo.SerialNum }, defaults: objSIMInfo }).then(function(response) {
                         if ((response[1])) {
+                            funAuditLog.CreateAuditLog('Save SIM', UserExist.username, 'Cerate New SIM Data');
                             res.json({ success: true, message: "SIM Info created successfully...", data: response });
                         } else {
                             res.json({ success: false, message: "SIM Info is already Exist...", data: response });
@@ -88,6 +88,7 @@ router.post('/SaveSIMInfo', jsonParser, function(req, res) {
                         } else {
                             SIM.update(objSIMInfo, { where: { id: objSIMInfo.Id } }).then(function(response) {
                                 if (response[0]) {
+                                    funAuditLog.CreateAuditLog('Update SIM', UserExist.username, 'Update SIM Data');
                                     res.json({ success: true, message: "SIM Info updated successfully...", data: response });
                                 }
                             })
@@ -129,7 +130,7 @@ router.get('/DeleteSIMInfo', function(req, res) {
                         }
                     }).then(function(response) {
                         if (response) {
-                            funAuditLog.CreateAuditLog('DeleteSim', UserExist.username, 'Delete SIm');
+                            funAuditLog.CreateAuditLog('DeleteSIM', UserExist.username, 'Delete SIM');
                             res.json({
                                 success: true,
                                 message: "SIM deleted successfully...",
@@ -227,6 +228,7 @@ router.post('/uploadExcelDevice', function(req, res) {
                                     defaults: obj
                                 }).then(function(response) {
                                     if ((response[1])) {
+                                        // funAuditLog.CreateAuditLog('Upload SIM Data', UserExist.username, 'Cerate New SIM Data');
                                         addSIm(i + 1);
                                     } else {
                                         Importerror.push(lst[i].SerialNumber);

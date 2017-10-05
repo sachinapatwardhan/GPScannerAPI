@@ -82,7 +82,7 @@ router.post('/SaveAppInfo', jsonParser, function(req, res) {
                     objAppInfo.CreatedBy = decoded.username;
                     AppInfo.findOrCreate({ where: { AppName: objAppInfo.AppName }, defaults: objAppInfo }).then(function(response) {
                         if (response[0]) {
-                            funAuditLog.CreateAuditLog('SaveAppInfo', decoded.username, 'Create Appinfo');
+                            funAuditLog.CreateAuditLog('SaveApp', decoded.username, 'Create App Info');
                             res.json({
                                 success: true,
                                 message: "App Info created successfully...",
@@ -107,7 +107,7 @@ router.post('/SaveAppInfo', jsonParser, function(req, res) {
                         }
                     }).then(function(response) {
                         if (response[0]) {
-                            funAuditLog.CreateAuditLog('SaveVehicle', decoded.username, 'Update Vehicle');
+                            funAuditLog.CreateAuditLog('Update App', decoded.username, 'Update App Info');
                             res.json({
                                 success: true,
                                 message: "App Info updated successfully...",
@@ -170,7 +170,7 @@ router.get('/DeleteAppInfo', function(req, res) {
                         if (response) {
                             // response.updateAttributes({ IsDelete: true }).then(function(resUpdate) {
                             response.destroy().then(function(resUpdate) {
-                                funAuditLog.CreateAuditLog('DeleteAppInfo', UserExist.username, 'Delete AppInfo');
+                                funAuditLog.CreateAuditLog('DeleteApp', UserExist.username, 'Delete App Info');
                                 res.json({
                                     success: true,
                                     message: "App Info Deleted Successfully",

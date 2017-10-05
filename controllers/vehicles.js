@@ -416,13 +416,30 @@ router.get('/getAllDefaultValue', function(req, res) {
 })
 
 router.get('/UpdateDefultValue', function(req, res) {
-    DefaultValue.findOne({ where: { Type: req.query.Type } }).then(function(objexist) {
-        objexist.updateAttributes({
-            Value: req.query.Value
-        }).then(function(response) {
-            res.json({ success: true, message: ' updated successfully', data: response });
-        });
-    })
+    objHeader = req.headers;
+    var token = getToken(objHeader);
+    if (token) {
+        var decoded = jwt.decode(token, TokenKey);
+        User.findOne({
+            where: {
+                username: decoded.username,
+                password: decoded.password
+            }
+        }).then(function(UserExist) {
+            if (UserExist != null) {
+                DefaultValue.findOne({ where: { Type: req.query.Type } }).then(function(objexist) {
+                    objexist.updateAttributes({
+                        Value: req.query.Value
+                    }).then(function(response) {
+                        funAuditLog.CreateAuditLog('Update Default value', UserExist.username, 'Update Default value of ' + req.query.Type);
+                        res.json({ success: true, message: ' updated successfully', data: response });
+                    });
+                })
+            } else {
+                res.json(InvalidToken);
+            }
+        })
+    }
 
 })
 
@@ -441,14 +458,31 @@ router.get('/GetAllNotAssignDevice', function(req, res) {
 router.get('/TransferDevicetoUser', function(req, res) {
     // var query = "Update tblvehicle set deviceid = '" + req.query.deviceid + "' where iduser = '" + req.query.iduser + "' and deviceid = '" + req.query.olddeviceid + "'";
     // var query = "Update tblvehicle set deviceid = '" + req.query.deviceid + "', MaxSpeed='0.0' where id = '" + req.query.id + "'";
-    var query = "update tblvehicle left join tblfence on tblvehicle.deviceid = tblfence.deviceId set  tblvehicle.deviceid='" + req.query.deviceid + "' ,tblfence.deviceId  = '" + req.query.deviceid + "' ,tblvehicle.MaxSpeed = 0 where tblvehicle.id= '" + req.query.id + "'"
-    connection.query(query, function(err, rows, fields) {
-        if (!err) {
-            res.json({ success: true, message: "Device Transfer successfully..", data: rows });
-        } else {
-            res.json({ success: false, data: [] });
-        }
-    })
+    objHeader = req.headers;
+    var token = getToken(objHeader);
+    if (token) {
+        var decoded = jwt.decode(token, TokenKey);
+        User.findOne({
+            where: {
+                username: decoded.username,
+                password: decoded.password
+            }
+        }).then(function(UserExist) {
+            if (UserExist != null) {
+                var query = "update tblvehicle left join tblfence on tblvehicle.deviceid = tblfence.deviceId set  tblvehicle.deviceid='" + req.query.deviceid + "' ,tblfence.deviceId  = '" + req.query.deviceid + "' ,tblvehicle.MaxSpeed = 0 where tblvehicle.id= '" + req.query.id + "'"
+                connection.query(query, function(err, rows, fields) {
+                    if (!err) {
+                        funAuditLog.CreateAuditLog('Transfer Device', UserExist.username, 'Transfer Device (' + req.query.olddeviceid + ') to (' + req.query.deviceid + ')');
+                        res.json({ success: true, message: "Device Transfer successfully..", data: rows });
+                    } else {
+                        res.json({ success: false, data: [] });
+                    }
+                })
+            } else {
+                res.json(InvalidToken);
+            }
+        })
+    }
 })
 
 
