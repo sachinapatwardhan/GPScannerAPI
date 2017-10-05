@@ -97,6 +97,8 @@ global.PushNotificationSettings = {
             key: __dirname + "/certs/keyDevelopment.pem",
             // cert: __dirname + "/certs/HCDevelopmnetCert.pem",
             // key: __dirname + "/certs/HCDevelopmentKey.pem",
+            // cert: __dirname + "/certs/NaviDevelopmentCert.pem",
+            // key: __dirname + "/certs/NaviDevelopmentKey.pem",
             // production: true
         }
     },
