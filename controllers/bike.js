@@ -79,7 +79,7 @@ router.get('/GetVehicleDetailById', function(req, res) {
     var query = "SELECT tv.*, tgd.ExpiryDate, tgd.IsActive, " +
         " CONVERT_TZ(tv.InsurenceDate,'+00:00','" + CurrentOffset + "') as DisplayInsurenceDate, " +
         " CONVERT_TZ(tv.PUCDate,'+00:00','" + CurrentOffset + "') as DisplayPUCDate, " +
-        " CONVERT_TZ(tv.PUCDate,'+00:00','" + CurrentOffset + "') as DisplayExpiryDate " +
+        " CONVERT_TZ(tgd.ExpiryDate,'+00:00','" + CurrentOffset + "') as DisplayExpiryDate " +
         " From tblvehicle as tv LEFT JOIN tblgpsdevice as tgd ON tgd.DeviceId = tv.deviceid WHERE tv.id = " + req.query.idVehicle + " LIMIT 1"
     connection.query(query, function(err, rows, fields) {
         if (!err) {
