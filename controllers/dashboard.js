@@ -30,7 +30,15 @@ Date.prototype.addDays = function(days) {
     return this;
 };
 router.get('/GetAllWorkingBike', jsonParser, function(req, res) {
-    connection.query("SELECT tb.id,tb.deviceid,tb.Name,tb.IsOnline, tpg.IsEngine, tpg.Latitude,tpg.Longitude,tpg.Datetime, tpg.Date, tpg.Speed,tpg.Direction, tu.idApp FROM tblvehicle tb Left Join tbluserinformation as tu on tb.iduser = tu.id Left JOIN tblgpsdata tpg INNER JOIN (SELECT DeviceId,MAX(Date) Date FROM tblgpsdata GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId  AND tpg.Date = b.Date ON tb.deviceid=tpg.DeviceId WHERE IsDelete=false and idApp=" + req.query.idApp + " group by tb.DeviceId", function(err, rows, fields) {
+    var query = "select ve.*,tgd.AppName,tgd.DeviceId from " +
+        "(SELECT tb.id,tb.deviceid,tb.Name,tb.IsOnline, tpg.IsEngine, tpg.Latitude,tpg.Longitude,tpg.Datetime, tpg.Date, tpg.Speed,tpg.Direction, tu.idApp " +
+        "FROM tblvehicle tb Left Join tbluserinformation as tu on tb.iduser = tu.id Left JOIN tblgpsdata tpg " +
+        "INNER JOIN (SELECT DeviceId,MAX(Date) Date FROM tblgpsdata GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId  AND tpg.Date = b.Date ON tb.deviceid=tpg.DeviceId " +
+        "WHERE IsDelete=false and idApp=" + req.query.idApp + " group by tb.DeviceId ) as ve " +
+        "RIGHT  join tblgpsdevice tgd on ve.deviceid = tgd.DeviceId " +
+        "left join tblappinfo ta on ta.AppName = tgd.AppName where  ta.id=" + req.query.idApp;
+    //  var query ="SELECT tb.id,tb.deviceid,tb.Name,tb.IsOnline, tpg.IsEngine, tpg.Latitude,tpg.Longitude,tpg.Datetime, tpg.Date, tpg.Speed,tpg.Direction, tu.idApp FROM tblvehicle tb Left Join tbluserinformation as tu on tb.iduser = tu.id Left JOIN tblgpsdata tpg INNER JOIN (SELECT DeviceId,MAX(Date) Date FROM tblgpsdata GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId  AND tpg.Date = b.Date ON tb.deviceid=tpg.DeviceId WHERE IsDelete=false and idApp=" + req.query.idApp + " group by tb.DeviceId"
+    connection.query(query, function(err, rows, fields) {
         if (!err) {
             res.json({ success: true, data: rows });
         } else {
