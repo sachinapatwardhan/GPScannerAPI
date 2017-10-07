@@ -9,7 +9,7 @@ var User = models.tbluserinformation;
 
 router.post('/Subscribe', jsonParser, function(req, res) {
     objPushNotification = req.body;
-    console.log(objPushNotification)
+    // console.log(objPushNotification)
     PushNotification.findOne({
         where: {
             udid: objPushNotification.udid,
@@ -241,7 +241,7 @@ router.post('/SendPushNotification', jsonParser, function(req, res) {
                 if (objPushNotification.Country != 'All') {
                     lstGroupData = u.where(lstGroupData, { Country: objPushNotification.Country });
                 };
-                console.log(lstGroupData)
+                // console.log(lstGroupData)
 
                 if (lstGroupData.length > 0) {
                     // PushNotification.findAll({ where: { iduser: UserId } }).then(function(response) {

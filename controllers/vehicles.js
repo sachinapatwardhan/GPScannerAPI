@@ -382,7 +382,7 @@ router.get('/GetAllOnlineVehicle', function(req, res) {
         "FROM tblvehicle AS vehicle " +
         "LEFT JOIN tbluserinformation AS user ON vehicle.iduser = user.id " + search +
         " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
-    console.log(qry)
+    // console.log(qry)
     var Countqry = "SELECT count(vehicle.id) as TotalRecord " +
         "FROM tblvehicle AS vehicle " +
         "LEFT JOIN tbluserinformation AS user ON vehicle.iduser = user.id " + search;

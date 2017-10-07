@@ -198,7 +198,7 @@ router.post('/uploadExcelDevice', function(req, res) {
     });
 
     form.on('fileBegin', function(name, file) {
-        console.log("***********************fileBegin")
+        // console.log("***********************fileBegin")
         file.path = form.uploadDir + "/" + file.name;
         // console.log(file.path);
         FileName = file.path.toString();
@@ -206,7 +206,7 @@ router.post('/uploadExcelDevice', function(req, res) {
     });
 
     form.on('end', function() {
-        console.log(FileName)
+        // console.log(FileName)
         if (FileName.length > 0) {
             var workbook = XLSX.readFile(FileName, { type: 'binary' });
             var first_sheet_name = workbook.SheetNames[0];

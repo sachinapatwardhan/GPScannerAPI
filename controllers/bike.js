@@ -644,7 +644,8 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                         if (objGpsDevice != null) {
                             if (objVehicle.id == 0) {
                                 objVehicle.IsOnline = false;
-                                objVehicle.CreatedDate = GetCurrentDate();
+                                // objVehicle.CreatedDate = GetCurrentDate();
+                                objVehicle.CreatedDate = new Date();
                                 objVehicle.DeviceType = objGpsDevice.Type;
                                 Vehicle.findOne({
                                     where: {
@@ -971,7 +972,7 @@ router.get('/UpdateVehicleShare', jsonParser, function(req, res) {
 router.get('/UpdateInsurenceDate', jsonParser, function(req, res) {
     var convertDate = convertdateformatForUnix(req.query.InsurenceDate);
     var InsurenceDate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
-    console.log("Update tblvehicle set InsurenceDate='" + req.query.InsurenceDate + "' where deviceid=deviceid='" + req.query.DeviceId + "'")
+    // console.log("Update tblvehicle set InsurenceDate='" + req.query.InsurenceDate + "' where deviceid=deviceid='" + req.query.DeviceId + "'")
     connection.query("Update tblvehicle set InsurenceDate='" + req.query.InsurenceDate + "' where deviceid='" + req.query.DeviceId + "'", function(err, rows, fields) {
         if (!err) {
             res.json({ success: true, message: 'Insurence Date Save Successfully.' });
@@ -986,7 +987,7 @@ router.get('/UpdateInsurenceDate', jsonParser, function(req, res) {
 router.get('/UpdatePUCDate', jsonParser, function(req, res) {
     var convertDate = convertdateformatForUnix(req.query.PUCDate);
     var PUCDate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
-    console.log("Update tblvehicle set PUCDate='" + req.query.PUCDate + "' where deviceid=deviceid='" + req.query.DeviceId + "'")
+    // console.log("Update tblvehicle set PUCDate='" + req.query.PUCDate + "' where deviceid=deviceid='" + req.query.DeviceId + "'")
     connection.query("Update tblvehicle set PUCDate='" + req.query.PUCDate + "' where deviceid='" + req.query.DeviceId + "'", function(err, rows, fields) {
         if (!err) {
             res.json({ success: true, message: 'PUC Date  Save Successfully.' });

@@ -895,7 +895,7 @@
  router.post('/SaveUser', jsonParser, function(req, res) {
      objUser = req.body;
      objHeader = req.headers;
-     console.log(objUser);
+     //  console.log(objUser);
      //Set Parameter for User Permission
      req.query['tablename'] = req.headers['x-requested-with'];
 
@@ -909,9 +909,9 @@
              }
          }).then(function(UserExist) {
              if (UserExist != null) {
-                 console.log("UserExist")
+                 //  console.log("UserExist")
                  if (objUser.id != 0) {
-                     console.log("id not 0");
+                     //  console.log("id not 0");
                      //set Parameter
                      req.query['permission'] = "Modified";
 
@@ -1080,7 +1080,7 @@
                          }
                      });
                  } else {
-                     console.log("id 0");
+                     //  console.log("id 0");
 
                      //set Parameter
                      req.query['permission'] = "Added";

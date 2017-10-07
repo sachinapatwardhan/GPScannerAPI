@@ -2179,22 +2179,25 @@ router.get('/GetAllDriverReport', function(req, res) {
                             //     }
                             // }
 
+
                             LocateNumber = LocateNumber + 1;
-                            if (IsDriving == 0) {
-                                DrivingStartPosition = k;
-                                var obj = new Object();
-                                // obj.s_id = lstGroup[i].data[k].Id;
-                                obj.StartLatitude = lstGroup[i].data[k].Latitude;
-                                obj.StartLongitude = lstGroup[i].data[k].Longitude;
-                                obj.DeviceId = lstGroup[i].data[k].DeviceId;
-                                obj.StartSpeed = parseFloat(lstGroup[i].data[k].Speed).toFixed(2);
-                                obj.Name = lstGroup[i].data[k].Name;
-                                obj.StartAddress = "No Address Found";
-                                obj.EndAddress = "No Address Found";
-                                // obj.StartId = lstGroup[i].data[k].Id;
-                                obj.DrivingStartTime = momentz.utc(lstGroup[i].data[k].Date).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a')
+                            if (parseFloat(lstGroup[i].data[k].Speed) > 1) {
+                                if (IsDriving == 0) {
+                                    DrivingStartPosition = k;
+                                    var obj = new Object();
+                                    // obj.s_id = lstGroup[i].data[k].Id;
+                                    obj.StartLatitude = lstGroup[i].data[k].Latitude;
+                                    obj.StartLongitude = lstGroup[i].data[k].Longitude;
+                                    obj.DeviceId = lstGroup[i].data[k].DeviceId;
+                                    obj.StartSpeed = parseFloat(lstGroup[i].data[k].Speed).toFixed(2);
+                                    obj.Name = lstGroup[i].data[k].Name;
+                                    obj.StartAddress = "No Address Found";
+                                    obj.EndAddress = "No Address Found";
+                                    // obj.StartId = lstGroup[i].data[k].Id;
+                                    obj.DrivingStartTime = momentz.utc(lstGroup[i].data[k].Date).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a')
+                                }
+                                IsDriving = 1;
                             }
-                            IsDriving = 1;
                         } else {
                             Engineco = 0;
                             if (IsDriving == 1) {
