@@ -468,7 +468,7 @@ router.get('/GetGraphCustomer', function(req, res) {
         }],
         where: [{ idApp: req.query.idApp }],
         attributes: [
-            [models.sequelize.fn('day', models.sequelize.col('tbluserinformation.createddate')), 'day'],
+            'country', [models.sequelize.fn('day', models.sequelize.col('tbluserinformation.createddate')), 'day'],
             [models.sequelize.fn('month', models.sequelize.col('tbluserinformation.createddate')), 'month'],
             [models.sequelize.fn('year', models.sequelize.col('tbluserinformation.createddate')), 'year']
         ],
