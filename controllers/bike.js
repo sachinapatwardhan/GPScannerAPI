@@ -1017,16 +1017,17 @@ router.get('/GetAllExpireDevice', jsonParser, function(req, res) {
         }
     });
     GpsDevice.findAll({
+        attributes: ['DeviceId', 'ExpiryDate'],
         where: {
             ExpiryDate: {
                 $gt: date
             }
         },
         include: [{
-            model: SIM
+            model: SIM,
+            attributes: ['SerialNum']
         }],
         order: 'ExpiryDate asc',
-        limit: 10
     }).then(function(response) {
         res.json(response);
     })
