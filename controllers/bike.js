@@ -11,6 +11,7 @@ var Role = models.tblrole;
 var GpsDevice = models.tblgpsdevice;
 var Buffer = require('buffer').Buffer;
 var momentz = require('moment-timezone');
+var SIM = models.tblsimdetails;
 //End of Tables
 
 app.use(express.static(__dirname + '/../MediaUploads/PetUpload'));
@@ -390,14 +391,18 @@ router.get('/GetAllGPSByTimeZoneDateWithV', function(req, res) {
     });
 });
 
-function ConvertDateFormat(today) {
+function ConvertDateFormat(today, flg) {
     var year = today.getUTCFullYear();
     var month = today.getUTCMonth() + 1; // beware: January = 0; February = 1, etc.
     var day = today.getUTCDate();
+    var firstdayHours = today.getUTCHours();
+    var firstdayMinutes = today.getUTCMinutes();
+    var firstdaySeconds = today.getUTCSeconds();
 
     //return year + "-" + month + "-" + day + " " + hour + ":" + min + ":" + sec;
-
-    return ("0000" + year.toString()).slice(-4) + "-" + ("00" + month.toString()).slice(-2) + "-" + ("00" + day.toString()).slice(-2);
+    if (flg) {
+        return ("00" + year.toString()).slice(-4) + "-" + ("00" + month.toString()).slice(-2) + "-" + ("0000" + day.toString()).slice(-2) + " " + ("00" + firstdayHours.toString()).slice(-2) + ':' + ("00" + firstdayMinutes.toString()).slice(-2) + ':' + ("00" + firstdaySeconds.toString()).slice(-2);
+    } else { return ("0000" + year.toString()).slice(-4) + "-" + ("00" + month.toString()).slice(-2) + "-" + ("00" + day.toString()).slice(-2); }
 }
 
 router.get('/ChangeFenceByBike', function(req, res) {
@@ -998,6 +1003,36 @@ router.get('/UpdatePUCDate', jsonParser, function(req, res) {
     })
 
 })
+
+
+router.get('/GetAllExpireDevice', jsonParser, function(req, res) {
+    var date = new Date();
+    date.setHours(0);
+    date.setMinutes(0);
+    date.setSeconds(0);
+    GpsDevice.belongsTo(SIM, {
+        foreignKey: {
+            name: 'idSim',
+            allowNull: true,
+        }
+    });
+    GpsDevice.findAll({
+        where: {
+            ExpiryDate: {
+                $gt: date
+            }
+        },
+        include: [{
+            model: SIM
+        }],
+        order: 'ExpiryDate asc',
+        limit: 10
+    }).then(function(response) {
+        res.json(response);
+    })
+
+})
+
 
 
 
