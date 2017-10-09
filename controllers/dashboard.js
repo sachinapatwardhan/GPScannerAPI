@@ -178,7 +178,7 @@ router.get('/GetGraphData', function(req, res) {
         // where: { country: CountryName },
         where: { idApp: req.query.idApp },
         attributes: [
-            [models.sequelize.fn('count', 'id'), 'Total'],
+            'country', [models.sequelize.fn('count', 'id'), 'Total'],
             [models.sequelize.fn('day', models.sequelize.col('createddate')), 'day'],
             [models.sequelize.fn('month', models.sequelize.col('createddate')), 'month'],
             [models.sequelize.fn('year', models.sequelize.col('createddate')), 'year'],
