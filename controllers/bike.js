@@ -1010,27 +1010,39 @@ router.get('/GetAllExpireDevice', jsonParser, function(req, res) {
     date.setHours(0);
     date.setMinutes(0);
     date.setSeconds(0);
-    GpsDevice.belongsTo(SIM, {
-        foreignKey: {
-            name: 'idSim',
-            allowNull: true,
-        }
-    });
-    GpsDevice.findAll({
-        attributes: ['DeviceId', 'ExpiryDate'],
-        where: {
-            ExpiryDate: {
-                $gt: date
-            }
-        },
-        include: [{
-            model: SIM,
-            attributes: ['SerialNum']
-        }],
-        order: 'ExpiryDate asc',
-    }).then(function(response) {
+    var query = "select tblgpsdevice.DeviceId,tblgpsdevice.ExpiryDate,tblsimdetails.SerialNum " +
+        "from tblgpsdevice LEFT JOIN tblsimdetails ON tblgpsdevice.idSim = tblsimdetails.id " +
+        "INNER JOIN tblvehicle ON  tblgpsdevice.DeviceId = tblvehicle.deviceid " +
+        "where tblgpsdevice.AppName ='" + req.query.AppName + "' and " +
+        "tblgpsdevice.ExpiryDate>'" + ConvertDateFormat(date, true) + "' order by ExpiryDate asc";
+    connection.query(query, function(err, response, fields) {
         res.json(response);
     })
+
+
+    // GpsDevice.belongsTo(SIM, {
+    //     foreignKey: {
+    //         name: 'idSim',
+    //         allowNull: true,
+    //     }
+    // });
+
+    // GpsDevice.findAll({
+    //     attributes: ['DeviceId', 'ExpiryDate'],
+    //     where: {
+    //         ExpiryDate: {
+    //             $gt: date
+    //         },
+    //         AppName: req.query.AppName,
+    //     },
+    //     include: [{
+    //         model: SIM,
+    //         attributes: ['SerialNum']
+    //     }],
+    //     order: 'ExpiryDate asc',
+    // }).then(function(response) {
+    //     res.json(response);
+    // })
 
 })
 
