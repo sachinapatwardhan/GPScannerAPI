@@ -56,6 +56,7 @@ global.MysqlHost = process.env.MysqlHost;
 global.Mysqluser = process.env.Mysqluser;
 global.Mysqlpassword = process.env.Mysqlpassword;
 global.Mysqldatabase = process.env.Mysqldatabase;
+global.IsProduction = process.env.IsProduction;
 
 //mysql connection
 global.connection = mysql.createConnection({
@@ -69,70 +70,73 @@ global.RoutePath = process.env.RoutePath;
 //Push Notification
 global.PushNotifications = require('node-pushnotifications');
 
-//Local
-global.PushNotificationSettings = {
-    gcm: {
-        id: process.env.PushNotificationgcmid, // PUT YOUR GCM SERVER API KEY,
-        // id: 'AIzaSyDlPocDJjvWweDY_uaOmEkzqZQIUDbCGV8',
-        // id: 'AIzaSyD1uMEJM2cfegBmWOgqg3iJYFOlN6PWLE0',
-        msgcnt: 1,
-        dataDefaults: {
-            delayWhileIdle: false,
-            timeToLive: 4 * 7 * 24 * 3600, // 4 weeks
-            retries: 4,
-            sound: 'img/bell.mp3'
-        },
-        // Custom GCM request options https://github.com/ToothlessGear/node-gcm#custom-gcm-request-options
-        options: {},
-    },
-    apn: {
-        gateway: 'gateway.sandbox.push.apple.com',
-        badge: 1,
-        defaultData: {
-            expiry: 4 * 7 * 24 * 3600, // 4 weeks
-            sound: 'bass.caf'
-        },
-        options: {
-            cert: __dirname + "/certs/certdevelopment.pem",
-            key: __dirname + "/certs/keyDevelopment.pem",
-            // cert: __dirname + "/certs/HCDevelopmnetCert.pem",
-            // key: __dirname + "/certs/HCDevelopmentKey.pem",
-            // cert: __dirname + "/certs/NaviDevelopmentCert.pem",
-            // key: __dirname + "/certs/NaviDevelopmentKey.pem",
-            // production: true
-        }
-    },
-};
 
-//Live
+if (global.IsProduction == false || global.IsProduction == "false") {
+    //Local
+    global.PushNotificationSettings = {
+        gcm: {
+            id: process.env.PushNotificationgcmid, // PUT YOUR GCM SERVER API KEY,
+            // id: 'AIzaSyDlPocDJjvWweDY_uaOmEkzqZQIUDbCGV8',
+            // id: 'AIzaSyD1uMEJM2cfegBmWOgqg3iJYFOlN6PWLE0',
+            msgcnt: 1,
+            dataDefaults: {
+                delayWhileIdle: false,
+                timeToLive: 4 * 7 * 24 * 3600, // 4 weeks
+                retries: 4,
+                sound: 'img/bell.mp3'
+            },
+            // Custom GCM request options https://github.com/ToothlessGear/node-gcm#custom-gcm-request-options
+            options: {},
+        },
+        apn: {
+            gateway: 'gateway.sandbox.push.apple.com',
+            badge: 1,
+            defaultData: {
+                expiry: 4 * 7 * 24 * 3600, // 4 weeks
+                sound: 'bass.caf'
+            },
+            options: {
+                cert: __dirname + "/certs/certdevelopment.pem",
+                key: __dirname + "/certs/keyDevelopment.pem",
+                // cert: __dirname + "/certs/HCDevelopmnetCert.pem",
+                // key: __dirname + "/certs/HCDevelopmentKey.pem",
+                // cert: __dirname + "/certs/NaviDevelopmentCert.pem",
+                // key: __dirname + "/certs/NaviDevelopmentKey.pem",
+                // production: true
+            }
+        },
+    };
+} else {
 
-// global.PushNotificationSettings = {
-//     gcm: {
-//         id: process.env.PushNotificationgcmid, // PUT YOUR GCM SERVER API KEY,
-//         msgcnt: 1,
-//         dataDefaults: {
-//             delayWhileIdle: false,
-//             timeToLive: 4 * 7 * 24 * 3600, // 4 weeks
-//             retries: 4,
-//             sound: 'img/bell.mp3'
-//         },
-//         // Custom GCM request options https://github.com/ToothlessGear/node-gcm#custom-gcm-request-options
-//         options: {},
-//     },
-//     apn: {
-//         //gateway: 'gateway.sandbox.push.apple.com',
-//         badge: 1,
-//         defaultData: {
-//             expiry: 4 * 7 * 24 * 3600, // 4 weeks
-//             sound: 'bass.caf'
-//         },
-//         options: {
-//              cert: __dirname + "/certs/certProduction.pem",
-//              key: __dirname + "/certs/keyProduction.pem",
-//              production: true
-//         }
-//     },
-// };
+    //Live
+    global.PushNotificationSettings = {
+        gcm: {
+            id: process.env.PushNotificationgcmid, // PUT YOUR GCM SERVER API KEY,
+            msgcnt: 1,
+            dataDefaults: {
+                delayWhileIdle: false,
+                timeToLive: 4 * 7 * 24 * 3600, // 4 weeks
+                retries: 4,
+                sound: 'img/bell.mp3'
+            },
+            // Custom GCM request options https://github.com/ToothlessGear/node-gcm#custom-gcm-request-options
+            options: {},
+        },
+        apn: {
+            //gateway: 'gateway.sandbox.push.apple.com',
+            badge: 1,
+            defaultData: {
+                expiry: 4 * 7 * 24 * 3600, // 4 weeks
+                sound: 'bass.caf'
+            },
+            options: {
+                cert: __dirname + "/certs/certProduction.pem",
+                key: __dirname + "/certs/keyProduction.pem",
+                production: true
+            }
+        },
+    };
+}
 
 //schedule
 global.schedule = require('node-schedule');
