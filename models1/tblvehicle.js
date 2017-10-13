@@ -154,6 +154,10 @@ module.exports = function(sequelize, DataTypes) {
     PUCDate: {
       type: DataTypes.DATE,
       allowNull: true
+    },
+    idType: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true
     }
   }, {
     tableName: 'tblvehicle'
