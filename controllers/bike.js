@@ -953,6 +953,19 @@ router.get('/UpdateVehicleName', jsonParser, function(req, res) {
 
 })
 
+router.get('/UpdateVehicleType', jsonParser, function(req, res) {
+
+    connection.query("Update tblvehicle set idType='" + req.query.idType + "' where deviceid=" + req.query.DeviceId, function(err, rows, fields) {
+        if (!err) {
+            res.json({ success: true, message: 'Vehicle Type Save Successfully.' });
+        } else {
+            // console.log(err);
+            res.json({ success: false, message: 'Vehicle Type could not save. Try again later.' });
+        }
+    })
+
+})
+
 router.get('/UpdateVehicleShare', jsonParser, function(req, res) {
     connection.query("Update tblvehicle set IsShared=" + req.query.IsShared + " where deviceid='" + req.query.DeviceId + "'", function(err, rows, fields) {
         if (!err) {
