@@ -346,6 +346,8 @@ app.use('/appinfo', require('./controllers/appinfo'));
 app.use('/appversion', require('./controllers/appversion'));
 app.use('/sim', require('./controllers/sim'));
 app.use('/appsetting', require('./controllers/appsetting'));
+app.use('/vehicletype', require('./controllers/vehicletype'));
+
 //socket API End
 
 http.listen(process.env.APIPort, function() {
