@@ -32,6 +32,7 @@ router.get('/GetCurrentCountry', function(req, res) {
     request.get({
         url: 'http://freegeoip.net/json/' + req.connection.remoteAddress,
     }, function(error, response, body) {
+        console.log(body)
         var data = eval('(' + body + ')');
         var objCurrentCountry = data
         res.json(objCurrentCountry);
