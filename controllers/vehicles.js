@@ -27,6 +27,7 @@ router.get('/GetAllDynamicVehicle', function(req, res) {
         search = search + 'vehicle.BatteryPercentage like "%' + objSearch + '%" or ';
         search = search + 'vehicle.HandshakDatetime like "%' + objSearch + '%" or ';
         search = search + 'vehicle.DeviceType like "%' + objSearch + '%" or ';
+        search = search + 'vehicletype.idType like "%' + objSearch + '%" or ';
         search = search + 'vehicle.IsOnline like "%' + objSearch + '%") ';
     }
 
@@ -51,9 +52,10 @@ router.get('/GetAllDynamicVehicle', function(req, res) {
         }
     }
 
-    var qry = "Select vehicle.*,gpsdevice.IMEI,CONVERT_TZ(vehicle.HandshakDatetime,'+00:00','" + CurrentOffset + "') as DisplyHandshakDate,  " +
+    var qry = "Select vehicle.*,vehicletype.Type,gpsdevice.IMEI,CONVERT_TZ(vehicle.HandshakDatetime,'+00:00','" + CurrentOffset + "') as DisplyHandshakDate,  " +
         "user.username AS username " +
         "FROM tblvehicle AS vehicle " +
+        " left join tblvehicletype  as vehicletype on vehicletype.id = vehicle.idType " +
         " left join tblgpsdevice as gpsdevice on gpsdevice.DeviceId =vehicle.deviceid " +
         " LEFT JOIN tbluserinformation AS user ON vehicle.iduser = user.id " + search +
         " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
