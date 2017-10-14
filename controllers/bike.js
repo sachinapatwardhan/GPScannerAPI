@@ -954,8 +954,7 @@ router.get('/UpdateVehicleName', jsonParser, function(req, res) {
 })
 
 router.get('/UpdateVehicleType', jsonParser, function(req, res) {
-
-    connection.query("Update tblvehicle set idType='" + req.query.idType + "' where deviceid=" + req.query.DeviceId, function(err, rows, fields) {
+    connection.query("Update tblvehicle set idType='" + req.query.idType + "' where deviceid='" + req.query.DeviceId + "'", function(err, rows, fields) {
         if (!err) {
             res.json({ success: true, message: 'Vehicle Type Save Successfully.' });
         } else {
