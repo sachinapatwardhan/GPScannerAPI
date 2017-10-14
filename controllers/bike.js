@@ -942,7 +942,7 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
 
 router.get('/UpdateVehicleName', jsonParser, function(req, res) {
 
-    connection.query("Update tblvehicle set Name='" + req.query.Name + "' where deviceid=" + req.query.DeviceId, function(err, rows, fields) {
+    connection.query("Update tblvehicle set Name='" + req.query.Name + "' where deviceid='" + req.query.DeviceId + "'", function(err, rows, fields) {
         if (!err) {
             res.json({ success: true, message: 'Vehicle No. Save Successfully.' });
         } else {
