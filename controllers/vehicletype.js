@@ -13,11 +13,44 @@ router.get('/GetAllActivevehicletype', function(req, res) {
 })
 
 router.get('/Getvehicletype', function(req, res) {
-    VehicleType.findAll().then(function(response) {
-        res.json(response);
-    }).catch(function(err) {
-        res.json({ success: false, data: err });
-    })
+    var objParam = req.query;
+    var objColumns = objParam.columns;
+    var objOrder = objParam.order;
+    var objSearch = objParam.search;
+    var Orderby = objColumns[parseInt(objOrder[0].column)].data + ' ' + objOrder[0].dir;
+    var search = {};
+    if (objSearch != null && objSearch != '') {
+        search['$or'] = [];
+
+        for (var i = 0; i < objColumns.length; i++) {
+            if (objColumns[i].data != null && objColumns[i].data != '') {
+                var columnName = objColumns[i].data;
+                if (columnName != 'CreatedDate') {
+                    search['$or'].push([columnName + ' like ?', "%" + objSearch + "%"]);
+                }
+            };
+        };
+    }
+    VehicleType.findAndCountAll({
+            where: search,
+            order: Orderby,
+            offset: parseInt(objParam.start),
+            limit: parseInt(objParam.length),
+        }).then(function(response) {
+            var response1 = new Object();
+            response1.draw = objParam.draw;
+            response1.recordsTotal = response.count;
+            response1.recordsFiltered = response.count;
+            response1.data = response.rows;
+            res.json(response1);
+        }).catch(function(error) {
+            res.json(error);
+        })
+        // VehicleType.findAll().then(function(response) {
+        //     res.json(response);
+        // }).catch(function(err) {
+        //     res.json({ success: false, data: err });
+        // })
 })
 
 router.post('/SaveVehicleType', jsonParser, function(req, res) {
@@ -148,4 +181,5 @@ router.get('/UpdateIsActiveStatus', function(req, res) {
         res.json(InvalidToken);
     }
 })
+
 module.exports = router
