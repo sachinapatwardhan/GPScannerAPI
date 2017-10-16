@@ -196,7 +196,7 @@ router.get('/GetVehicleAlarmByUser', function(req, res) {
             search += " Where tp.DeviceId = '" + req.query.DeviceId + "'";
         }
     }
-    var query = "select tp.Id,tp.CreatedDate,tp.Datetime,tp.Date,tp.DeviceId,tp.Speed,tp.AlarmCode, tp.FenceName, tpg.id,tpg.Name from tblalarm tp inner join tblvehicle tpg on tp.DeviceId = tpg.deviceid left join tblsharedevice tsd on tpg.id=tsd.idVehicle ";
+    var query = "select tp.Id,tp.CreatedDate,tp.Datetime,tp.Date,tp.DeviceId,tp.Speed,tp.AlarmCode, tp.FenceName,tp.IsRead, tpg.id,tpg.Name from tblalarm tp inner join tblvehicle tpg on tp.DeviceId = tpg.deviceid left join tblsharedevice tsd on tpg.id=tsd.idVehicle ";
     query += search;
 
     var limit = 10;
@@ -230,4 +230,46 @@ function GetCurrentDate() {
 
     return year + "-" + month + "-" + day + " " + hour + ":" + min + ":" + sec;
 }
+
+router.post('/UpdateReadStatus', jsonParser, function(req, res) {
+    objIdList = req.body;
+    objHeader = req.headers;
+    var token = getToken(objHeader);
+    if (token) {
+        var decoded = jwt.decode(token, TokenKey);
+        User.findOne({
+            where: {
+                username: decoded.username,
+                password: decoded.password
+            }
+        }).then(function(UserExist) {
+            if (UserExist != null) {
+                PetAlarm.update({
+                    IsRead: 1
+                }, {
+                    where: { Id: { in: objIdList } }
+                }).then(function(response) {
+                    res.json({ success: true, data: response });
+                })
+            } else {
+                res.json(InvalidToken);
+            }
+        })
+    } else {
+        res.json(InvalidToken);
+    }
+})
+
+router.get('/GetTotalNotificationCount', function(req, res) {
+    var query = "select count(tp.Id) as TotalNotificationCount from tblalarm tp inner join tblvehicle tpg on tp.DeviceId = tpg.deviceid left join tblsharedevice tsd on tpg.id=tsd.idVehicle Where tp.IsRead=0 and tp.DeviceId = '" + req.query.DeviceId + "'";
+
+    connection.query(query, function(err, rows, fields) {
+        if (!err) {
+            res.json({ success: true, data: rows });
+        } else {
+            res.json({ success: false, data: [] });
+        }
+    })
+})
+
 module.exports = router

@@ -1093,6 +1093,27 @@ global.Command9999 = function(line, Callback) {
                                 }
 
                                 io.sockets.emit(lstAllUser[i] + 'DeviceAlarm', JSON.stringify(objConnection));
+
+                                var objPushnotificationCount = {
+                                    Id: rows.insertId,
+                                    Latitude: Latitude,
+                                    Longitude: Longitude,
+                                    GPSPositioning: Position,
+                                    Speed: Speed,
+                                    Direction: Direction,
+                                    Status: inputoutputSTatus,
+                                    AlarmCode: AlarmCode.toString(),
+                                    DeviceId: DeviceId,
+                                    CreatedDate: CurrentDate,
+                                    Datetime: GPSDateTime,
+                                    Date: unixDateStemp,
+                                    FenceName: null,
+                                    UserId: lstAllUser[i],
+                                    IsRead: false,
+                                    // Name: objVehicle.Name
+                                }
+
+                                io.sockets.emit(lstAllUser[i] + 'DeviceNotificationCount', JSON.stringify(objPushnotificationCount));
                             }
                             // }
 
