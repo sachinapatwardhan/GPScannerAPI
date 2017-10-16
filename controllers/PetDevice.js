@@ -7,6 +7,7 @@ var Carrier = models.tblcarrier;
 var Country = models.tblcountrymgmt;
 var TelCo = models.tbltelco;
 var SimService = models.tblsimdetails;
+var VehicleType = models.tblvehicletype;
 //End of Tables
 
 router.get('/GetAllGPSDeviceold', function(req, res) {
@@ -957,45 +958,50 @@ router.get('/UpdateStatus', function(req, res) {
     req.query['tablename'] = req.headers['x-requested-with'];
     var token = getToken(objHeader);
     if (token) {
-        GPSDevice.findOne({
-            where: {
-                id: req.query.id,
-            }
-        }).then(function(ObjExist) {
-            if (ObjExist) {
-                // ObjExist.updateAttributes({
-                //     IsActive: req.query.IsActive,
-                //     ExpiryDate: ExpiryDate,
-                //     ActivationDate: ActivationDate
-                // }).then(function(response) {
-                //     if (response) {
-                //         res.json({ success: true, message: "Tracker Status Updated successfully", data: response });
-                //     }
-                // })
+        var decoded = jwt.decode(token, TokenKey);
+        User.findOne({ where: { username: decoded.username, password: decoded.password } }).then(function(UserExist) {
+            if (UserExist != null) {
+                GPSDevice.findOne({
+                    where: {
+                        id: req.query.id,
+                    }
+                }).then(function(ObjExist) {
+                    if (ObjExist) {
+                        // ObjExist.updateAttributes({
+                        //     IsActive: req.query.IsActive,
+                        //     ExpiryDate: ExpiryDate,
+                        //     ActivationDate: ActivationDate
+                        // }).then(function(response) {
+                        //     if (response) {
+                        //         res.json({ success: true, message: "Tracker Status Updated successfully", data: response });
+                        //     }
+                        // })
 
-                if ((req.query.flg == true || req.query.flg == 'true') || (req.query.dateFlag == true || req.query.dateFlag == 'true')) {
-                    ObjExist.updateAttributes({
-                        IsActive: req.query.IsActive,
-                        ExpiryDate: ExpiryDate,
-                        ActivationDate: ActivationDate
-                    }).then(function(response) {
-                        if (response) {
-                            funAuditLog.CreateAuditLog('update tracker status', UserExist.username, 'update tracker status IsActive');
-                            res.json({ success: true, message: "Tracker Status Updated successfully", data: response });
+                        if ((req.query.flg == true || req.query.flg == 'true') || (req.query.dateFlag == true || req.query.dateFlag == 'true')) {
+                            ObjExist.updateAttributes({
+                                IsActive: req.query.IsActive,
+                                ExpiryDate: ExpiryDate,
+                                ActivationDate: ActivationDate
+                            }).then(function(response) {
+                                if (response) {
+                                    funAuditLog.CreateAuditLog('update tracker status', UserExist.username, 'update tracker status IsActive');
+                                    res.json({ success: true, message: "Tracker Status Updated successfully", data: response });
+                                }
+                            })
+
+                        } else {
+
+                            ObjExist.updateAttributes({
+                                IsActive: req.query.IsActive,
+                            }).then(function(response) {
+                                if (response) {
+                                    funAuditLog.CreateAuditLog('update tracker status', UserExist.username, 'update tracker status IsActive');
+                                    res.json({ success: true, message: "Tracker Status Updated successfully", data: response });
+                                }
+                            })
                         }
-                    })
-
-                } else {
-
-                    ObjExist.updateAttributes({
-                        IsActive: req.query.IsActive,
-                    }).then(function(response) {
-                        if (response) {
-                            funAuditLog.CreateAuditLog('update tracker status', UserExist.username, 'update tracker status IsActive');
-                            res.json({ success: true, message: "Tracker Status Updated successfully", data: response });
-                        }
-                    })
-                }
+                    }
+                })
             }
         })
     }
@@ -1325,5 +1331,7 @@ router.post('/SaveSimServiceToIMEI', jsonParser, function(req, res) {
         res.json(InvalidToken);
     }
 })
+
+
 
 module.exports = router
