@@ -370,8 +370,7 @@ router.get('/ExportTracker', function(req, res) {
             search += " Where tblgpsdevice.idSalesAgent =" + objParam.UserId;
         }
     }
-
-    if (objParam.AppName != null && objParam.AppName != undefined && objParam.AppName != '') {
+    if (objParam.AppName != null && objParam.AppName != undefined && objParam.AppName != '' && objParam.AppName != 'All') {
         if (search != "") {
             search += ' and tblgpsdevice.AppName = "' + objParam.AppName + '"';
         } else {
