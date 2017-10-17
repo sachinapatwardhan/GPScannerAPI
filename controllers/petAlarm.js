@@ -271,5 +271,16 @@ router.get('/GetTotalNotificationCount', function(req, res) {
         }
     })
 })
+router.get('/GetAllTotalNotificationCount', function(req, res) {
+    var query = "select count(tp.Id) as TotalNotificationCount from tblalarm tp inner join tblvehicle tpg on tp.DeviceId = tpg.deviceid  Where tp.IsRead=0 ";
+    console.log(query)
+    connection.query(query, function(err, rows, fields) {
+        if (!err) {
+            res.json({ success: true, data: rows });
+        } else {
+            res.json({ success: false, data: [] });
+        }
+    })
+})
 
 module.exports = router
