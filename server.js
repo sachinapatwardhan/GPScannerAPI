@@ -347,6 +347,7 @@ app.use('/appversion', require('./controllers/appversion'));
 app.use('/sim', require('./controllers/sim'));
 app.use('/appsetting', require('./controllers/appsetting'));
 app.use('/vehicletype', require('./controllers/vehicletype'));
+app.use('/mainsetting', require('./controllers/mainsetting'));
 
 //socket API End
 
