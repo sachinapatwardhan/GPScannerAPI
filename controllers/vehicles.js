@@ -227,32 +227,48 @@ router.get('/DeleteVehicle', function(req, res) {
 router.get('/GetAllVehicleByUser', function(req, res) {
     if (req.query.iduser != null || req.query.iduser != undefined) {
 
-        var search = {};
-
-        search['$and'] = [];
-        if (req.query.idSalesAgent != null && req.query.idSalesAgent != '' && req.query.idSalesAgent != undefined) {
-            var obj = new Object();
-            obj['idSalesAgent'] = {
-                $eq: req.query.idSalesAgent
-            };
-            search['$and'].push(obj);
+        var search = "";
+        if (search != "") {
+            search += " and tv.iduser = " + req.query.iduser;
+        } else {
+            search = " Where tv.iduser = " + req.query.iduser;
         }
 
+        if (search != "") {
+            search += " and tv.IsDelete = 0 and tv.deviceid != '' ";
+        } else {
+            search = " Where tv.IsDelete = 0 and tv.deviceid != '' ";
+        }
 
-        Vehicle.findAll({
-            where: [search, {
-                IsDelete: 0,
-                deviceid: {
-                    $ne: '',
-                },
-                iduser: req.query.iduser,
-            }],
-            order: 'CreatedDate'
-        }).then(function(response) {
-            res.json(response);
-        }).catch(function(error) {
-            res.json(error);
-        })
+        if (req.query.idSalesAgent != null && req.query.idSalesAgent != '' && req.query.idSalesAgent != undefined) {
+            if (search != "") {
+                search += " and tv.idSalesAgent =" + req.query.idSalesAgent;
+            } else {
+                search = " Where tv.idSalesAgent =" + req.query.idSalesAgent;
+            }
+        }
+        var query = "SELECT tv.*, CONVERT_TZ(tgd.ExpiryDate,'+00:00','" + CurrentOffset + "') as ExpiryDate FROM tblvehicle as tv LEFT JOIN tblgpsdevice as tgd ON tgd.DeviceId = tv.deviceid " + search;
+        connection.query(query, function(err, response) {
+            if (response != undefined) {
+                res.json(response);
+            } else {
+                res.json(err);
+            }
+        });
+        // Vehicle.findAll({
+        //     where: [search, {
+        //         IsDelete: 0,
+        //         deviceid: {
+        //             $ne: '',
+        //         },
+        //         iduser: req.query.iduser,
+        //     }],
+        //     order: 'CreatedDate'
+        // }).then(function(response) {
+        //     res.json(response);
+        // }).catch(function(error) {
+        //     res.json(error);
+        // })
     } else {
         res.json(RecordNotFound);
     }
@@ -491,6 +507,4 @@ router.get('/TransferDevicetoUser', function(req, res) {
         })
     }
 })
-
-
 module.exports = router
