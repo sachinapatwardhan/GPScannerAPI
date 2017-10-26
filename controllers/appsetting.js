@@ -83,6 +83,12 @@ router.post('/SaveAppVesionInfo', jsonParser, function(req, res) {
                                 message: "App Version updated successfully...",
                                 data: response
                             });
+                        } else {
+                            res.json({
+                                success: true,
+                                message: "App Version not updated successfully...",
+                                data: response
+                            });
                         }
                     })
                 }

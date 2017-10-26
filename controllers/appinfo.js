@@ -113,6 +113,12 @@ router.post('/SaveAppInfo', jsonParser, function(req, res) {
                                 message: "App Info updated successfully...",
                                 data: response
                             });
+                        } else {
+                            res.json({
+                                success: false,
+                                message: "App Info not updated successfully...",
+                                data: response
+                            });
                         }
                     })
                 }
