@@ -136,6 +136,12 @@ router.post('/SaveVehicle', jsonParser, function(req, res) {
                                 message: "Vehicle Detail updated successfully...",
                                 data: response
                             });
+                        } else {
+                            res.json({
+                                success: false,
+                                message: "Vehicle Detail not updated successfully...",
+                                data: response
+                            });
                         }
                     })
                 }

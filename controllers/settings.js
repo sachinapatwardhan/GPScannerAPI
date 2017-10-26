@@ -54,6 +54,8 @@ router.post('/SaveMediaSize', jsonParser, function(req, res) {
                                 if (response[0]) {
                                     funAuditLog.CreateAuditLog('SaveMediaSize', UserExist.username, 'Update Media Size');
                                     res.json({ success: true, message: "Media Size updated successfully...", data: response });
+                                } else {
+                                    res.json({ success: false, message: "Media Size not updated successfully...", data: response });
                                 }
                             })
                         }
