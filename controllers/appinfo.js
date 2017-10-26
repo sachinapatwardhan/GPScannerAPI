@@ -78,7 +78,7 @@ router.post('/SaveAppInfo', jsonParser, function(req, res) {
 
             if (UserExist != null) {
                 if (objAppInfo.Id == 0) {
-                    // objAppInfo.CreatedDate = new Date();
+                    objAppInfo.CreatedDate = new Date();
                     objAppInfo.CreatedBy = decoded.username;
                     AppInfo.findOrCreate({ where: { AppName: objAppInfo.AppName }, defaults: objAppInfo }).then(function(response) {
                         if (response[0]) {
