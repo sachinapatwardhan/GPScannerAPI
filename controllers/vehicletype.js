@@ -88,6 +88,8 @@ router.post('/SaveVehicleType', jsonParser, function(req, res) {
                                 if (response[0]) {
                                     funAuditLog.CreateAuditLog('Update Vehicle Type ', UserExist.username, 'Update Vehicle Type');
                                     res.json({ success: true, message: "Vehicle Type updated successfully...", data: response });
+                                } else {
+                                    res.json({ success: false, message: "Vehicle Type not updated successfully...", data: response });
                                 }
                             })
                         }
