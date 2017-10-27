@@ -43,6 +43,22 @@ module.exports = function(sequelize, DataTypes) {
     ImageLogo: {
       type: DataTypes.STRING,
       allowNull: true
+    },
+    AdminUrl: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    WebAppUrl: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    WebAppLoginLogo: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    WebAppHeaderLogo: {
+      type: DataTypes.STRING,
+      allowNull: true
     }
   }, {
     tableName: 'tblappinfo'
