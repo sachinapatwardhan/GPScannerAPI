@@ -470,7 +470,6 @@ router.get('/GetAppInfoByName', function(req, res) {
 })
 
 router.get('/GetAppInfoByAdmin', function(req, res) {
-    console.log(req.query.AdminUrl);
     AppInfo.findOne({ where: { AdminUrl: { $like: "%" + req.query.AdminUrl + "%" } } }).then(function(response) {
         res.json(response);
     }).catch(function(error) {
@@ -478,7 +477,6 @@ router.get('/GetAppInfoByAdmin', function(req, res) {
     });
 })
 router.get('/GetAppInfoByWebApp', function(req, res) {
-    console.log(req.query.WebAppUrl);
     AppInfo.findOne({ where: { WebAppUrl: req.query.WebAppUrl } }).then(function(response) {
         res.json(response);
     }).catch(function(error) {

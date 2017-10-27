@@ -39,9 +39,6 @@ router.get('/GetAppVersionByAppNameNew', function(req, res) {
     }).catch(function(error) {
         res.json(error);
     })
-
-
-
 })
 
 module.exports = router
