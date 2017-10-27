@@ -356,6 +356,10 @@ router.post('/uploadFile', function(req, res) {
             file.path = form.uploadDir + "/" + NewName + ext;
         } else if (strarr[1] == "logo") {
             file.path = form.uploadDir + "/" + NewName + ext;
+        } else if (strarr[1] == "Loginlogo") {
+            file.path = form.uploadDir + "/" + NewName + ext;
+        } else if (strarr[1] == "Headerlogo") {
+            file.path = form.uploadDir + "/" + NewName + ext;
         }
         var obj = new Object();
         obj.Name = NewName + ext;
@@ -370,71 +374,112 @@ router.post('/uploadFile', function(req, res) {
         var IOSCertificate = '';
         var IOSKey = '';
         var Id = parseInt(lstUser[i]);
+        console.log(FileName);
         AppInfo.findOne({ where: { Id: Id } }).then(function(response) {
-                if (response != null) {
-                    function uploader(i) {
-                        if (i < FileName.length) {
-                            if (FileName[i].Type == "logo") {
-                                if (response.ImageLogo != '' && response.ImageLogo != null) {
-                                    var oldFile = __dirname + '/../MediaUploads/FileUpload/' + response.ImageLogo;
-                                    fs.exists(oldFile, function(exists) {
-                                        if (exists) {
-                                            fs.unlink(oldFile);
-                                        }
-                                    });
-                                }
-                                ImageLogo = FileName[i].Name;
+            if (response != null) {
+                function uploader(i) {
+                    if (i < FileName.length) {
+                        if (FileName[i].Type == "logo") {
+                            if (response.ImageLogo != '' && response.ImageLogo != null) {
+                                var oldFile = __dirname + '/../MediaUploads/FileUpload/' + response.ImageLogo;
+                                fs.exists(oldFile, function(exists) {
+                                    if (exists) {
+                                        fs.unlink(oldFile);
+                                    }
+                                });
                             }
-                            if (FileName[i].Type == "IC") {
-                                if (response.IOSCertificate != '' && response.IOSCertificate != null) {
-                                    var oldFile = __dirname + '/../MediaUploads/FileUpload/' + response.IOSCertificate;
-                                    fs.exists(oldFile, function(exists) {
-                                        if (exists) {
-                                            fs.unlink(oldFile);
-                                        }
-                                    });
-                                }
-                                IOSCertificate = FileName[i].Name;
-                            }
-                            if (FileName[i].Type == "IK") {
-                                if (response.IOSKey != '' && response.IOSKey != null) {
-                                    var oldFile = __dirname + '/../MediaUploads/FileUpload/' + response.IOSKey;
-                                    fs.exists(oldFile, function(exists) {
-                                        if (exists) {
-                                            fs.unlink(oldFile);
-                                        }
-                                    });
-
-                                }
-                                IOSKey = FileName[i].Name;
-                            }
-                            uploader(i + 1);
-                        } else {
-                            var obj = new Object();
-                            if (ImageLogo != '') { obj.ImageLogo = ImageLogo; }
-                            if (IOSCertificate != '') { obj.IOSCertificate = IOSCertificate }
-                            if (IOSKey != '') { obj.IOSKey = IOSKey }
-
-                            response.updateAttributes(obj).then(function(resUpdate) {
-                                if (resUpdate != null) {
-                                    res.json({ success: true, message: "File Uploaded Successfully...", data: resUpdate });
-                                } else {
-                                    res.json({ success: false, message: "File not Uploaded Successfully...", data: 0 });
-                                }
-                            })
+                            ImageLogo = FileName[i].Name;
                         }
+                        if (FileName[i].Type == "Loginlogo") {
+                            if (response.WebAppLoginLogo != '' && response.WebAppLoginLogo != null) {
+                                var oldFile = __dirname + '/../MediaUploads/FileUpload/' + response.WebAppLoginLogo;
+                                fs.exists(oldFile, function(exists) {
+                                    if (exists) {
+                                        fs.unlink(oldFile);
+                                    }
+                                });
+                            }
+                            WebAppLoginLogo = FileName[i].Name;
+                        }
+                        if (FileName[i].Type == "Headerlogo") {
+                            if (response.WebAppHeaderLogo != '' && response.WebAppHeaderLogo != null) {
+                                var oldFile = __dirname + '/../MediaUploads/FileUpload/' + response.WebAppHeaderLogo;
+                                fs.exists(oldFile, function(exists) {
+                                    if (exists) {
+                                        fs.unlink(oldFile);
+                                    }
+                                });
+                            }
+                            WebAppHeaderLogo = FileName[i].Name;
+                        }
+                        if (FileName[i].Type == "IC") {
+                            if (response.IOSCertificate != '' && response.IOSCertificate != null) {
+                                var oldFile = __dirname + '/../MediaUploads/FileUpload/' + response.IOSCertificate;
+                                fs.exists(oldFile, function(exists) {
+                                    if (exists) {
+                                        fs.unlink(oldFile);
+                                    }
+                                });
+                            }
+                            IOSCertificate = FileName[i].Name;
+                        }
+                        if (FileName[i].Type == "IK") {
+                            if (response.IOSKey != '' && response.IOSKey != null) {
+                                var oldFile = __dirname + '/../MediaUploads/FileUpload/' + response.IOSKey;
+                                fs.exists(oldFile, function(exists) {
+                                    if (exists) {
+                                        fs.unlink(oldFile);
+                                    }
+                                });
+
+                            }
+                            IOSKey = FileName[i].Name;
+                        }
+                        uploader(i + 1);
+                    } else {
+                        var obj = new Object();
+                        if (ImageLogo != '') { obj.ImageLogo = ImageLogo; }
+                        if (WebAppLoginLogo != '') { obj.WebAppLoginLogo = WebAppLoginLogo; }
+                        if (WebAppHeaderLogo != '') { obj.WebAppHeaderLogo = WebAppHeaderLogo; }
+                        if (IOSCertificate != '') { obj.IOSCertificate = IOSCertificate }
+                        if (IOSKey != '') { obj.IOSKey = IOSKey }
+
+                        response.updateAttributes(obj).then(function(resUpdate) {
+                            if (resUpdate != null) {
+                                res.json({ success: true, message: "File Uploaded Successfully...", data: resUpdate });
+                            } else {
+                                res.json({ success: false, message: "File not Uploaded Successfully...", data: 0 });
+                            }
+                        })
                     }
-                    uploader(i);
-                } else {
-                    res.json({ success: false, message: "File not uploaded..." });
                 }
-            })
-            //when finish all process
+                uploader(i);
+            } else {
+                res.json({ success: false, message: "File not uploaded..." });
+            }
+        })
     });
 });
 
 router.get('/GetAppInfoByName', function(req, res) {
     AppInfo.findOne({ where: { AppName: req.query.AppName } }).then(function(response) {
+        res.json(response);
+    }).catch(function(error) {
+        res.json(error);
+    });
+})
+
+router.get('/GetAppInfoByAdmin', function(req, res) {
+    console.log(req.query.AdminUrl);
+    AppInfo.findOne({ where: { AdminUrl: { $like: "%" + req.query.AdminUrl + "%" } } }).then(function(response) {
+        res.json(response);
+    }).catch(function(error) {
+        res.json(error);
+    });
+})
+router.get('/GetAppInfoByWebApp', function(req, res) {
+    console.log(req.query.WebAppUrl);
+    AppInfo.findOne({ where: { WebAppUrl: req.query.WebAppUrl } }).then(function(response) {
         res.json(response);
     }).catch(function(error) {
         res.json(error);
