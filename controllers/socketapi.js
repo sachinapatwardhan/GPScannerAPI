@@ -520,7 +520,7 @@ global.Command9955 = function(line, Callback) {
         var inputoutputSTatus = lstGPSAllData[3];
         var lstAD = lstGPSAllData[4].split(',')
         var AD1 = lstAD[0];
-        var AD2 = lstAD[2];
+        var AD2 = lstAD[1];
         var Odometer = lstGPSAllData[5];
         var RFID = lstGPSAllData[6];
         if (AD2 == undefined) {
@@ -967,7 +967,7 @@ global.Command9999 = function(line, Callback) {
         var inputoutputSTatus = lstGPSAllData[3];
         var lstAD = lstGPSAllData[4].split(',')
         var AD1 = lstAD[0];
-        var AD2 = lstAD[2];
+        var AD2 = lstAD[1];
         var Odometer = lstGPSAllData[5];
         var RFID = lstGPSAllData[6];
 
