@@ -924,6 +924,8 @@ router.get('/UpdateStatusold', function(req, res) {
                 }).then(function(response) {
                     if (response) {
                         res.json({ success: true, message: "Tracker Status Updated successfully", data: response });
+                    } else {
+                        res.json({ success: false, message: "Tracker Status not Updated successfully", data: response });
                     }
                 })
             }
@@ -985,6 +987,8 @@ router.get('/UpdateStatus', function(req, res) {
                                 if (response) {
                                     funAuditLog.CreateAuditLog('update tracker status', UserExist.username, 'update tracker status IsActive');
                                     res.json({ success: true, message: "Tracker Status Updated successfully", data: response });
+                                } else {
+                                    res.json({ success: false, message: "Tacker Status not updated successfully" })
                                 }
                             })
 
@@ -996,6 +1000,8 @@ router.get('/UpdateStatus', function(req, res) {
                                 if (response) {
                                     funAuditLog.CreateAuditLog('update tracker status', UserExist.username, 'update tracker status IsActive');
                                     res.json({ success: true, message: "Tracker Status Updated successfully", data: response });
+                                } else {
+                                    res.json({ success: false, message: "Tracker Status not Updated successfully", data: response });
                                 }
                             })
                         }
@@ -1330,7 +1336,5 @@ router.post('/SaveSimServiceToIMEI', jsonParser, function(req, res) {
         res.json(InvalidToken);
     }
 })
-
-
 
 module.exports = router
