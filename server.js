@@ -149,7 +149,7 @@ var smtpConfig = {
     service: process.env.SMTPService,
     host: process.env.SMTPhost,
     port: process.env.SMTPport,
-    secure: false,
+    secure: true,
     auth: {
         user: process.env.SMTPuser,
         pass: process.env.SMTPpass
