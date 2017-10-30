@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS `tbldeviceagentretailer` (
 	`retailerId` int(11) DEFAULT NULL,
 	`deviceId` int(11) DEFAULT NULL,
 	`activatedDatetime` datetime DEFAULT NULL,
+	`expiryDatetime` datetime DEFAULT NULL,
 	`createdDatetime` datetime DEFAULT NULL,
 	`lastModifiedDatetime` datetime DEFAULT NULL,
 	PRIMARY KEY (`id`)
