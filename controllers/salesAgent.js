@@ -1,0 +1,291 @@
+(function() {
+	'use strict';
+
+	var express = require('express');
+	var router = express.Router();
+	var bodyParser = require('body-parser');
+	var jsonParser = bodyParser.json();
+	var Bluebird = require('bluebird');
+
+	//////////
+
+	var Sequelize = require('sequelize');
+	var sequelize = require('../models1').sequelize;
+	var User = models.tbluserinformation;
+	var Role = models.tblrole;
+	var UserRole = models.tbluserinrole;
+	var GpsDevice = models.tblgpsdevice;
+	var AgentRetailer = models.tblagentretailer;
+	var DeviceAgentRetailer = models.tbldeviceagentretailer;
+
+	//////////
+
+	// deviceId, userId
+	router.post('/assignDevice', jsonParser, function(req, res) {
+		GpsDevice.findOne({
+			where: {
+				DeviceId: req.body.deviceId
+			}
+		})
+		.then(function(rGpsDevice) {
+			if (!rGpsDevice) {
+				var err = new Error('GPS device not found.');
+				err.name = 'BugzError';
+				throw err;
+			}
+
+			return User.findOne({
+				where: {
+					id: req.body.userId
+				}
+			})
+			.then(function(rUser) {
+				if (!rUser) {
+					var err = new Error('User not found.');
+					err.name = 'BugzError';
+					throw err;
+				}
+
+				return [rGpsDevice, rUser];
+			});
+		})
+		.spread(function(rGpsDevice, rUser) {
+			return DeviceAgentRetailer.create({
+				agentId: rUser.id,
+				deviceId: rGpsDevice.DeviceId,
+				createdDatetime: new Date()
+			});
+		})
+		.then(function(rDeviceAgentRetailer) {
+			res.json({
+				success: true,
+				message: 'Assigned device to agent.',
+				data: rDeviceAgentRetailer
+			});
+		})
+		.catch(function(err) {
+			res.json({
+				success: false,
+				message: err.message
+			});
+		});
+	});
+
+	router.post('/registerRetailerAccount', jsonParser, function(req, res) {
+		sequelize.transaction(function(t) {
+			var now = new Date()
+
+			return User.findOrCreate({
+				where: {
+					$or: [
+						{ email: req.body.email },
+						{ username: req.body.email }
+					]
+				},
+				defaults: {
+					email: req.body.email,
+					username: req.body.email,
+					password: jwt.encode(req.body.password, TokenKey),
+					ProfileName: req.body.profileName,
+					IsMobileVerify: false,
+					createddate: now,
+					createdby: req.body.agentId,
+					idApp: req.body.appId
+				},
+				transaction: t
+			})
+			.spread(function(rUser, isCreated) {
+				if (!isCreated) {
+					var err = new Error('An account with this email already exists.');
+					err.name = 'BugzError';
+					throw err;
+				}
+
+				return AgentRetailer.create({
+					agentId: req.body.agentId,
+					retailerId: rUser.id,
+					createdDatetime: now
+				}, {
+					transaction: t
+				})
+				.then(function(rAgentRetailer) {
+					return rUser;
+				});
+			})
+			.then(function(rUser) {
+				return Role.findOne({
+					where: {
+						RoleName: 'Retailer'
+					},
+					transaction: t
+				})
+				.then(function(rRole) {
+					return [rUser, rRole];
+				});
+			})
+			.spread(function(rUser, rRole) {
+				return UserRole.create({
+					userId: rUser.id,
+					roleId: rRole.id
+				}, {
+					transaction: t
+				})
+				.then(function(rUserRole) {
+					return rUser;
+				});
+			});
+		})
+		.then(function(rUser) {
+			res.json({
+				success: true,
+				message: 'Retailer account created!',
+				data: rUser
+			});
+		})
+		.catch(function(err) {
+			res.json({
+				success: false,
+				message: err.message
+			});
+		});
+	});
+
+	router.get('/getActivatedDevices', function(req, res) {
+		DeviceAgentRetailer.belongsTo(User, {
+			foreignKey: {
+				name: 'retailerId',
+				allowNull: false
+			}
+		});
+
+		// Get not activated devices count
+		var notActivated = DeviceAgentRetailer.findAll({
+			where: {
+				agentId: req.query.agentId,
+				activatedDatetime: {
+					$eq: null
+				}
+			}
+		})
+		.then(function(rDeviceAgentRetailers) {
+			return rDeviceAgentRetailers.length;
+		});
+
+		// Get activated devices count
+		var activated = DeviceAgentRetailer.findAll({
+			where: {
+				agentId: req.query.agentId,
+				activatedDatetime: {
+					$ne: null
+				}
+			}
+		})
+		.then(function(rDeviceAgentRetailers) {
+			return rDeviceAgentRetailers.length;
+		});
+
+		// Get top three selling retailers
+		var topThree = DeviceAgentRetailer.findAll({
+			where: {
+				agentId: req.query.agentId,
+				activatedDatetime:  {
+					$ne: null
+				}
+			},
+			attributes: [
+				[sequelize.fn('count', sequelize.col('tbldeviceagentretailer.deviceId')), 'activatedDevicesCount']
+			],
+			include: [{
+				model: User,
+				attributes: ['ProfileName']
+			}],
+			group: ['tbldeviceagentretailer.retailerId'],
+			order: [
+				[sequelize.fn('count', sequelize.col('tbldeviceagentretailer.deviceId')), 'desc']
+			],
+			limit: 3
+		})
+		.then(function(rDeviceAgentRetailers) {
+			return rDeviceAgentRetailers;
+		});
+		
+		// Wait for all parallel
+		Bluebird.all([notActivated, activated, topThree])
+		.spread(function(notActivatedCount, activatedCount, topThree) {
+			if (topThree.length) {
+				res.json({
+					success: true,
+					message: 'Record(s) found.',
+					data: topThree,
+					notActivatedCount: notActivatedCount,
+					activatedCount: activatedCount
+				});
+			} else {
+				res.json({
+					success: false,
+					message: 'No record(s) found.'
+				});
+			}
+		})
+		.catch(function(err) {
+			console.log(err);
+
+			res.json({
+				success: false,
+				message: err.message
+			});
+		});
+	});
+
+	router.get('/getDevicesByAgentId', function(req, res) {
+		var where = { agentId: req.query.agentId };
+		if (req.query.search.value) {
+			where.$or = [
+				{ id: { $like: '%' + req.query.search.value + '%' } },
+				{ deviceId: { $like: '%' + req.query.search.value + '%' } },
+				{ retailerId: { $like: '%' + req.query.search.value + '%' } },
+				{ activatedDatetime: { $like: '%' + req.query.search.value + '%' } }
+			];
+		}
+
+		DeviceAgentRetailer.findAndCountAll({
+			where: where,
+			order: [
+				[ req.query.columns[req.query.order[0].column].data, req.query.order[0].dir ]
+			],
+			offset: parseInt(req.query.start),
+			limit: parseInt(req.query.length)
+		})
+		.then(function(rDeviceAgentRetailer) {
+			if (rDeviceAgentRetailer.rows.length) {
+				res.json({
+					success: true,
+					message: 'Device(s) found.',
+					data: rDeviceAgentRetailer.rows,
+					draw: req.query.draw,
+					recordsTotal: rDeviceAgentRetailer.count,
+					recordsFiltered: rDeviceAgentRetailer.count
+				});
+			} else {
+				res.json({
+					success: false,
+					message: 'No device(s) found.',
+					data: rDeviceAgentRetailer.rows,
+					draw: req.query.draw,
+					recordsTotal: rDeviceAgentRetailer.count,
+					recordsFiltered: rDeviceAgentRetailer.count
+				});
+			}
+		})
+		.catch(function(err) {
+			res.json({
+				success: false,
+				message: err.message
+			});
+		});
+	});
+
+	//////////
+
+	module.exports = router;
+})();
