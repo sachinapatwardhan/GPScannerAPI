@@ -2873,115 +2873,115 @@ var rule = new schedule.RecurrenceRule();
 rule.minute = new schedule.Range(0, 59, 1);
 //rule.minute = new schedule.Range(0, 59, 1);
 var testStatus = false;
-var IsOnlineDeviceCheck = schedule.scheduleJob(rule, function() {
-    var today = new Date();
-    var year = today.getFullYear();
-    var month = today.getMonth() + 1; // beware: January = 0; February = 1, etc.
-    // var month1 = today.getMonth() + 1; // beware: January = 0; February = 1, etc.
-    var day = today.getDate();
+// var IsOnlineDeviceCheck = schedule.scheduleJob(rule, function() {
+//     var today = new Date();
+//     var year = today.getFullYear();
+//     var month = today.getMonth() + 1; // beware: January = 0; February = 1, etc.
+//     // var month1 = today.getMonth() + 1; // beware: January = 0; February = 1, etc.
+//     var day = today.getDate();
 
-    var data = year + '-' + month + '-' + day;
-    console.log(new Date())
+//     var data = year + '-' + month + '-' + day;
+//     console.log(new Date())
 
-    Vehicle.findAll({
-        where: {
-            IsOnline: true,
-            IsDelete: false
-        },
-    }).then(function(resVehicle) {
-        // for (var i = 0; i < resVehicle.length; i++) {
-        function setDeviceStatus(i) {
-            if (i < resVehicle.length) {
-                if (resVehicle[i].HandshakDatetime != null) {
-                    var date1 = new Date();
-                    var date2 = new Date(resVehicle[i].HandshakDatetime);
-                    var timeDiff = Math.abs(date2.getTime() - date1.getTime());
-                    var min = Math.floor(timeDiff / 60000);
-                    console.log(resVehicle[i].deviceid + "    = " + min);
-                    if (min > 5) {
-                        var objVehicleExist = resVehicle[i];
-                        Vehicle.findOne({
-                            where: {
-                                id: objVehicleExist.id
-                            }
-                        }).then(function(objVehicleExistOnline) {
-                            if (objVehicleExistOnline && objVehicleExistOnline.IsOnline) {
-                                objVehicleExistOnline.updateAttributes({ IsOnline: false }).then(function(resUpdate) {
+//     Vehicle.findAll({
+//         where: {
+//             IsOnline: true,
+//             IsDelete: false
+//         },
+//     }).then(function(resVehicle) {
+//         // for (var i = 0; i < resVehicle.length; i++) {
+//         function setDeviceStatus(i) {
+//             if (i < resVehicle.length) {
+//                 if (resVehicle[i].HandshakDatetime != null) {
+//                     var date1 = new Date();
+//                     var date2 = new Date(resVehicle[i].HandshakDatetime);
+//                     var timeDiff = Math.abs(date2.getTime() - date1.getTime());
+//                     var min = Math.floor(timeDiff / 60000);
+//                     console.log(resVehicle[i].deviceid + "    = " + min);
+//                     if (min > 5) {
+//                         var objVehicleExist = resVehicle[i];
+//                         Vehicle.findOne({
+//                             where: {
+//                                 id: objVehicleExist.id
+//                             }
+//                         }).then(function(objVehicleExistOnline) {
+//                             if (objVehicleExistOnline && objVehicleExistOnline.IsOnline) {
+//                                 objVehicleExistOnline.updateAttributes({ IsOnline: false }).then(function(resUpdate) {
 
-                                    if (objVehicleExistOnline.IsDelete == false) {
-                                        // var PushNotificationdata = {
-                                        //     title: 'Alert',
-                                        //     message: 'Vehicle ' + objVehicleExistOnline.Name + ' Device offline alert! Please check!',
-                                        //     Fence: 'Default',
-                                        //     otherfields: {
-                                        //         deviceid: objVehicleExistOnline.deviceid,
-                                        //         Id: objVehicleExistOnline.id,
-                                        //         Name: objVehicleExistOnline.Name
-                                        //     }
-                                        // };
+//                                     if (objVehicleExistOnline.IsDelete == false) {
+//                                         // var PushNotificationdata = {
+//                                         //     title: 'Alert',
+//                                         //     message: 'Vehicle ' + objVehicleExistOnline.Name + ' Device offline alert! Please check!',
+//                                         //     Fence: 'Default',
+//                                         //     otherfields: {
+//                                         //         deviceid: objVehicleExistOnline.deviceid,
+//                                         //         Id: objVehicleExistOnline.id,
+//                                         //         Name: objVehicleExistOnline.Name
+//                                         //     }
+//                                         // };
 
-                                        // SendPushNotification(PushNotificationdata, objVehicleExistOnline.iduser, 'Owner', 'OwnerDeviceStatusPushNotification');
-                                    }
-                                    var objConnection = {
-                                        DeviceId: objVehicleExistOnline.deviceid,
-                                        // PetId: objVehicleExistOnline.id,
-                                        Status: false
-                                    }
-                                    io.sockets.emit('BikeDeviceStatus', JSON.stringify(objConnection));
-                                    io.sockets.emit(objVehicleExistOnline.deviceid + 'BikeDeviceStatus', JSON.stringify(objConnection));
-                                    setDeviceStatus(i + 1);
-                                })
-                            } else {
-                                setDeviceStatus(i + 1);
-                            }
-                        })
-                    } else {
-                        setDeviceStatus(i + 1);
-                    }
-                } else {
-                    var objVehicleExist = resVehicle[i];
-                    Vehicle.findOne({
-                        where: {
-                            id: objVehicleExist.id
-                        }
-                    }).then(function(objVehicleExistOnline) {
-                        if (objVehicleExistOnline && objVehicleExistOnline.IsOnline) {
-                            objVehicleExistOnline.updateAttributes({ IsOnline: false }).then(function(resUpdate) {
-                                if (objVehicleExistOnline.IsDelete == false) {
-                                    // var PushNotificationdata = {
-                                    //     title: 'Alert',
-                                    //     message: 'Vehicle ' + objVehicleExistOnline.Name + ' Device offline alert! Please check!',
-                                    //     Fence: 'Default',
-                                    //     otherfields: {
-                                    //         deviceid: objVehicleExistOnline.deviceid,
-                                    //         Id: objVehicleExistOnline.id,
-                                    //         Name: objVehicleExistOnline.Name
-                                    //     }
-                                    // };
-                                    // if (objVehicleExistOnline.DeviceType == 'M2') {
-                                    //     SendPushNotification(PushNotificationdata, objVehicleExistOnline.iduser, 'Shop', null);
-                                    // } else {
-                                    //     SendPushNotification(PushNotificationdata, objVehicleExistOnline.iduser, 'Owner', 'OwnerDeviceStatusPushNotification');
-                                    // }
-                                }
-                                var objConnection = {
-                                    DeviceId: objVehicleExistOnline.deviceid,
-                                    // PetId: objVehicleExistOnline.id,
-                                    Status: false
-                                }
-                                io.sockets.emit('BikeDeviceStatus', JSON.stringify(objConnection));
-                                io.sockets.emit(objVehicleExistOnline.deviceid + 'BikeDeviceStatus', JSON.stringify(objConnection));
-                                setDeviceStatus(i + 1);
-                            })
-                        } else {
-                            setDeviceStatus(i + 1);
-                        }
-                    })
-                }
-            }
-        }
-        setDeviceStatus(0);
-    })
-});
+//                                         // SendPushNotification(PushNotificationdata, objVehicleExistOnline.iduser, 'Owner', 'OwnerDeviceStatusPushNotification');
+//                                     }
+//                                     var objConnection = {
+//                                         DeviceId: objVehicleExistOnline.deviceid,
+//                                         // PetId: objVehicleExistOnline.id,
+//                                         Status: false
+//                                     }
+//                                     io.sockets.emit('BikeDeviceStatus', JSON.stringify(objConnection));
+//                                     io.sockets.emit(objVehicleExistOnline.deviceid + 'BikeDeviceStatus', JSON.stringify(objConnection));
+//                                     setDeviceStatus(i + 1);
+//                                 })
+//                             } else {
+//                                 setDeviceStatus(i + 1);
+//                             }
+//                         })
+//                     } else {
+//                         setDeviceStatus(i + 1);
+//                     }
+//                 } else {
+//                     var objVehicleExist = resVehicle[i];
+//                     Vehicle.findOne({
+//                         where: {
+//                             id: objVehicleExist.id
+//                         }
+//                     }).then(function(objVehicleExistOnline) {
+//                         if (objVehicleExistOnline && objVehicleExistOnline.IsOnline) {
+//                             objVehicleExistOnline.updateAttributes({ IsOnline: false }).then(function(resUpdate) {
+//                                 if (objVehicleExistOnline.IsDelete == false) {
+//                                     // var PushNotificationdata = {
+//                                     //     title: 'Alert',
+//                                     //     message: 'Vehicle ' + objVehicleExistOnline.Name + ' Device offline alert! Please check!',
+//                                     //     Fence: 'Default',
+//                                     //     otherfields: {
+//                                     //         deviceid: objVehicleExistOnline.deviceid,
+//                                     //         Id: objVehicleExistOnline.id,
+//                                     //         Name: objVehicleExistOnline.Name
+//                                     //     }
+//                                     // };
+//                                     // if (objVehicleExistOnline.DeviceType == 'M2') {
+//                                     //     SendPushNotification(PushNotificationdata, objVehicleExistOnline.iduser, 'Shop', null);
+//                                     // } else {
+//                                     //     SendPushNotification(PushNotificationdata, objVehicleExistOnline.iduser, 'Owner', 'OwnerDeviceStatusPushNotification');
+//                                     // }
+//                                 }
+//                                 var objConnection = {
+//                                     DeviceId: objVehicleExistOnline.deviceid,
+//                                     // PetId: objVehicleExistOnline.id,
+//                                     Status: false
+//                                 }
+//                                 io.sockets.emit('BikeDeviceStatus', JSON.stringify(objConnection));
+//                                 io.sockets.emit(objVehicleExistOnline.deviceid + 'BikeDeviceStatus', JSON.stringify(objConnection));
+//                                 setDeviceStatus(i + 1);
+//                             })
+//                         } else {
+//                             setDeviceStatus(i + 1);
+//                         }
+//                     })
+//                 }
+//             }
+//         }
+//         setDeviceStatus(0);
+//     })
+// });
 
 module.exports = router

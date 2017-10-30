@@ -351,6 +351,12 @@ app.use('/mainsetting', require('./controllers/mainsetting'));
 
 //socket API End
 
+// MAARK Install App
+app.use('/salesAgent', require('./controllers/salesAgent'));
+app.use('/retailer', require('./controllers/retailer'));
+
+// MAARK Install App End
+
 http.listen(process.env.APIPort, function() {
     console.log('listening on *:' + process.env.APIPort);
 });
