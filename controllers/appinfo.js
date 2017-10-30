@@ -374,7 +374,6 @@ router.post('/uploadFile', function(req, res) {
         var IOSCertificate = '';
         var IOSKey = '';
         var Id = parseInt(lstUser[i]);
-        console.log(FileName);
         AppInfo.findOne({ where: { Id: Id } }).then(function(response) {
             if (response != null) {
                 function uploader(i) {
