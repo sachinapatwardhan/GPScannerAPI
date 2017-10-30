@@ -10,8 +10,36 @@
 	//////////
 
 	var DeviceAgentRetailer = models.tbldeviceagentretailer;
+	var GpsDevice = models.tblgpsdevice;
 
 	//////////
+
+	router.get('/getAutocompleteDeviceIds', function(req, res) {
+		GpsDevice.findAll({
+			where: { DeviceId: { $like: '%' + req.query.deviceId + '%' } },
+			limit: 20
+		})
+		.then(function(rGpsDevices) {
+			if (rGpsDevices.length) {
+				res.json({
+					success: true,
+					message: 'Record(s) found.',
+					data: rGpsDevices
+				});
+			} else {
+				res.json({
+					success: false,
+					message: 'No record(s) found.'
+				});
+			}
+		})
+		.catch(function(err) {
+			res.json({
+				success: false,
+				message: 'Record(s) not found.'
+			});
+		});
+	});
 
 	router.post('/activateDevice', jsonParser, function(req, res) {
 		DeviceAgentRetailer.findOne({

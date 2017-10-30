@@ -988,9 +988,9 @@ router.post('/changeUserPassword', jsonParser, function(req, res) {
 router.get('/forgotpassword', function(req, res) {
     User.findOne({
         where: {
-            email: req.query.email,
-            idApp: req.query.idApp
-            // id: req.query.id,
+            // email: req.query.email,
+            // idApp: req.query.idApp
+            id: req.query.id,
         }
     }).then(function(objUser) {
         if (objUser != null) {
