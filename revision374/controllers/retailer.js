@@ -84,6 +84,8 @@
 	});
 
 	router.get('/getAutocompleteActivateDeviceIds', function(req, res) {
+		var now = moment();
+
 		DeviceAgentRetailer.findAll({
 			where: {
 				deviceId: {
@@ -91,7 +93,7 @@
 				},
 				$or: [
 					{ activatedDatetime: { $eq: null } },
-					{ expiryDatetime: { $ne: null } }
+					{ expiryDatetime: { $lt: now } }
 				]
 			},
 			limit: 20

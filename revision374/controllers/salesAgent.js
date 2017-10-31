@@ -6,6 +6,7 @@
 	var bodyParser = require('body-parser');
 	var jsonParser = bodyParser.json();
 	var Bluebird = require('bluebird');
+	var moment = require('moment');
 
 	//////////
 
@@ -151,6 +152,8 @@
 	});
 
 	router.get('/getActivatedDevices', function(req, res) {
+		var now = moment();
+
 		DeviceAgentRetailer.belongsTo(User, {
 			foreignKey: {
 				name: 'retailerId',
@@ -162,9 +165,10 @@
 		var notActivated = DeviceAgentRetailer.findAll({
 			where: {
 				agentId: req.query.agentId,
-				activatedDatetime: {
-					$eq: null
-				}
+				$or: [
+					{ activatedDatetime: { $eq: null } },
+					{ expiryDatetime: { $lt: now } }
+				]
 			}
 		})
 		.then(function(rDeviceAgentRetailers) {
@@ -176,7 +180,10 @@
 			where: {
 				agentId: req.query.agentId,
 				activatedDatetime: {
-					$ne: null
+					$lt: now
+				},
+				expiryDatetime: {
+					$gt: now
 				}
 			}
 		})
@@ -185,7 +192,7 @@
 		});
 
 		// Get top three selling retailers
-		var topThree = DeviceAgentRetailer.findAll({
+		var allDevices = DeviceAgentRetailer.findAll({
 			where: {
 				agentId: req.query.agentId,
 				activatedDatetime:  {
@@ -202,34 +209,31 @@
 			group: ['tbldeviceagentretailer.retailerId'],
 			order: [
 				[sequelize.fn('count', sequelize.col('tbldeviceagentretailer.deviceId')), 'desc']
-			],
-			limit: 3
+			]
 		})
 		.then(function(rDeviceAgentRetailers) {
 			return rDeviceAgentRetailers;
 		});
 		
 		// Wait for all parallel
-		Bluebird.all([notActivated, activated, topThree])
-		.spread(function(notActivatedCount, activatedCount, topThree) {
-			if (topThree.length) {
-				res.json({
-					success: true,
-					message: 'Record(s) found.',
-					data: topThree,
-					notActivatedCount: notActivatedCount,
-					activatedCount: activatedCount
-				});
-			} else {
-				res.json({
-					success: false,
-					message: 'No record(s) found.'
-				});
+		Bluebird.all([notActivated, activated, allDevices])
+		.spread(function(notActivatedCount, activatedCount, allDevices) {
+			var ro = {
+				success: true,
+				message: 'Record(s) found.',
+				data: allDevices,
+				notActivatedCount: notActivatedCount,
+				activatedCount: activatedCount
+			};
+
+			if (notActivatedCount + activatedCount === 0) {
+				ro.success = false;
+				ro.message = 'No record(s) found.';
 			}
+
+			res.json(ro);
 		})
 		.catch(function(err) {
-			console.log(err);
-
 			res.json({
 				success: false,
 				message: err.message
@@ -237,7 +241,7 @@
 		});
 	});
 
-	router.get('/getDevicesByAgentId', function(req, res) {
+	router.get('/getPagedDevicesByAgentId', function(req, res) {
 		var where = { agentId: req.query.agentId };
 		if (req.query.search.value) {
 			where.$or = [
@@ -248,13 +252,25 @@
 			];
 		}
 
+		DeviceAgentRetailer.belongsTo(User, {
+			foreignKey: {
+				name: 'retailerId',
+				allowNull: false
+			}
+		});
+
 		DeviceAgentRetailer.findAndCountAll({
 			where: where,
 			order: [
-				[ req.query.columns[req.query.order[0].column].data, req.query.order[0].dir ]
+				// Use Sequelize.literal to treat incoming column as literal
+				[ Sequelize.literal(req.query.columns[req.query.order[0].column].data), req.query.order[0].dir ]
 			],
 			offset: parseInt(req.query.start),
-			limit: parseInt(req.query.length)
+			limit: parseInt(req.query.length),
+			include: [{
+				model: User,
+				attributes: ['ProfileName']
+			}]
 		})
 		.then(function(rDeviceAgentRetailer) {
 			if (rDeviceAgentRetailer.rows.length) {
