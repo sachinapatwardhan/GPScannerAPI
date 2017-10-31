@@ -2863,6 +2863,57 @@ router.get('/UpdateDeviceStatus', function(req, res) {
 
 })
 
+// function FakeAlarm() {
+//     var myArray = ['04', '11', '30', '50', '6', '66'];
+//     var AlarmCode = myArray[Math.floor(Math.random() * myArray.length)];
+//     var DeviceId = '53534580348504';
+//     var GPSDateTime = CurrentDate = convertdateformat(new Date());
+//     var unixDateStemp = (new Date()).getTime() / 1000;
+//     var Latitude = 21.16241778;
+//     var Longitude = 72.79342222;
+//     var Position = 'A';
+//     var Speed = 0;
+//     var Direction = 0;
+//     var inputoutputSTatus = '0000';
+
+
+
+//     var query = "INSERT INTO tblalarm (Datetime, Date, Latitude,Longitude,GPSPositioning,Speed,Direction,Status,DeviceId,AlarmCode,CreatedDate ) VALUES ('" + GPSDateTime + "', '" + unixDateStemp + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + inputoutputSTatus + "', '" + DeviceId + "','" + AlarmCode + "','" + CurrentDate + "');";
+//     connection.query(query, function(err, rows, fields) {
+//         var objConnection = {
+//             AlarmCode: AlarmCode.toString(),
+//             DeviceId: DeviceId,
+//             Datetime: GPSDateTime,
+//             Date: unixDateStemp,
+//             IdUser: 1,
+//             Name: '103'
+//         }
+
+//         io.sockets.emit('1DeviceAlarm', JSON.stringify(objConnection));
+
+//         var objPushnotificationCount = {
+//             Id: rows.insertId,
+//             Latitude: 21.16241778,
+//             Longitude: 72.79342222,
+//             GPSPositioning: 'A',
+//             Speed: 0,
+//             Direction: 0,
+//             Status: '0000',
+//             AlarmCode: AlarmCode.toString(),
+//             DeviceId: DeviceId,
+//             CreatedDate: CurrentDate,
+//             Datetime: GPSDateTime,
+//             Date: unixDateStemp,
+//             FenceName: null,
+//             UserId: 1,
+//             IsRead: false,
+//             // Name: objVehicle.Name
+//         }
+
+//         io.sockets.emit('1DeviceNotificationCount', JSON.stringify(objPushnotificationCount));
+//     });
+// }
+
 //End of Send Email
 
 var rule = new schedule.RecurrenceRule();
@@ -2874,6 +2925,10 @@ rule.minute = new schedule.Range(0, 59, 1);
 //rule.minute = new schedule.Range(0, 59, 1);
 var testStatus = false;
 var IsOnlineDeviceCheck = schedule.scheduleJob(rule, function() {
+
+    // Fake Alarm Add
+    // FakeAlarm();
+
     var today = new Date();
     var year = today.getFullYear();
     var month = today.getMonth() + 1; // beware: January = 0; February = 1, etc.
