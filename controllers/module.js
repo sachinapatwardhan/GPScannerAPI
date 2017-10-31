@@ -57,6 +57,7 @@ router.post('/CreateModule', jsonParser, function(req, res) {
 });
 
 router.post('/UpdateModule', jsonParser, function(req, res) {
+    console.log(req.query)
     objModule = req.body;
     objHeader = req.headers;
     var token = getToken(objHeader);
@@ -88,16 +89,21 @@ router.get('/DeleteModule/:idModule', function(req, res) {
         var decoded = jwt.decode(token, TokenKey);
         User.findOne({ where: { username: decoded.username, password: decoded.password } }).then(function(UserExist) {
             if (UserExist != null) {
-
-                Module.destroy({ where: { id: req.params.idModule } }).then(function(response) {
-                    if (response) {
-                        funAuditLog.CreateAuditLog('DeleteModule', UserExist.username, 'Delete Module');
-                        res.json({ success: true, message: "Module deleted successfully..." });
+                UserPermission.findOne({ where: { idModule: req.params.idModule } }).then(function(UserPermissionExits) {
+                    if (UserPermissionExits) {
+                        res.json({ success: false });
                     } else {
-                        res.json({ success: false, message: "Requested Module not Exist..." });
+                        Module.destroy({ where: { id: req.params.idModule } }).then(function(response) {
+                            if (response) {
+
+                                funAuditLog.CreateAuditLog('DeleteModule', UserExist.username, 'Delete Module');
+                                res.json({ success: true, message: "Module deleted successfully..." });
+                            } else {
+                                res.json({ success: false, message: "Requested Module not Exist..." });
+                            }
+                        })
                     }
                 })
-
             } else {
                 res.json(InvalidToken);
             }
