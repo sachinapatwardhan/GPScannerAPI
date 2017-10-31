@@ -57,7 +57,6 @@ router.post('/CreateModule', jsonParser, function(req, res) {
 });
 
 router.post('/UpdateModule', jsonParser, function(req, res) {
-    console.log(req.query)
     objModule = req.body;
     objHeader = req.headers;
     var token = getToken(objHeader);
