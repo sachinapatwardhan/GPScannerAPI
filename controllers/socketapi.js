@@ -795,12 +795,33 @@ global.Command9955 = function(line, Callback) {
                                                                         DeviceId: DeviceId,
                                                                         Datetime: GPSDateTime,
                                                                         Date: unixDateStemp,
-                                                                        IdUser: objVehicle.iduser,
+                                                                        IdUser: lstAllUser[i],
                                                                         Name: objVehicle.Name,
                                                                         FenceName: rows[j].name
                                                                     }
 
                                                                     io.sockets.emit(lstAllUser[i] + 'DeviceAlarm', JSON.stringify(objConnection));
+
+                                                                    var objPushnotificationCount = {
+                                                                        Id: Alarmrows.insertId,
+                                                                        Latitude: Latitude,
+                                                                        Longitude: Longitude,
+                                                                        GPSPositioning: Position,
+                                                                        Speed: Speed,
+                                                                        Direction: Direction,
+                                                                        Status: inputoutputSTatus,
+                                                                        AlarmCode: AlarmCode.toString(),
+                                                                        DeviceId: DeviceId,
+                                                                        CreatedDate: CurrentDate,
+                                                                        Datetime: GPSDateTime,
+                                                                        Date: unixDateStemp,
+                                                                        FenceName: rows[j].name,
+                                                                        UserId: lstAllUser[i],
+                                                                        IsRead: false,
+                                                                        // Name: objVehicle.Name
+                                                                    }
+
+                                                                    io.sockets.emit(lstAllUser[i] + 'DeviceNotificationCount', JSON.stringify(objPushnotificationCount));
                                                                 }
 
                                                                 checkFence(j + 1);
