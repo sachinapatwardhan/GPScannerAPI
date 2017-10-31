@@ -222,7 +222,12 @@ router.post('/uploadExcelDevice', function(req, res) {
                             if (i < lst.length) {
                                 var obj = new Object();
                                 obj.SerialNum = lst[i].SerialNumber.trim();
-                                obj.PhoneNum = lst[i].PhoneNumber.trim();
+                                if (lst[i].PhoneNumber != null && lst[i].PhoneNumber != undefined) {
+                                    obj.PhoneNum = lst[i].PhoneNumber.trim();
+                                } else {
+                                    obj.PhoneNum = null;
+                                }
+
                                 obj.CreatedDate = new Date();
 
                                 SIM.findOrCreate({
