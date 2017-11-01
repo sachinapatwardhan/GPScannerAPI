@@ -2536,12 +2536,12 @@ router.get('/GetAllDailyStatDate', function(req, res) {
                         for (var k = 0; k < lstGroup[i].data.length; k++) {
                             lstGroup[i].data[k].Date = new Date(lstGroup[i].data[k].Date * 1000);
                             //------ Count Invalid Location--------//
-                            if (lstGroup[i].data[k].GPSPositioning != 'B') {
+                            if (lstGroup[i].data[k].GPSPositioning != 'A') {
                                 obj.InvalidLocation = obj.InvalidLocation + 1;
                             }
                             //--------Count Locate Number----------//
                             if (k == 0) { obj.LocateNumber = 1; } else {
-                                if (lstGroup[i].data[k].Latitude != lstGroup[i].data[k - 1].Latitude || lstGroup[i].data[k].Latitude != lstGroup[i].data[k - 1].Latitude) {
+                                if (lstGroup[i].data[k].Latitude != lstGroup[i].data[k - 1].Latitude && lstGroup[i].data[k].Longitude != lstGroup[i].data[k - 1].Longitude) {
                                     obj.LocateNumber = obj.LocateNumber + 1;
                                 }
                             }
@@ -2813,12 +2813,12 @@ router.get('/ExportDailyStatReport', function(req, res) {
                         for (var k = 0; k < lstGroup[i].data.length; k++) {
                             lstGroup[i].data[k].Date = new Date(lstGroup[i].data[k].Date * 1000);
                             //------ Count Invalid Location--------//
-                            if (lstGroup[i].data[k].GPSPositioning != 'B') {
+                            if (lstGroup[i].data[k].GPSPositioning != 'A') {
                                 obj.InvalidLocation = obj.InvalidLocation + 1;
                             }
                             //--------Count Locate Number----------//
                             if (k == 0) { obj.LocateNumber = 1; } else {
-                                if (lstGroup[i].data[k].Latitude != lstGroup[i].data[k - 1].Latitude || lstGroup[i].data[k].Latitude != lstGroup[i].data[k - 1].Latitude) {
+                                if (lstGroup[i].data[k].Latitude != lstGroup[i].data[k - 1].Latitude && lstGroup[i].data[k].Longitude != lstGroup[i].data[k - 1].Longitude) {
                                     obj.LocateNumber = obj.LocateNumber + 1;
                                 }
                             }
