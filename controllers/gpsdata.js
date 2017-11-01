@@ -2177,10 +2177,14 @@ router.get('/GetAllDriverReport', function(req, res) {
                             //             Mileage += distance(parseFloat(lstGroup[i].data[k - 1].Latitude), parseFloat(lstGroup[i].data[k - 1].Longitude), parseFloat(lstGroup[i].data[k].Latitude), parseFloat(lstGroup[i].data[k].Longitude));
                             //         }
                             //     }
-                            // }
-
-
-                            LocateNumber = LocateNumber + 1;
+                            // } 
+                            if (k == 0) { LocateNumber = 1; } else {
+                                if (lstGroup[i].data[k].Latitude != lstGroup[i].data[k - 1].Latitude && lstGroup[i].data[k].Longitude != lstGroup[i].data[k - 1].Longitude) {
+                                    {
+                                        LocateNumber = LocateNumber + 1;
+                                    }
+                                }
+                            }
                             if (parseFloat(lstGroup[i].data[k].Speed) > 1) {
                                 if (IsDriving == 0) {
                                     DrivingStartPosition = k;
@@ -2290,6 +2294,7 @@ router.get('/GetAllDriverReport', function(req, res) {
         }
     });
 })
+
 router.get('/ExportDriverReport', function(req, res) {
     var conf = {};
     conf.name = "Sheet1";
@@ -2621,8 +2626,14 @@ router.get('/ExportDriverReport', function(req, res) {
                             //         }
                             //     }
                             // }
-
-                            LocateNumber = LocateNumber + 1;
+                            if (k == 0) { LocateNumber = 1; } else {
+                                if (lstGroup[i].data[k].Latitude != lstGroup[i].data[k - 1].Latitude && lstGroup[i].data[k].Longitude != lstGroup[i].data[k - 1].Longitude) {
+                                    {
+                                        LocateNumber = LocateNumber + 1;
+                                    }
+                                }
+                            }
+                            // LocateNumber = LocateNumber + 1;
                             if (IsDriving == 0) {
                                 DrivingStartPosition = k;
                                 var obj = new Object();
