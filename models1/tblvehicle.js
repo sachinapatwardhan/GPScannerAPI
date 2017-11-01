@@ -158,6 +158,11 @@ module.exports = function(sequelize, DataTypes) {
     idType: {
       type: DataTypes.INTEGER(11),
       allowNull: true
+    },
+    Movement: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true,
+      defaultValue: '0'
     }
   }, {
     tableName: 'tblvehicle'

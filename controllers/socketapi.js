@@ -1366,6 +1366,83 @@ global.SendSpeedData = function(objdata, Callback) {
     });
 }
 
+//Send Movement Data
+router.get('/SendMovementData', function(req, res) {
+    req.setTimeout(3600000);
+    //GetLookAtMeDP3110a0f
+    //Test Device 075034699503
+    var obj = new Object();
+    obj.DeviceId = req.query.DeviceId;
+    obj.Movement = req.query.Movement;
+    SendMovementData(obj, function(data) {
+        res.json(data);
+    })
+
+
+})
+
+//Send Movement Data
+global.SendMovementData = function(objdata, Callback) {
+
+    var DeviceId = objdata.DeviceId;
+    var Movement = ('00' + objdata.Movement).slice(-2);
+
+    var Data = "40400012" + DeviceId + "4106" + Movement;
+    Data = Data + CalculateCRCbyHex(Data) + '0D0A';
+    var client = new net.Socket();
+    var Sendflag = false;
+
+    client.connect(SocketPort, SocketIPAddress, function() {
+        // console.log('Speed send to ' + Data);
+        client.write(Data, 'hex');
+
+        client.setTimeout(10000, function() {
+            if (Sendflag == false) {
+                Sendflag = true;
+
+                client.destroy();
+                Callback({ success: false, message: 'Device not connected. Try after 5 minute.' });
+                // SendGSensorCommand(i + 1);
+            };
+
+        });
+    });
+
+    client.on('data', function(data) {
+        var line = data.toString();
+        if (Sendflag == false) {
+            if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4106') {
+                console.log('Received: ' + line);
+                var StatusCode = line.substring(26, 28);
+                Sendflag = true;
+                // SuccessDevice = SuccessDevice + 1;
+                // res.json(objNavigation);
+                client.destroy(); // kill client after server's response
+                if (StatusCode == '01') {
+                    connection.query("Update tblvehicle set Movement=" + objdata.Movement + " where deviceid=" + DeviceId, function(err, rows, fields) {
+                        Callback({ success: true, message: 'Movement Settings Save Successfully.' });
+                    });
+                } else {
+                    Callback({ success: false, message: 'Movement Settings could not save. Try again later.' });
+                }
+
+            } else {
+                Sendflag = true;
+
+                client.destroy();
+                Callback({ success: false, message: 'Movement Settings could not save. Try again later.' });
+                // SendGSensorCommand(i + 1);
+            }
+        };
+
+
+    });
+
+    client.on('close', function() {
+        console.log('Connection closed');
+    });
+}
+
 //Get Current Location
 router.get('/GetCurrentLocation', function(req, res) {
     req.setTimeout(3600000);
