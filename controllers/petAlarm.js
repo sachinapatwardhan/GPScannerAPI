@@ -267,8 +267,7 @@ router.post('/UpdateReadStatus', jsonParser, function(req, res) {
 })
 
 router.get('/GetTotalNotificationCount', function(req, res) {
-    var query = "select count(tp.Id) as TotalNotificationCount from tblalarm tp inner join tblvehicle tpg on tp.DeviceId = tpg.deviceid left join tblsharedevice tsd on tpg.id=tsd.idVehicle Where tp.IsRead=0 and tp.DeviceId = '" + req.query.DeviceId + "'";
-
+    var query = "select count(tp.Id) as TotalNotificationCount from tblalarm tp Where tp.IsRead=false and tp.DeviceId '" + req.query.DeviceId + "'";
     connection.query(query, function(err, rows, fields) {
         if (!err) {
             res.json({ success: true, data: rows });
