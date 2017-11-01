@@ -35,6 +35,10 @@ module.exports = function(sequelize, DataTypes) {
     lastModifiedDatetime: {
       type: DataTypes.DATE,
       allowNull: true
+    },
+    simSerial: {
+      type: DataTypes.STRING(45),
+      allowNull: true
     }
   }, {
     tableName: 'tbldeviceagentretailer'

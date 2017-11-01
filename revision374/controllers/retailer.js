@@ -180,7 +180,8 @@
 				retailerId: req.body.retailerId,
 				activatedDatetime: moment(),
 				expiryDatetime: moment().add(1, 'year'),
-				lastModifiedDatetime: moment()
+				lastModifiedDatetime: moment(),
+				simSerial: req.body.simSerial
 			});
 		})
 		.then(function(rDeviceAgentRetailer) {
