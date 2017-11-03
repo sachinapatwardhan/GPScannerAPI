@@ -159,42 +159,54 @@
 		});
 	});
 
-	router.post('/activateDevice', jsonParser, function(req, res) {
-		DeviceAgentRetailer.findOne({
-			where: {
-				deviceId: req.body.deviceId
-			},
-			$or: [
-				{ activatedDatetime: { $eq: null } },
-				{ expiryDatetime: { $ne: null } }
-			]
-		})
-		.then(function(rDeviceAgentRetailer) {
-			if (!rDeviceAgentRetailer) {
-				var err = new Error('GPS device not found.');
-				err.name = 'BugzError';
-				throw err;
-			}
-			
-			return rDeviceAgentRetailer.update({
-				retailerId: req.body.retailerId,
-				activatedDatetime: moment(),
-				expiryDatetime: moment().add(1, 'year'),
-				lastModifiedDatetime: moment(),
-				simSerial: req.body.simSerial
-			});
-		})
-		.then(function(rDeviceAgentRetailer) {
-			res.json({
-				success: true,
-				message: 'Device activated!',
-				data: rDeviceAgentRetailer
-			});
-		})
-		.catch(function(err) {
-			res.json({
-				success: false,
-				message: err.message
+	router.post('/activateDevice', function(req, res) {
+		var form = new formidable.IncomingForm();
+
+		form.parse(req, function(err, fields, files) {
+			req.body = fields;
+		});
+
+		form.on('fileBegin', function(name, file) {
+			file.path = __dirname + '/../MediaUploads/deviceIdAndSimSerial/' + file.name;
+		});
+
+		form.on('end', function() {
+			DeviceAgentRetailer.findOne({
+				where: {
+					deviceId: req.body.deviceId
+				},
+				$or: [
+					{ activatedDatetime: { $eq: null } },
+					{ expiryDatetime: { $ne: null } }
+				]
+			})
+			.then(function(rDeviceAgentRetailer) {
+				if (!rDeviceAgentRetailer) {
+					var err = new Error('GPS device not found.');
+					err.name = 'BugzError';
+					throw err;
+				}
+				
+				return rDeviceAgentRetailer.update({
+					retailerId: req.body.retailerId,
+					activatedDatetime: moment(),
+					expiryDatetime: moment().add(1, 'year'),
+					lastModifiedDatetime: moment(),
+					simSerial: req.body.simSerial
+				});
+			})
+			.then(function(rDeviceAgentRetailer) {
+				res.json({
+					success: true,
+					message: 'Device activated!',
+					data: rDeviceAgentRetailer
+				});
+			})
+			.catch(function(err) {
+				res.json({
+					success: false,
+					message: err.message
+				});
 			});
 		});
 	});
