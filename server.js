@@ -348,7 +348,7 @@ app.use('/sim', require('./controllers/sim'));
 app.use('/appsetting', require('./controllers/appsetting'));
 app.use('/vehicletype', require('./controllers/vehicletype'));
 app.use('/mainsetting', require('./controllers/mainsetting'));
-
+app.use('/DeviceStock', require('./controllers/DeviceStock'));
 //socket API End
 
 // MAARK Install App
