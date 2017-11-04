@@ -2250,6 +2250,7 @@ router.get('/GetAllDriverReport', function(req, res) {
                                         // obj.StartId = lstGroup[i].data[k].Id;
                                         obj.DrivingStartTime = momentz.utc(lstGroup[i].data[k].Date).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a')
                                         obj.DrivingStartTime1 = momentz.utc(lstGroup[i].data[k].Date).tz(req.query.TimeZone).format('MM-DD-YYYY hh:mm:ss a')
+                                        obj.StartTime1 = lstGroup[i].data[k].Date;
                                     }
                                     IsDriving = 1;
                                 }
@@ -2262,6 +2263,7 @@ router.get('/GetAllDriverReport', function(req, res) {
                                     obj.EndSpeed = parseFloat(lstGroup[i].data[k].Speed).toFixed(2);
                                     obj.EndDrivingTime = momentz.utc(lstGroup[i].data[k].Date).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
                                     obj.EndDrivingTime1 = momentz.utc(lstGroup[i].data[k].Date).tz(req.query.TimeZone).format('MM-DD-YYYY hh:mm:ss a');
+                                    obj.EndTime1 = lstGroup[i].data[k].Date;
                                     // obj.EndId = lstGroup[i].data[k].Id;
                                     // obj.MaxSpeed = parseFloat(u.max(objSpeed, function(MaxSpeeddata) { return MaxSpeeddata; })).toFixed(2);
                                     obj.Speed6090 = Speed6090;
@@ -2313,6 +2315,7 @@ router.get('/GetAllDriverReport', function(req, res) {
                             obj.EndDrivingTime = momentz.utc(lstGroup[i].data[lastposition].Date).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
                             // obj.EndId = lstGroup[i].data[lastposition].Id;
                             obj.EndDrivingTime1 = momentz.utc(lstGroup[i].data[lastposition].Date).tz(req.query.TimeZone).format('MM-DD-YYYY hh:mm:ss a');
+                            obj.EndTime1 = lstGroup[i].data[lastposition].Date;
                             obj.Speed6090 = Speed6090;
                             obj.Speed90130 = Speed90130;
                             obj.Over130 = Over130;

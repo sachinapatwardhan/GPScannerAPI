@@ -655,12 +655,15 @@ router.get('/GetAllEngineData', function(req, res) {
             for (var j = 0; j < Array.length; j++) {
                 if (j != Array.length - 1) {
                     Array[j].EndTime = Array[j + 1].StartTime;
+                    Array[j].StartTime1 = Array[j].StartTimeold
+                    Array[j].EndTime1 = Array[j + 1].StartTimeold
                     Array[j].ContinueTime = calcDateDiff(Array[j].EndTime, Array[j].StartTime);
                     if (Array[j].Status == 'Engine On') {
                         TotalEngineOnTime = TotalEngineOnTime + calcDateDiffCalInSec(moment(Array[j + 1].StartTimeold), moment(Array[j].StartTimeold));
                     }
 
                 } else {
+                    Array[j].EndTime1 = new Date(response[response.length - 1].Date * 1000)
                     Array[j].EndTime = momentz.utc(new Date(response[response.length - 1].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
                     //momentz.utc(new Date(response[response.length - 1].Date * 1000)).format('DD-MM-YYYY hh:mm:ss a');
                     Array[j].ContinueTime = calcDateDiff(Array[j].EndTime, Array[j].StartTime);
@@ -1452,6 +1455,7 @@ router.get('/GetAllParkingData', function(req, res) {
                             if (IsParking == 1) {
                                 IsParking = 0;
                                 obj.EndTime = momentz.utc(lstGroup[i].data[k].Date).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
+                                obj.EndTime1 = lstGroup[i].data[k].Date;
                                 TotalParkingtime = TotalParkingtime + calcDateDiffCalInSec(moment((lstGroup[i].data[k].Date)), moment(lstGroup[i].data[ParkingStartPosition].Date));
                                 obj.ParkingTime = calhrminsecfromsec(calcDateDiffCalInSec(moment(lstGroup[i].data[k].Date), moment(lstGroup[i].data[ParkingStartPosition].Date)));
                                 //obj.ParkingTime = calhrminsecfromsec(TotalParkingtime);
@@ -1471,6 +1475,7 @@ router.get('/GetAllParkingData', function(req, res) {
                                 // obj.s_id = lstGroup[i].data[k].Id;
                                 obj.Name = lstGroup[i].data[k].Name;
                                 obj.StartTime = momentz.utc(lstGroup[i].data[k].Date).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
+                                obj.StartTime1 = lstGroup[i].data[k].Date;
                                 ParkingStartPosition = k;
                             }
                             IsParking = 1;
@@ -1481,6 +1486,7 @@ router.get('/GetAllParkingData', function(req, res) {
                         IsParking = 0;
                         TotalParkingtime = TotalParkingtime + calcDateDiffCalInSec(moment(lstGroup[i].data[LastPosition].Date), moment(lstGroup[i].data[ParkingStartPosition].Date));
                         obj.EndTime = momentz.utc(lstGroup[i].data[LastPosition].Date).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
+                        obj.EndTime1 = lstGroup[i].data[LastPosition].Date;
                         obj.ParkingTime = calhrminsecfromsec(calcDateDiffCalInSec(moment(lstGroup[i].data[LastPosition].Date), moment(lstGroup[i].data[ParkingStartPosition].Date)));
                         // obj.e_id = lstGroup[i].data[LastPosition].Id;
                         // console.log(obj.s_id, "----", obj.e_id)
@@ -2545,6 +2551,7 @@ router.get('/GetAllDailyStatDate', function(req, res) {
                         obj.DeviceId = lstGroup[i].data[0].deviceid;
                         obj.Name = lstGroup[i].data[0].Name;
                         obj.Date = momentz.utc(new Date(lstGroup[i].data[0].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY');
+                        obj.Date1 = new Date(lstGroup[i].data[0].Date * 1000)
                         obj.InvalidLocation = 0;
                         obj.Mileage = 0.0;
                         obj.AlarmNumber = 0;
