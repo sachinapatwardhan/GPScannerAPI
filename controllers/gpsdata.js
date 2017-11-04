@@ -1125,9 +1125,12 @@ router.get('/GetAllWoringHourForReportOld', function(req, res) {
 })
 router.get('/GetAllWoringHourForReport', function(req, res) {
     var objParam = req.query;
-    var WhereCondition = " Where Bike.idUser= " + req.query.idUser;
-
-
+    var WhereCondition = " ";
+    var wherecondition1 = "";
+    if (objParam.DeviceId != null && objParam.DeviceId != undefined && objParam.DeviceId != '') {
+        WhereCondition += " Where gps.DeviceId in (" + objParam.DeviceId + ")";
+        wherecondition1 = ' and tblalarm.deviceid in (' + req.query.DeviceId + ')';
+    }
     if (objParam.StartDate != '' && objParam.EndDate != '') {
         var StartDate = convertdateformatForUnix(objParam.StartDate);
         var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
@@ -1144,10 +1147,7 @@ router.get('/GetAllWoringHourForReport', function(req, res) {
         WhereCondition += " And gps.Date <='" + unixEndDate + "'";
 
     }
-    if (objParam.DeviceId != null && objParam.DeviceId != undefined && objParam.DeviceId != '') {
-        WhereCondition += " And gps.DeviceId = " + objParam.DeviceId;
-        wherecondition1 = ' and tblalarm.deviceid=' + req.query.DeviceId;
-    }
+
     // WhereCondition += " And Gps.IsEngine = false";
     var query = "select " +
         "gps.DeviceId,gps.Date,gps.Speed,gps.IsEngine,gps.Latitude,gps.Longitude,gps.GPSPositioning,Bike.Name,Bike.id,Bike.deviceid " +
@@ -1185,18 +1185,7 @@ router.get('/GetAllWoringHourForReport', function(req, res) {
                     for (var i = 0; i < group.length; i++) {
 
                         group[i].Date = new Date(group[i].Date * 1000);
-                        if (alarmresponse.length > 0) {
-                            for (var h = 0; h < alarmresponse.length; h++) {
-                                var alarmDate = momentz.utc(new Date(alarmresponse[h].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY');
-                                var DateValue = momentz.utc(group[i].Date).tz(req.query.TimeZone).format('DD-MM-YYYY');
-                                if (alarmresponse[h].deviceid == group[i].DeviceId && alarmDate == DateValue) {
-                                    if (alarmresponse[h].AlarmCode == '11') {
-                                        OverSpeed = OverSpeed + 1;
-                                    }
-                                }
 
-                            }
-                        }
                         if (group[i].IsEngine == true) {
 
                             // if ((i + 1) < group.length) {
@@ -1305,7 +1294,15 @@ router.get('/GetAllWoringHourForReport', function(req, res) {
                     var TotalDrivingTimeDisplay = calhrminsecfromsec(TotalDrivingtime);
                     var TotalParkingTimeDisplay = calhrminsecfromsec(TotalParkingtime);
                     var AverageSpeed = (TotalSpeed / TotalSpeedRecord).toFixed(2);
-
+                    if (alarmresponse.length > 0) {
+                        for (var h = 0; h < alarmresponse.length; h++) {
+                            if (alarmresponse[h].deviceid == DeviceId) {
+                                if (alarmresponse[h].AlarmCode == '11') {
+                                    OverSpeed = OverSpeed + 1;
+                                }
+                            }
+                        }
+                    }
                     return {
                         // data: group,
                         Name: group[0].Name,
@@ -1375,8 +1372,13 @@ router.get('/ExportAllWoringHourForReport', function(req, res) {
 
 
     var objParam = req.query;
-    var WhereCondition = " Where Bike.idUser= " + req.query.idUser;
 
+    var WhereCondition = " ";
+    var wherecondition1 = "";
+    if (objParam.DeviceId != null && objParam.DeviceId != undefined && objParam.DeviceId != '') {
+        WhereCondition += " Where gps.DeviceId in (" + objParam.DeviceId + ")";
+        wherecondition1 = ' and tblalarm.deviceid in (' + req.query.DeviceId + ')';
+    }
     if (objParam.StartDate != '' && objParam.EndDate != '') {
         var StartDate = convertdateformatForUnix(objParam.StartDate);
         var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
@@ -1394,9 +1396,7 @@ router.get('/ExportAllWoringHourForReport', function(req, res) {
         WhereCondition += " And gps.Date <='" + unixEndDate + "'";
 
     }
-    if (objParam.DeviceId != null && objParam.DeviceId != undefined && objParam.DeviceId != '') {
-        WhereCondition += " And gps.DeviceId = " + objParam.DeviceId;
-    }
+
 
     var query = "select " +
         "gps.DeviceId,gps.Date,gps.Speed,gps.IsEngine,gps.Latitude,gps.Longitude,gps.GPSPositioning,Bike.Name,Bike.id,Bike.deviceid " +
@@ -1489,18 +1489,7 @@ router.get('/ExportAllWoringHourForReport', function(req, res) {
                 for (var i = 0; i < group.length; i++) {
 
                     group[i].Date = new Date(group[i].Date * 1000);
-                    if (alarmresponse.length > 0) {
-                        for (var h = 0; h < alarmresponse.length; h++) {
-                            var alarmDate = momentz.utc(new Date(alarmresponse[h].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY');
-                            var DateValue = momentz.utc(group[i].Date).tz(req.query.TimeZone).format('DD-MM-YYYY');
-                            if (alarmresponse[h].deviceid == group[i].DeviceId && alarmDate == DateValue) {
-                                if (alarmresponse[h].AlarmCode == '11') {
-                                    OverSpeed = OverSpeed + 1;
-                                }
-                            }
 
-                        }
-                    }
                     if (group[i].IsEngine == true) {
 
                         // if ((i + 1) < group.length) {
@@ -1607,7 +1596,15 @@ router.get('/ExportAllWoringHourForReport', function(req, res) {
                 var TotalDrivingTimeDisplay = calhrminsecfromsec(TotalDrivingtime);
                 var TotalParkingTimeDisplay = calhrminsecfromsec(TotalParkingtime);
                 var AverageSpeed = (TotalSpeed / TotalSpeedRecord).toFixed(2);
-
+                if (alarmresponse.length > 0) {
+                    for (var h = 0; h < alarmresponse.length; h++) {
+                        if (alarmresponse[h].deviceid == DeviceId) {
+                            if (alarmresponse[h].AlarmCode == '11') {
+                                OverSpeed = OverSpeed + 1;
+                            }
+                        }
+                    }
+                }
                 return {
                     Name: group[0].Name,
                     DeviceId: DeviceId,
@@ -1627,7 +1624,7 @@ router.get('/ExportAllWoringHourForReport', function(req, res) {
 
             for (var i = 0; i < response1.length; i++) {
                 var row = [];
-                row.push(response1[i].Name, response1[i].DrivingTime, response1[i].Parkingtime, response1[i].TotalMileage, response1[i].AverageSpeed, OverSpeed, response1[i].HighestSpeed);
+                row.push(response1[i].Name, response1[i].DrivingTime, response1[i].Parkingtime, response1[i].TotalMileage, response1[i].AverageSpeed, response1[i].OverSpeed, response1[i].HighestSpeed);
                 conf.rows.push(row);
             }
 
@@ -2090,8 +2087,13 @@ router.get('/GetAllDriverReportOld', function(req, res) {
 
 router.get('/GetAllDriverReport', function(req, res) {
     var objParam = req.query;
-    var wherecondition1 = " Where Bike.idUser= " + req.query.idUser;
-    var WhereCondition = " Where Bike.idUser= " + req.query.idUser;
+    var wherecondition1 = "";
+    var WhereCondition = "";
+    if (objParam.DeviceId != null && objParam.DeviceId != undefined && objParam.DeviceId != '') {
+        WhereCondition += " Where gps.DeviceId in ( " + objParam.DeviceId + ")";
+        wherecondition1 += " Where ta.deviceid in ( " + objParam.DeviceId + ")";
+
+    }
     if (objParam.StartDate != '' && objParam.EndDate != '') {
         var StartDate = convertdateformatForUnix(objParam.StartDate);
         var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
@@ -2113,11 +2115,7 @@ router.get('/GetAllDriverReport', function(req, res) {
         wherecondition1 += " And ta.Date <='" + unixEndDate + "'";
 
     }
-    if (objParam.DeviceId != null && objParam.DeviceId != undefined && objParam.DeviceId != '') {
-        WhereCondition += " And gps.DeviceId = " + objParam.DeviceId;
-        wherecondition1 += " And ta.deviceid = " + objParam.DeviceId;
 
-    }
 
     wherecondition1 += " And ta.AlarmCode = '11'";
     //WhereCondition += " And Gps.DeviceId = 075034901552";
@@ -2132,7 +2130,7 @@ router.get('/GetAllDriverReport', function(req, res) {
         " order by gps.Date Asc";
     // console.log(query);
     var query1 = "select ta.Datetime, ta.Date, ta.deviceid from tblalarm as ta left join tblvehicle As Bike on ta.deviceid = Bike.deviceid " + wherecondition1 + ";"
-        // console.log(query1);
+        // console.log(query1)
     connection.query(query, function(err, response, fields) {
         if (response.length > 0) {
             connection.query(query1, function(alarmerr, alarmresponse, alarmfields) {
@@ -2251,6 +2249,7 @@ router.get('/GetAllDriverReport', function(req, res) {
                                         obj.EndAddress = "No Address Found";
                                         // obj.StartId = lstGroup[i].data[k].Id;
                                         obj.DrivingStartTime = momentz.utc(lstGroup[i].data[k].Date).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a')
+                                        obj.DrivingStartTime1 = momentz.utc(lstGroup[i].data[k].Date).tz(req.query.TimeZone).format('MM-DD-YYYY hh:mm:ss a')
                                     }
                                     IsDriving = 1;
                                 }
@@ -2262,6 +2261,7 @@ router.get('/GetAllDriverReport', function(req, res) {
                                     obj.EndLongitude = lstGroup[i].data[k].Longitude;
                                     obj.EndSpeed = parseFloat(lstGroup[i].data[k].Speed).toFixed(2);
                                     obj.EndDrivingTime = momentz.utc(lstGroup[i].data[k].Date).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
+                                    obj.EndDrivingTime1 = momentz.utc(lstGroup[i].data[k].Date).tz(req.query.TimeZone).format('MM-DD-YYYY hh:mm:ss a');
                                     // obj.EndId = lstGroup[i].data[k].Id;
                                     // obj.MaxSpeed = parseFloat(u.max(objSpeed, function(MaxSpeeddata) { return MaxSpeeddata; })).toFixed(2);
                                     obj.Speed6090 = Speed6090;
@@ -2312,7 +2312,7 @@ router.get('/GetAllDriverReport', function(req, res) {
                             obj.EndSpeed = parseFloat(lstGroup[i].data[lastposition].Speed).toFixed(2);
                             obj.EndDrivingTime = momentz.utc(lstGroup[i].data[lastposition].Date).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
                             // obj.EndId = lstGroup[i].data[lastposition].Id;
-
+                            obj.EndDrivingTime1 = momentz.utc(lstGroup[i].data[lastposition].Date).tz(req.query.TimeZone).format('MM-DD-YYYY hh:mm:ss a');
                             obj.Speed6090 = Speed6090;
                             obj.Speed90130 = Speed90130;
                             obj.Over130 = Over130;
@@ -2344,9 +2344,10 @@ router.get('/GetAllDriverReport', function(req, res) {
                     for (var i = 0; i <= Array.length; i++) {
                         if (i < Array.length) {
                             for (var h = 0; h < alarmresponse.length; h++) {
-                                var alarmDate = momentz.utc(new Date(alarmresponse[h].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
+                                var alarmDate = momentz.utc(new Date(alarmresponse[h].Date * 1000)).tz(req.query.TimeZone).format('MM-DD-YYYY hh:mm:ss a');
+
                                 if (alarmresponse[h].deviceid == Array[i].DeviceId) {
-                                    if (alarmDate >= Array[i].DrivingStartTime && alarmDate <= Array[i].EndDrivingTime) {
+                                    if (new Date(alarmDate) >= new Date(Array[i].DrivingStartTime1) && new Date(alarmDate) <= new Date(Array[i].EndDrivingTime1)) {
                                         Array[i].OverSpeed = Array[i].OverSpeed + 1;
                                     }
                                 }
@@ -2440,8 +2441,13 @@ router.get('/ExportDriverReport', function(req, res) {
         },
     ];
     var objParam = req.query;
-    var wherecondition1 = " Where Bike.idUser= " + req.query.idUser;
-    var WhereCondition = " Where Bike.idUser= " + req.query.idUser;
+    var wherecondition1 = "";
+    var WhereCondition = "";
+    if (objParam.DeviceId != null && objParam.DeviceId != undefined && objParam.DeviceId != '') {
+        WhereCondition += " Where gps.DeviceId in (" + objParam.DeviceId + ")";
+        wherecondition1 += " Where ta.deviceid in (" + objParam.DeviceId + ")";
+
+    }
     if (objParam.StartDate != '' && objParam.EndDate != '') {
         var StartDate = convertdateformatForUnix(objParam.StartDate);
         var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
@@ -2465,11 +2471,7 @@ router.get('/ExportDriverReport', function(req, res) {
 
 
     }
-    if (objParam.DeviceId != null && objParam.DeviceId != undefined && objParam.DeviceId != '') {
-        WhereCondition += " And gps.DeviceId = " + objParam.DeviceId;
-        wherecondition1 += " And ta.deviceid = " + objParam.DeviceId;
 
-    }
 
     wherecondition1 += " And ta.AlarmCode = '11'";
 
@@ -2738,6 +2740,7 @@ router.get('/ExportDriverReport', function(req, res) {
                                         obj.EndAddress = "No Address Found";
                                         // obj.StartId = lstGroup[i].data[k].Id;
                                         obj.DrivingStartTime = momentz.utc(lstGroup[i].data[k].Date).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a')
+                                        obj.DrivingStartTime1 = momentz.utc(lstGroup[i].data[k].Date).tz(req.query.TimeZone).format('MM-DD-YYYY hh:mm:ss a')
                                     }
                                     IsDriving = 1;
                                 }
@@ -2749,6 +2752,7 @@ router.get('/ExportDriverReport', function(req, res) {
                                     obj.EndLongitude = lstGroup[i].data[k].Longitude;
                                     obj.EndSpeed = parseFloat(lstGroup[i].data[k].Speed).toFixed(2);
                                     obj.EndDrivingTime = momentz.utc(lstGroup[i].data[k].Date).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
+                                    obj.EndDrivingTime1 = momentz.utc(lstGroup[i].data[k].Date).tz(req.query.TimeZone).format('MM-DD-YYYY hh:mm:ss a');
                                     // obj.EndId = lstGroup[i].data[k].Id;
                                     // obj.MaxSpeed = parseFloat(u.max(objSpeed, function(MaxSpeeddata) { return MaxSpeeddata; })).toFixed(2);
                                     obj.Speed6090 = Speed6090;
@@ -2798,6 +2802,7 @@ router.get('/ExportDriverReport', function(req, res) {
                             obj.EndLongitude = lstGroup[i].data[lastposition].Longitude;
                             obj.EndSpeed = parseFloat(lstGroup[i].data[lastposition].Speed).toFixed(2);
                             obj.EndDrivingTime = momentz.utc(lstGroup[i].data[lastposition].Date).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
+                            obj.EndDrivingTime1 = momentz.utc(lstGroup[i].data[lastposition].Date).tz(req.query.TimeZone).format('MM-DD-YYYY hh:mm:ss a');
                             // obj.EndId = lstGroup[i].data[lastposition].Id;
 
                             obj.Speed6090 = Speed6090;
@@ -2832,16 +2837,16 @@ router.get('/ExportDriverReport', function(req, res) {
                     for (var i = 0; i <= Array.length; i++) {
                         if (i < Array.length) {
                             for (var h = 0; h < alarmresponse.length; h++) {
-                                var alarmDate = momentz.utc(new Date(alarmresponse[h].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
+                                var alarmDate = momentz.utc(new Date(alarmresponse[h].Date * 1000)).tz(req.query.TimeZone).format('MM-DD-YYYY hh:mm:ss a');
                                 if (alarmresponse[h].deviceid == Array[i].DeviceId) {
-                                    if (alarmDate >= Array[i].DrivingStartTime && alarmDate <= Array[i].EndDrivingTime) {
+                                    if (new Date(alarmDate) >= new Date(Array[i].DrivingStartTime1) && new Date(alarmDate) <= new Date(Array[i].EndDrivingTime1)) {
                                         Array[i].OverSpeed = Array[i].OverSpeed + 1;
                                     }
                                 }
                             }
                         } else {
                             if (Array.length > 0) {
-                                var data = u.sortBy(Array, function(num) { return new Date(num.DrivingStartTime) });
+                                var data = u.sortBy(Array, function(num) { return new Date(num.DrivingStartTime1) });
                                 Array = data;
                                 // console.log(Array);
                             }
@@ -2850,7 +2855,7 @@ router.get('/ExportDriverReport', function(req, res) {
                     }
                 } else {
                     if (Array.length > 0) {
-                        var data = u.sortBy(Array, function(num) { return new Date(num.DrivingStartTime) });
+                        var data = u.sortBy(Array, function(num) { return new Date(num.DrivingStartTime1) });
                         Array = data;
                         // console.log(Array);
                     }
