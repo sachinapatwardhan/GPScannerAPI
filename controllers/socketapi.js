@@ -2963,8 +2963,10 @@ router.get('/UpdateDeviceStatus', function(req, res) {
 
 // function FakeAlarm() {
 //     var myArray = ['04', '11', '30', '50', '6', '66'];
+//     var lstDevice = ['53534580348504', '59197080000749', '488990008090', '34234234234222'];
 //     var AlarmCode = myArray[Math.floor(Math.random() * myArray.length)];
-//     var DeviceId = '53534580348504';
+//     // var DeviceId = '53534580348504';
+//     var DeviceId = lstDevice[Math.floor(Math.random() * lstDevice.length)];
 //     var GPSDateTime = CurrentDate = convertdateformat(new Date());
 //     var unixDateStemp = (new Date()).getTime() / 1000;
 //     var Latitude = 21.16241778;
@@ -3011,6 +3013,10 @@ router.get('/UpdateDeviceStatus', function(req, res) {
 //         io.sockets.emit('1DeviceNotificationCount', JSON.stringify(objPushnotificationCount));
 //     });
 // }
+
+// setInterval(function() {
+//     FakeAlarm();
+// }, 20000);
 
 //End of Send Email
 
