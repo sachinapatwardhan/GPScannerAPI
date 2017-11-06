@@ -17,12 +17,12 @@ router.get('/GetAllGPSByTimeZoneDate', function(req, res) {
 
     var convertDate = convertdateformatForUnix(Enddate);
     var unixEnddate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
-    var orderby = '  order by tblgpsdata.Date desc';
+    var orderby = ' ';
     if (req.query.orderby != '' && req.query.orderby != undefined && req.query.orderby != null) {
         orderby = ' ' + req.query.orderby;
     }
 
-    var query = "select tblgpsdata.*,tblvehicle.Name from tblgpsdata left join tblvehicle on tblgpsdata.deviceid = tblvehicle.deviceid Where tblgpsdata.Date >= '" + unixStartdate + "' and tblgpsdata.Date <= '" + unixEnddate + "'" + wherecondition + ' order by Date asc' + " LIMIT " + req.query.length + " OFFSET " + req.query.start + ";"
+    var query = "select tblgpsdata.*,tblvehicle.Name from tblgpsdata left join tblvehicle on tblgpsdata.deviceid = tblvehicle.deviceid Where tblgpsdata.Date >= '" + unixStartdate + "' and tblgpsdata.Date <= '" + unixEnddate + "'" + wherecondition + orderby + " LIMIT " + req.query.length + " OFFSET " + req.query.start + ";"
     var Count = "select count(*) AS Totalrecord from tblgpsdata left join tblvehicle on tblgpsdata.deviceid = tblvehicle.deviceid Where tblgpsdata.Date >= '" + unixStartdate + "' and tblgpsdata.Date <= '" + unixEnddate + "'" + wherecondition + ";"
     connection.query(query, function(err, lstGPSData, fields) {
         if (!err) {
@@ -290,7 +290,10 @@ router.get('/ExportDetailTripReport', function(req, res) {
 router.get('/GetAllFenceInAndOutData', function(req, res) {
     var objParam = req.query;
 
-    var Orderby = 'Order By Date asc';
+    var Orderby = '';
+    if (req.query.orderby != '' && req.query.orderby !== null && req.query.orderby != undefined) {
+        Orderby = ' ' + req.query.orderby;
+    }
     var search = "";
     // var unixStartdate = new Date(objParam.StartDate).getTime() / 1000;
     // var unixEndDate = new Date(objParam.EndDate).getTime() / 1000;
