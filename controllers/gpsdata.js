@@ -1621,7 +1621,7 @@ router.get('/ExportAllWoringHourForReport', function(req, res) {
 
             conf.rows = [];
 
-
+            response1 = u.sortBy(response1, function(num) { return num.Name })
             for (var i = 0; i < response1.length; i++) {
                 var row = [];
                 row.push(response1[i].Name, response1[i].DrivingTime, response1[i].Parkingtime, response1[i].TotalMileage, response1[i].AverageSpeed, response1[i].HighestSpeed, response1[i].OverSpeed);
