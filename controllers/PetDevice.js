@@ -1242,7 +1242,18 @@ router.get('/DownloadTemplate', function(req, res) {
 })
 
 router.get('/GetGPSDeviceByIMEI', function(req, res) {
-    GPSDevice.findOne({ where: { IMEI: req.query.IMEI } }).then(function(response) {
+    GPSDevice.belongsTo(SimService, {
+        foreignKey: {
+            name: 'idSim',
+            allowNull: false
+        }
+    })
+    GPSDevice.findOne({
+        where: { IMEI: req.query.IMEI },
+        include: [{
+            model: SimService,
+        }]
+    }).then(function(response) {
         if (response != null) {
             res.json({ success: true, data: response });
         } else {
