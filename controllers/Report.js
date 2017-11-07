@@ -2725,10 +2725,12 @@ router.get('/ExportDailyStatReport', function(req, res) {
         }, {
             caption: 'Parking Time',
             type: 'string'
-        }, {
-            caption: 'Locate Number',
-            type: 'number'
-        }, {
+        },
+        //  {
+        //     caption: 'Locate Number',
+        //     type: 'number'
+        // }, 
+        {
             caption: 'Invalid Location',
             type: 'number'
         }, {
@@ -3091,7 +3093,7 @@ router.get('/ExportDailyStatReport', function(req, res) {
                         }
 
 
-                        row.push(Name, Date, DrivingTime, ParkingTime, LocateNumber, InvalidLocation, Mileage, AverageSpeed, HighestSpeed, OverSpeed, AlarmNumber, EnginOnTime /*, DoorOpenNumber, DoorOpenTime, ShockNumber, ShockTime, EngineOnNumber*/ );
+                        row.push(Name, Date, DrivingTime, ParkingTime, InvalidLocation, Mileage, AverageSpeed, HighestSpeed, OverSpeed, AlarmNumber, EnginOnTime /*, DoorOpenNumber, DoorOpenTime, ShockNumber, ShockTime, EngineOnNumber*/ );
                         conf.rows.push(row);
                         GetData(i + 1);
 
