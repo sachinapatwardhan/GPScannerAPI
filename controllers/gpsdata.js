@@ -1344,14 +1344,14 @@ router.get('/ExportAllWoringHourForReport', function(req, res) {
         {
             caption: 'Average Speed',
             type: 'number'
-        }, {
-            caption: 'Over Speed(Times)',
-            type: 'number'
         },
         {
             caption: 'Highest Speed',
             type: 'number'
-        }
+        }, {
+            caption: 'Over Speed(Times)',
+            type: 'number'
+        },
         /*{
             caption: 'Start Time',
             type: 'string'
@@ -1624,7 +1624,7 @@ router.get('/ExportAllWoringHourForReport', function(req, res) {
 
             for (var i = 0; i < response1.length; i++) {
                 var row = [];
-                row.push(response1[i].Name, response1[i].DrivingTime, response1[i].Parkingtime, response1[i].TotalMileage, response1[i].AverageSpeed, response1[i].OverSpeed, response1[i].HighestSpeed);
+                row.push(response1[i].Name, response1[i].DrivingTime, response1[i].Parkingtime, response1[i].TotalMileage, response1[i].AverageSpeed, response1[i].HighestSpeed, response1[i].OverSpeed);
                 conf.rows.push(row);
             }
 
