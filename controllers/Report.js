@@ -1153,14 +1153,15 @@ router.get('/ExportLastPositionDataByUserId', function(req, res) {
                 rows[i].Time = momentz.utc(new Date(rows[i].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
             }
             var ListPostionData = rows;
-            ListPostionData = u.sortBy(ListPostionData, function(num) { return new Date(num.Date) }).reverse();
+            ListPostionData = u.sortBy(ListPostionData, function(num) { return new Date(num.Date) })
             ExportData(ListPostionData)
         } else {
             var ListPostionData = [];
-            ListPostionData = u.sortBy(ListPostionData, function(num) { return new Date(num.Date) }).reverse();
+            ListPostionData = u.sortBy(ListPostionData, function(num) { return new Date(num.Date) })
             ExportData(ListPostionData)
         }
     })
+
 
 
     function ExportData(ListPostionData) {
