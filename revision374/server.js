@@ -149,7 +149,7 @@ var smtpConfig = {
     service: process.env.SMTPService,
     host: process.env.SMTPhost,
     port: process.env.SMTPport,
-    secure: false,
+    secure: true,
     auth: {
         user: process.env.SMTPuser,
         pass: process.env.SMTPpass
@@ -357,7 +357,7 @@ app.use('/retailer', require('./controllers/retailer'));
 
 // MAARK Install App End
 
-http.listen(process.env.APIPort, function() {
+var server = http.listen(process.env.APIPort, function() {
     console.log('listening on *:' + process.env.APIPort);
 });
 
@@ -408,3 +408,5 @@ io.sockets.on('connection', function(socket) {
         })
     });
 });
+
+module.exports = server;
