@@ -51,6 +51,9 @@ router.get('/ExportReport', function(req, res) {
     }, {
         caption: 'Direction',
         type: 'string'
+    }, {
+        caption: 'Is Engine',
+        type: 'string'
     }];
     var Startdate = objTask.StartDate;
     var Enddate = objTask.EndDate;
@@ -61,29 +64,27 @@ router.get('/ExportReport', function(req, res) {
     var convertDate = convertdateformatForUnix(Enddate);
     var unixEnddate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
 
+    var query = "select Id,Datetime, Latitude, Longitude, GPSPositioning, Speed, Direction, DeviceId,IsEngine, Date from tblgpsdata where deviceid=" + req.query.DeviceId + " and Date >= '" + unixStartdate + "' and Date <= '" + unixEnddate + "' order by Date;"
 
-    var query = "select Id,Datetime, Latitude, Longitude, GPSPositioning, Speed, Direction, DeviceId,IsEngine, Date from tblgpsdata where deviceid=" + req.query.DeviceId + " and GPSPositioning='A' and Date >= '" + unixStartdate + "' and Date <= '" + unixEnddate + "' order by Datetime;"
     connection.query(query, function(err, response) {
         conf.rows = [];
-        var lstTemp = [];
+        // var lstTemp = [];
+        // for (var i = 0; i < response.length; i++) {
+        //     if (response[i].IsEngine == true) {
+        //         COuntEngineOff = 0;
+        //         lstTemp.push(response[i]);
+        //     } else {
+        //         if (COuntEngineOff == 0) {
+        //             lstTemp.push(response[i]);
+        //         }
+        //         COuntEngineOff = COuntEngineOff + 1;
+        //     }
+        // }
 
-        var COuntEngineOff = 0;
-
-        for (var i = 0; i < response.length; i++) {
-            if (response[i].IsEngine == true) {
-                COuntEngineOff = 0;
-                lstTemp.push(response[i]);
-            } else {
-                if (COuntEngineOff == 0) {
-                    lstTemp.push(response[i]);
-                }
-                COuntEngineOff = COuntEngineOff + 1;
-            }
-        }
         GetData(0);
 
         function GetData(i) {
-            if (i < lstTemp.length) {
+            if (i < response.length) {
                 var row = [];
                 var Datetime = 'N/A';
                 var longitude = 0.00;
@@ -91,30 +92,37 @@ router.get('/ExportReport', function(req, res) {
                 var Speed = 0.00;
                 var GPSPositioning = 'N/A';
                 var Direction = 0.00;
+                var IsEngine = 'Off';
 
-
-                if (lstTemp[i].Datetime != null && lstTemp[i].Datetime != '' && lstTemp[i].Datetime != undefined) {
+                if (response[i].Datetime != null && response[i].Datetime != '' && response[i].Datetime != undefined) {
                     // Datetime = dateformat(response[i].Datetime, 2);
-                    Datetime = momentz.utc(new Date(lstTemp[i].Date * 1000)).tz(objTask.TimeZone).format('DD-MM-YYYY hh:mm:ss a')
+                    Datetime = momentz.utc(new Date(response[i].Date * 1000)).tz(objTask.TimeZone).format('DD-MM-YYYY hh:mm:ss a')
                 }
 
-                if (lstTemp[i].Latitude != null && lstTemp[i].Latitude != '' && lstTemp[i].Latitude != undefined) {
-                    Latitude = lstTemp[i].Latitude;
+                if (response[i].Latitude != null && response[i].Latitude != '' && response[i].Latitude != undefined) {
+                    Latitude = response[i].Latitude;
                 }
-                if (lstTemp[i].Longitude != null && lstTemp[i].Longitude != '' && lstTemp[i].Longitude != undefined) {
-                    Longitude = lstTemp[i].Longitude;
+                if (response[i].Longitude != null && response[i].Longitude != '' && response[i].Longitude != undefined) {
+                    Longitude = response[i].Longitude;
                 }
-                if (lstTemp[i].GPSPositioning != null && lstTemp[i].GPSPositioning != '' && lstTemp[i].GPSPositioning != undefined) {
-                    GPSPositioning = lstTemp[i].GPSPositioning;
+                if (response[i].GPSPositioning != null && response[i].GPSPositioning != '' && response[i].GPSPositioning != undefined) {
+                    GPSPositioning = response[i].GPSPositioning;
                 }
-                if (lstTemp[i].Speed != null && lstTemp[i].Speed != '' && lstTemp[i].Speed != undefined) {
-                    Speed = parseFloat(lstTemp[i].Speed).toFixed(2);
+                if (response[i].Speed != null && response[i].Speed != '' && response[i].Speed != undefined) {
+                    Speed = parseFloat(response[i].Speed).toFixed(2);
                 }
-                if (lstTemp[i].Direction != null && lstTemp[i].Direction != '' && lstTemp[i].Direction != undefined) {
-                    Direction = lstTemp[i].Direction;
+                if (response[i].Direction != null && response[i].Direction != '' && response[i].Direction != undefined) {
+                    Direction = response[i].Direction;
                 }
-                var latlng = Longitude + "/" + Longitude;
-                row.push(Datetime.toString(), latlng, Speed.toString(), GPSPositioning.toString(),Direction.toString());
+                if (response[i].IsEngine != null && response[i].IsEngine != '' && response[i].IsEngine != undefined) {
+                    if (response[i].IsEngine == 0 || response[i].IsEngine == false) {
+                        IsEngine = 'Off';
+                    } else {
+                        IsEngine = 'On';
+                    }
+                }
+                var latlng = Latitude + "/" + Longitude;
+                row.push(Datetime.toString(), latlng, Speed.toString(), GPSPositioning.toString(), Direction.toString(), IsEngine.toString());
                 conf.rows.push(row);
                 GetData(i + 1);
             } else {
@@ -124,7 +132,6 @@ router.get('/ExportReport', function(req, res) {
                 res.end(result, 'binary');
             }
         }
-
     })
 })
 
