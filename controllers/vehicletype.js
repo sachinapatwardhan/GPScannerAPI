@@ -184,4 +184,121 @@ router.get('/UpdateIsActiveStatus', function(req, res) {
     }
 })
 
+
+
+router.post('/uploadFile', function(req, res) {
+    var form = new formidable.IncomingForm();
+    form.uploadDir = __dirname + '/../MediaUploads/FileUpload';
+    var FileName = [];
+    var lstUser = [];
+    //file upload path
+    form.parse(req, function(err, fields, files) {});
+    form.on('fileBegin', function(name, file) {
+        var strarr = name.split(',');
+        var ext = file.name.substring(file.name.indexOf('.'), file.name.length);
+        var NewName = GetUserNameFromDate();
+        if (ext.indexOf('?') > -1) {
+            ext = ext.substring(0, ext.indexOf('?'));
+        };
+        if (strarr[1] == "OnIcon") {
+            file.path = form.uploadDir + "/" + NewName + ext;
+        } else if (strarr[1] == "ActiveIcon") {
+            NewName = parseInt(NewName) + 2;
+            file.path = form.uploadDir + "/" + NewName + ext;
+        } else if (strarr[1] == "OffIcon") {
+            file.path = form.uploadDir + "/" + NewName + ext;
+        }
+        var obj = new Object();
+        obj.Name = NewName + ext;
+        obj.Type = strarr[1];
+        FileName.push(obj);
+        lstUser.push(strarr[0]);
+
+    });
+    form.on('end', function() {
+        var i = 0;
+        var OnIcon = '';
+        var OffIcon = '';
+        var ActiveIcon = '';
+        var id = parseInt(lstUser[i]);
+        console.log("id...", id)
+        VehicleType.findOne({ where: { id: id } }).then(function(response) {
+            if (response != null) {
+                function uploader(i) {
+                    if (i < FileName.length) {
+                        if (FileName[i].Type == "OnIcon") {
+                            if (response.OnIcon != '' && response.OnIcon != null) {
+                                var oldFile = __dirname + '/../MediaUploads/FileUpload/' + response.OnIcon;
+                                fs.exists(oldFile, function(exists) {
+                                    if (exists) {
+                                        fs.unlink(oldFile);
+                                    }
+                                });
+                            }
+                            OnIcon = FileName[i].Name;
+                        }
+                        if (FileName[i].Type == "ActiveIcon") {
+                            if (response.ActiveIcon != '' && response.ActiveIcon != null) {
+                                var oldFile = __dirname + '/../MediaUploads/FileUpload/' + response.ActiveIcon;
+                                fs.exists(oldFile, function(exists) {
+                                    if (exists) {
+                                        fs.unlink(oldFile);
+                                    }
+                                });
+                            }
+                            ActiveIcon = FileName[i].Name;
+                        }
+                        if (FileName[i].Type == "OffIcon") {
+                            if (response.OffIcon != '' && response.OffIcon != null) {
+                                var oldFile = __dirname + '/../MediaUploads/FileUpload/' + response.OffIcon;
+                                fs.exists(oldFile, function(exists) {
+                                    if (exists) {
+                                        fs.unlink(oldFile);
+                                    }
+                                });
+                            }
+                            OffIcon = FileName[i].Name;
+                        }
+
+                        uploader(i + 1);
+                    } else {
+                        var obj = new Object();
+                        if (OnIcon != '') { obj.OnIcon = OnIcon; }
+                        if (OffIcon != '') { obj.OffIcon = OffIcon; }
+                        if (ActiveIcon != '') { obj.ActiveIcon = ActiveIcon; }
+                        console.log("obj......", obj)
+                        response.updateAttributes(obj).then(function(resUpdate) {
+                            if (resUpdate != null) {
+                                res.json({ success: true, message: "File Uploaded Successfully...", data: resUpdate });
+                            } else {
+                                res.json({ success: false, message: "File not Uploaded Successfully...", data: 0 });
+                            }
+                        })
+                    }
+                }
+                uploader(i);
+            } else {
+                res.json({ success: false, message: "File not uploaded..." });
+            }
+        })
+    });
+});
+
+function GetUserNameFromDate() {
+    var d = new Date();
+    var curr_date = d.getDate();
+    var curr_month = d.getMonth() + 1; //Months are zero based
+    var curr_year = d.getFullYear();
+
+    var seconds = d.getSeconds();
+    var minutes = d.getMinutes();
+    var hour = d.getHours();
+
+    var milisec = d.getMilliseconds();
+
+    return curr_year.toString() + curr_month.toString() + curr_date.toString() + hour.toString() + minutes.toString() + seconds.toString() + milisec.toString();
+
+
+}
+
 module.exports = router
