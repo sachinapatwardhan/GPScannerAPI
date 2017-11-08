@@ -24,6 +24,18 @@ module.exports = function(sequelize, DataTypes) {
     CreatedBy: {
       type: DataTypes.STRING,
       allowNull: true
+    },
+    OnIcon: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    OffIcon: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    ActiveIcon: {
+      type: DataTypes.STRING,
+      allowNull: true
     }
   }, {
     tableName: 'tblvehicletype'
