@@ -4,6 +4,7 @@ var expect = require('chai').expect;
 var qs = require('qs');
 
 var testAppInfo1 = {
+	Id: 0,
 	AppName: 'Test1',
 	BundleId: 'com.disolutions.test1',
 	IOSCertificate: '999999999999991.pem',
@@ -25,6 +26,8 @@ var testAppInfo2 = {
 	CreatedBy: 'Admin',
 	ImageLogo: '999999999999992.png'
 };
+var testEmail = 'lenqxue95@gmail.com';
+var testPassword = 'dino.saw';
 
 describe('application information', function() {
 	// Important! Because server setup is slow!
@@ -475,6 +478,7 @@ describe('application information', function() {
 				expect(res.body).to.have.property('length').of.at.least(2);
 				expect(res.body[0]).to.have.property('id');
 				expect(res.body[0]).to.have.property('AppName');
+				expect(res.body[0]).to.not.have.property('BundleId');
 				expect(res.body[0].Id).to.not.equal(null);
 				expect(res.body[0].AppName).to.not.equal(null);
 				done();
@@ -483,6 +487,252 @@ describe('application information', function() {
 	});
 
 	describe('/appinfo/SaveAppInfo', function() {
+		afterEach(function(done) {
+			AppInfo.destroy({
+				where: {
+					AppName: testAppInfo1.AppName,
+					BundleId: testAppInfo1.BundleId
+				}
+			})
+			.then(function() {
+				done();
+			});
+		});
+
+		describe('', function() {
+			var dUser;
+	
+			beforeEach(function(done) {
+				User.create({
+					username: testEmail,
+					email: testEmail,
+					password: jwt.encode(testPassword, 'bugz'),
+					IsMobileVerify: false,
+					idApp: 1
+				})
+				.then(function(rUser) {
+					dUser = rUser;
+					done();
+				});
+			});
+	
+			afterEach(function(done) {
+				dUser.destroy()
+				.then(function() {
+					done();
+				});
+			});
+
+			it('should save app info when credentials are correct', function(done) {
+				var token = jwt.encode({
+					username: testEmail,
+					password: jwt.encode(testPassword, 'bugz')
+				}, 'bugz');
+				token = 'JWT ' + token;
+
+				request(server)
+				.post('/appinfo/SaveAppInfo')
+				.set('authorization', token)
+				.send(testAppInfo1)
+				.expect(200)
+				.end(function(err, res) {
+					expect(res.body).to.exist;
+					expect(res.body).to.have.property('success');
+					expect(res.body).to.have.property('message');
+					expect(res.body).to.have.property('data');
+					expect(res.body.success).to.equal(true);
+					expect(res.body.message).to.equal('App Info created successfully...');
+					expect(res.body.data).to.be.an('array');
+					expect(res.body.data).to.have.lengthOf(2);
+					expect(res.body.data[0]).to.be.an('object');
+					expect(res.body.data[1]).to.equal(true);
+					done();
+				});
+			});
+		});
 		
+		it('should fail when credentials are wrong', function(done) {
+			request(server)
+			.post('/appinfo/SaveAppInfo')
+			.send(testAppInfo1)
+			.expect(200)
+			.end(function(err, res) {
+				expect(res.body).to.exist;
+				expect(res.body).to.have.property('success');
+				expect(res.body).to.have.property('message');
+				expect(res.body).to.have.property('data');
+				expect(res.body.success).to.equal(false);
+				expect(res.body.message).to.equal('Invalid token...');
+				expect(res.body.data).to.equal('TOKEN');
+				done();
+			});
+		});
+	});
+
+	describe('/appinfo/DeleteAppInfo', function() {
+		describe('', function() {
+			var dUser;
+			var dAppInfo;
+
+			beforeEach(function(done) {
+				User.create({
+					username: testEmail,
+					email: testEmail,
+					password: jwt.encode(testPassword, 'bugz'),
+					IsMobileVerify: false,
+					idApp: 1
+				})
+				.then(function(rUser) {
+					dUser = rUser;
+					return AppInfo.create(testAppInfo1);
+				})
+				.then(function(rAppInfo) {
+					dAppInfo = rAppInfo;
+					done();
+				});
+			});
+
+			afterEach(function(done) {
+				dUser.destroy()
+				.then(function() {
+					done();
+				});
+			});
+
+			it('should delete app info when credentials are correct', function(done) {
+				var token = jwt.encode({
+					username: testEmail,
+					password: jwt.encode(testPassword, 'bugz')
+				}, 'bugz');
+				token = 'JWT ' + token;
+
+				request(server)
+				.get('/appinfo/DeleteAppInfo')
+				.set('authorization', token)
+				.query(qs.stringify({
+					Id: dAppInfo.Id
+				}))
+				.expect(200)
+				.end(function(err, res) {
+					expect(res.body).to.exist;
+					expect(res.body).to.have.property('success');
+					expect(res.body).to.have.property('message');
+					expect(res.body).to.have.property('data');
+					expect(res.body.success).to.equal(true);
+					expect(res.body.message).to.equal('App Info Deleted Successfully');
+					expect(res.body.data).to.be.an('object');
+					done();
+				});
+			});
+		});
+
+		it('should fail when credentials are wrong', function(done) {
+			request(server)
+			.get('/appinfo/DeleteAppInfo')
+			.query(qs.stringify({
+				Id: 0
+			}))
+			.expect(200)
+			.end(function(err, res) {
+				expect(res.body).to.exist;
+				expect(res.body).to.have.property('success');
+				expect(res.body).to.have.property('message');
+				expect(res.body).to.have.property('data');
+				expect(res.body.success).to.equal(false);
+				expect(res.body.message).to.equal('Invalid token...');
+				expect(res.body.data).to.equal('TOKEN');
+				done();
+			});
+		});
+	});
+
+	describe('/appinfo/uploadFile', function() {
+		// TODO: Fill in the test here
+	});
+
+	describe('/appinfo/GetAppInfoByName', function() {
+		var dAppInfo;
+
+		beforeEach(function(done) {
+			AppInfo.create(testAppInfo1)
+			.then(function(rAppInfo) {
+				dAppInfo = rAppInfo;
+				done();
+			});
+		});
+
+		afterEach(function(done) {
+			dAppInfo.destroy()
+			.then(function() {
+				done();
+			});
+		});
+
+		describe('', function() {
+			it('should get app info when name is matching', function(done) {
+				request(server)
+				.get('/appinfo/GetAppInfoByName')
+				.query(qs.stringify({
+					AppName: testAppInfo1.AppName
+				}))
+				.expect(200)
+				.end(function(err, res) {
+					expect(res.body).to.exist;
+					expect(res.body).to.be.an('object');
+					expect(res.body).to.have.property('BundleId');
+					expect(res.body.BundleId).to.equal(testAppInfo1.BundleId);
+					done();
+				});
+			});
+	
+			it('should not get app info when name does not match', function(done) {
+				request(server)
+				.get('/appinfo/GetAppInfoByName')
+				.query(qs.stringify({
+					AppName: ''
+				}))
+				.expect(200)
+				.end(function(err, res) {
+					expect(res.body).to.be.null;
+					done();
+				});
+			});
+		});
+	});
+
+	describe('/appinfo/GetAllInfoList', function() {
+		var dAppInfo;
+
+		beforeEach(function(done) {
+			AppInfo.create(testAppInfo1)
+			.then(function(rAppInfo) {
+				dAppInfo = rAppInfo;
+				done();
+			});
+		});
+
+		afterEach(function(done) {
+			dAppInfo.destroy()
+			.then(function() {
+				done();
+			});
+		});
+
+		it('should get all app info', function(done) {
+			request(server)
+			.get('/appinfo/GetAllInfoList')
+			.query(qs.stringify({
+				AppName: testAppInfo1.AppName
+			}))
+			.expect(200)
+			.end(function(err, res) {
+				expect(res.body).to.exist;
+				expect(res.body).to.be.an('array');
+				expect(res.body).to.have.property('length').of.at.least(1);
+				expect(res.body[0]).to.be.an('object');
+				expect(res.body[0]).to.have.property('id');
+				done();
+			});
+		});
 	});
 });
