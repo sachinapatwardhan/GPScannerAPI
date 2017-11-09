@@ -942,6 +942,22 @@ global.Command9955 = function(line, Callback) {
                     }
                 }
             });
+
+            //update Relay settings
+            if (IsRelayToStopTheCar) {
+                var Relay = 1;
+            } else {
+                var Relay = 0;
+            }
+            connection.query("Update tblvehicle set Relay = " + Relay + " where deviceid=" + DeviceId + " and IsDelete=false", function(err, relayData, fields) {
+                if (!err) {
+                    var objRelay = {
+                        DeviceId: DeviceId,
+                        Relay: Relay,
+                    }
+                    io.sockets.emit(DeviceId + 'RelaySetting', JSON.stringify(objRelay));
+                }
+            });
         }
 
     } catch (ex) {
@@ -1853,18 +1869,71 @@ router.get('/SetOutputControl', function(req, res) {
     req.setTimeout(3600000);
     //GetLookAtMeDP3110a0f
     //Test Device 075034699503
+    var updateQuery = "";
     var DeviceId = req.query.DeviceId;
-    var ARelay = req.query.Relay;
-    var BSiren = req.query.Siren;
-    var CUserDefined = req.query.UserDefined;
-    var DDoorLock = req.query.DoorLock;
-    var EDoorUnLock = req.query.DoorUnLock;
+    var ARelay = 2;
+    var BSiren = 2;
+    var CUserDefined = 2;
+    var DDoorLock = 2;
+    var EDoorUnlock = 2;
 
-    var ABCDE = ('00' + decimalToHexString(parseInt(ARelay))).slice(-2) + ('00' + decimalToHexString(parseInt(BSiren))).slice(-2) + ('00' + decimalToHexString(parseInt(CUserDefined))).slice(-2) + ('00' + decimalToHexString(parseInt(DDoorLock))).slice(-2) + ('00' + decimalToHexString(parseInt(EDoorUnLock))).slice(-2);
+    if (req.query.Relay != undefined) {
+        ARelay = req.query.Relay;
+        if (updateQuery == "") {
+            updateQuery += "Relay=" + req.query.Relay;
+        } else {
+            updateQuery += ", Relay=" + req.query.Relay;
+        }
+    }
 
+    if (req.query.Siren != undefined) {
+        BSiren = req.query.Siren;
+        if (updateQuery == "") {
+            updateQuery += "Siren=" + req.query.Siren;
+        } else {
+            updateQuery += ", Siren=" + req.query.Siren;
+        }
+    }
+
+    if (req.query.UserDefined != undefined) {
+        CUserDefined = req.query.UserDefined;
+        if (updateQuery == "") {
+            updateQuery += "UserDefined=" + req.query.UserDefined;
+        } else {
+            updateQuery += ", UserDefined=" + req.query.UserDefined;
+        }
+    }
+
+    if (req.query.DoorLock != undefined) {
+        DDoorLock = req.query.DoorLock;
+        if (updateQuery == "") {
+            updateQuery += "DoorLock =" + req.query.DoorLock;
+        } else {
+            updateQuery += ", DoorLock =" + req.query.DoorLock;
+        }
+    }
+
+    if (req.query.DoorUnlock != undefined) {
+        EDoorUnlock = req.query.DoorUnlock;
+        if (updateQuery == "") {
+            updateQuery += "DoorUnlock=" + req.query.DoorUnlock;
+        } else {
+            updateQuery += ", DoorUnlock=" + req.query.DoorUnlock;
+        }
+    }
+
+    // console.log(updateQuery);
+
+    // var ARelay = req.query.Relay;
+    // var BSiren = req.query.Siren;
+    // var CUserDefined = req.query.UserDefined;
+    // var DDoorLock = req.query.DoorLock;
+    // var EDoorUnlock = req.query.DoorUnLock;
+
+
+    var ABCDE = ('00' + decimalToHexString(parseInt(ARelay))).slice(-2) + ('00' + decimalToHexString(parseInt(BSiren))).slice(-2) + ('00' + decimalToHexString(parseInt(CUserDefined))).slice(-2) + ('00' + decimalToHexString(parseInt(DDoorLock))).slice(-2) + ('00' + decimalToHexString(parseInt(EDoorUnlock))).slice(-2);
     var Data = "40400016" + DeviceId + "4114" + ABCDE;
     Data = Data + CalculateCRCbyHex(Data) + '0D0A';
-
     var client = new net.Socket();
     var Sendflag = false;
 
@@ -1880,7 +1949,6 @@ router.get('/SetOutputControl', function(req, res) {
                 res.json({ success: false, message: 'Device not connected. Try after 5 minute.' });
                 // SendGSensorCommand(i + 1);
             };
-
         });
     });
 
@@ -1895,18 +1963,18 @@ router.get('/SetOutputControl', function(req, res) {
                 // res.json(objNavigation);
                 client.destroy(); // kill client after server's response
                 if (StatusCode == '01') {
-                    // connection.query("Update tblvehicle set SleepMode=" + req.query.SleepMode + " where deviceid=" + DeviceId, function(err, rows, fields) {
-                    res.json({ success: true, message: 'OutPut Control Save Successfully.' });
-                    // });
+                    connection.query("Update tblvehicle set " + updateQuery + " where deviceid='" + DeviceId + "'", function(err, rows, fields) {
+                        res.json({ success: true, message: 'Setting Save Successfully.' });
+                    });
                 } else {
-                    res.json({ success: false, message: 'OutPut Control could not save. Try again later.' });
+                    res.json({ success: false, message: 'Setting could not save. Try again later.' });
                 }
 
             } else {
                 Sendflag = true;
 
                 client.destroy();
-                res.json({ success: false, message: 'OutPut Control could not save. Try again later.' });
+                res.json({ success: false, message: 'Setting could not save. Try again later.' });
                 // SendGSensorCommand(i + 1);
             }
         };
@@ -1920,6 +1988,79 @@ router.get('/SetOutputControl', function(req, res) {
 
 
 })
+
+// //Set Output Control Settings
+// router.get('/SetOutputControl', function(req, res) {
+//     req.setTimeout(3600000);
+//     //GetLookAtMeDP3110a0f
+//     //Test Device 075034699503
+//     var DeviceId = req.query.DeviceId;
+//     var ARelay = req.query.Relay;
+//     var BSiren = req.query.Siren;
+//     var CUserDefined = req.query.UserDefined;
+//     var DDoorLock = req.query.DoorLock;
+//     var EDoorUnLock = req.query.DoorUnLock;
+
+//     var ABCDE = ('00' + decimalToHexString(parseInt(ARelay))).slice(-2) + ('00' + decimalToHexString(parseInt(BSiren))).slice(-2) + ('00' + decimalToHexString(parseInt(CUserDefined))).slice(-2) + ('00' + decimalToHexString(parseInt(DDoorLock))).slice(-2) + ('00' + decimalToHexString(parseInt(EDoorUnLock))).slice(-2);
+
+//     var Data = "40400016" + DeviceId + "4114" + ABCDE;
+//     Data = Data + CalculateCRCbyHex(Data) + '0D0A';
+
+//     var client = new net.Socket();
+//     var Sendflag = false;
+
+//     client.connect(SocketPort, SocketIPAddress, function() {
+//         // console.log('G-Sensor send to ' + DeviceId);
+//         client.write(Data, 'hex');
+
+//         client.setTimeout(10000, function() {
+//             if (Sendflag == false) {
+//                 Sendflag = true;
+
+//                 client.destroy();
+//                 res.json({ success: false, message: 'Device not connected. Try after 5 minute.' });
+//                 // SendGSensorCommand(i + 1);
+//             };
+
+//         });
+//     });
+
+//     client.on('data', function(data) {
+//         var line = data.toString();
+//         if (Sendflag == false) {
+//             if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4114') {
+//                 console.log('Received: ' + line);
+//                 var StatusCode = line.substring(26, 28);
+//                 Sendflag = true;
+//                 // SuccessDevice = SuccessDevice + 1;
+//                 // res.json(objNavigation);
+//                 client.destroy(); // kill client after server's response
+//                 if (StatusCode == '01') {
+//                     // connection.query("Update tblvehicle set SleepMode=" + req.query.SleepMode + " where deviceid=" + DeviceId, function(err, rows, fields) {
+//                     res.json({ success: true, message: 'OutPut Control Save Successfully.' });
+//                     // });
+//                 } else {
+//                     res.json({ success: false, message: 'OutPut Control could not save. Try again later.' });
+//                 }
+
+//             } else {
+//                 Sendflag = true;
+
+//                 client.destroy();
+//                 res.json({ success: false, message: 'OutPut Control could not save. Try again later.' });
+//                 // SendGSensorCommand(i + 1);
+//             }
+//         };
+
+
+//     });
+
+//     client.on('close', function() {
+//         console.log('Connection closed');
+//     });
+
+
+// })
 
 //Set Arm Settings
 router.get('/SetArmSettings', function(req, res) {
