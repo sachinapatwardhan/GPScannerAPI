@@ -11,19 +11,20 @@ router.get('/GetAllAppInfo', function(req, res) {
     var objOrderBy = objParam.order;
     var objSearch = objParam.search;
 
-    var Orderby = objColumns[parseInt(objOrderBy[0].column)].data + ' ' + objOrderBy[0].dir;
+    var Orderby = '? ' + objOrderBy[0].dir;
 
     var search = "";
 
     if (objSearch != '' && objSearch != null && objSearch != undefined) {
-        search = 'Where (AppName like "%' + objSearch + '%" or ';
-        search = search + 'BundleId like "%' + objSearch + '%" or ';
-        search = search + 'IOSCertificate like "%' + objSearch + '%" or ';
-        search = search + 'IOSKey like "%' + objSearch + '%" or ';
-        search = search + 'AndroidId like "%' + objSearch + '%" or ';
-        search = search + 'AndroidSenderId like "%' + objSearch + '%" or ';
-        search = search + 'CreatedBy like "%' + objSearch + '%" or ';
-        search = search + 'CreatedDate like "%' + objSearch + '%") ';
+        objSearch = '%' + objSearch + '%';
+        search = 'Where (AppName like ? or ';
+        search = search + 'BundleId like ? or ';
+        search = search + 'IOSCertificate like ? or ';
+        search = search + 'IOSKey like ? or ';
+        search = search + 'AndroidId like ? or ';
+        search = search + 'AndroidSenderId like ? or ';
+        search = search + 'CreatedBy like ? or ';
+        search = search + 'CreatedDate like ?) ';
     }
 
     var qry = "Select tblappinfo.* ,CONVERT_TZ(tblappinfo.CreatedDate,'+00:00','" + CurrentOffset + "') as DisplyCreatedDate from tblappinfo " +
@@ -33,9 +34,28 @@ router.get('/GetAllAppInfo', function(req, res) {
     var Countqry = "SELECT count(tblappinfo.id) as TotalRecord " +
         "FROM tblappinfo " + search;
 
-    connection.query(qry, function(err, response) {
+    connection.query(qry, [
+        objSearch,
+        objSearch,
+        objSearch,
+        objSearch,
+        objSearch,
+        objSearch,
+        objSearch,
+        objSearch,
+        objColumns[parseInt(objOrderBy[0].column)].data
+    ], function(err, response) {
         if (response != undefined) {
-            connection.query(Countqry, function(err, lstCount, fields) {
+            connection.query(Countqry, [
+                objSearch,
+                objSearch,
+                objSearch,
+                objSearch,
+                objSearch,
+                objSearch,
+                objSearch,
+                objSearch
+            ], function(err, lstCount, fields) {
                 var response1 = new Object();
                 response1.draw = objParam.draw;
                 response1.recordsTotal = lstCount[0].TotalRecord;

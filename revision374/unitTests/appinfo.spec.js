@@ -1,0 +1,488 @@
+var request = require('supertest');
+var require = require('really-need');
+var expect = require('chai').expect;
+var qs = require('qs');
+
+var testAppInfo1 = {
+	AppName: 'Test1',
+	BundleId: 'com.disolutions.test1',
+	IOSCertificate: '999999999999991.pem',
+	IOSKey: '999999999999992.pem',
+	AndroidId: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA1',
+	AndroidSenderId: '999999999991',
+	CreatedDate: new Date(),
+	CreatedBy: 'Admin',
+	ImageLogo: '999999999999991.png'
+};
+var testAppInfo2 = {
+	AppName: 'Test2',
+	BundleId: 'com.disolutions.test2',
+	IOSCertificate: '999999999999993.pem',
+	IOSKey: '999999999999994.pem',
+	AndroidId: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA2',
+	AndroidSenderId: '999999999992',
+	CreatedDate: new Date(),
+	CreatedBy: 'Admin',
+	ImageLogo: '999999999999992.png'
+};
+
+describe('application information', function() {
+	// Important! Because server setup is slow!
+	this.timeout(5000);
+
+	var server;
+	var User;
+	var AppInfo;
+
+	beforeEach(function() {
+		server = require('../server', {
+			bustCache: true
+		});
+		User = models.tbluserinformation;
+		AppInfo = models.tblappinfo;
+	});
+
+	afterEach(function(done) {
+		server.close(done);
+	});
+
+	describe('/appinfo/GetAllAppInfo', function() {
+		var dAppInfo1;
+		var dAppInfo2;
+
+		beforeEach(function(done) {
+			AppInfo.create(testAppInfo1)
+			.then(function(rAppInfo) {
+				dAppInfo1 = rAppInfo;
+				return AppInfo.create(testAppInfo2);
+			})
+			.then(function(rAppInfo) {
+				dAppInfo2 = rAppInfo;
+				done();
+			});
+		});
+
+		afterEach(function(done) {
+			dAppInfo1.destroy()
+			.then(function() {
+				dAppInfo2.destroy();
+			})
+			.then(function() {
+				done();
+			});
+		});
+
+		it('should get all app info with status 200 when not searching', function(done) {
+			request(server)
+			.get('/appinfo/GetAllAppInfo')
+			.query(qs.stringify({
+				draw: 1,
+				columns: [
+					{
+						data: 'Id',
+						name: '',
+						searchable: true,
+						orderable: true,
+						search: {
+							value: '',
+							regex: false
+						}
+					},
+					{
+						data: 'AppName',
+						name: '',
+						searchable: true,
+						orderable: true,
+						search: {
+							value: '',
+							regex: false
+						}
+					},
+					{
+						data: 'BundleId',
+						name: '',
+						searchable: true,
+						orderable: true,
+						search: {
+							value: '',
+							regex: false
+						}
+					},
+					{
+						data: 'IOSCertificate',
+						name: '',
+						searchable: true,
+						orderable: true,
+						search: {
+							value: '',
+							regex: false
+						}
+					},
+					{
+						data: 'IOSKey',
+						name: '',
+						searchable: true,
+						orderable: true,
+						search: {
+							value: '',
+							regex: false
+						}
+					},
+					{
+						data: 'AndroidId',
+						name: '',
+						searchable: true,
+						orderable: true,
+						search: {
+							value: '',
+							regex: false
+						}
+					},
+					{
+						data: 'AndroidSenderId',
+						name: '',
+						searchable: true,
+						orderable: true,
+						search: {
+							value: '',
+							regex: false
+						}
+					},
+					{
+						data: 'CreatedBy',
+						name: '',
+						searchable: true,
+						orderable: true,
+						search: {
+							value: '',
+							regex: false
+						}
+					},
+					{
+						data: 'CreatedDate',
+						name: '',
+						searchable: true,
+						orderable: true,
+						search: {
+							value: '',
+							regex: false
+						}
+					}
+				],
+				order: [
+					{ column: 2, dir: 'asc' }
+				],
+				start: 0,
+				length: 25,
+				// search: {
+				// 	value: '',
+				// 	regex: false
+				// },
+				_: 1500000000000
+			}))
+			.expect(200)
+			.end(function(err, res) {
+				expect(res.body).to.exist;
+				expect(res.body).to.have.property('draw');
+				expect(res.body).to.have.property('recordsTotal');
+				expect(res.body).to.have.property('recordsFiltered');
+				expect(res.body).to.have.property('data');
+				expect(res.body.draw).to.not.equal(null);
+				expect(res.body.recordsTotal).to.not.equal(null);
+				expect(res.body.recordsFiltered).to.not.equal(null);
+				expect(res.body.data).to.be.an('array');
+				expect(res.body.data).to.have.property('length').of.at.least(1);
+				done();
+			});
+		});
+
+		it('should get matched app info with status 200 when searching', function(done) {
+			request(server)
+			.get('/appinfo/GetAllAppInfo')
+			.query(qs.stringify({
+				draw: 1,
+				columns: [
+					{
+						data: 'Id',
+						name: '',
+						searchable: true,
+						orderable: true,
+						search: {
+							value: '',
+							regex: false
+						}
+					},
+					{
+						data: 'AppName',
+						name: '',
+						searchable: true,
+						orderable: true,
+						search: {
+							value: '',
+							regex: false
+						}
+					},
+					{
+						data: 'BundleId',
+						name: '',
+						searchable: true,
+						orderable: true,
+						search: {
+							value: '',
+							regex: false
+						}
+					},
+					{
+						data: 'IOSCertificate',
+						name: '',
+						searchable: true,
+						orderable: true,
+						search: {
+							value: '',
+							regex: false
+						}
+					},
+					{
+						data: 'IOSKey',
+						name: '',
+						searchable: true,
+						orderable: true,
+						search: {
+							value: '',
+							regex: false
+						}
+					},
+					{
+						data: 'AndroidId',
+						name: '',
+						searchable: true,
+						orderable: true,
+						search: {
+							value: '',
+							regex: false
+						}
+					},
+					{
+						data: 'AndroidSenderId',
+						name: '',
+						searchable: true,
+						orderable: true,
+						search: {
+							value: '',
+							regex: false
+						}
+					},
+					{
+						data: 'CreatedBy',
+						name: '',
+						searchable: true,
+						orderable: true,
+						search: {
+							value: '',
+							regex: false
+						}
+					},
+					{
+						data: 'CreatedDate',
+						name: '',
+						searchable: true,
+						orderable: true,
+						search: {
+							value: '',
+							regex: false
+						}
+					}
+				],
+				order: [
+					{ column: 1, dir: 'asc' }
+				],
+				start: 0,
+				length: 25,
+				search: 'Test2',
+				_: 1500000000000
+			}))
+			.expect(200)
+			.end(function(err, res) {
+				expect(res.body).to.exist;
+				expect(res.body).to.have.property('draw');
+				expect(res.body).to.have.property('recordsTotal');
+				expect(res.body).to.have.property('recordsFiltered');
+				expect(res.body).to.have.property('data');
+				expect(res.body.draw).to.not.equal(null);
+				expect(res.body.recordsTotal).to.not.equal(null);
+				expect(res.body.recordsFiltered).to.not.equal(null);
+				expect(res.body.data).to.be.an('array');
+				expect(res.body.data).to.have.lengthOf(1);
+				done();
+			});
+		});
+
+		it('should fail with status 200 when searching with SQL injection', function(done) {
+			request(server)
+			.get('/appinfo/GetAllAppInfo')
+			.query(qs.stringify({
+				draw: 1,
+				columns: [
+					{
+						data: 'Id',
+						name: '',
+						searchable: true,
+						orderable: true,
+						search: {
+							value: '',
+							regex: false
+						}
+					},
+					{
+						data: 'AppName',
+						name: '',
+						searchable: true,
+						orderable: true,
+						search: {
+							value: '',
+							regex: false
+						}
+					},
+					{
+						data: 'BundleId',
+						name: '',
+						searchable: true,
+						orderable: true,
+						search: {
+							value: '',
+							regex: false
+						}
+					},
+					{
+						data: 'IOSCertificate',
+						name: '',
+						searchable: true,
+						orderable: true,
+						search: {
+							value: '',
+							regex: false
+						}
+					},
+					{
+						data: 'IOSKey',
+						name: '',
+						searchable: true,
+						orderable: true,
+						search: {
+							value: '',
+							regex: false
+						}
+					},
+					{
+						data: 'AndroidId',
+						name: '',
+						searchable: true,
+						orderable: true,
+						search: {
+							value: '',
+							regex: false
+						}
+					},
+					{
+						data: 'AndroidSenderId',
+						name: '',
+						searchable: true,
+						orderable: true,
+						search: {
+							value: '',
+							regex: false
+						}
+					},
+					{
+						data: 'CreatedBy',
+						name: '',
+						searchable: true,
+						orderable: true,
+						search: {
+							value: '',
+							regex: false
+						}
+					},
+					{
+						data: 'CreatedDate',
+						name: '',
+						searchable: true,
+						orderable: true,
+						search: {
+							value: '',
+							regex: false
+						}
+					}
+				],
+				order: [
+					{ column: 1, dir: 'asc' }
+				],
+				start: 0,
+				length: 25,
+				search: '" or ""="',
+				_: 1500000000000
+			}))
+			.expect(200)
+			.end(function(err, res) {
+				expect(res.body).to.exist;
+				expect(res.body).to.have.property('draw');
+				expect(res.body).to.have.property('recordsTotal');
+				expect(res.body).to.have.property('recordsFiltered');
+				expect(res.body).to.have.property('data');
+				expect(res.body.draw).to.not.equal(null);
+				expect(res.body.recordsTotal).to.not.equal(null);
+				expect(res.body.recordsFiltered).to.not.equal(null);
+				expect(res.body.data).to.be.an('array');
+				expect(res.body.data).to.have.lengthOf(0);
+				done();
+			});
+		});
+	});
+
+	describe('/appinfo/GetAllInfoList', function() {
+		var dAppInfo1;
+		var dAppInfo2;
+
+		beforeEach(function(done) {
+			AppInfo.create(testAppInfo1)
+			.then(function(rAppInfo) {
+				dAppInfo1 = rAppInfo;
+				return AppInfo.create(testAppInfo2);
+			})
+			.then(function(rAppInfo) {
+				dAppInfo2 = rAppInfo;
+				done();
+			});
+		});
+
+		afterEach(function(done) {
+			dAppInfo1.destroy()
+			.then(function() {
+				dAppInfo2.destroy();
+			})
+			.then(function() {
+				done();
+			});
+		});
+		
+		it('should return all app info id and AppName', function(done) {
+			request(server)
+			.get('/appinfo/GetAllInfoList')
+			.expect(200)
+			.end(function(err, res) {
+				expect(res.body).to.exist;
+				expect(res.body).to.be.an('array');
+				expect(res.body).to.have.property('length').of.at.least(2);
+				expect(res.body[0]).to.have.property('id');
+				expect(res.body[0]).to.have.property('AppName');
+				expect(res.body[0].Id).to.not.equal(null);
+				expect(res.body[0].AppName).to.not.equal(null);
+				done();
+			});
+		});
+	});
+
+	describe('/appinfo/SaveAppInfo', function() {
+		
+	});
+});
