@@ -1819,7 +1819,6 @@ router.post('/MobileRegisterNew', jsonParser, function(req, res) {
 });
 
 router.get('/MobileForgotPasswordNew', function(req, res) {
-    console.log(req.query)
     User.findOne({ where: { email: req.query.email, idApp: req.query.idApp, } }).then(function(objUser) {
         if (objUser != null) {
             SystemEmail.findOne().then(function(objSystemEmail) {
@@ -1842,7 +1841,6 @@ router.get('/MobileForgotPasswordNew', function(req, res) {
                                         Name: 'NotificationEmailTo'
                                     }
                                 }).then(function(objSetting) {
-                                    console.log("CC::", objSetting.Value);
                                     var body = objEmailTemplate.EmailBody.replace(/{UserName}/g, Name).replace("{Password}", Password).replace("{AppName}", req.query.AppName);
                                     var mail = {
                                         from: objSystemEmail.DefaultEmailFrom,
@@ -2053,6 +2051,29 @@ router.get('/MobileAppLoginScannerApp', jsonParser, function(req, res) {
             res.json({
                 success: false,
                 message: "Invalid Username or Password..."
+            });
+        }
+    })
+})
+
+router.get('/CheckUserPassword', jsonParser, function(req, res) {
+    var Encryptpassword = jwt.encode(req.query.password, "bugz");
+    User.findOne({
+        where: {
+            username: req.query.username,
+            password: Encryptpassword,
+            idApp: req.query.idApp,
+        }
+    }).then(function(response) {
+        if (response != null) {
+            res.json({
+                success: true,
+                message: "Valid Password..."
+            });
+        } else {
+            res.json({
+                success: false,
+                message: "Invalid Password..."
             });
         }
     })
