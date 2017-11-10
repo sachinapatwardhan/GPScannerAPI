@@ -2490,8 +2490,7 @@
      });
  });
 
- router.get('/GetAllDynamicOwnerCustomer', function(req, res) {
-
+ router.get('/GetAllDynamicOwnerCustomerold', function(req, res) {
      var objParam = req.query;
      var objColumns = objParam.columns;
      var objOrder = objParam.order;
@@ -2601,6 +2600,77 @@
          }
          CheckUserCountry(0)
      }
+ })
+
+ router.get('/GetAllDynamicOwnerCustomer', function(req, res) {
+
+     var objParam = req.query;
+     var objColumns = objParam.columns;
+     var objOrderBy = objParam.order;
+     var objSearch = objParam.search;
+     var Orderby = objColumns[parseInt(objOrderBy[0].column)].data + ' ' + objOrderBy[0].dir;
+     var search = '';
+     var IsUserSuperAdmin = false;
+     var IsCountryAll = false;
+
+     var CountryList = objParam.CountryList;
+     if (CountryList == undefined || CountryList == null || CountryList == "") {
+         CountryList = [];
+     }
+
+     var UserRoles = objParam.UserRoles;
+
+     if (objSearch != null && objSearch != '') {
+         search = 'Where (tbluserinformation.email like "%' + objSearch + '%" or ';
+         search = search + 'tbluserinformation.phone like "%' + objSearch + '%" or ';
+         search = search + 'tbluserinformation.country like "%' + objSearch + '%" or ';
+         search = search + 'tbluserinformation.OTP like "%' + objSearch + '%" or ';
+         search = search + 'tbluserinformation.IsMobileVerify like "%' + objSearch + '%") ';
+     };
+     //  if (objParam.UserId != null && objParam.UserId != undefined && objParam.UserId != '') {
+     //      if (search != "") {
+     //          search += " and tblgpsdevice.idSalesAgent =" + objParam.UserId;
+     //      } else {
+     //          search += " Where tblgpsdevice.idSalesAgent =" + objParam.UserId;
+     //      }
+     //  }
+
+     if (objParam.appId != null && objParam.appId != undefined && objParam.appId != '') {
+         if (search != "") {
+             search += ' and tbluserinformation.idApp = "' + objParam.appId + '"';
+         } else {
+             search += ' where tbluserinformation.idApp = "' + objParam.appId + '"';
+         }
+     }
+
+     var query = "select tbluserinformation.id,tbluserinformation.email,tbluserinformation.phone,tbluserinformation.country,tbluserinformation.OTP,tbluserinformation.IsMobileVerify, " +
+         "(select count(tblvehicle.deviceid) from tblvehicle where iduser = tbluserinformation.id and tblvehicle.IsDelete=0 and tblvehicle.deviceid !='' ) as TotalDevice " +
+         "from tbluserinformation " + search +
+         " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
+     var Countqry = "SELECT count(tbluserinformation.id) as TotalRecord " +
+         "from tbluserinformation " + search;
+     connection.query(query, function(err, response) {
+         if (response != undefined) {
+             connection.query(Countqry, function(err, lstCount, fields) {
+                 var response1 = new Object();
+                 response1.draw = objParam.draw;
+                 response1.recordsTotal = lstCount[0].TotalRecord;
+                 response1.recordsFiltered = lstCount[0].TotalRecord;
+                 response1.data = response;
+                 res.json(response1);
+             });
+         } else {
+             console.log(err);
+             var response1 = new Object();
+             response1.draw = objParam.draw;
+             response1.recordsTotal = 0;
+             response1.recordsFiltered = 0;
+             response1.data = [];
+             res.json(response1);
+         }
+     })
+
+
  })
 
 

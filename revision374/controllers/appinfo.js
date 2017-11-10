@@ -98,7 +98,7 @@ router.post('/SaveAppInfo', jsonParser, function(req, res) {
 
             if (UserExist != null) {
                 if (objAppInfo.Id == 0) {
-                    // objAppInfo.CreatedDate = new Date();
+                    objAppInfo.CreatedDate = new Date();
                     objAppInfo.CreatedBy = decoded.username;
                     AppInfo.findOrCreate({ where: { AppName: objAppInfo.AppName }, defaults: objAppInfo }).then(function(response) {
                         if (response[0]) {
@@ -131,6 +131,12 @@ router.post('/SaveAppInfo', jsonParser, function(req, res) {
                             res.json({
                                 success: true,
                                 message: "App Info updated successfully...",
+                                data: response
+                            });
+                        } else {
+                            res.json({
+                                success: false,
+                                message: "App Info not updated successfully...",
                                 data: response
                             });
                         }
@@ -221,7 +227,7 @@ router.get('/DeleteAppInfo', function(req, res) {
     // });
 });
 
-router.post('/uploadFile', function(req, res) {
+router.post('/uploadFileold', function(req, res) {
     var form = new formidable.IncomingForm();
     // console.log(req.query)
     form.uploadDir = __dirname + '/../MediaUploads/FileUpload';
@@ -349,8 +355,148 @@ router.post('/uploadFile', function(req, res) {
     });
 });
 
+router.post('/uploadFile', function(req, res) {
+    var form = new formidable.IncomingForm();
+    form.uploadDir = __dirname + '/../MediaUploads/FileUpload';
+    var FileName = [];
+    var lstUser = [];
+    //file upload path
+    form.parse(req, function(err, fields, files) {});
+    form.on('fileBegin', function(name, file) {
+        var strarr = name.split(',');
+        var ext = file.name.substring(file.name.indexOf('.'), file.name.length);
+        var NewName = GetUserNameFromDate();
+        if (ext.indexOf('?') > -1) {
+            ext = ext.substring(0, ext.indexOf('?'));
+        };
+        if (strarr[1] == "IC") {
+            file.path = form.uploadDir + "/" + NewName + ext;
+        } else if (strarr[1] == "IK") {
+            NewName = parseInt(NewName) + 2;
+            file.path = form.uploadDir + "/" + NewName + ext;
+        } else if (strarr[1] == "logo") {
+            file.path = form.uploadDir + "/" + NewName + ext;
+        } else if (strarr[1] == "Loginlogo") {
+            file.path = form.uploadDir + "/" + NewName + ext;
+        } else if (strarr[1] == "Headerlogo") {
+            file.path = form.uploadDir + "/" + NewName + ext;
+        }
+        var obj = new Object();
+        obj.Name = NewName + ext;
+        obj.Type = strarr[1];
+        FileName.push(obj);
+        lstUser.push(strarr[0]);
+
+    });
+    form.on('end', function() {
+        var i = 0;
+        var ImageLogo = '';
+        var IOSCertificate = '';
+        var IOSKey = '';
+        var Id = parseInt(lstUser[i]);
+        AppInfo.findOne({ where: { Id: Id } }).then(function(response) {
+            if (response != null) {
+                function uploader(i) {
+                    if (i < FileName.length) {
+                        if (FileName[i].Type == "logo") {
+                            if (response.ImageLogo != '' && response.ImageLogo != null) {
+                                var oldFile = __dirname + '/../MediaUploads/FileUpload/' + response.ImageLogo;
+                                fs.exists(oldFile, function(exists) {
+                                    if (exists) {
+                                        fs.unlink(oldFile);
+                                    }
+                                });
+                            }
+                            ImageLogo = FileName[i].Name;
+                        }
+                        if (FileName[i].Type == "Loginlogo") {
+                            if (response.WebAppLoginLogo != '' && response.WebAppLoginLogo != null) {
+                                var oldFile = __dirname + '/../MediaUploads/FileUpload/' + response.WebAppLoginLogo;
+                                fs.exists(oldFile, function(exists) {
+                                    if (exists) {
+                                        fs.unlink(oldFile);
+                                    }
+                                });
+                            }
+                            WebAppLoginLogo = FileName[i].Name;
+                        }
+                        if (FileName[i].Type == "Headerlogo") {
+                            if (response.WebAppHeaderLogo != '' && response.WebAppHeaderLogo != null) {
+                                var oldFile = __dirname + '/../MediaUploads/FileUpload/' + response.WebAppHeaderLogo;
+                                fs.exists(oldFile, function(exists) {
+                                    if (exists) {
+                                        fs.unlink(oldFile);
+                                    }
+                                });
+                            }
+                            WebAppHeaderLogo = FileName[i].Name;
+                        }
+                        if (FileName[i].Type == "IC") {
+                            if (response.IOSCertificate != '' && response.IOSCertificate != null) {
+                                var oldFile = __dirname + '/../MediaUploads/FileUpload/' + response.IOSCertificate;
+                                fs.exists(oldFile, function(exists) {
+                                    if (exists) {
+                                        fs.unlink(oldFile);
+                                    }
+                                });
+                            }
+                            IOSCertificate = FileName[i].Name;
+                        }
+                        if (FileName[i].Type == "IK") {
+                            if (response.IOSKey != '' && response.IOSKey != null) {
+                                var oldFile = __dirname + '/../MediaUploads/FileUpload/' + response.IOSKey;
+                                fs.exists(oldFile, function(exists) {
+                                    if (exists) {
+                                        fs.unlink(oldFile);
+                                    }
+                                });
+
+                            }
+                            IOSKey = FileName[i].Name;
+                        }
+                        uploader(i + 1);
+                    } else {
+                        var obj = new Object();
+                        if (ImageLogo != '') { obj.ImageLogo = ImageLogo; }
+                        if (WebAppLoginLogo != '') { obj.WebAppLoginLogo = WebAppLoginLogo; }
+                        if (WebAppHeaderLogo != '') { obj.WebAppHeaderLogo = WebAppHeaderLogo; }
+                        if (IOSCertificate != '') { obj.IOSCertificate = IOSCertificate }
+                        if (IOSKey != '') { obj.IOSKey = IOSKey }
+
+                        response.updateAttributes(obj).then(function(resUpdate) {
+                            if (resUpdate != null) {
+                                res.json({ success: true, message: "File Uploaded Successfully...", data: resUpdate });
+                            } else {
+                                res.json({ success: false, message: "File not Uploaded Successfully...", data: 0 });
+                            }
+                        })
+                    }
+                }
+                uploader(i);
+            } else {
+                res.json({ success: false, message: "File not uploaded..." });
+            }
+        })
+    });
+});
+
 router.get('/GetAppInfoByName', function(req, res) {
     AppInfo.findOne({ where: { AppName: req.query.AppName } }).then(function(response) {
+        res.json(response);
+    }).catch(function(error) {
+        res.json(error);
+    });
+})
+
+router.get('/GetAppInfoByAdmin', function(req, res) {
+    AppInfo.findOne({ where: { AdminUrl: { $like: "%" + req.query.AdminUrl + "%" } } }).then(function(response) {
+        res.json(response);
+    }).catch(function(error) {
+        res.json(error);
+    });
+})
+router.get('/GetAppInfoByWebApp', function(req, res) {
+    AppInfo.findOne({ where: { WebAppUrl: req.query.WebAppUrl } }).then(function(response) {
         res.json(response);
     }).catch(function(error) {
         res.json(error);

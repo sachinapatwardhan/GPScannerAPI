@@ -1014,12 +1014,12 @@ router.get('/forgotpassword', function(req, res) {
                                         Name: 'NotificationEmailTo'
                                     }
                                 }).then(function(objSetting) {
-                                    var body = objEmailTemplate.EmailBody.replace(/{UserName}/g, Name).replace("{Password}", Password);
+                                    var body = objEmailTemplate.EmailBody.replace(/{UserName}/g, Name).replace("{Password}", Password).replace("{AppName}", req.query.AppName);
                                     var mail = {
                                         from: objSystemEmail.DefaultEmailFrom,
                                         to: objUser.email, // + ', ' + objSystemEmail.NotificationEmailTo,
                                         cc: objSetting.Value,
-                                        subject: objEmailTemplate.EmailSubject,
+                                        subject: req.query.AppName + " " + objEmailTemplate.EmailSubject,
                                         html: body
                                     };
                                     transporter.sendMail(mail, function(error, response) {
@@ -1094,7 +1094,7 @@ router.get('/forgotpasswordNew', function(req, res) {
         if (response != null) {
             SystemEmail.findOne().then(function(objSystemEmail) {
                 var NewPassword = customPassword();
-                console.log(NewPassword);
+                // console.log(NewPassword);
                 var EncryptNewpassword = jwt.encode(NewPassword, "bugz");
                 response.updateAttributes({ password: EncryptNewpassword }).then(function(response) {
                     if (response != null) {
@@ -1106,26 +1106,32 @@ router.get('/forgotpasswordNew', function(req, res) {
                             if (objEmailTemplate != null) {
                                 var Name = response.username;
                                 var Password = NewPassword;
-
-                                var body = objEmailTemplate.EmailBody.replace(/{UserName}/g, Name).replace("{Password}", Password);
-                                var mail = {
-                                    from: objSystemEmail.DefaultEmailFrom,
-                                    to: response.email, // + ', ' + objSystemEmail.NotificationEmailTo,
-                                    subject: objEmailTemplate.EmailSubject,
-                                    html: body
-                                };
-                                transporter.sendMail(mail, function(error, response) {
-                                    if (error) {
-                                        res.json(error);
-                                    } else {
-                                        funAuditLog.CreateAuditLog('forgotpassword', objUser.username, 'forgot User Password');
-                                        res.json({
-                                            success: true,
-                                            message: "Password sent to your email successfully...",
-                                            data: response
-                                        });
+                                Setting.findOne({
+                                    where: {
+                                        Name: 'NotificationEmailTo'
                                     }
-                                });
+                                }).then(function(objSetting) {
+                                    var body = objEmailTemplate.EmailBody.replace(/{UserName}/g, Name).replace("{Password}", Password).replace("{AppName}", req.query.AppName);
+                                    var mail = {
+                                        from: objSystemEmail.DefaultEmailFrom,
+                                        to: response.email, // + ', ' + objSystemEmail.NotificationEmailTo,
+                                        cc: objSetting.Value,
+                                        subject: req.query.AppName + " " + objEmailTemplate.EmailSubject,
+                                        html: body
+                                    };
+                                    transporter.sendMail(mail, function(error, response) {
+                                        if (error) {
+                                            res.json(error);
+                                        } else {
+                                            funAuditLog.CreateAuditLog('forgotpassword', response.email, 'forgot User Password');
+                                            res.json({
+                                                success: true,
+                                                message: "Password sent to your email successfully...",
+                                                data: response
+                                            });
+                                        }
+                                    });
+                                })
                             } else {
                                 res.json({
                                     success: false,
@@ -1151,60 +1157,74 @@ router.get('/forgotpasswordNew', function(req, res) {
             User.findOne({
                 where: { email: req.query.email, idApp: req.query.idApp },
             }).then(function(response1) {
-                SystemEmail.findOne().then(function(objSystemEmail) {
-                    var NewPassword = customPassword();
-                    console.log(NewPassword);
-                    var EncryptNewpassword = jwt.encode(NewPassword, "bugz");
-                    response1.updateAttributes({ password: EncryptNewpassword }).then(function(response) {
-                        if (response != null) {
-                            EmailTemplate.findOne({
-                                where: {
-                                    Type: "Forgot Password Email",
-                                }
-                            }).then(function(objEmailTemplate) {
-                                if (objEmailTemplate != null) {
-                                    var Name = response1.username;
-                                    var Password = NewPassword;
-
-                                    var body = objEmailTemplate.EmailBody.replace(/{UserName}/g, Name).replace("{Password}", Password);
-                                    var mail = {
-                                        from: objSystemEmail.DefaultEmailFrom,
-                                        to: response1.email, // + ', ' + objSystemEmail.NotificationEmailTo,
-                                        subject: objEmailTemplate.EmailSubject,
-                                        html: body
-                                    };
-                                    transporter.sendMail(mail, function(error, response) {
-                                        if (error) {
-                                            res.json(error);
-                                        } else {
-                                            funAuditLog.CreateAuditLog('forgotpassword', objUser.username, 'forgot User Password');
-                                            res.json({
-                                                success: true,
-                                                message: "Password sent to your email successfully...",
-                                                data: response
+                if (response1) {
+                    SystemEmail.findOne().then(function(objSystemEmail) {
+                        var NewPassword = customPassword();
+                        console.log(NewPassword);
+                        var EncryptNewpassword = jwt.encode(NewPassword, "bugz");
+                        response1.updateAttributes({ password: EncryptNewpassword }).then(function(response) {
+                            if (response != null) {
+                                EmailTemplate.findOne({
+                                    where: {
+                                        Type: "Forgot Password Email",
+                                    }
+                                }).then(function(objEmailTemplate) {
+                                    if (objEmailTemplate != null) {
+                                        var Name = response1.username;
+                                        var Password = NewPassword;
+                                        Setting.findOne({
+                                            where: {
+                                                Name: 'NotificationEmailTo'
+                                            }
+                                        }).then(function(objSetting) {
+                                            var body = objEmailTemplate.EmailBody.replace(/{UserName}/g, Name).replace("{Password}", Password).replace("{AppName}", req.query.AppName);
+                                            var mail = {
+                                                from: objSystemEmail.DefaultEmailFrom,
+                                                to: response1.email, // + ', ' + objSystemEmail.NotificationEmailTo,
+                                                cc: objSetting.Value,
+                                                subject: req.query.AppName + " " + objEmailTemplate.EmailSubject,
+                                                html: body
+                                            };
+                                            transporter.sendMail(mail, function(error, response) {
+                                                console.log(error)
+                                                if (error) {
+                                                    res.json(error);
+                                                } else {
+                                                    funAuditLog.CreateAuditLog('forgotpassword', response1.email, 'forgot User Password');
+                                                    res.json({
+                                                        success: true,
+                                                        message: "Password sent to your email successfully...",
+                                                        data: response
+                                                    });
+                                                }
                                             });
-                                        }
-                                    });
-                                } else {
-                                    res.json({
-                                        success: false,
-                                        message: "This Email template not found..."
-                                    })
-                                }
-                            });
-                        } else {
+                                        })
+                                    } else {
+                                        res.json({
+                                            success: false,
+                                            message: "This Email template not found..."
+                                        })
+                                    }
+                                });
+                            } else {
+                                res.json({
+                                    success: false,
+                                    message: "This system Email not found..."
+                                });
+                            }
+                        }).catch(function(error) {
                             res.json({
                                 success: false,
-                                message: "This system Email not found..."
+                                message: error.errors[0].message + "..."
                             });
-                        }
-                    }).catch(function(error) {
-                        res.json({
-                            success: false,
-                            message: error.errors[0].message + "..."
-                        });
+                        })
                     })
-                })
+                } else {
+                    res.json({
+                        success: false,
+                        message: "This system Email not found..."
+                    });
+                }
             })
         }
     })
@@ -1247,12 +1267,12 @@ router.get('/forgotpasswordfromOwnerCustomer', function(req, res) {
                                         }
                                     }).then(function(objSetting) {
 
-                                        var body = objEmailTemplate.EmailBody.replace(/{UserName}/g, Name).replace("{Password}", Password);
+                                        var body = objEmailTemplate.EmailBody.replace(/{UserName}/g, Name).replace("{Password}", Password).replace("{AppName}", req.query.AppName);
                                         var mail = {
                                             from: objSystemEmail.DefaultEmailFrom,
                                             to: objUser.email,
                                             cc: objSetting.Value,
-                                            subject: objEmailTemplate.EmailSubject,
+                                            subject: req.query.AppName + " " + objEmailTemplate.EmailSubject,
                                             html: body
                                         };
                                         transporter.sendMail(mail, function(error, response) {
@@ -1816,29 +1836,35 @@ router.get('/MobileForgotPasswordNew', function(req, res) {
                             if (objEmailTemplate != null) {
                                 var Name = objUser.username;
                                 var Password = NewPassword;
-
-                                var body = objEmailTemplate.EmailBody.replace(/{UserName}/g, Name).replace("{Password}", Password);
-                                var mail = {
-                                    from: objSystemEmail.DefaultEmailFrom,
-                                    to: objUser.email, // + ', ' + objSystemEmail.NotificationEmailTo,
-                                    subject: objEmailTemplate.EmailSubject,
-                                    html: body
-                                };
-                                transporter.sendMail(mail, function(error, response) {
-                                    if (error) {
-                                        res.json({
-                                            success: false,
-                                            message: "Error in Sending Email " + error,
-                                            data: error
-                                        });
-                                    } else {
-                                        funAuditLog.CreateAuditLog('forgotpassword', objUser.username, 'forgot User Password');
-                                        res.json({
-                                            success: true,
-                                            message: "Password sent to your email successfully...",
-                                            data: response
-                                        });
+                                Setting.findOne({
+                                    where: {
+                                        Name: 'NotificationEmailTo'
                                     }
+                                }).then(function(objSetting) {
+                                    var body = objEmailTemplate.EmailBody.replace(/{UserName}/g, Name).replace("{Password}", Password).replace("{AppName}", req.query.AppName);
+                                    var mail = {
+                                        from: objSystemEmail.DefaultEmailFrom,
+                                        to: objUser.email, // + ', ' + objSystemEmail.NotificationEmailTo,
+                                        cc: objSetting.Value,
+                                        subject: req.query.AppName + " " + objEmailTemplate.EmailSubject,
+                                        html: body
+                                    };
+                                    transporter.sendMail(mail, function(error, response) {
+                                        if (error) {
+                                            res.json({
+                                                success: false,
+                                                message: "Error in Sending Email " + error,
+                                                data: error
+                                            });
+                                        } else {
+                                            funAuditLog.CreateAuditLog('forgotpassword', objUser.username, 'forgot User Password');
+                                            res.json({
+                                                success: true,
+                                                message: "Password sent to your email successfully...",
+                                                data: response
+                                            });
+                                        }
+                                    });
                                 });
                             } else {
                                 res.json({
@@ -2025,6 +2051,29 @@ router.get('/MobileAppLoginScannerApp', jsonParser, function(req, res) {
             res.json({
                 success: false,
                 message: "Invalid Username or Password..."
+            });
+        }
+    })
+})
+
+router.get('/CheckUserPassword', jsonParser, function(req, res) {
+    var Encryptpassword = jwt.encode(req.query.password, "bugz");
+    User.findOne({
+        where: {
+            username: req.query.username,
+            password: Encryptpassword,
+            idApp: req.query.idApp,
+        }
+    }).then(function(response) {
+        if (response != null) {
+            res.json({
+                success: true,
+                message: "Valid Password..."
+            });
+        } else {
+            res.json({
+                success: false,
+                message: "Invalid Password..."
             });
         }
     })

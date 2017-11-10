@@ -7,7 +7,7 @@ var momentz = require('moment-timezone');
 router.get('/GetAllGPSByTimeZoneDate', function(req, res) {
     wherecondition = '';
     if (req.query.DeviceId != 'All' && req.query.DeviceId != '-1' && req.query.DeviceId != null) {
-        wherecondition = ' and tblgpsdata.deviceid=' + req.query.DeviceId;
+        wherecondition = ' and tblgpsdata.deviceid in (' + req.query.DeviceId + ')';
     }
     var Startdate = req.query.TodayStartDateTime;
     var Enddate = req.query.TodayEndDateTime;
@@ -17,13 +17,13 @@ router.get('/GetAllGPSByTimeZoneDate', function(req, res) {
 
     var convertDate = convertdateformatForUnix(Enddate);
     var unixEnddate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
-    var orderby = '  order by tblgpsdata.Date desc';
+    var orderby = ' ';
     if (req.query.orderby != '' && req.query.orderby != undefined && req.query.orderby != null) {
         orderby = ' ' + req.query.orderby;
     }
 
-    var query = "select tblgpsdata.*,tblvehicle.Name from tblgpsdata left join tblvehicle on tblgpsdata.deviceid = tblvehicle.deviceid Where tblvehicle.iduser=" + req.query.idUser + " and tblgpsdata.Date >= '" + unixStartdate + "' and tblgpsdata.Date <= '" + unixEnddate + "'" + wherecondition + ' order by Date desc' + " LIMIT " + req.query.length + " OFFSET " + req.query.start + ";"
-    var Count = "select count(*) AS Totalrecord from tblgpsdata left join tblvehicle on tblgpsdata.deviceid = tblvehicle.deviceid Where tblvehicle.iduser=" + req.query.idUser + "  and tblgpsdata.Date >= '" + unixStartdate + "' and tblgpsdata.Date <= '" + unixEnddate + "'" + wherecondition + ";"
+    var query = "select tblgpsdata.*,tblvehicle.Name from tblgpsdata left join tblvehicle on tblgpsdata.deviceid = tblvehicle.deviceid Where tblgpsdata.Date >= '" + unixStartdate + "' and tblgpsdata.Date <= '" + unixEnddate + "'" + wherecondition + orderby + " LIMIT " + req.query.length + " OFFSET " + req.query.start + ";"
+    var Count = "select count(*) AS Totalrecord from tblgpsdata left join tblvehicle on tblgpsdata.deviceid = tblvehicle.deviceid Where tblgpsdata.Date >= '" + unixStartdate + "' and tblgpsdata.Date <= '" + unixEnddate + "'" + wherecondition + ";"
     connection.query(query, function(err, lstGPSData, fields) {
         if (!err) {
             connection.query(Count, function(err1, res1, fields) {
@@ -110,7 +110,7 @@ router.get('/ExportDetailTripReport', function(req, res) {
 
 
 
-    var query = "select tblgpsdata.*,tblvehicle.Name from tblgpsdata left join tblvehicle on tblgpsdata.deviceid = tblvehicle.deviceid Where tblvehicle.iduser=" + req.query.idUser + "  and tblgpsdata.Date >= '" + unixStartdate + "' and tblgpsdata.Date <= '" + unixEnddate + "'" + wherecondition + " order by Date DESC;"
+    var query = "select tblgpsdata.*,tblvehicle.Name from tblgpsdata left join tblvehicle on tblgpsdata.deviceid = tblvehicle.deviceid Where tblgpsdata.Date >= '" + unixStartdate + "' and tblgpsdata.Date <= '" + unixEnddate + "'" + wherecondition + " order by Date ASC;"
     connection.query(query, function(err, response) {
         conf.rows = [];
         for (var i = 0; i < response.length; i++) {
@@ -290,11 +290,14 @@ router.get('/ExportDetailTripReport', function(req, res) {
 router.get('/GetAllFenceInAndOutData', function(req, res) {
     var objParam = req.query;
 
-    var Orderby = 'Order By Date DESC';
+    var Orderby = '';
+    if (req.query.orderby != '' && req.query.orderby !== null && req.query.orderby != undefined) {
+        Orderby = ' ' + req.query.orderby;
+    }
     var search = "";
     // var unixStartdate = new Date(objParam.StartDate).getTime() / 1000;
     // var unixEndDate = new Date(objParam.EndDate).getTime() / 1000;
-    search = " where tblvehicle.iduser=" + req.query.idUser;
+    search = "";
     var Startdate = objParam.StartDate;
     var Enddate = objParam.EndDate;
 
@@ -319,9 +322,9 @@ router.get('/GetAllFenceInAndOutData', function(req, res) {
     // }
     if (objParam.DeviceId != null && objParam.DeviceId != 'All' && objParam.DeviceId != undefined && objParam.DeviceId != '-1') {
         if (search != "") {
-            search += " And tblalarm.DeviceId =" + objParam.DeviceId;
+            search += " And tblalarm.DeviceId in (" + objParam.DeviceId + ")";
         } else {
-            search += " Where tblalarm.DeviceId =" + objParam.DeviceId;
+            search += " Where tblalarm.DeviceId in (" + objParam.DeviceId + ")";
         }
     }
     if (objParam.StartDate != null && objParam.StartDate != '' && objParam.StartDate != undefined) {
@@ -390,9 +393,9 @@ router.get('/ExportFenceReport', function(req, res) {
         //     type: 'string'
         // }
     ];
-    var Orderby = 'Order By Date DESC';
+    var Orderby = 'Order By Date ASC';
     var search = "";
-    search = " where tblvehicle.iduser=" + req.query.idUser;
+    search = "";
     var Startdate = objParam.StartDate;
     var Enddate = objParam.EndDate;
 
@@ -417,9 +420,9 @@ router.get('/ExportFenceReport', function(req, res) {
     // }
     if (objParam.DeviceId != null && objParam.DeviceId != 'All' && objParam.DeviceId != undefined && objParam.DeviceId != '-1') {
         if (search != "") {
-            search += " And tblalarm.DeviceId =" + objParam.DeviceId;
+            search += " And tblalarm.DeviceId in (" + objParam.DeviceId + ")";
         } else {
-            search += " Where tblalarm.DeviceId =" + objParam.DeviceId;
+            search += " Where tblalarm.DeviceId in (" + objParam.DeviceId + ")";
         }
     }
     if (objParam.StartDate != null && objParam.StartDate != '' && objParam.StartDate != undefined) {
@@ -541,7 +544,7 @@ router.get('/GetAllEngineData', function(req, res) {
 
     var Orderby = ' Order By Date ASC';
     var search = "";
-    search = " where tblvehicle.iduser=" + req.query.idUser;
+    // search = " where tblvehicle.iduser=" + req.query.idUser;
     // var unixStartdate = new Date(objParam.StartDate).getTime() / 1000;
     // var unixEndDate = new Date(objParam.EndDate).getTime() / 1000;
 
@@ -559,9 +562,9 @@ router.get('/GetAllEngineData', function(req, res) {
 
     if (objParam.DeviceId != null && objParam.DeviceId != '' && objParam.DeviceId != undefined) {
         if (search != "") {
-            search += " And tblgpsdata.DeviceId = " + objParam.DeviceId;
+            search += " And tblgpsdata.DeviceId in (" + objParam.DeviceId + ")";
         } else {
-            search += " Where tblgpsdata.DeviceId = " + objParam.DeviceId;
+            search += " Where tblgpsdata.DeviceId in (" + objParam.DeviceId + ")";
         }
     }
 
@@ -581,8 +584,10 @@ router.get('/GetAllEngineData', function(req, res) {
         }
     }
     var query = "SELECT  tblgpsdata.Datetime, tblgpsdata.Date, tblgpsdata.Latitude, tblgpsdata.Longitude, tblgpsdata.DeviceId, tblgpsdata.IsEngine, tblgpsdata.Speed,tblgpsdata.GPSPositioning, tblvehicle.Name, tblvehicle.iduser FROM tblgpsdata LEFT JOIN tblvehicle ON tblvehicle.deviceid = tblgpsdata.DeviceId " + search;
+    // console.log(query)
     query += Orderby;
     connection.query(query, function(err, response) {
+        // console.log(response.length)
         if (response != undefined) {
             var Array = [];
             var COuntEngineOff = 0;
@@ -653,12 +658,15 @@ router.get('/GetAllEngineData', function(req, res) {
             for (var j = 0; j < Array.length; j++) {
                 if (j != Array.length - 1) {
                     Array[j].EndTime = Array[j + 1].StartTime;
+                    Array[j].StartTime1 = Array[j].StartTimeold
+                    Array[j].EndTime1 = Array[j + 1].StartTimeold
                     Array[j].ContinueTime = calcDateDiff(Array[j].EndTime, Array[j].StartTime);
                     if (Array[j].Status == 'Engine On') {
                         TotalEngineOnTime = TotalEngineOnTime + calcDateDiffCalInSec(moment(Array[j + 1].StartTimeold), moment(Array[j].StartTimeold));
                     }
 
                 } else {
+                    Array[j].EndTime1 = new Date(response[response.length - 1].Date * 1000)
                     Array[j].EndTime = momentz.utc(new Date(response[response.length - 1].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
                     //momentz.utc(new Date(response[response.length - 1].Date * 1000)).format('DD-MM-YYYY hh:mm:ss a');
                     Array[j].ContinueTime = calcDateDiff(Array[j].EndTime, Array[j].StartTime);
@@ -713,7 +721,7 @@ router.get('/ExportEngineReport', function(req, res) {
 
     var Orderby = ' Order By Date ASC';
     var search = "";
-    search = " where tblvehicle.iduser=" + req.query.idUser;
+    // search = " where tblvehicle.iduser=" + req.query.idUser;
     // var unixStartdate = new Date(objParam.StartDate).getTime() / 1000;
     // var unixEndDate = new Date(objParam.EndDate).getTime() / 1000;
     var Startdate = objParam.StartDate;
@@ -726,11 +734,12 @@ router.get('/ExportEngineReport', function(req, res) {
     var unixEnddate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
 
 
+
     if (objParam.DeviceId != null && objParam.DeviceId != '' && objParam.DeviceId != undefined) {
         if (search != "") {
-            search += " And tblgpsdata.DeviceId = " + objParam.DeviceId;
+            search += " And tblgpsdata.DeviceId in (" + objParam.DeviceId + ")";
         } else {
-            search += " Where tblgpsdata.DeviceId = " + objParam.DeviceId;
+            search += " Where tblgpsdata.DeviceId in (" + objParam.DeviceId + ")";
         }
     }
 
@@ -754,6 +763,7 @@ router.get('/ExportEngineReport', function(req, res) {
     var query = "SELECT  tblgpsdata.Datetime, tblgpsdata.Date, tblgpsdata.Latitude, tblgpsdata.Longitude, tblgpsdata.DeviceId, tblgpsdata.IsEngine, tblgpsdata.Speed,tblgpsdata.GPSPositioning, tblvehicle.Name, tblvehicle.iduser FROM tblgpsdata LEFT JOIN tblvehicle ON tblvehicle.deviceid = tblgpsdata.DeviceId " + search;
     query += Orderby;
     connection.query(query, function(err, response) {
+        // console.log(response.length)
         var Array = [];
         var lstEngine = [];
 
@@ -852,7 +862,7 @@ router.get('/ExportEngineReport', function(req, res) {
                 // Array[j].Mileage = DatewiseTravelledDistance;
             }
             if (Array.length > 0) {
-                var data = u.sortBy(Array, function(num) { return new Date(num.StartTime) }).reverse();
+                var data = u.sortBy(Array, function(num) { return new Date(num.StartTime) }) //.reverse();
                 lstEngine = data;
             }
             // for (var k = 0; k < response.length; k++) {
@@ -1007,14 +1017,29 @@ router.get('/GetAllVehicleLastPositionByUserIdWebApp', jsonParser, function(req,
             WhereCondition = WhereCondition + 'and Date<="' + unixEnddate + '" ';
         }
     }
-    var query = "SELECT  tb.*,tpg.IsEngine,tpg.IsDoor, tpg.Latitude,tpg.Longitude,tpg.Datetime, tpg.Date, tpg.Speed, tpg.Direction FROM tblvehicle tb Inner JOIN tblgpsdata tpg ON tb.deviceid=tpg.DeviceId INNER JOIN (SELECT DeviceId, MAX(Date) as maxDate FROM (SELECT DeviceId, Date FROM tblgpsdata " + WhereCondition + "ORDER BY Date DESC) d GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId AND tpg.Date = b.maxDate WHERE iduser=" + req.query.UserId + " and IsDelete=false group by tb.deviceid order by Name LIMIT " + req.query.length + " OFFSET " + req.query.start + ";"
-    var count = "SELECT count(*) FROM tblvehicle tb Inner JOIN tblgpsdata tpg ON tb.deviceid=tpg.DeviceId INNER JOIN (SELECT DeviceId, MAX(Date) as maxDate FROM (SELECT DeviceId, Date FROM tblgpsdata " + WhereCondition + "ORDER BY Date DESC) d GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId AND tpg.Date = b.maxDate WHERE iduser=" + req.query.UserId + " and IsDelete=false group by tb.deviceid;";
+    // var query = "SELECT  tb.*,tpg.IsEngine,tpg.IsDoor, tpg.Latitude,tpg.Longitude,tpg.Datetime, tpg.Date, tpg.Speed, tpg.Direction FROM tblvehicle tb Inner JOIN tblgpsdata tpg ON tb.deviceid=tpg.DeviceId INNER JOIN (SELECT DeviceId, MAX(Date) as maxDate FROM (SELECT DeviceId, Date FROM tblgpsdata " + WhereCondition + "ORDER BY Date DESC) d GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId AND tpg.Date = b.maxDate WHERE iduser=" + req.query.UserId + " and IsDelete=false group by tb.deviceid order by Name LIMIT " + req.query.length + " OFFSET " + req.query.start + ";"
+    var query = "SELECT  tb.*,tpg.IsEngine,tpg.IsDoor, tpg.Latitude,tpg.Longitude,tpg.Datetime, tpg.Date, tpg.Speed, tpg.Direction" +
+        " FROM tblvehicle tb left join tblsharedevice tsd ON tsd.idVehicle = tb.id Inner JOIN tblgpsdata tpg ON tb.deviceid=tpg.DeviceId " +
+        " INNER JOIN (SELECT DeviceId, MAX(Date) as maxDate FROM " +
+        " (SELECT DeviceId, Date FROM tblgpsdata " + WhereCondition + "ORDER BY Date DESC) d GROUP BY DeviceId) " +
+        " b ON tpg.DeviceId = b.DeviceId AND tpg.Date = b.maxDate WHERE " +
+        " (tb.iduser=" + req.query.UserId + " OR tsd.idUser=" + req.query.UserId + ") and IsDelete=false " +
+        " group by tb.deviceid order by Name LIMIT " + req.query.length + " OFFSET " + req.query.start + ";"
+        // console.log(query);
+    var count = "SELECT count(*) FROM tblvehicle tb left join tblsharedevice tsd ON tsd.idVehicle = tb.id" +
+        " Inner JOIN tblgpsdata tpg ON tb.deviceid=tpg.DeviceId INNER JOIN" +
+        " (SELECT DeviceId, MAX(Date) as maxDate FROM " +
+        " (SELECT DeviceId, Date FROM tblgpsdata " + WhereCondition + "ORDER BY Date DESC) d GROUP BY DeviceId)" +
+        " b ON tpg.DeviceId = b.DeviceId AND tpg.Date = b.maxDate WHERE " +
+        " (tb.iduser=" + req.query.UserId + " OR tsd.idUser=" + req.query.UserId + ") and IsDelete=false group by tb.deviceid;";
     connection.query(query, function(err, rows, fields) {
         if (!err) {
-            for (var i = 0; i < rows.length; i++) {
-                rows[i].Time = momentz.utc(new Date(rows[i].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
-                // momentz.utc(rows[i].Date * 1000).format('DD-MM-YYYY HH:mm:ss a')
-            }
+            // for (var i = 0; i < rows.length; i++) {
+            //     console.log(rows[i].Date);
+            //     rows[i].Time = momentz.utc(new Date(rows[i].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
+            //     console.log(rows[i].Time);
+            //     // momentz.utc(rows[i].Date * 1000).format('DD-MM-YYYY HH:mm:ss a')
+            // }
             connection.query(count, function(error, count, fields) {
                 res.json({ success: true, data: rows, Totalrecord: count.length });
             })
@@ -1053,10 +1078,12 @@ router.get('/ExportLastPositionDataByUserId', function(req, res) {
         }, {
             caption: 'Engine',
             type: 'string'
-        }, {
-            caption: 'Door',
-            type: 'string'
-        }, {
+        },
+        // {
+        //     caption: 'Door',
+        //     type: 'string'
+        // },
+        {
             caption: 'Speed',
             type: 'string'
         }, {
@@ -1112,20 +1139,29 @@ router.get('/ExportLastPositionDataByUserId', function(req, res) {
             WhereCondition = WhereCondition + 'and Date<="' + unixEnddate + '" ';
         }
     }
-    connection.query("SELECT  tb.*,tpg.IsEngine,tpg.IsDoor, tpg.Latitude,tpg.Longitude,tpg.Datetime, tpg.Date, tpg.Speed, tpg.Direction FROM tblvehicle tb Inner JOIN tblgpsdata tpg ON tb.deviceid=tpg.DeviceId INNER JOIN (SELECT DeviceId, MAX(Date) as maxDate FROM (SELECT DeviceId, Date FROM tblgpsdata " + WhereCondition + "ORDER BY Date DESC) d GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId AND tpg.Date = b.maxDate WHERE iduser=" + req.query.UserId + " and IsDelete=false group by tb.deviceid order by Name;", function(err, rows, fields) {
+    var query = "SELECT  tb.*,tpg.IsEngine,tpg.IsDoor, tpg.Latitude,tpg.Longitude,tpg.Datetime, tpg.Date, tpg.Speed, tpg.Direction" +
+        " FROM tblvehicle tb left join tblsharedevice tsd ON tsd.idVehicle = tb.id Inner JOIN tblgpsdata tpg ON tb.deviceid=tpg.DeviceId " +
+        " INNER JOIN (SELECT DeviceId, MAX(Date) as maxDate FROM " +
+        " (SELECT DeviceId, Date FROM tblgpsdata " + WhereCondition + "ORDER BY Date DESC) d GROUP BY DeviceId) " +
+        " b ON tpg.DeviceId = b.DeviceId AND tpg.Date = b.maxDate WHERE " +
+        " (tb.iduser=" + req.query.UserId + " OR tsd.idUser=" + req.query.UserId + ") and IsDelete=false " +
+        " group by tb.deviceid order by Name";
+    // connection.query("SELECT  tb.*,tpg.IsEngine,tpg.IsDoor, tpg.Latitude,tpg.Longitude,tpg.Datetime, tpg.Date, tpg.Speed, tpg.Direction FROM tblvehicle tb Inner JOIN tblgpsdata tpg ON tb.deviceid=tpg.DeviceId INNER JOIN (SELECT DeviceId, MAX(Date) as maxDate FROM (SELECT DeviceId, Date FROM tblgpsdata " + WhereCondition + "ORDER BY Date DESC) d GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId AND tpg.Date = b.maxDate WHERE iduser=" + req.query.UserId + " and IsDelete=false group by tb.deviceid order by Name;", function(err, rows, fields) {
+    connection.query(query, function(err, rows, fields) {
         if (!err) {
             for (var i = 0; i < rows.length; i++) {
                 rows[i].Time = momentz.utc(new Date(rows[i].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
             }
             var ListPostionData = rows;
-            ListPostionData = u.sortBy(ListPostionData, function(num) { return new Date(num.Date) }).reverse();
+            ListPostionData = u.sortBy(ListPostionData, function(num) { return new Date(num.Date) })
             ExportData(ListPostionData)
         } else {
             var ListPostionData = [];
-            ListPostionData = u.sortBy(ListPostionData, function(num) { return new Date(num.Date) }).reverse();
+            ListPostionData = u.sortBy(ListPostionData, function(num) { return new Date(num.Date) })
             ExportData(ListPostionData)
         }
     })
+
 
 
     function ExportData(ListPostionData) {
@@ -1153,9 +1189,10 @@ router.get('/ExportLastPositionDataByUserId', function(req, res) {
                     }
 
                     if (ListPostionData[i].IsOnline != undefined && ListPostionData[i].IsOnline != null && ListPostionData[i].IsOnline != '') {
-                        var DeviceStatus = ListPostionData[i].IsOnline.toString();
+                        var DeviceStatus = 'Online'
+                            // ListPostionData[i].IsOnline.toString();
                     } else {
-                        var DeviceStatus = "0";
+                        var DeviceStatus = "Offline";
                     }
 
                     if (ListPostionData[i].IsEngine != undefined && ListPostionData[i].IsEngine != null && ListPostionData[i].IsEngine != '') {
@@ -1197,17 +1234,17 @@ router.get('/ExportLastPositionDataByUserId', function(req, res) {
                     }
 
                     if (ListPostionData[i].Direction != undefined && ListPostionData[i].Direction != null && ListPostionData[i].Direction != '') {
-                        var Direction = ListPostionData[i].Direction.toString();
+                        var Direction = ListPostionData[i].Direction.toString() + ' Degree';;
                     } else {
-                        var Direction = "0";
+                        var Direction = "0" + ' Degree';
                     }
 
                     if (res.length > 0) {
                         // var Address = res[0].formattedAddress;
-                        conf.rows.push([AssestName, DeviceId, Time, DeviceStatus, Engine, Door, Speed, Latitude, Longitude, Direction]);
+                        conf.rows.push([AssestName, DeviceId, Time, DeviceStatus, Engine, Speed, Latitude, Longitude, Direction]);
                     } else {
                         // var Address = "N/A";
-                        conf.rows.push([AssestName, DeviceId, Time, DeviceStatus, Engine, Door, Speed, Latitude, Longitude, Direction]);
+                        conf.rows.push([AssestName, DeviceId, Time, DeviceStatus, Engine, Speed, Latitude, Longitude, Direction]);
                     }
                     AddList(i + 1);
 
@@ -1233,9 +1270,10 @@ router.get('/ExportLastPositionDataByUserId', function(req, res) {
                     }
 
                     if (ListPostionData[i].IsOnline != undefined && ListPostionData[i].IsOnline != null && ListPostionData[i].IsOnline != '') {
-                        var DeviceStatus = ListPostionData[i].IsOnline.toString();
+                        var DeviceStatus = 'Offline'
+                            // ListPostionData[i].IsOnline.toString();
                     } else {
-                        var DeviceStatus = "0";
+                        var DeviceStatus = "Online";
                     }
 
                     if (ListPostionData[i].IsEngine != undefined && ListPostionData[i].IsEngine != null && ListPostionData[i].IsEngine != '') {
@@ -1282,7 +1320,7 @@ router.get('/ExportLastPositionDataByUserId', function(req, res) {
                         var Direction = "0";
                     }
                     // var Address = "N/A";
-                    conf.rows.push([AssestName, DeviceId, Time, DeviceStatus, Engine, Door, Speed, Latitude, Longitude, Direction]);
+                    conf.rows.push([AssestName, DeviceId, Time, DeviceStatus, Engine, Speed, Latitude, Longitude, Direction]);
                     AddList(i + 1);
                 }
             } else {
@@ -1303,15 +1341,15 @@ router.get('/GetAllParkingData', function(req, res) {
     WhereCondition = '';
     if (req.query.DeviceId != 'All' && req.query.DeviceId != '-1' && req.query.DeviceId != null) {
         // WhereCondition = ' and tblgpsdata.deviceid=' + req.query.DeviceId;
-        WhereCondition = ' and gps.deviceid=' + req.query.DeviceId;
+        WhereCondition = ' and gps.deviceid in (' + req.query.DeviceId + ')';
     }
-    if (req.query.idUser != null && req.query.idUser != undefined) {
-        if (WhereCondition != '') {
-            WhereCondition += " and Bike.idUser =" + req.query.idUser;
-        } else {
-            WhereCondition += " Where Bike.idUser =" + req.query.idUser;
-        }
-    }
+    // if (req.query.idUser != null && req.query.idUser != undefined) {
+    //     if (WhereCondition != '') {
+    //         WhereCondition += " and Bike.idUser =" + req.query.idUser;
+    //     } else {
+    //         WhereCondition += " Where Bike.idUser =" + req.query.idUser;
+    //     }
+    // }
 
     var Startdate = req.query.TodayStartDateTime;
     var Enddate = req.query.TodayEndDateTime;
@@ -1428,6 +1466,7 @@ router.get('/GetAllParkingData', function(req, res) {
                             if (IsParking == 1) {
                                 IsParking = 0;
                                 obj.EndTime = momentz.utc(lstGroup[i].data[k].Date).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
+                                obj.EndTime1 = lstGroup[i].data[k].Date;
                                 TotalParkingtime = TotalParkingtime + calcDateDiffCalInSec(moment((lstGroup[i].data[k].Date)), moment(lstGroup[i].data[ParkingStartPosition].Date));
                                 obj.ParkingTime = calhrminsecfromsec(calcDateDiffCalInSec(moment(lstGroup[i].data[k].Date), moment(lstGroup[i].data[ParkingStartPosition].Date)));
                                 //obj.ParkingTime = calhrminsecfromsec(TotalParkingtime);
@@ -1447,6 +1486,7 @@ router.get('/GetAllParkingData', function(req, res) {
                                 // obj.s_id = lstGroup[i].data[k].Id;
                                 obj.Name = lstGroup[i].data[k].Name;
                                 obj.StartTime = momentz.utc(lstGroup[i].data[k].Date).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
+                                obj.StartTime1 = lstGroup[i].data[k].Date;
                                 ParkingStartPosition = k;
                             }
                             IsParking = 1;
@@ -1457,6 +1497,7 @@ router.get('/GetAllParkingData', function(req, res) {
                         IsParking = 0;
                         TotalParkingtime = TotalParkingtime + calcDateDiffCalInSec(moment(lstGroup[i].data[LastPosition].Date), moment(lstGroup[i].data[ParkingStartPosition].Date));
                         obj.EndTime = momentz.utc(lstGroup[i].data[LastPosition].Date).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
+                        obj.EndTime1 = lstGroup[i].data[LastPosition].Date;
                         obj.ParkingTime = calhrminsecfromsec(calcDateDiffCalInSec(moment(lstGroup[i].data[LastPosition].Date), moment(lstGroup[i].data[ParkingStartPosition].Date)));
                         // obj.e_id = lstGroup[i].data[LastPosition].Id;
                         // console.log(obj.s_id, "----", obj.e_id)
@@ -1512,15 +1553,15 @@ router.get('/ExportParkingReport', function(req, res) {
     WhereCondition = '';
     if (req.query.DeviceId != 'All' && req.query.DeviceId != '-1' && req.query.DeviceId != null) {
         // WhereCondition = ' and tblgpsdata.deviceid=' + req.query.DeviceId;
-        WhereCondition = ' Where gps.deviceid=' + req.query.DeviceId;
+        WhereCondition = ' Where gps.deviceid in (' + req.query.DeviceId + ')';
     }
-    if (req.query.idUser != null && req.query.idUser != undefined) {
-        if (WhereCondition != '') {
-            WhereCondition += " and Bike.idUser =" + req.query.idUser;
-        } else {
-            WhereCondition = " Where Bike.idUser =" + req.query.idUser;
-        }
-    }
+    // if (req.query.idUser != null && req.query.idUser != undefined) {
+    //     if (WhereCondition != '') {
+    //         WhereCondition += " and Bike.idUser =" + req.query.idUser;
+    //     } else {
+    //         WhereCondition = " Where Bike.idUser =" + req.query.idUser;
+    //     }
+    // }
     var Startdate = req.query.StartDate;
     var Enddate = req.query.EndDate;
 
@@ -1678,7 +1719,7 @@ router.get('/ExportParkingReport', function(req, res) {
             }
         }
         if (Array.length > 0) {
-            var data = u.sortBy(Array, function(num) { return new Date(num.StartTime) }).reverse();
+            var data = u.sortBy(Array, function(num) { return new Date(num.StartTime) }) //.reverse();
             Array = data;
         }
         GetData(0);
@@ -2449,8 +2490,8 @@ router.get('/GetAllDailyStatDate', function(req, res) {
     wherecondition1 = '';
     if (req.query.DeviceId != 'All' && req.query.DeviceId != '-1' && req.query.DeviceId != null) {
         //wherecondition = ' and tblgpsdata.deviceid=' + req.query.DeviceId;
-        wherecondition = ' and gps.deviceid=' + req.query.DeviceId;
-        wherecondition1 = ' and tblalarm.deviceid=' + req.query.DeviceId;
+        wherecondition = ' and gps.deviceid in (' + req.query.DeviceId + ')';
+        wherecondition1 = ' and tblalarm.deviceid in (' + req.query.DeviceId + ')';
     }
 
     var Startdate = req.query.TodayStartDateTime;
@@ -2462,18 +2503,18 @@ router.get('/GetAllDailyStatDate', function(req, res) {
     var convertDate = convertdateformatForUnix(Enddate);
     var unixEnddate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
     var query = "select " +
-        "gps.DeviceId,gps.Date,gps.Speed,gps.IsEngine,gps.Latitude,gps.Longitude,gps.GPSPositioning,Bike.Name,Bike.id,Bike.deviceid " +
+        "gps.id,gps.DeviceId,gps.Date,gps.Speed,gps.IsEngine,gps.Latitude,gps.Longitude,gps.GPSPositioning,Bike.Name,Bike.id,Bike.deviceid " +
         "from tblvehicle  As Bike " +
         "inner  join tblgpsdata as gps " +
         "on " +
         "gps.DeviceId = Bike.deviceid " +
-        "Where Bike.iduser=" + req.query.idUser + "  and gps.Date >= '" + unixStartdate + "' and gps.Date <= '" + unixEnddate + "'" +
+        "Where gps.Date >= '" + unixStartdate + "' and gps.Date <= '" + unixEnddate + "'" +
         wherecondition +
         " order by gps.Date Asc";
-
     //  var query = "select tblgpsdata.*,tblvehicle.Name,tblvehicle.deviceid from tblgpsdata left join tblvehicle on tblgpsdata.deviceid = tblvehicle.deviceid Where tblvehicle.iduser=" + req.query.idUser + "  and tblgpsdata.Date >= '" + unixStartdate + "' and tblgpsdata.Date <= '" + unixEnddate + "'" + wherecondition + ' order by tblgpsdata.Date asc' + ";"
     connection.query(query, function(err, response, fields) {
-        var query1 = "select tblalarm.*,tblvehicle.deviceid from tblalarm left join tblvehicle on tblalarm.deviceid = tblvehicle.deviceid Where tblvehicle.iduser=" + req.query.idUser + "  and tblalarm.Date >= '" + unixStartdate + "' and tblalarm.Date <= '" + unixEnddate + "'" + wherecondition1 + ";"
+        var query1 = "select tblalarm.*,tblvehicle.deviceid from tblalarm left join tblvehicle on tblalarm.deviceid = tblvehicle.deviceid Where  tblalarm.Date >= '" + unixStartdate + "' and tblalarm.Date <= '" + unixEnddate + "'" + wherecondition1 + ";"
+            // console.log(query1)
         connection.query(query1, function(alarmerr, alarmresponse, alarmfields) {
 
             if (response.length > 0) {
@@ -2521,27 +2562,35 @@ router.get('/GetAllDailyStatDate', function(req, res) {
                         obj.DeviceId = lstGroup[i].data[0].deviceid;
                         obj.Name = lstGroup[i].data[0].Name;
                         obj.Date = momentz.utc(new Date(lstGroup[i].data[0].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY');
+                        obj.Date1 = new Date(lstGroup[i].data[0].Date * 1000)
                         obj.InvalidLocation = 0;
                         obj.Mileage = 0.0;
                         obj.AlarmNumber = 0;
-
+                        obj.HighestSpeed = 0;
+                        obj.OverSpeed = 0;
                         if (alarmresponse.length > 0) {
                             for (var h = 0; h < alarmresponse.length; h++) {
                                 var alarmDate = momentz.utc(new Date(alarmresponse[h].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY');
                                 if (alarmresponse[h].deviceid == obj.DeviceId && alarmDate == obj.Date) {
                                     obj.AlarmNumber = obj.AlarmNumber + 1;
+                                    if (alarmresponse[h].AlarmCode == '11') {
+                                        obj.OverSpeed = obj.OverSpeed + 1;
+                                    }
                                 }
+
                             }
                         }
                         for (var k = 0; k < lstGroup[i].data.length; k++) {
+
+
                             lstGroup[i].data[k].Date = new Date(lstGroup[i].data[k].Date * 1000);
                             //------ Count Invalid Location--------//
-                            if (lstGroup[i].data[k].GPSPositioning != 'B') {
+                            if (lstGroup[i].data[k].GPSPositioning != 'A') {
                                 obj.InvalidLocation = obj.InvalidLocation + 1;
                             }
                             //--------Count Locate Number----------//
                             if (k == 0) { obj.LocateNumber = 1; } else {
-                                if (lstGroup[i].data[k].Latitude != lstGroup[i].data[k - 1].Latitude || lstGroup[i].data[k].Latitude != lstGroup[i].data[k - 1].Latitude) {
+                                if (lstGroup[i].data[k].Latitude != lstGroup[i].data[k - 1].Latitude && lstGroup[i].data[k].Longitude != lstGroup[i].data[k - 1].Longitude) {
                                     obj.LocateNumber = obj.LocateNumber + 1;
                                 }
                             }
@@ -2557,6 +2606,12 @@ router.get('/GetAllDailyStatDate', function(req, res) {
                             }
 
                             if (lstGroup[i].data[k].IsEngine == true) {
+                                if (lstGroup[i].data[k].GPSPositioning == "A" && parseFloat(lstGroup[i].data[k].Speed) > 1) {
+                                    if (obj.HighestSpeed < parseFloat(lstGroup[i].data[k].Speed)) {
+                                        obj.HighestSpeed = 0;
+                                        obj.HighestSpeed = parseFloat(lstGroup[i].data[k].Speed);
+                                    }
+                                }
                                 if (Engineco == 0) {
                                     StartMilage = k;
                                     Engineco = 1;
@@ -2584,16 +2639,16 @@ router.get('/GetAllDailyStatDate', function(req, res) {
                                     IsParking = 0;
                                     TotalParkingtime = TotalParkingtime + calcDateDiffCalInSec(moment(lstGroup[i].data[k].Date), moment(lstGroup[i].data[ParkingStartPosition].Date));
                                 }
-                                if (IsDriving == 0) {
-                                    DrivingStartPosition = k;
+                                // if (IsDriving == 0) {
+                                //     DrivingStartPosition = k;
+                                // }
+                                // IsDriving = 1;
+                                if (parseFloat(lstGroup[i].data[k].Speed) > 1) {
+                                    if (IsDriving == 0) {
+                                        DrivingStartPosition = k;
+                                    }
+                                    IsDriving = 1;
                                 }
-                                IsDriving = 1;
-                                // if (parseFloat(lstGroup[i].data[k].Speed) > 1) {
-                                //     if (IsDriving == 0) {
-                                //         DrivingStartPosition = k;
-                                //     }
-                                //     IsDriving = 1;
-
                                 // } else {
                                 //     if (IsDriving == 1) {
                                 //         IsDriving = 0;
@@ -2678,20 +2733,30 @@ router.get('/ExportDailyStatReport', function(req, res) {
         }, {
             caption: 'Parking Time',
             type: 'string'
-        }, {
-            caption: 'Locate Number',
-            type: 'number'
-        }, {
+        },
+        //  {
+        //     caption: 'Locate Number',
+        //     type: 'number'
+        // }, 
+        {
             caption: 'Invalid Location',
             type: 'number'
         }, {
             caption: 'Mileage(km)',
             type: 'number'
         }, {
-            caption: 'Avearge Speed(km/h)',
+            caption: 'Average Speed(km/h)',
+            type: 'number'
+        },
+        {
+            caption: 'Max Speed(km/h)',
+            type: 'number'
+        },
+        {
+            caption: 'Over Speed(times)',
             type: 'number'
         }, {
-            caption: 'Alarm Number',
+            caption: 'Notification Count',
             type: 'number'
         }, {
             caption: 'Engine On Time',
@@ -2723,8 +2788,8 @@ router.get('/ExportDailyStatReport', function(req, res) {
     wherecondition1 = '';
     if (req.query.DeviceId != 'All' && req.query.DeviceId != '-1' && req.query.DeviceId != null) {
         // wherecondition = ' and tblgpsdata.deviceid=' + req.query.DeviceId;
-        wherecondition = ' and gps.deviceid=' + req.query.DeviceId;
-        wherecondition1 = ' and tblalarm.deviceid=' + req.query.DeviceId;
+        wherecondition = ' and gps.deviceid in (' + req.query.DeviceId + ')';
+        wherecondition1 = ' and tblalarm.deviceid in (' + req.query.DeviceId + ')';
     }
 
 
@@ -2742,13 +2807,11 @@ router.get('/ExportDailyStatReport', function(req, res) {
         "inner  join tblgpsdata as gps " +
         "on " +
         "gps.DeviceId = Bike.deviceid " +
-        "Where Bike.iduser=" + req.query.idUser + "  and gps.Date >= '" + unixStartdate + "' and gps.Date <= '" + unixEnddate + "'" +
+        "Where  gps.Date >= '" + unixStartdate + "' and gps.Date <= '" + unixEnddate + "'" +
         wherecondition +
         " order by gps.Date Asc";
-    // console.log(query);
-    // var query = "select tblgpsdata.*,tblvehicle.Name,tblvehicle.deviceid from tblgpsdata left join tblvehicle on tblgpsdata.deviceid = tblvehicle.deviceid Where tblvehicle.iduser=" + req.query.idUser + "  and tblgpsdata.Date >= '" + unixStartdate + "' and tblgpsdata.Date <= '" + unixEnddate + "'" + wherecondition + ' order by tblgpsdata.Date asc' + ";"
     connection.query(query, function(err, response, fields) {
-        var query1 = "select tblalarm.*,tblvehicle.deviceid from tblalarm left join tblvehicle on tblalarm.deviceid = tblvehicle.deviceid Where tblvehicle.iduser=" + req.query.idUser + "  and tblalarm.Date >= '" + unixStartdate + "' and tblalarm.Date <= '" + unixEnddate + "'" + wherecondition1 + ";"
+        var query1 = "select tblalarm.*,tblvehicle.deviceid from tblalarm left join tblvehicle on tblalarm.deviceid = tblvehicle.deviceid Where  tblalarm.Date >= '" + unixStartdate + "' and tblalarm.Date <= '" + unixEnddate + "'" + wherecondition1 + ";"
         connection.query(query1, function(alarmerr, alarmresponse, alarmfields) {
             var Array = [];
             if (response.length > 0) {
@@ -2801,24 +2864,30 @@ router.get('/ExportDailyStatReport', function(req, res) {
                         obj.InvalidLocation = 0;
                         obj.Mileage = 0.0;
                         obj.AlarmNumber = 0;
+                        obj.HighestSpeed = 0;
+                        obj.OverSpeed = 0
 
                         if (alarmresponse.length > 0) {
                             for (var h = 0; h < alarmresponse.length; h++) {
                                 var alarmDate = momentz.utc(new Date(alarmresponse[h].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY');
                                 if (alarmresponse[h].deviceid == obj.DeviceId && alarmDate == obj.Date) {
                                     obj.AlarmNumber = obj.AlarmNumber + 1;
+                                    if (alarmresponse[h].AlarmCode == '11' && alarmDate == obj.Date) {
+                                        obj.OverSpeed = obj.OverSpeed + 1;
+                                    }
                                 }
+
                             }
                         }
                         for (var k = 0; k < lstGroup[i].data.length; k++) {
                             lstGroup[i].data[k].Date = new Date(lstGroup[i].data[k].Date * 1000);
                             //------ Count Invalid Location--------//
-                            if (lstGroup[i].data[k].GPSPositioning != 'B') {
+                            if (lstGroup[i].data[k].GPSPositioning != 'A') {
                                 obj.InvalidLocation = obj.InvalidLocation + 1;
                             }
                             //--------Count Locate Number----------//
                             if (k == 0) { obj.LocateNumber = 1; } else {
-                                if (lstGroup[i].data[k].Latitude != lstGroup[i].data[k - 1].Latitude || lstGroup[i].data[k].Latitude != lstGroup[i].data[k - 1].Latitude) {
+                                if (lstGroup[i].data[k].Latitude != lstGroup[i].data[k - 1].Latitude && lstGroup[i].data[k].Longitude != lstGroup[i].data[k - 1].Longitude) {
                                     obj.LocateNumber = obj.LocateNumber + 1;
                                 }
                             }
@@ -2834,6 +2903,12 @@ router.get('/ExportDailyStatReport', function(req, res) {
                             }
 
                             if (lstGroup[i].data[k].IsEngine == true) {
+                                if (lstGroup[i].data[k].GPSPositioning == "A" && parseFloat(lstGroup[i].data[k].Speed) > 1) {
+                                    if (obj.HighestSpeed < parseFloat(lstGroup[i].data[k].Speed)) {
+                                        obj.HighestSpeed = 0;
+                                        obj.HighestSpeed = parseFloat(lstGroup[i].data[k].Speed);
+                                    }
+                                }
                                 if (Engineco == 0) {
                                     StartMilage = k;
                                     Engineco = 1;
@@ -2861,16 +2936,16 @@ router.get('/ExportDailyStatReport', function(req, res) {
                                     IsParking = 0;
                                     TotalParkingtime = TotalParkingtime + calcDateDiffCalInSec(moment(lstGroup[i].data[k].Date), moment(lstGroup[i].data[ParkingStartPosition].Date));
                                 }
-                                if (IsDriving == 0) {
-                                    DrivingStartPosition = k;
+                                // if (IsDriving == 0) {
+                                //     DrivingStartPosition = k;
+                                // }
+                                // IsDriving = 1;
+                                if (parseFloat(lstGroup[i].data[k].Speed) > 1) {
+                                    if (IsDriving == 0) {
+                                        DrivingStartPosition = k;
+                                    }
+                                    IsDriving = 1;
                                 }
-                                IsDriving = 1;
-                                // if (parseFloat(lstGroup[i].data[k].Speed) > 1) {
-                                //     if (IsDriving == 0) {
-                                //         DrivingStartPosition = k;
-                                //     }
-                                //     IsDriving = 1;
-
                                 // } else {
                                 //     if (IsDriving == 1) {
                                 //         IsDriving = 0;
@@ -2932,7 +3007,8 @@ router.get('/ExportDailyStatReport', function(req, res) {
                     }
                 }
                 if (Array.length > 0) {
-                    var data = u.sortBy(Array, function(num) { return new Date(num.Date) }).reverse();
+                    var data = u.sortBy(Array, function(num) { return new Date(num.Date) });
+                    //.reverse();
                     Array = data;
                 }
                 conf.rows = [];
@@ -2957,8 +3033,8 @@ router.get('/ExportDailyStatReport', function(req, res) {
                         var ShockNumber = 0;
                         var ShockTime = 'N/A';
                         var EngineOnNumber = 0;
-
-
+                        var HighestSpeed = 0;
+                        var OverSpeed = 0;
 
 
                         if (Array[i].Date != null && Array[i].Date != '' && Array[i].Date != undefined) {
@@ -2990,7 +3066,12 @@ router.get('/ExportDailyStatReport', function(req, res) {
                         if (Array[i].AverageSpeed != null && Array[i].AverageSpeed != '' && Array[i].AverageSpeed != undefined) {
                             AverageSpeed = parseFloat(Array[i].AverageSpeed).toFixed(2);
                         }
-
+                        if (Array[i].HighestSpeed != null && Array[i].HighestSpeed != '' && Array[i].HighestSpeed != undefined) {
+                            HighestSpeed = parseFloat(Array[i].HighestSpeed).toFixed(2);
+                        }
+                        if (Array[i].OverSpeed != null && Array[i].OverSpeed != '' && Array[i].OverSpeed != undefined) {
+                            OverSpeed = parseFloat(Array[i].OverSpeed).toFixed(2);
+                        }
                         if (Array[i].AlarmNumber != null && Array[i].AlarmNumber != '' && Array[i].AlarmNumber != undefined) {
                             AlarmNumber = Array[i].AlarmNumber;
                         }
@@ -3020,7 +3101,7 @@ router.get('/ExportDailyStatReport', function(req, res) {
                         }
 
 
-                        row.push(Name, Date, DrivingTime, ParkingTime, LocateNumber, InvalidLocation, Mileage, AverageSpeed, AlarmNumber, EnginOnTime /*, DoorOpenNumber, DoorOpenTime, ShockNumber, ShockTime, EngineOnNumber*/ );
+                        row.push(Name, Date, DrivingTime, ParkingTime, InvalidLocation, Mileage, AverageSpeed, HighestSpeed, OverSpeed, AlarmNumber, EnginOnTime /*, DoorOpenNumber, DoorOpenTime, ShockNumber, ShockTime, EngineOnNumber*/ );
                         conf.rows.push(row);
                         GetData(i + 1);
 

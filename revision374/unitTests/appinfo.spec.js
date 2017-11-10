@@ -24,7 +24,9 @@ var testAppInfo2 = {
 	AndroidSenderId: '999999999992',
 	CreatedDate: new Date(),
 	CreatedBy: 'Admin',
-	ImageLogo: '999999999999992.png'
+	ImageLogo: '999999999999992.png',
+	AdminUrl: 'http://unittest.admin.maark.my',
+	WebAppUrl: 'http://unittest.webapp.maark.my'
 };
 var testEmail = 'lenqxue95@gmail.com';
 var testPassword = 'dino.saw';
@@ -696,6 +698,98 @@ describe('application information', function() {
 					expect(res.body).to.be.null;
 					done();
 				});
+			});
+		});
+	});
+
+	describe('/appinfo/GetAppInfoByAdmin', function() {
+		var dAppInfo;
+
+		before(function(done) {
+			AppInfo.create(testAppInfo2)
+			.then(function(rAppInfo) {
+				dAppInfo = rAppInfo;
+				done();
+			});
+		});
+
+		after(function(done) {
+			dAppInfo.destroy()
+			.then(function() {
+				done();
+			});
+		});
+
+		it('should find app info like query string', function(done) {
+			request(server)
+			.get('/appinfo/GetAppInfoByAdmin')
+			.query(qs.stringify({
+				AdminUrl: testAppInfo2.AdminUrl
+			}))
+			.expect(200)
+			.end(function(err, res) {
+				expect(res.body).to.exist;
+				expect(res.body).to.be.an('object');
+				done();
+			});
+		});
+
+		it('should not find anything if query string does not match', function(done) {
+			request(server)
+			.get('/appinfo/GetAppInfoByAdmin')
+			.query(qs.stringify({
+				AdminUrl: 'supercalifragilisticexpialidocious'
+			}))
+			.expect(200)
+			.end(function(err, res) {
+				expect(res.body).to.be.null;
+				done();
+			});
+		});
+	});
+
+	describe('/appinfo/GetAppInfoByWebApp', function() {
+		var dAppInfo;
+
+		before(function(done) {
+			AppInfo.create(testAppInfo2)
+			.then(function(rAppInfo) {
+				dAppInfo = rAppInfo;
+				done();
+			});
+		});
+
+		after(function(done) {
+			dAppInfo.destroy()
+			.then(function() {
+				done();
+			});
+		});
+
+		it('should find app info like query string', function(done) {
+			request(server)
+			.get('/appinfo/GetAppInfoByWebApp')
+			.query(qs.stringify({
+				WebAppUrl: testAppInfo2.WebAppUrl
+			}))
+			.expect(200)
+			.end(function(err, res) {
+				expect(res.body).to.exist;
+				expect(res.body).to.be.an('object');
+				done();
+			});
+		});
+
+		it('should not find anything if query string does not match', function(done) {
+			request(server)
+			.get('/appinfo/GetAppInfoByWebApp')
+			.query(qs.stringify({
+				AdminUrl: 'supercalifragilisticexpialidocious'
+			}))
+			.expect(200)
+			.end(function(err, res) {
+				expect(res.body).to.be.null;
+				done();
 			});
 		});
 	});

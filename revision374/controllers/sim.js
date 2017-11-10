@@ -90,6 +90,8 @@ router.post('/SaveSIMInfo', jsonParser, function(req, res) {
                                 if (response[0]) {
                                     funAuditLog.CreateAuditLog('Update SIM', UserExist.username, 'Update SIM Data');
                                     res.json({ success: true, message: "SIM Info updated successfully...", data: response });
+                                } else {
+                                    res.json({ success: true, message: "SIM Info not updated successfully...", data: response });
                                 }
                             })
                         }
@@ -185,7 +187,7 @@ router.post('/uploadExcelDevice', function(req, res) {
     var lst = [];
     var FileName = [];
     var Importerror = [];
-
+    var idTelCo = null;
 
     //Set Parameter for User Permission
     req.query['tablename'] = req.headers['x-requested-with'];
@@ -194,7 +196,7 @@ router.post('/uploadExcelDevice', function(req, res) {
     form.uploadDir = __dirname + '/../MediaUploads/FileUpload';
 
     form.parse(req, function(err, fields, files) {
-
+        idTelCo = fields.idTelCo;
     });
 
     form.on('fileBegin', function(name, file) {
@@ -220,7 +222,15 @@ router.post('/uploadExcelDevice', function(req, res) {
                             if (i < lst.length) {
                                 var obj = new Object();
                                 obj.SerialNum = lst[i].SerialNumber.trim();
-                                obj.PhoneNum = lst[i].PhoneNumber.trim();
+                                if (lst[i].PhoneNumber != null && lst[i].PhoneNumber != undefined) {
+                                    obj.PhoneNum = lst[i].PhoneNumber.trim();
+                                } else {
+                                    obj.PhoneNum = null;
+                                }
+
+                                if (idTelCo != null && idTelCo != 'null') {
+                                    obj.idTelCo = idTelCo;
+                                }
                                 obj.CreatedDate = new Date();
 
                                 SIM.findOrCreate({

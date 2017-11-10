@@ -48,6 +48,8 @@ router.post('/SaveSetting', jsonParser, function(req, res) {
                                 if (response[0]) {
                                     funAuditLog.CreateAuditLog('Update Setting ', UserExist.username, 'Update Seting');
                                     res.json({ success: true, message: "Setting updated successfully...", data: response });
+                                } else {
+                                    res.json({ success: false, message: "Setting not updated successfully...", data: response });
                                 }
                             })
                         }

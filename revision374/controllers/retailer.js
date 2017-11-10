@@ -159,7 +159,7 @@
 		});
 	});
 
-	router.post('/activateDevice', function(req, res) {
+	router.post('/activateDevice', jsonParser, function(req, res) {
 		DeviceAgentRetailer.findOne({
 			where: {
 				deviceId: req.body.deviceId
@@ -180,8 +180,7 @@
 				retailerId: req.body.retailerId,
 				activatedDatetime: moment(),
 				expiryDatetime: moment().add(1, 'year'),
-				lastModifiedDatetime: moment(),
-				simSerial: req.body.simSerial
+				lastModifiedDatetime: moment()
 			});
 		})
 		.then(function(rDeviceAgentRetailer) {

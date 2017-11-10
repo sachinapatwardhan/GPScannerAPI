@@ -120,6 +120,12 @@ router.post('/SavePetAlarm', jsonParser, function(req, res) {
                                         message: "Pet Alarm updated successfully...",
                                         data: response
                                     });
+                                } else {
+                                    res.json({
+                                        success: false,
+                                        message: "Pet Alarm not updated successfully...",
+                                        data: response
+                                    });
                                 }
                             })
                         }
@@ -249,6 +255,7 @@ router.post('/UpdateReadStatus', jsonParser, function(req, res) {
                 }, {
                     where: { Id: { in: objIdList } }
                 }).then(function(response) {
+                    io.sockets.emit(UserExist.id + 'UpdateNotification');
                     res.json({ success: true, data: response });
                 })
             } else {
@@ -261,8 +268,7 @@ router.post('/UpdateReadStatus', jsonParser, function(req, res) {
 })
 
 router.get('/GetTotalNotificationCount', function(req, res) {
-    var query = "select count(tp.Id) as TotalNotificationCount from tblalarm tp inner join tblvehicle tpg on tp.DeviceId = tpg.deviceid left join tblsharedevice tsd on tpg.id=tsd.idVehicle Where tp.IsRead=0 and tp.DeviceId = '" + req.query.DeviceId + "'";
-
+    var query = "select count(tp.Id) as TotalNotificationCount from tblalarm tp Where tp.IsRead=false and tp.DeviceId = '" + req.query.DeviceId + "'";
     connection.query(query, function(err, rows, fields) {
         if (!err) {
             res.json({ success: true, data: rows });
@@ -272,8 +278,8 @@ router.get('/GetTotalNotificationCount', function(req, res) {
     })
 })
 router.get('/GetAllTotalNotificationCount', function(req, res) {
-    var query = "select count(tp.Id) as TotalNotificationCount from tblalarm tp inner join tblvehicle tpg on tp.DeviceId = tpg.deviceid  Where tp.IsRead=0 ";
-    console.log(query)
+    var query = "SELECT count(tal.Id) as TotalNotificationCount  FROM tblalarm as tal left join tblvehicle tb on tal.DeviceId = tb.deviceid WHERE (tb.iduser='" + req.query.iduser + "') and IsDelete=false and tb.deviceid != '' and tal.IsRead=0 ";
+    // var query = "select count(tp.Id) as TotalNotificationCount from tblalarm tp inner join tblvehicle tpg on tp.DeviceId = tpg.deviceid  inner join tblsharedevice ts on ts.idUser = tpg.iduser Where tp.IsRead=0 and (tpg.iduser='" + req.query.iduser + "' or ts.idUser ='" + req.query.iduser + "') and tpg.IsDelete=0 ";
     connection.query(query, function(err, rows, fields) {
         if (!err) {
             res.json({ success: true, data: rows });

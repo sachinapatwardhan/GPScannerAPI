@@ -520,7 +520,7 @@ global.Command9955 = function(line, Callback) {
         var inputoutputSTatus = lstGPSAllData[3];
         var lstAD = lstGPSAllData[4].split(',')
         var AD1 = lstAD[0];
-        var AD2 = lstAD[2];
+        var AD2 = lstAD[1];
         var Odometer = lstGPSAllData[5];
         var RFID = lstGPSAllData[6];
         if (AD2 == undefined) {
@@ -795,12 +795,33 @@ global.Command9955 = function(line, Callback) {
                                                                         DeviceId: DeviceId,
                                                                         Datetime: GPSDateTime,
                                                                         Date: unixDateStemp,
-                                                                        IdUser: objVehicle.iduser,
+                                                                        IdUser: lstAllUser[i],
                                                                         Name: objVehicle.Name,
                                                                         FenceName: rows[j].name
                                                                     }
 
                                                                     io.sockets.emit(lstAllUser[i] + 'DeviceAlarm', JSON.stringify(objConnection));
+
+                                                                    var objPushnotificationCount = {
+                                                                        Id: Alarmrows.insertId,
+                                                                        Latitude: Latitude,
+                                                                        Longitude: Longitude,
+                                                                        GPSPositioning: Position,
+                                                                        Speed: Speed,
+                                                                        Direction: Direction,
+                                                                        Status: inputoutputSTatus,
+                                                                        AlarmCode: AlarmCode.toString(),
+                                                                        DeviceId: DeviceId,
+                                                                        CreatedDate: CurrentDate,
+                                                                        Datetime: GPSDateTime,
+                                                                        Date: unixDateStemp,
+                                                                        FenceName: rows[j].name,
+                                                                        UserId: lstAllUser[i],
+                                                                        IsRead: false,
+                                                                        // Name: objVehicle.Name
+                                                                    }
+
+                                                                    io.sockets.emit(lstAllUser[i] + 'DeviceNotificationCount', JSON.stringify(objPushnotificationCount));
                                                                 }
 
                                                                 checkFence(j + 1);
@@ -921,6 +942,22 @@ global.Command9955 = function(line, Callback) {
                     }
                 }
             });
+
+            //update Relay settings
+            if (IsRelayToStopTheCar) {
+                var Relay = 1;
+            } else {
+                var Relay = 0;
+            }
+            connection.query("Update tblvehicle set Relay = " + Relay + " where deviceid=" + DeviceId + " and IsDelete=false", function(err, relayData, fields) {
+                if (!err) {
+                    var objRelay = {
+                        DeviceId: DeviceId,
+                        Relay: Relay,
+                    }
+                    io.sockets.emit(DeviceId + 'RelaySetting', JSON.stringify(objRelay));
+                }
+            });
         }
 
     } catch (ex) {
@@ -967,7 +1004,7 @@ global.Command9999 = function(line, Callback) {
         var inputoutputSTatus = lstGPSAllData[3];
         var lstAD = lstGPSAllData[4].split(',')
         var AD1 = lstAD[0];
-        var AD2 = lstAD[2];
+        var AD2 = lstAD[1];
         var Odometer = lstGPSAllData[5];
         var RFID = lstGPSAllData[6];
 
@@ -1333,6 +1370,83 @@ global.SendSpeedData = function(objdata, Callback) {
 
                 client.destroy();
                 Callback({ success: false, message: 'Speed Settings could not save. Try again later.' });
+                // SendGSensorCommand(i + 1);
+            }
+        };
+
+
+    });
+
+    client.on('close', function() {
+        console.log('Connection closed');
+    });
+}
+
+//Send Movement Data
+router.get('/SendMovementData', function(req, res) {
+    req.setTimeout(3600000);
+    //GetLookAtMeDP3110a0f
+    //Test Device 075034699503
+    var obj = new Object();
+    obj.DeviceId = req.query.DeviceId;
+    obj.Movement = req.query.Movement;
+    SendMovementData(obj, function(data) {
+        res.json(data);
+    })
+
+
+})
+
+//Send Movement Data
+global.SendMovementData = function(objdata, Callback) {
+
+    var DeviceId = objdata.DeviceId;
+    var Movement = ('00' + objdata.Movement).slice(-2);
+
+    var Data = "40400012" + DeviceId + "4106" + Movement;
+    Data = Data + CalculateCRCbyHex(Data) + '0D0A';
+    var client = new net.Socket();
+    var Sendflag = false;
+
+    client.connect(SocketPort, SocketIPAddress, function() {
+        // console.log('Speed send to ' + Data);
+        client.write(Data, 'hex');
+
+        client.setTimeout(10000, function() {
+            if (Sendflag == false) {
+                Sendflag = true;
+
+                client.destroy();
+                Callback({ success: false, message: 'Device not connected. Try after 5 minute.' });
+                // SendGSensorCommand(i + 1);
+            };
+
+        });
+    });
+
+    client.on('data', function(data) {
+        var line = data.toString();
+        if (Sendflag == false) {
+            if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4106') {
+                console.log('Received: ' + line);
+                var StatusCode = line.substring(26, 28);
+                Sendflag = true;
+                // SuccessDevice = SuccessDevice + 1;
+                // res.json(objNavigation);
+                client.destroy(); // kill client after server's response
+                if (StatusCode == '01') {
+                    connection.query("Update tblvehicle set Movement=" + objdata.Movement + " where deviceid=" + DeviceId, function(err, rows, fields) {
+                        Callback({ success: true, message: 'Movement Settings Save Successfully.' });
+                    });
+                } else {
+                    Callback({ success: false, message: 'Movement Settings could not save. Try again later.' });
+                }
+
+            } else {
+                Sendflag = true;
+
+                client.destroy();
+                Callback({ success: false, message: 'Movement Settings could not save. Try again later.' });
                 // SendGSensorCommand(i + 1);
             }
         };
@@ -1755,18 +1869,71 @@ router.get('/SetOutputControl', function(req, res) {
     req.setTimeout(3600000);
     //GetLookAtMeDP3110a0f
     //Test Device 075034699503
+    var updateQuery = "";
     var DeviceId = req.query.DeviceId;
-    var ARelay = req.query.Relay;
-    var BSiren = req.query.Siren;
-    var CUserDefined = req.query.UserDefined;
-    var DDoorLock = req.query.DoorLock;
-    var EDoorUnLock = req.query.DoorUnLock;
+    var ARelay = 2;
+    var BSiren = 2;
+    var CUserDefined = 2;
+    var DDoorLock = 2;
+    var EDoorUnlock = 2;
 
-    var ABCDE = ('00' + decimalToHexString(parseInt(ARelay))).slice(-2) + ('00' + decimalToHexString(parseInt(BSiren))).slice(-2) + ('00' + decimalToHexString(parseInt(CUserDefined))).slice(-2) + ('00' + decimalToHexString(parseInt(DDoorLock))).slice(-2) + ('00' + decimalToHexString(parseInt(EDoorUnLock))).slice(-2);
+    if (req.query.Relay != undefined) {
+        ARelay = req.query.Relay;
+        if (updateQuery == "") {
+            updateQuery += "Relay=" + req.query.Relay;
+        } else {
+            updateQuery += ", Relay=" + req.query.Relay;
+        }
+    }
 
+    if (req.query.Siren != undefined) {
+        BSiren = req.query.Siren;
+        if (updateQuery == "") {
+            updateQuery += "Siren=" + req.query.Siren;
+        } else {
+            updateQuery += ", Siren=" + req.query.Siren;
+        }
+    }
+
+    if (req.query.UserDefined != undefined) {
+        CUserDefined = req.query.UserDefined;
+        if (updateQuery == "") {
+            updateQuery += "UserDefined=" + req.query.UserDefined;
+        } else {
+            updateQuery += ", UserDefined=" + req.query.UserDefined;
+        }
+    }
+
+    if (req.query.DoorLock != undefined) {
+        DDoorLock = req.query.DoorLock;
+        if (updateQuery == "") {
+            updateQuery += "DoorLock =" + req.query.DoorLock;
+        } else {
+            updateQuery += ", DoorLock =" + req.query.DoorLock;
+        }
+    }
+
+    if (req.query.DoorUnlock != undefined) {
+        EDoorUnlock = req.query.DoorUnlock;
+        if (updateQuery == "") {
+            updateQuery += "DoorUnlock=" + req.query.DoorUnlock;
+        } else {
+            updateQuery += ", DoorUnlock=" + req.query.DoorUnlock;
+        }
+    }
+
+    // console.log(updateQuery);
+
+    // var ARelay = req.query.Relay;
+    // var BSiren = req.query.Siren;
+    // var CUserDefined = req.query.UserDefined;
+    // var DDoorLock = req.query.DoorLock;
+    // var EDoorUnlock = req.query.DoorUnLock;
+
+
+    var ABCDE = ('00' + decimalToHexString(parseInt(ARelay))).slice(-2) + ('00' + decimalToHexString(parseInt(BSiren))).slice(-2) + ('00' + decimalToHexString(parseInt(CUserDefined))).slice(-2) + ('00' + decimalToHexString(parseInt(DDoorLock))).slice(-2) + ('00' + decimalToHexString(parseInt(EDoorUnlock))).slice(-2);
     var Data = "40400016" + DeviceId + "4114" + ABCDE;
     Data = Data + CalculateCRCbyHex(Data) + '0D0A';
-
     var client = new net.Socket();
     var Sendflag = false;
 
@@ -1782,7 +1949,6 @@ router.get('/SetOutputControl', function(req, res) {
                 res.json({ success: false, message: 'Device not connected. Try after 5 minute.' });
                 // SendGSensorCommand(i + 1);
             };
-
         });
     });
 
@@ -1797,18 +1963,18 @@ router.get('/SetOutputControl', function(req, res) {
                 // res.json(objNavigation);
                 client.destroy(); // kill client after server's response
                 if (StatusCode == '01') {
-                    // connection.query("Update tblvehicle set SleepMode=" + req.query.SleepMode + " where deviceid=" + DeviceId, function(err, rows, fields) {
-                    res.json({ success: true, message: 'OutPut Control Save Successfully.' });
-                    // });
+                    connection.query("Update tblvehicle set " + updateQuery + " where deviceid='" + DeviceId + "'", function(err, rows, fields) {
+                        res.json({ success: true, message: 'Setting Save Successfully.' });
+                    });
                 } else {
-                    res.json({ success: false, message: 'OutPut Control could not save. Try again later.' });
+                    res.json({ success: false, message: 'Setting could not save. Try again later.' });
                 }
 
             } else {
                 Sendflag = true;
 
                 client.destroy();
-                res.json({ success: false, message: 'OutPut Control could not save. Try again later.' });
+                res.json({ success: false, message: 'Setting could not save. Try again later.' });
                 // SendGSensorCommand(i + 1);
             }
         };
@@ -1822,6 +1988,79 @@ router.get('/SetOutputControl', function(req, res) {
 
 
 })
+
+// //Set Output Control Settings
+// router.get('/SetOutputControl', function(req, res) {
+//     req.setTimeout(3600000);
+//     //GetLookAtMeDP3110a0f
+//     //Test Device 075034699503
+//     var DeviceId = req.query.DeviceId;
+//     var ARelay = req.query.Relay;
+//     var BSiren = req.query.Siren;
+//     var CUserDefined = req.query.UserDefined;
+//     var DDoorLock = req.query.DoorLock;
+//     var EDoorUnLock = req.query.DoorUnLock;
+
+//     var ABCDE = ('00' + decimalToHexString(parseInt(ARelay))).slice(-2) + ('00' + decimalToHexString(parseInt(BSiren))).slice(-2) + ('00' + decimalToHexString(parseInt(CUserDefined))).slice(-2) + ('00' + decimalToHexString(parseInt(DDoorLock))).slice(-2) + ('00' + decimalToHexString(parseInt(EDoorUnLock))).slice(-2);
+
+//     var Data = "40400016" + DeviceId + "4114" + ABCDE;
+//     Data = Data + CalculateCRCbyHex(Data) + '0D0A';
+
+//     var client = new net.Socket();
+//     var Sendflag = false;
+
+//     client.connect(SocketPort, SocketIPAddress, function() {
+//         // console.log('G-Sensor send to ' + DeviceId);
+//         client.write(Data, 'hex');
+
+//         client.setTimeout(10000, function() {
+//             if (Sendflag == false) {
+//                 Sendflag = true;
+
+//                 client.destroy();
+//                 res.json({ success: false, message: 'Device not connected. Try after 5 minute.' });
+//                 // SendGSensorCommand(i + 1);
+//             };
+
+//         });
+//     });
+
+//     client.on('data', function(data) {
+//         var line = data.toString();
+//         if (Sendflag == false) {
+//             if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4114') {
+//                 console.log('Received: ' + line);
+//                 var StatusCode = line.substring(26, 28);
+//                 Sendflag = true;
+//                 // SuccessDevice = SuccessDevice + 1;
+//                 // res.json(objNavigation);
+//                 client.destroy(); // kill client after server's response
+//                 if (StatusCode == '01') {
+//                     // connection.query("Update tblvehicle set SleepMode=" + req.query.SleepMode + " where deviceid=" + DeviceId, function(err, rows, fields) {
+//                     res.json({ success: true, message: 'OutPut Control Save Successfully.' });
+//                     // });
+//                 } else {
+//                     res.json({ success: false, message: 'OutPut Control could not save. Try again later.' });
+//                 }
+
+//             } else {
+//                 Sendflag = true;
+
+//                 client.destroy();
+//                 res.json({ success: false, message: 'OutPut Control could not save. Try again later.' });
+//                 // SendGSensorCommand(i + 1);
+//             }
+//         };
+
+
+//     });
+
+//     client.on('close', function() {
+//         console.log('Connection closed');
+//     });
+
+
+// })
 
 //Set Arm Settings
 router.get('/SetArmSettings', function(req, res) {
@@ -2863,6 +3102,63 @@ router.get('/UpdateDeviceStatus', function(req, res) {
 
 })
 
+// function FakeAlarm() {
+//     var myArray = ['04', '11', '30', '50', '6', '66'];
+//     var lstDevice = ['53534580348504', '59197080000749', '488990008090', '34234234234222'];
+//     var AlarmCode = myArray[Math.floor(Math.random() * myArray.length)];
+//     // var DeviceId = '53534580348504';
+//     var DeviceId = lstDevice[Math.floor(Math.random() * lstDevice.length)];
+//     var GPSDateTime = CurrentDate = convertdateformat(new Date());
+//     var unixDateStemp = (new Date()).getTime() / 1000;
+//     var Latitude = 21.16241778;
+//     var Longitude = 72.79342222;
+//     var Position = 'A';
+//     var Speed = 0;
+//     var Direction = 0;
+//     var inputoutputSTatus = '0000';
+
+
+
+//     var query = "INSERT INTO tblalarm (Datetime, Date, Latitude,Longitude,GPSPositioning,Speed,Direction,Status,DeviceId,AlarmCode,CreatedDate ) VALUES ('" + GPSDateTime + "', '" + unixDateStemp + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + inputoutputSTatus + "', '" + DeviceId + "','" + AlarmCode + "','" + CurrentDate + "');";
+//     connection.query(query, function(err, rows, fields) {
+//         var objConnection = {
+//             AlarmCode: AlarmCode.toString(),
+//             DeviceId: DeviceId,
+//             Datetime: GPSDateTime,
+//             Date: unixDateStemp,
+//             IdUser: 1,
+//             Name: '103'
+//         }
+
+//         io.sockets.emit('1DeviceAlarm', JSON.stringify(objConnection));
+
+//         var objPushnotificationCount = {
+//             Id: rows.insertId,
+//             Latitude: 21.16241778,
+//             Longitude: 72.79342222,
+//             GPSPositioning: 'A',
+//             Speed: 0,
+//             Direction: 0,
+//             Status: '0000',
+//             AlarmCode: AlarmCode.toString(),
+//             DeviceId: DeviceId,
+//             CreatedDate: CurrentDate,
+//             Datetime: GPSDateTime,
+//             Date: unixDateStemp,
+//             FenceName: null,
+//             UserId: 1,
+//             IsRead: false,
+//             // Name: objVehicle.Name
+//         }
+
+//         io.sockets.emit('1DeviceNotificationCount', JSON.stringify(objPushnotificationCount));
+//     });
+// }
+
+// setInterval(function() {
+//     FakeAlarm();
+// }, 20000);
+
 //End of Send Email
 
 var rule = new schedule.RecurrenceRule();
@@ -2873,115 +3169,119 @@ var rule = new schedule.RecurrenceRule();
 rule.minute = new schedule.Range(0, 59, 1);
 //rule.minute = new schedule.Range(0, 59, 1);
 var testStatus = false;
-// var IsOnlineDeviceCheck = schedule.scheduleJob(rule, function() {
-//     var today = new Date();
-//     var year = today.getFullYear();
-//     var month = today.getMonth() + 1; // beware: January = 0; February = 1, etc.
-//     // var month1 = today.getMonth() + 1; // beware: January = 0; February = 1, etc.
-//     var day = today.getDate();
+var IsOnlineDeviceCheck = schedule.scheduleJob(rule, function() {
 
-//     var data = year + '-' + month + '-' + day;
-//     console.log(new Date())
+    // Fake Alarm Add
+    // FakeAlarm();
 
-//     Vehicle.findAll({
-//         where: {
-//             IsOnline: true,
-//             IsDelete: false
-//         },
-//     }).then(function(resVehicle) {
-//         // for (var i = 0; i < resVehicle.length; i++) {
-//         function setDeviceStatus(i) {
-//             if (i < resVehicle.length) {
-//                 if (resVehicle[i].HandshakDatetime != null) {
-//                     var date1 = new Date();
-//                     var date2 = new Date(resVehicle[i].HandshakDatetime);
-//                     var timeDiff = Math.abs(date2.getTime() - date1.getTime());
-//                     var min = Math.floor(timeDiff / 60000);
-//                     console.log(resVehicle[i].deviceid + "    = " + min);
-//                     if (min > 5) {
-//                         var objVehicleExist = resVehicle[i];
-//                         Vehicle.findOne({
-//                             where: {
-//                                 id: objVehicleExist.id
-//                             }
-//                         }).then(function(objVehicleExistOnline) {
-//                             if (objVehicleExistOnline && objVehicleExistOnline.IsOnline) {
-//                                 objVehicleExistOnline.updateAttributes({ IsOnline: false }).then(function(resUpdate) {
+    var today = new Date();
+    var year = today.getFullYear();
+    var month = today.getMonth() + 1; // beware: January = 0; February = 1, etc.
+    // var month1 = today.getMonth() + 1; // beware: January = 0; February = 1, etc.
+    var day = today.getDate();
 
-//                                     if (objVehicleExistOnline.IsDelete == false) {
-//                                         // var PushNotificationdata = {
-//                                         //     title: 'Alert',
-//                                         //     message: 'Vehicle ' + objVehicleExistOnline.Name + ' Device offline alert! Please check!',
-//                                         //     Fence: 'Default',
-//                                         //     otherfields: {
-//                                         //         deviceid: objVehicleExistOnline.deviceid,
-//                                         //         Id: objVehicleExistOnline.id,
-//                                         //         Name: objVehicleExistOnline.Name
-//                                         //     }
-//                                         // };
+    var data = year + '-' + month + '-' + day;
+    console.log(new Date())
 
-//                                         // SendPushNotification(PushNotificationdata, objVehicleExistOnline.iduser, 'Owner', 'OwnerDeviceStatusPushNotification');
-//                                     }
-//                                     var objConnection = {
-//                                         DeviceId: objVehicleExistOnline.deviceid,
-//                                         // PetId: objVehicleExistOnline.id,
-//                                         Status: false
-//                                     }
-//                                     io.sockets.emit('BikeDeviceStatus', JSON.stringify(objConnection));
-//                                     io.sockets.emit(objVehicleExistOnline.deviceid + 'BikeDeviceStatus', JSON.stringify(objConnection));
-//                                     setDeviceStatus(i + 1);
-//                                 })
-//                             } else {
-//                                 setDeviceStatus(i + 1);
-//                             }
-//                         })
-//                     } else {
-//                         setDeviceStatus(i + 1);
-//                     }
-//                 } else {
-//                     var objVehicleExist = resVehicle[i];
-//                     Vehicle.findOne({
-//                         where: {
-//                             id: objVehicleExist.id
-//                         }
-//                     }).then(function(objVehicleExistOnline) {
-//                         if (objVehicleExistOnline && objVehicleExistOnline.IsOnline) {
-//                             objVehicleExistOnline.updateAttributes({ IsOnline: false }).then(function(resUpdate) {
-//                                 if (objVehicleExistOnline.IsDelete == false) {
-//                                     // var PushNotificationdata = {
-//                                     //     title: 'Alert',
-//                                     //     message: 'Vehicle ' + objVehicleExistOnline.Name + ' Device offline alert! Please check!',
-//                                     //     Fence: 'Default',
-//                                     //     otherfields: {
-//                                     //         deviceid: objVehicleExistOnline.deviceid,
-//                                     //         Id: objVehicleExistOnline.id,
-//                                     //         Name: objVehicleExistOnline.Name
-//                                     //     }
-//                                     // };
-//                                     // if (objVehicleExistOnline.DeviceType == 'M2') {
-//                                     //     SendPushNotification(PushNotificationdata, objVehicleExistOnline.iduser, 'Shop', null);
-//                                     // } else {
-//                                     //     SendPushNotification(PushNotificationdata, objVehicleExistOnline.iduser, 'Owner', 'OwnerDeviceStatusPushNotification');
-//                                     // }
-//                                 }
-//                                 var objConnection = {
-//                                     DeviceId: objVehicleExistOnline.deviceid,
-//                                     // PetId: objVehicleExistOnline.id,
-//                                     Status: false
-//                                 }
-//                                 io.sockets.emit('BikeDeviceStatus', JSON.stringify(objConnection));
-//                                 io.sockets.emit(objVehicleExistOnline.deviceid + 'BikeDeviceStatus', JSON.stringify(objConnection));
-//                                 setDeviceStatus(i + 1);
-//                             })
-//                         } else {
-//                             setDeviceStatus(i + 1);
-//                         }
-//                     })
-//                 }
-//             }
-//         }
-//         setDeviceStatus(0);
-//     })
-// });
+    Vehicle.findAll({
+        where: {
+            IsOnline: true,
+            IsDelete: false
+        },
+    }).then(function(resVehicle) {
+        // for (var i = 0; i < resVehicle.length; i++) {
+        function setDeviceStatus(i) {
+            if (i < resVehicle.length) {
+                if (resVehicle[i].HandshakDatetime != null) {
+                    var date1 = new Date();
+                    var date2 = new Date(resVehicle[i].HandshakDatetime);
+                    var timeDiff = Math.abs(date2.getTime() - date1.getTime());
+                    var min = Math.floor(timeDiff / 60000);
+                    console.log(resVehicle[i].deviceid + "    = " + min);
+                    if (min > 5) {
+                        var objVehicleExist = resVehicle[i];
+                        Vehicle.findOne({
+                            where: {
+                                id: objVehicleExist.id
+                            }
+                        }).then(function(objVehicleExistOnline) {
+                            if (objVehicleExistOnline && objVehicleExistOnline.IsOnline) {
+                                objVehicleExistOnline.updateAttributes({ IsOnline: false }).then(function(resUpdate) {
+
+                                    if (objVehicleExistOnline.IsDelete == false) {
+                                        // var PushNotificationdata = {
+                                        //     title: 'Alert',
+                                        //     message: 'Vehicle ' + objVehicleExistOnline.Name + ' Device offline alert! Please check!',
+                                        //     Fence: 'Default',
+                                        //     otherfields: {
+                                        //         deviceid: objVehicleExistOnline.deviceid,
+                                        //         Id: objVehicleExistOnline.id,
+                                        //         Name: objVehicleExistOnline.Name
+                                        //     }
+                                        // };
+
+                                        // SendPushNotification(PushNotificationdata, objVehicleExistOnline.iduser, 'Owner', 'OwnerDeviceStatusPushNotification');
+                                    }
+                                    var objConnection = {
+                                        DeviceId: objVehicleExistOnline.deviceid,
+                                        // PetId: objVehicleExistOnline.id,
+                                        Status: false
+                                    }
+                                    io.sockets.emit('BikeDeviceStatus', JSON.stringify(objConnection));
+                                    io.sockets.emit(objVehicleExistOnline.deviceid + 'BikeDeviceStatus', JSON.stringify(objConnection));
+                                    setDeviceStatus(i + 1);
+                                })
+                            } else {
+                                setDeviceStatus(i + 1);
+                            }
+                        })
+                    } else {
+                        setDeviceStatus(i + 1);
+                    }
+                } else {
+                    var objVehicleExist = resVehicle[i];
+                    Vehicle.findOne({
+                        where: {
+                            id: objVehicleExist.id
+                        }
+                    }).then(function(objVehicleExistOnline) {
+                        if (objVehicleExistOnline && objVehicleExistOnline.IsOnline) {
+                            objVehicleExistOnline.updateAttributes({ IsOnline: false }).then(function(resUpdate) {
+                                if (objVehicleExistOnline.IsDelete == false) {
+                                    // var PushNotificationdata = {
+                                    //     title: 'Alert',
+                                    //     message: 'Vehicle ' + objVehicleExistOnline.Name + ' Device offline alert! Please check!',
+                                    //     Fence: 'Default',
+                                    //     otherfields: {
+                                    //         deviceid: objVehicleExistOnline.deviceid,
+                                    //         Id: objVehicleExistOnline.id,
+                                    //         Name: objVehicleExistOnline.Name
+                                    //     }
+                                    // };
+                                    // if (objVehicleExistOnline.DeviceType == 'M2') {
+                                    //     SendPushNotification(PushNotificationdata, objVehicleExistOnline.iduser, 'Shop', null);
+                                    // } else {
+                                    //     SendPushNotification(PushNotificationdata, objVehicleExistOnline.iduser, 'Owner', 'OwnerDeviceStatusPushNotification');
+                                    // }
+                                }
+                                var objConnection = {
+                                    DeviceId: objVehicleExistOnline.deviceid,
+                                    // PetId: objVehicleExistOnline.id,
+                                    Status: false
+                                }
+                                io.sockets.emit('BikeDeviceStatus', JSON.stringify(objConnection));
+                                io.sockets.emit(objVehicleExistOnline.deviceid + 'BikeDeviceStatus', JSON.stringify(objConnection));
+                                setDeviceStatus(i + 1);
+                            })
+                        } else {
+                            setDeviceStatus(i + 1);
+                        }
+                    })
+                }
+            }
+        }
+        setDeviceStatus(0);
+    })
+});
 
 module.exports = router

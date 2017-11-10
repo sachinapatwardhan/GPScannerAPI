@@ -924,6 +924,8 @@ router.get('/UpdateStatusold', function(req, res) {
                 }).then(function(response) {
                     if (response) {
                         res.json({ success: true, message: "Tracker Status Updated successfully", data: response });
+                    } else {
+                        res.json({ success: false, message: "Tracker Status not Updated successfully", data: response });
                     }
                 })
             }
@@ -985,6 +987,8 @@ router.get('/UpdateStatus', function(req, res) {
                                 if (response) {
                                     funAuditLog.CreateAuditLog('update tracker status', UserExist.username, 'update tracker status IsActive');
                                     res.json({ success: true, message: "Tracker Status Updated successfully", data: response });
+                                } else {
+                                    res.json({ success: false, message: "Tacker Status not updated successfully" })
                                 }
                             })
 
@@ -996,6 +1000,8 @@ router.get('/UpdateStatus', function(req, res) {
                                 if (response) {
                                     funAuditLog.CreateAuditLog('update tracker status', UserExist.username, 'update tracker status IsActive');
                                     res.json({ success: true, message: "Tracker Status Updated successfully", data: response });
+                                } else {
+                                    res.json({ success: false, message: "Tracker Status not Updated successfully", data: response });
                                 }
                             })
                         }
@@ -1236,7 +1242,18 @@ router.get('/DownloadTemplate', function(req, res) {
 })
 
 router.get('/GetGPSDeviceByIMEI', function(req, res) {
-    GPSDevice.findOne({ where: { IMEI: req.query.IMEI } }).then(function(response) {
+    GPSDevice.belongsTo(SimService, {
+        foreignKey: {
+            name: 'idSim',
+            allowNull: false
+        }
+    })
+    GPSDevice.findOne({
+        where: { IMEI: req.query.IMEI },
+        include: [{
+            model: SimService,
+        }]
+    }).then(function(response) {
         if (response != null) {
             res.json({ success: true, data: response });
         } else {
@@ -1265,6 +1282,72 @@ router.get('/GetSIMDetailBySerialNum', function(req, res) {
     })
 })
 
+// router.post('/SaveSimServiceToIMEI', jsonParser, function(req, res) {
+//     var objIMEI = req.body;
+//     objHeader = req.headers;
+//     var token = getToken(objHeader);
+//     if (token) {
+//         var decoded = jwt.decode(token, TokenKey);
+
+//         objIMEI.CreatedDate = new Date();
+//         objIMEI.CreatedBy = decoded.username;
+//         if (objIMEI.IsNewSIM) {
+//             SimService.create(objIMEI).then(function(response) {
+//                 if (response) {
+//                     objIMEI.idSim = response.id;
+//                     if (objIMEI.IsNewIMEI) {
+//                         GPSDevice.create(objIMEI).then(function(resIMEI) {
+//                             if (resIMEI) {
+//                                 res.json({ success: true, message: "SIM Serial Num Attached SuccessFully", data: resIMEI });
+//                             } else {
+//                                 res.json({ success: false, message: "Something Went wrong Please Try Again Later..", data: respose });
+//                             }
+//                         })
+//                     } else {
+//                         GPSDevice.findOne({ where: { IMEI: objIMEI.IMEI } }).then(function(objIMEIExist) {
+//                             if (objIMEIExist != null) {
+//                                 objIMEIExist.updateAttributes({ idSim: objIMEI.idSim, }).then(function(response) {
+//                                     if (response) {
+//                                         res.json({ success: true, message: "SIM Serial Num Attached SuccessFully..", data: response });
+//                                     } else {
+//                                         res.json({ success: false, message: "Something Went wrong Please Try Again Later..", data: resIMEI });
+//                                     }
+//                                 })
+//                             }
+//                         })
+//                     }
+//                 } else {
+//                     res.json({ success: false, message: "Something Went wrong Please Try Again Later..", data: respose });
+//                 }
+//             })
+//         } else {
+//             if (objIMEI.IsNewIMEI) {
+//                 GPSDevice.create(objIMEI).then(function(resIMEI) {
+//                     if (resIMEI) {
+//                         res.json({ success: true, message: "SIM Serial Num Attached SuccessFully", data: resIMEI });
+//                     } else {
+//                         res.json({ success: false, message: "Something Went wrong Please Try Again Later..", data: respose });
+//                     }
+//                 })
+//             } else {
+//                 GPSDevice.findOne({ where: { IMEI: objIMEI.IMEI } }).then(function(objIMEIExist) {
+//                     if (objIMEIExist != null) {
+//                         objIMEIExist.updateAttributes({ idSim: objIMEI.idSim, }).then(function(response) {
+//                             if (response) {
+//                                 res.json({ success: true, message: "SIM Serial Num Attached SuccessFully..", data: response });
+//                             } else {
+//                                 res.json({ success: false, message: "Something Went wrong Please Try Again Later..", data: resIMEI });
+//                             }
+//                         })
+//                     }
+//                 });
+//             }
+//         }
+//     } else {
+//         res.json(InvalidToken);
+//     }
+// })
+
 router.post('/SaveSimServiceToIMEI', jsonParser, function(req, res) {
     var objIMEI = req.body;
     objHeader = req.headers;
@@ -1274,40 +1357,78 @@ router.post('/SaveSimServiceToIMEI', jsonParser, function(req, res) {
 
         objIMEI.CreatedDate = new Date();
         objIMEI.CreatedBy = decoded.username;
-        if (objIMEI.IsNewSIM) {
-            SimService.create(objIMEI).then(function(response) {
-                if (response) {
-                    objIMEI.idSim = response.id;
-                    if (objIMEI.IsNewIMEI) {
-                        GPSDevice.create(objIMEI).then(function(resIMEI) {
-                            if (resIMEI) {
-                                res.json({ success: true, message: "SIM Serial Num Attached SuccessFully", data: resIMEI });
-                            } else {
-                                res.json({ success: false, message: "Something Went wrong Please Try Again Later..", data: respose });
-                            }
-                        })
+
+
+        if (objIMEI.IsIMEI && objIMEI.IsSim) {
+            if (objIMEI.IsNewSIM) {
+                SimService.create(objIMEI).then(function(response) {
+                    if (response) {
+                        objIMEI.idSim = response.id;
+                        if (objIMEI.IsNewIMEI) {
+                            GPSDevice.create(objIMEI).then(function(resIMEI) {
+                                if (resIMEI) {
+                                    res.json({ success: true, message: "SIM Serial Num and IMEI Num Attached SuccessFully", data: resIMEI });
+                                } else {
+                                    res.json({ success: false, message: "Something Went wrong Please Try Again Later..", data: respose });
+                                }
+                            })
+                        } else {
+                            GPSDevice.findOne({ where: { IMEI: objIMEI.IMEI } }).then(function(objIMEIExist) {
+                                if (objIMEIExist != null) {
+                                    objIMEIExist.updateAttributes({ idSim: objIMEI.idSim, Type: objIMEI.Type, AppName: objIMEI.AppName }).then(function(response) {
+                                        if (response) {
+                                            res.json({ success: true, message: "SIM Serial Num and IMEI Num Attached SuccessFully..", data: response });
+                                        } else {
+                                            res.json({ success: false, message: "Something Went wrong Please Try Again Later..", data: resIMEI });
+                                        }
+                                    })
+                                } else {
+                                    res.json({ success: false, message: "Something Went wrong Please Try Again Later..", data: objIMEIExist });
+                                }
+                            })
+                        }
                     } else {
-                        GPSDevice.findOne({ where: { IMEI: objIMEI.IMEI } }).then(function(objIMEIExist) {
-                            if (objIMEIExist != null) {
-                                objIMEIExist.updateAttributes({ idSim: objIMEI.idSim, }).then(function(response) {
-                                    if (response) {
-                                        res.json({ success: true, message: "SIM Serial Num Attached SuccessFully..", data: response });
+                        res.json({ success: false, message: "Something Went wrong Please Try Again Later..", data: respose });
+                    }
+                })
+            } else {
+                SimService.findOne({ where: { SerialNum: objIMEI.SerialNum } }).then(function(objSimExist) {
+                    if (objSimExist != null) {
+                        objSimExist.updateAttributes({ PhoneNum: objIMEI.PhoneNum, idTelCo: objIMEI.idTelCo }).then(function(response) {
+                            if (objIMEI.IsNewIMEI) {
+                                GPSDevice.create(objIMEI).then(function(resIMEI) {
+                                    if (resIMEI) {
+                                        res.json({ success: true, message: "SIM Serial Num and IMEI Num Attached SuccessFully", data: resIMEI });
                                     } else {
-                                        res.json({ success: false, message: "Something Went wrong Please Try Again Later..", data: resIMEI });
+                                        res.json({ success: false, message: "Something Went wrong Please Try Again Later..", data: respose });
                                     }
                                 })
+                            } else {
+                                GPSDevice.findOne({ where: { IMEI: objIMEI.IMEI } }).then(function(objIMEIExist) {
+                                    if (objIMEIExist != null) {
+                                        objIMEIExist.updateAttributes({ idSim: objIMEI.idSim, Type: objIMEI.Type, AppName: objIMEI.AppName }).then(function(response) {
+                                            if (response) {
+                                                res.json({ success: true, message: "SIM Serial Num and IMEI Num Attached SuccessFully..", data: response });
+                                            } else {
+                                                res.json({ success: false, message: "Something Went wrong Please Try Again Later..", data: resIMEI });
+                                            }
+                                        })
+                                    } else {
+                                        res.json({ success: false, message: "Something Went wrong Please Try Again Later..", data: objIMEIExist });
+                                    }
+                                });
                             }
-                        })
+                        });
+                    } else {
+                        res.json({ success: false, message: "Something Went wrong Please Try Again Later..", data: objSimExist });
                     }
-                } else {
-                    res.json({ success: false, message: "Something Went wrong Please Try Again Later..", data: respose });
-                }
-            })
-        } else {
+                });
+            }
+        } else if (objIMEI.IsIMEI) {
             if (objIMEI.IsNewIMEI) {
                 GPSDevice.create(objIMEI).then(function(resIMEI) {
                     if (resIMEI) {
-                        res.json({ success: true, message: "SIM Serial Num Attached SuccessFully", data: resIMEI });
+                        res.json({ success: true, message: "IMEI Num Created SuccessFully", data: resIMEI });
                     } else {
                         res.json({ success: false, message: "Something Went wrong Please Try Again Later..", data: respose });
                     }
@@ -1315,22 +1436,50 @@ router.post('/SaveSimServiceToIMEI', jsonParser, function(req, res) {
             } else {
                 GPSDevice.findOne({ where: { IMEI: objIMEI.IMEI } }).then(function(objIMEIExist) {
                     if (objIMEIExist != null) {
-                        objIMEIExist.updateAttributes({ idSim: objIMEI.idSim, }).then(function(response) {
+                        objIMEIExist.updateAttributes({ idSim: objIMEI.idSim, Type: objIMEI.Type, AppName: objIMEI.AppName }).then(function(response) {
                             if (response) {
-                                res.json({ success: true, message: "SIM Serial Num Attached SuccessFully..", data: response });
+                                res.json({ success: true, message: "IMEI Num Updated SuccessFully..", data: response });
                             } else {
                                 res.json({ success: false, message: "Something Went wrong Please Try Again Later..", data: resIMEI });
                             }
                         })
+                    } else {
+                        res.json({ success: false, message: "Something Went wrong Please Try Again Later..", data: objIMEIExist });
                     }
                 });
             }
+        } else if (objIMEI.IsSim) {
+            if (objIMEI.IsNewSIM) {
+                SimService.create(objIMEI).then(function(resIMEI) {
+                    if (resIMEI) {
+                        res.json({ success: true, message: "SIM Serial Num Created SuccessFully", data: resIMEI });
+                    } else {
+                        res.json({ success: false, message: "Something Went wrong Please Try Again Later..", data: respose });
+                    }
+                })
+            } else {
+                SimService.findOne({ where: { SerialNum: objIMEI.SerialNum } }).then(function(objSimExist) {
+                    if (objSimExist != null) {
+                        objSimExist.updateAttributes({ PhoneNum: objIMEI.PhoneNum, idTelCo: objIMEI.idTelCo }).then(function(response) {
+                            if (response) {
+                                res.json({ success: true, message: "SIM Serial Num Updated SuccessFully..", data: response });
+                            } else {
+                                res.json({ success: false, message: "Something Went wrong Please Try Again Later..", data: resIMEI });
+                            }
+                        });
+                    } else {
+                        res.json({ success: false, message: "Something Went wrong Please Try Again Later..", data: respose });
+                    }
+                });
+            }
+        } else {
+            res.json({ success: false, message: "Something Went wrong Please Try Again Later..", data: null });
         }
+
+
     } else {
         res.json(InvalidToken);
     }
 })
-
-
 
 module.exports = router
