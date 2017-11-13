@@ -919,35 +919,38 @@
                      }
                  }).then(function(UserExist) {
                      if (UserExist != null) {
-                         json = require('json-update');
                          var file = __dirname + "/MultiLangugaeFile/MobileLanguageResource.json";
                          var array = [];
 
 
                          var lstMobileLanguageResources = [];
                          jsonfile.readFile(file, function(err, obj) {
-                             lstMobileLanguageResources = obj;
+                             if (err) {
+                                 res.json({
+                                     success: false,
+                                     message: err,
+                                 });
+                             } else {
+                                 lstMobileLanguageResources = obj;
 
-                             for (var i = 2; i < objMobileLanguageData.length; i++) {
-                                 if (objMobileLanguageData.length - 1 > i) {
+                                 for (var i = 2; i < objMobileLanguageData.length - 1; i++) {
                                      lstMobileLanguageResources[objMobileLanguageData[i].Name][objMobileLanguageData[1].Value] = objMobileLanguageData[i].Value;
-                                 } else {
-                                     jsonfile.writeFile(file, lstMobileLanguageResources, function(err) {
-                                         if (err) {
-                                             res.json({
-                                                 success: false,
-                                                 message: err,
-                                             });
-                                         } else {
-                                             funAuditLog.CreateAuditLog('SaveMobileLanguageData', UserExist.username, 'Create Mobile Language Resources');
-                                             res.json({
-                                                 success: true,
-                                                 message: "Mobile Language Resources updated successfully...",
-                                                 data: err
-                                             });
-                                         }
-                                     })
                                  }
+                                 jsonfile.writeFile(file, lstMobileLanguageResources, function(err) {
+                                     if (err) {
+                                         res.json({
+                                             success: false,
+                                             message: err,
+                                         });
+                                     } else {
+                                         funAuditLog.CreateAuditLog('SaveMobileLanguageData', UserExist.username, 'Create Mobile Language Resources');
+                                         res.json({
+                                             success: true,
+                                             message: "Mobile Language Resources updated successfully...",
+                                             data: err
+                                         });
+                                     }
+                                 })
                              }
                          })
                      } else {
