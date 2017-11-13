@@ -10,49 +10,64 @@
      var objColumns = objParam.columns;
      var objOrderBy = objParam.order;
      var objSearch = objParam.search;
-     var objSearch = objParam.search.value;
+     console.log(objSearch)
+         //  var objSearch = objParam.search.value;
      var Orderby = objColumns[parseInt(objOrderBy[0].column)].data + ' ' + objOrderBy[0].dir;
 
-     var search = {};
-     if (objSearch != null && objSearch != '') {
-         search['$or'] = [];
-         for (var i = 0; i < objColumns.length; i++) {
-             if (objColumns[i].data != null && objColumns[i].data != '') {
-                 var columnName = objColumns[i].data;
-                 var obj = new Object();
-                 obj[columnName] = {
-                     $like: '%' + objSearch + '%'
-                 }
-                 search['$or'].push(obj);
-             };
-         };
+     var search = "";
+     if (objSearch != '' && objSearch != null && objSearch != undefined) {
+         search = 'Where (localestringresource.ResourceName like "%' + objSearch + '%" or ';
+         search = search + 'localestringresource.ResourceValue like "%' + objSearch + '%" or ';
+         search = search + 'language.Name like "%' + objSearch + '%") ';
      }
 
-     LanguageResources.belongsTo(Language, {
-         foreignKey: {
-             name: 'LanguageId',
-             allowNull: false
-         }
-     });
-     LanguageResources.findAndCountAll({
-         where: search,
-         order: Orderby,
-         offset: parseInt(objParam.start),
-         limit: parseInt(objParam.length),
-         include: [{
-             model: Language,
-             attributes: ['Id', 'Name']
-         }]
-     }).then(function(response) {
-         var response1 = new Object();
-         response1.draw = objParam.draw;
-         response1.recordsTotal = response.count;
-         response1.recordsFiltered = response.count;
-         response1.data = response.rows;
-         res.json(response1);
-     }).catch(function(error) {
-         res.json(error);
-     })
+     var query = "Select localestringresource.* ,language.id,language.Name from localestringresource inner join language on localestringresource.LanguageId = language.id " +
+         search + " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
+     var Countqry = "Select count(localestringresource.Id)  from localestringresource inner join language on localestringresource.LanguageId = language.id " + search;
+     connection.query(query, function(err, response) {
+             if (response != undefined) {
+                 connection.query(Countqry, function(err, lstCount, fields) {
+                     var response1 = new Object();
+                     response1.draw = objParam.draw;
+                     response1.recordsTotal = lstCount[0].TotalRecord;
+                     response1.recordsFiltered = lstCount[0].TotalRecord;
+                     response1.data = response;
+                     res.json(response1);
+                 });
+             } else {
+                 var response1 = new Object();
+                 response1.draw = objParam.draw;
+                 response1.recordsTotal = 0;
+                 response1.recordsFiltered = 0;
+                 response1.data = [];
+                 res.json(response1);
+             }
+         })
+         //  LanguageResources.belongsTo(Language, {
+         //      foreignKey: {
+         //          name: 'LanguageId',
+         //          allowNull: false
+         //      }
+         //  });
+         //  LanguageResources.findAndCountAll({
+         //      include: [{
+         //          model: Language,
+         //          attributes: ['Id', 'Name']
+         //      }],
+         //      where: search,
+         //      order: Orderby,
+         //      offset: parseInt(objParam.start),
+         //      limit: parseInt(objParam.length),
+         //  }).then(function(response) {
+         //      var response1 = new Object();
+         //      response1.draw = objParam.draw;
+         //      response1.recordsTotal = response.count;
+         //      response1.recordsFiltered = response.count;
+         //      response1.data = response.rows;
+         //      res.json(response1);
+         //  }).catch(function(error) {
+         //      res.json(error);
+         //  })
  })
 
  router.get('/GetLanguageResourcesById', function(req, res) {
@@ -112,7 +127,7 @@
                                  defaults: objLanguageResources
                              }).then(function(response) {
                                  if ((response[1])) {
-                                     funAuditLog.CreateAuditLog('SaveLanguageResources', UserExist.username , 'Create Language Resources');
+                                     funAuditLog.CreateAuditLog('SaveLanguageResources', UserExist.username, 'Create Language Resources');
                                      res.json({
                                          success: true,
                                          message: "Language Resources created successfully...",
@@ -160,7 +175,7 @@
                                          }
                                      }).then(function(response) {
                                          if (response[0]) {
-                                             funAuditLog.CreateAuditLog('SaveLanguageResources', UserExist.username , 'Update Language Resources');
+                                             funAuditLog.CreateAuditLog('SaveLanguageResources', UserExist.username, 'Update Language Resources');
                                              res.json({
                                                  success: true,
                                                  message: "Language Resources updated successfully...",
@@ -213,7 +228,7 @@
                              }
                          }).then(function(response) {
                              if (response) {
-                                 funAuditLog.CreateAuditLog('DeleteLanguageResources', UserExist.username , 'Delete Language Resources');
+                                 funAuditLog.CreateAuditLog('DeleteLanguageResources', UserExist.username, 'Delete Language Resources');
                                  res.json({
                                      success: true,
                                      message: "Language Resources deleted successfully...",
@@ -292,10 +307,19 @@
      var conf = {};
      conf.name = "Sheet1";
      conf.cols = [{
-         caption: 'Name',
+         caption: 'Code',
          type: 'string'
      }, {
-         caption: 'Value',
+         caption: 'en-GB',
+         type: 'string'
+     }, {
+         caption: 'gu-IN',
+         type: 'string'
+     }, {
+         caption: 'hi-IN',
+         type: 'string'
+     }, {
+         caption: 'ms-MY',
          type: 'string'
      }];
 
@@ -308,7 +332,7 @@
      conf.rows.push(row);
      var result = nodeExcel.execute(conf);
      res.setHeader('Content-Type', 'application/vnd.openxmlformats');
-     res.setHeader("Content-Disposition", "attachment; filename=" + "LanguageResources_Template.xlsx");
+     res.setHeader("Content-Disposition", "attachment; filename=" + "MobileLanguageResources_Template.xlsx");
      res.end(result, 'binary');
  })
 
@@ -872,6 +896,7 @@
 
  router.post('/SaveMobileLanguageData', jsonParser, function(req, res) {
      objMobileLanguageData = req.body;
+     console.log(req.body)
      objHeader = req.headers;
      var token = getToken(objHeader);
      //Set Parameter for User Permission
@@ -894,23 +919,35 @@
                      }
                  }).then(function(UserExist) {
                      if (UserExist != null) {
-
+                         json = require('json-update');
                          var file = __dirname + "/MultiLangugaeFile/MobileLanguageResource.json";
+                         var array = [];
 
-                         jsonfile.writeFile(file, objMobileLanguageData, function(err) {
-                             if (err) {
-                                 res.json({
-                                     success: false,
-                                     message: err,
 
-                                 });
-                             } else {
-                                 funAuditLog.CreateAuditLog('SaveMobileLanguageData', UserExist.username , 'Create Mobile Language Resources');
-                                 res.json({
-                                     success: true,
-                                     message: "Mobile Language Resources updated successfully...",
-                                     data: err
-                                 });
+                         var lstMobileLanguageResources = [];
+                         jsonfile.readFile(file, function(err, obj) {
+                             lstMobileLanguageResources = obj;
+
+                             for (var i = 2; i < objMobileLanguageData.length; i++) {
+                                 if (objMobileLanguageData.length - 1 > i) {
+                                     lstMobileLanguageResources[objMobileLanguageData[i].Name][objMobileLanguageData[1].Value] = objMobileLanguageData[i].Value;
+                                 } else {
+                                     jsonfile.writeFile(file, lstMobileLanguageResources, function(err) {
+                                         if (err) {
+                                             res.json({
+                                                 success: false,
+                                                 message: err,
+                                             });
+                                         } else {
+                                             funAuditLog.CreateAuditLog('SaveMobileLanguageData', UserExist.username, 'Create Mobile Language Resources');
+                                             res.json({
+                                                 success: true,
+                                                 message: "Mobile Language Resources updated successfully...",
+                                                 data: err
+                                             });
+                                         }
+                                     })
+                                 }
                              }
                          })
                      } else {
@@ -1008,7 +1045,11 @@
          if (FileName.length > 0) {
              var workbook = XLSX.readFile(FileName[0], { type: 'binary' });
              var first_sheet_name = workbook.SheetNames[0];
+             console.log("first_sheet_name...", first_sheet_name)
+             console.log(workbook)
+             console.log("@@....", workbook.Sheets)
              var worksheet = workbook.Sheets[first_sheet_name];
+             console.log(worksheet)
              if (worksheet != null && worksheet != undefined && worksheet != '') {
                  var Firstcolumn = worksheet.A1.v;
                  if (Firstcolumn == "Code") {
@@ -1054,6 +1095,7 @@
                              if (AccessPermission) {
 
                                  jsonfile.writeFile(file, language, function(err) {
+                                     console.log(err)
                                      if (err) {
                                          res.json({
                                              success: false,
