@@ -143,61 +143,65 @@ function SendPushNotification(data, UserId, objAppInfo) {
             // PushNotification.findAll({ where: { iduser: UserId } }).then(function(response) {
             function SendNotification(i) {
                 if (i < response.length) {
-                    var messagecount = 1;
-                    if (response[i].MessageCount) {
-                        messagecount = parseInt(response[i].MessageCount) + 1;
-                    }
-                    // connection.query("SELECT * from tblsetting where Name ='" + PushNotificationType + "' ", function(err, lstSetting, fields) {
-                    //     if (lstSetting[0].Value == 1) {
-                    var deviceIds = [];
-                    deviceIds.push(response[i].PushNotificationId)
-                        //SendNotification(i + 1);
-                        // } else {
-                        // console.log(deviceIds)
-                    var objData = clone(data);
+                    try {
+                        var messagecount = 1;
+                        if (response[i].MessageCount) {
+                            messagecount = parseInt(response[i].MessageCount) + 1;
+                        }
+                        // connection.query("SELECT * from tblsetting where Name ='" + PushNotificationType + "' ", function(err, lstSetting, fields) {
+                        //     if (lstSetting[0].Value == 1) {
+                        var deviceIds = [];
+                        deviceIds.push(response[i].PushNotificationId)
+                            //SendNotification(i + 1);
+                            // } else {
+                        console.log(deviceIds)
+                        var objData = clone(data);
 
-                    if (response[i].Platform == 'ios') {
-                        objData.title = data.message;
-                        objData.message = data.message;
+                        if (response[i].Platform == 'ios') {
+                            objData.title = data.message;
+                            objData.message = data.message;
 
-                        PushNotificationSettings.apn.options.cert = __dirname + '/../MediaUploads/FileUpload/' + objAppInfo.IOSCertificate;
-                        PushNotificationSettings.apn.options.key = __dirname + '/../MediaUploads/FileUpload/' + objAppInfo.IOSKey;
+                            PushNotificationSettings.apn.options.cert = __dirname + '/../MediaUploads/FileUpload/' + objAppInfo.IOSCertificate;
+                            PushNotificationSettings.apn.options.key = __dirname + '/../MediaUploads/FileUpload/' + objAppInfo.IOSKey;
 
-                        PushNotificationSettings.apn.badge = messagecount;
+                            PushNotificationSettings.apn.badge = messagecount;
 
-                        if (objData.soundname == 'Default') {
-                            PushNotificationSettings.apn.defaultData.sound = 'default';
+                            if (objData.soundname == 'Default') {
+                                PushNotificationSettings.apn.defaultData.sound = 'default';
+                            } else {
+                                PushNotificationSettings.apn.defaultData.sound = objData.soundname + '.caf';
+                            };
+
                         } else {
-                            PushNotificationSettings.apn.defaultData.sound = objData.soundname + '.caf';
-                        };
 
-                    } else {
+                            PushNotificationSettings.gcm.msgcnt = messagecount;
+                            PushNotificationSettings.gcm.id = objAppInfo.AndroidId;
 
-                        PushNotificationSettings.gcm.msgcnt = messagecount;
-                        PushNotificationSettings.gcm.id = objAppInfo.AndroidId;
+                        }
+                        // console.log(response[i].Platform + "_______________________________________________________")
+                        // console.log(objData)
+                        objData.priority = 'high';
+                        var objPushNotificationSend = new PushNotifications(PushNotificationSettings);
+                        if (deviceIds.length > 0) {
 
-                    }
-                    // console.log(response[i].Platform + "_______________________________________________________")
-                    // console.log(objData)
-                    objData.priority = 'high';
-                    var objPushNotificationSend = new PushNotifications(PushNotificationSettings);
-                    if (deviceIds.length > 0) {
-
-                        objPushNotificationSend.send(deviceIds, objData, function(result) {
-                            // console.log(result);
-                            connection.query("Update tblpushnotification set messagecount=" + messagecount + " where udid='" + response[i].udid + "' and UserType='" + response[i].UserType + "'", function(errupdate, updateresp, fields) {
-                                console.log(errupdate)
-                                SendNotification(i + 1);
+                            objPushNotificationSend.send(deviceIds, objData, function(result) {
+                                // console.log(result);
+                                connection.query("Update tblpushnotification set messagecount=" + messagecount + " where udid='" + response[i].udid + "' and UserType='" + response[i].UserType + "'", function(errupdate, updateresp, fields) {
+                                    console.log(errupdate)
+                                    SendNotification(i + 1);
+                                });
                             });
-                        });
-                    } else {
+                        } else {
+                            SendNotification(i + 1);
+                        };
+                        //     } else {
+                        //         SendNotification(i + 1);
+                        //     }
+                        // });
+                    } catch (ex) {
+                        console.log(ex);
                         SendNotification(i + 1);
-                    };
-                    //     } else {
-                    //         SendNotification(i + 1);
-                    //     }
-                    // });
-
+                    }
 
 
                 }
