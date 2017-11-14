@@ -304,36 +304,67 @@
  });
 
  router.get('/DownloadTemplate', function(req, res) {
-     var conf = {};
-     conf.name = "Sheet1";
-     conf.cols = [{
-         caption: 'Code',
-         type: 'string'
-     }, {
-         caption: 'en-GB',
-         type: 'string'
-     }, {
-         caption: 'gu-IN',
-         type: 'string'
-     }, {
-         caption: 'hi-IN',
-         type: 'string'
-     }, {
-         caption: 'ms-MY',
-         type: 'string'
-     }];
+     Language.findAll().then(function(response) {
+             var columnData = [];
+             for (var i = 0; i < response.length; i++) {
+                 if (i == 0) {
+                     var Obj = new Object();
+                     Obj.caption = 'Code';
+                     Obj.type = 'String';
+                     columnData.push(Obj);
+                 }
+                 var Obj = new Object();
+                 Obj.caption = response[i].LanguageCulture;
+                 Obj.type = 'String';
+                 columnData.push(Obj);
+             }
+             var conf = {};
+             conf.name = "Sheet1";
+             conf.cols = columnData;
+             var row = [];
+             for (var i = 0; i < conf.cols.length; i++) {
+                 row.push('');
+             };
+             conf.rows = [];
+             conf.rows.push(row);
+             var result = nodeExcel.execute(conf);
+             res.setHeader('Content-Type', 'application/vnd.openxmlformats');
+             res.setHeader("Content-Disposition", "attachment; filename=" + "MobileLanguageResources_Template.xlsx");
+             res.end(result, 'binary');
+         }).catch(function(error) {
+             res.json(error);
+         })
+         //  var conf = {};
+         //  conf.name = "Sheet1";
+
+     //  conf.cols = [{
+     //      caption: 'Code',
+     //      type: 'string'
+     //  }, {
+     //      caption: 'en-GB',
+     //      type: 'string'
+     //  }, {
+     //      caption: 'gu-IN',
+     //      type: 'string'
+     //  }, {
+     //      caption: 'hi-IN',
+     //      type: 'string'
+     //  }, {
+     //      caption: 'ms-MY',
+     //      type: 'string'
+     //  }];
 
 
-     var row = [];
-     for (var i = 0; i < conf.cols.length; i++) {
-         row.push('');
-     };
-     conf.rows = [];
-     conf.rows.push(row);
-     var result = nodeExcel.execute(conf);
-     res.setHeader('Content-Type', 'application/vnd.openxmlformats');
-     res.setHeader("Content-Disposition", "attachment; filename=" + "MobileLanguageResources_Template.xlsx");
-     res.end(result, 'binary');
+     //  var row = [];
+     //  for (var i = 0; i < conf.cols.length; i++) {
+     //      row.push('');
+     //  };
+     //  conf.rows = [];
+     //  conf.rows.push(row);
+     //  var result = nodeExcel.execute(conf);
+     //  res.setHeader('Content-Type', 'application/vnd.openxmlformats');
+     //  res.setHeader("Content-Disposition", "attachment; filename=" + "MobileLanguageResources_Template.xlsx");
+     //  res.end(result, 'binary');
  })
 
  router.post('/ImportExcel', jsonParser, function(req, res) {
@@ -896,7 +927,6 @@
 
  router.post('/SaveMobileLanguageData', jsonParser, function(req, res) {
      objMobileLanguageData = req.body;
-     console.log(req.body)
      objHeader = req.headers;
      var token = getToken(objHeader);
      //Set Parameter for User Permission
@@ -1048,11 +1078,7 @@
          if (FileName.length > 0) {
              var workbook = XLSX.readFile(FileName[0], { type: 'binary' });
              var first_sheet_name = workbook.SheetNames[0];
-             console.log("first_sheet_name...", first_sheet_name)
-             console.log(workbook)
-             console.log("@@....", workbook.Sheets)
              var worksheet = workbook.Sheets[first_sheet_name];
-             console.log(worksheet)
              if (worksheet != null && worksheet != undefined && worksheet != '') {
                  var Firstcolumn = worksheet.A1.v;
                  if (Firstcolumn == "Code") {
@@ -1098,7 +1124,6 @@
                              if (AccessPermission) {
 
                                  jsonfile.writeFile(file, language, function(err) {
-                                     console.log(err)
                                      if (err) {
                                          res.json({
                                              success: false,
