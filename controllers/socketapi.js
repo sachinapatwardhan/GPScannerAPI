@@ -2385,11 +2385,11 @@ global.SetOdometerSetting = function(objdata, Callback) {
                 // res.json(objNavigation);
                 client.destroy(); // kill client after server's response
                 if (StatusCode == '01') {
-                    Callback({ success: true, message: 'Odometer settings Save Successfully.' });
-                } else {
                     connection.query("Update tblvehicle set OdoMeter=" + objdata.odometer + " where deviceid=" + DeviceId, function(err, rows, fields) {
-                        Callback({ success: false, message: 'Odometer settings could not save. Try again later.' });
+                        Callback({ success: true, message: 'Odometer settings Save Successfully.' });
                     });
+                } else {
+                    Callback({ success: false, message: 'Odometer settings could not save. Try again later.' });
                 }
 
             } else {
@@ -2397,6 +2397,88 @@ global.SetOdometerSetting = function(objdata, Callback) {
 
                 client.destroy();
                 Callback({ success: false, message: 'Odometer settings could not save. Try again later.' });
+                // SendGSensorCommand(i + 1);
+            }
+        };
+
+
+    });
+
+    client.on('close', function() {
+        console.log('Connection closed');
+    });
+
+}
+
+//Set Initial ACC Settings
+router.get('/SetACCSetting', function(req, res) {
+    req.setTimeout(3600000);
+    //GetLookAtMeDP3110a0f
+    //Test Device 075034699503
+    var obj = new Object();
+    obj.DeviceId = req.query.DeviceId;
+    obj.ACC = req.query.ACC;
+    SetACCSetting(obj, function(data) {
+        res.json(data);
+    })
+
+
+})
+
+//Set Initial ACC Settings
+global.SetACCSetting = function(objdata, Callback) {
+
+    var DeviceId = objdata.DeviceId;
+    var ACC = a2hex(objdata.ACC.toString());
+    var commandlength = ('0000' + (17 + (ACC.length / 2)).toString()).slice(-4);
+
+    var Data = "4040" + commandlength + DeviceId + "4148" + ACC;
+    Data = Data + CalculateCRCbyHex(Data) + '0D0A';
+
+    var client = new net.Socket();
+    var Sendflag = false;
+
+    client.connect(SocketPort, SocketIPAddress, function() {
+        // console.log('G-Sensor send to ' + DeviceId);
+        client.write(Data, 'hex');
+
+        client.setTimeout(10000, function() {
+            if (Sendflag == false) {
+                Sendflag = true;
+
+                client.destroy();
+                Callback({ success: false, message: 'Device not connected. Try after 5 minute.' });
+                // SendGSensorCommand(i + 1);
+            };
+
+        });
+    });
+
+    client.on('data', function(data) {
+        var line = data.toString();
+        if (Sendflag == false) {
+            if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4148') {
+                console.log('Received: ' + line);
+                var StatusCode = line.substring(26, 28);
+                Sendflag = true;
+                // SuccessDevice = SuccessDevice + 1;
+                // res.json(objNavigation);
+                client.destroy(); // kill client after server's response
+                if (StatusCode == '01') {
+                    connection.query("Update tblvehicle set ACC=" + objdata.ACC + " where deviceid=" + DeviceId, function(err, rows, fields) {
+                        Callback({ success: true, message: 'ACC settings Save Successfully.' });
+                    });
+                } else {
+
+                    Callback({ success: false, message: 'ACC settings could not save. Try again later.' });
+
+                }
+
+            } else {
+                Sendflag = true;
+
+                client.destroy();
+                Callback({ success: false, message: 'ACC settings could not save. Try again later.' });
                 // SendGSensorCommand(i + 1);
             }
         };
