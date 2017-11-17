@@ -27,6 +27,16 @@ var testCountry2 = {
 	ModifiedDate: null,
 	IsEurope: false
 };
+var testLanguageInCountry1 = {
+	Id: 0,
+	IdLanguage: 99489927,
+	Country: 'UnitTestCountry1'
+};
+var testLanguageInCountry2 = {
+	Id: 0,
+	IdLanguage: 99489928,
+	Country: 'UnitTestCountry1'
+};
 var testUser1 = {
 	email: 'unittest.user@bugzstudio.com',
 	username: 'unittest.user@bugzstudio.com',
@@ -60,6 +70,7 @@ describe('/country', function() {
 
 	var server;
 	var Country;
+	var LanguageInCountry;
 	var User;
 	var UserRole;
 	var Role;
@@ -67,6 +78,8 @@ describe('/country', function() {
 	var Permission;
 	var dCountry;
 	var dCountry2;
+	var dLanguageInCountry;
+	var dLanguageInCountry2;
 	var dUser;
 	var dRole;
 	var dUserRole;
@@ -79,6 +92,7 @@ describe('/country', function() {
 		});
 
 		Country = models.tblcountrymgmt;
+		LanguageInCountry = models.tbllanguageincountry;
 		User = models.tbluserinformation;
 		UserRole = models.tbluserinrole;
 		Role = models.tblrole;
@@ -88,6 +102,10 @@ describe('/country', function() {
 		Country.create(testCountry1)
 		.then(function(rCountry) {
 			dCountry = rCountry;
+			return LanguageInCountry.create(testLanguageInCountry1);
+		})
+		.then(function(rLanguageInCountry) {
+			dLanguageInCountry = rLanguageInCountry;
 			testUser1.password = jwt.encode(testUser1.password, 'bugz');
 			return User.create(testUser1);
 		})
@@ -132,6 +150,9 @@ describe('/country', function() {
 			return dUser.destroy();
 		})
 		.then(function() {
+			return dLanguageInCountry.destroy();
+		})
+		.then(function() {
 			return dCountry.destroy();
 		})
 		.then(function() {
@@ -142,6 +163,15 @@ describe('/country', function() {
 					}
 				}
 			});
+		})
+		.then(function() {
+			return LanguageInCountry.destroy({
+				where: {
+					Country: {
+						$like: 'UnitTest%'
+					}
+				}
+			})
 		})
 		.then(function() {
 			server.close(done);
@@ -393,6 +423,130 @@ describe('/country', function() {
 			.end(function(err, res) {
 				expect(res.body).to.exist;
 				expect(res.body).to.be.an('array').that.has.property('length').of.at.least(1);
+				done();
+			});
+		});
+	});
+
+	describe('/country/getAllLangauageInCountry', function() {
+		it('should get all languages in country when IdLanguage matches', function(done) {
+			request(server)
+			.get('/country/getAllLangauageInCountry')
+			.query(qs.stringify({
+				Id: testLanguageInCountry1.IdLanguage
+			}))
+			.expect(200)
+			.end(function(err, res) {
+				expect(res.body).to.exist;
+				expect(res.body).to.be.an('array').that.has.lengthOf(1);
+				done();
+			});
+		});
+
+		it('should fail when IdLanguage does not match', function(done) {
+			request(server)
+			.get('/country/getAllLangauageInCountry')
+			.query(qs.stringify({
+				Id: 0
+			}))
+			.expect(200)
+			.end(function(err, res) {
+				expect(res.body).to.exist;
+				expect(res.body).to.be.an('array').that.has.lengthOf(0);
+				done();
+			});
+		});
+	});
+
+	describe('/country/SaveLagaugeInCountry', function() {
+		it('should save language in country if credentials and permissions are correct', function(done) {
+			var token = {
+				username: dUser.username,
+				password: dUser.password
+			};
+			token = 'JWT ' + jwt.encode(token, 'bugz');
+			
+			request(server)
+			.post('/country/SaveLagaugeInCountry')
+			.set('authorization', token)
+			.set('x-requested-with', dModule.Module)
+			.send(testLanguageInCountry2)
+			.end(function(err, res) {
+				expect(res.body).to.exist;
+				expect(res.body).to.have.property('success');
+				expect(res.body).to.have.property('message');
+				expect(res.body).to.have.property('data');
+				expect(res.body.success).to.equal(true);
+				expect(res.body.message).to.equal('Language add in country successfully...');
+				expect(res.body.data).to.be.an('array');
+				expect(res.body.data).to.have.lengthOf(2);
+				expect(res.body.data[0]).to.be.an('object');
+				expect(res.body.data[1]).to.equal(true);
+				dLanguageInCountry2 = res.body.data[0];
+				done();
+			});
+		});
+
+		it('should fail when credentials and permissions are wrong', function(done) {
+			request(server)
+			.post('/country/SaveLagaugeInCountry')
+			.send(testLanguageInCountry2)
+			.end(function(err, res) {
+				expect(res.body).to.exist;
+				expect(res.body).to.have.property('success');
+				expect(res.body).to.have.property('message');
+				expect(res.body).to.have.property('data');
+				expect(res.body.success).to.equal(false);
+				expect(res.body.message).to.equal('Invalid token...');
+				expect(res.body.data).to.equal('TOKEN');
+				done();
+			});
+		});
+	});
+
+	describe('/country/DeleteLagauagefromCountry', function() {
+		it('should delete language in country when credentials and permissions are correct', function(done) {
+			var token = {
+				username: dUser.username,
+				password: dUser.password
+			};
+			token = 'JWT ' + jwt.encode(token, 'bugz');
+
+			request(server)
+			.get('/country/DeleteLagauagefromCountry')
+			.set('authorization', token)
+			.set('x-requested-with', dModule.Module)
+			.query(qs.stringify({
+				IdLanguage: testLanguageInCountry2.IdLanguage,
+				Country: testLanguageInCountry2.Country
+			}))
+			.end(function(err, res) {
+				expect(res.body).to.exist;
+				expect(res.body).to.have.property('success');
+				expect(res.body).to.have.property('message');
+				expect(res.body).to.have.property('data');
+				expect(res.body.success).to.equal(true);
+				expect(res.body.message).to.equal('Language remove from country successfully...');
+				expect(res.body.data).to.equal(1);
+				done();
+			});
+		});
+
+		it('should fail when credentials and permissions are wrong', function(done) {
+			request(server)
+			.get('/country/DeleteLagauagefromCountry')
+			.query(qs.stringify({
+				IdLanguage: testLanguageInCountry2.IdLanguage,
+				Country: testLanguageInCountry2.Country
+			}))
+			.end(function(err, res) {
+				expect(res.body).to.exist;
+				expect(res.body).to.have.property('success');
+				expect(res.body).to.have.property('message');
+				expect(res.body).to.have.property('data');
+				expect(res.body.success).to.equal(false);
+				expect(res.body.message).to.equal('No Access Permission...');
+				expect(res.body.data).to.equal('AccessPermission');
 				done();
 			});
 		});
