@@ -8,6 +8,8 @@ var BillingAddress = models.tblbillingaddress;
 var DeliveryAddress = models.tbldeliveryaddress;
 var Order = models.tblorder;
 var Countrycode = models.tblcountrycode;
+var LanguageInCountry = models.tbllanguageincountry;
+
 //End of Tables
 
 router.get('/GetAllCountry', function(req, res) {
@@ -233,5 +235,117 @@ router.get('/GetCountryCode', function(req, res) {
         res.json(error);
     })
 })
+
+router.get('/getAllLangauageInCountry', function(req, res) {
+    LanguageInCountry.findAll({ where: { IdLanguage: req.query.Id } }).then(function(response) {
+        res.json(response);
+    }).catch(function(error) {
+        res.json(error);
+    })
+})
+
+router.post('/SaveLagaugeInCountry', jsonParser, function(req, res) {
+    objlagCountry = req.body;
+    objHeader = req.headers;
+
+    //Set Parameter for User Permission
+    req.query['tablename'] = req.headers['x-requested-with'];
+
+    var token = getToken(objHeader);
+    if (token) {
+        var decoded = jwt.decode(token, TokenKey);
+        User.findOne({ where: { username: decoded.username, password: decoded.password } }).then(function(UserExist) {
+            if (UserExist != null) {
+
+                //set Parameter
+                req.query['permission'] = "Added";
+
+                var obj = {};
+                obj.headers = req.headers;
+                obj.query = req.query;
+
+                funAccessPermission.CheckUserAccessPermission(obj, function(responseAccessPermission) {
+                    var AccessPermission = responseAccessPermission.success;
+                    if (AccessPermission) {
+                        console.log(objlagCountry.Country)
+                        if (objlagCountry.Country == 'All') {
+                            LanguageInCountry.destroy({ where: { IdLanguage: objlagCountry.IdLanguage } }).then(function(resposeDelete) {
+                                LanguageInCountry.create(objlagCountry).then(function(response) {
+                                    if (response) {
+                                        funAuditLog.CreateAuditLog('Add language country', UserExist.username, 'Create Add language country');
+                                        res.json({ success: true, message: "Language add for all country successfully...", data: response });
+                                    } else {
+                                        res.json({ success: false, message: "Language is already exist in country...", data: response });
+                                    }
+                                })
+                            })
+
+
+                        } else {
+                            LanguageInCountry.findOrCreate({ where: { IdLanguage: objlagCountry.IdLanguage, Country: objlagCountry.Country }, defaults: objlagCountry }).then(function(response) {
+                                if ((response[1])) {
+                                    funAuditLog.CreateAuditLog('Add language country', UserExist.username, 'Create Add language country');
+                                    res.json({ success: true, message: "Language add in country successfully...", data: response });
+                                } else {
+                                    res.json({ success: false, message: "Language is already exist in country...", data: response });
+                                }
+                            })
+                        }
+                    } else {
+                        res.json(NoAccessPermission);
+                    }
+                });
+            } else {
+                res.json(InvalidToken);
+            }
+        })
+    } else {
+        res.json(InvalidToken);
+    }
+})
+
+
+
+router.get('/DeleteLagauagefromCountry', function(req, res) {
+    objHeader = req.headers;
+    var token = getToken(objHeader);
+
+    //Set Parameter for User Permission
+    req.query['tablename'] = req.headers['x-requested-with'];
+    req.query['permission'] = "Deleted";
+
+    var obj = {};
+    obj.headers = req.headers;
+    obj.query = req.query;
+
+    funAccessPermission.CheckUserAccessPermission(obj, function(responseAccessPermission) {
+        var AccessPermission = responseAccessPermission.success;
+        if (AccessPermission) {
+
+            if (token) {
+                var decoded = jwt.decode(token, TokenKey);
+                User.findOne({ where: { username: decoded.username, password: decoded.password } }).then(function(UserExist) {
+                    if (UserExist != null) {
+
+                        LanguageInCountry.destroy({ where: { IdLanguage: req.query.IdLanguage, Country: req.query.Country } }).then(function(response) {
+                            if (response) {
+                                funAuditLog.CreateAuditLog('Delete language from country', UserExist.username, 'Delete language from country');
+                                res.json({ success: true, message: "Language remove from country successfully...", data: response });
+                            } else {
+                                res.json({ success: true, message: "Language not remove from country successfully...", data: response });
+                            }
+                        })
+                    } else {
+                        res.json(InvalidToken);
+                    }
+                })
+            } else {
+                res.json(InvalidToken);
+            }
+        } else {
+            res.json(NoAccessPermission);
+        }
+    });
+});
 
 module.exports = router
