@@ -248,8 +248,12 @@
 				{ id: { $like: '%' + req.query.search.value + '%' } },
 				{ deviceId: { $like: '%' + req.query.search.value + '%' } },
 				{ retailerId: { $like: '%' + req.query.search.value + '%' } },
-				{ activatedDatetime: { $like: '%' + req.query.search.value + '%' } }
+				
 			];
+			var ad = moment(req.query.search.value);
+			if (ad.isValid()) {
+				where.$or.push({ activatedDatetime: req.query.search.value });
+			}
 		}
 
 		DeviceAgentRetailer.belongsTo(User, {
