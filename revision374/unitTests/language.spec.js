@@ -27,6 +27,11 @@ var testLanguage2 = {
 	Published: false,
 	DisplayOrder: 99998
 };
+var testLanguageInCountry1 = {
+	Id: 0,
+	IdLanguage: 99489927,
+	Country: 'UnitTestCountry1'
+};
 var testUser1 = {
 	email: 'unittest.user@bugzstudio.com',
 	username: 'unittest.user@bugzstudio.com',
@@ -60,12 +65,14 @@ describe('/language', function() {
 
 	var server;
 	var Language;
+	var LanguageInCountry;
 	var User;
 	var UserRole;
 	var Role;
 	var Module;
 	var Permission;
 	var dLanguage;
+	var dLanguageInCountry;
 	var dUser;
 	var dRole;
 	var dUserRole;
@@ -78,6 +85,7 @@ describe('/language', function() {
 		});
 
 		Language = models.language;
+		LanguageInCountry = models.tbllanguageincountry;
 		User = models.tbluserinformation;
 		UserRole = models.tbluserinrole;
 		Role = models.tblrole;
@@ -87,6 +95,11 @@ describe('/language', function() {
 		Language.create(testLanguage1)
 		.then(function(rLanguage) {
 			dLanguage = rLanguage;
+			testLanguageInCountry1.IdLanguage = dLanguage.Id;
+			return LanguageInCountry.create(testLanguageInCountry1);
+		})
+		.then(function(rLanguageInCountry) {
+			dLanguageInCountry = rLanguageInCountry;
 			testUser1.password = jwt.encode(testUser1.password, 'bugz');
 			return User.create(testUser1);
 		})
@@ -131,6 +144,9 @@ describe('/language', function() {
 			return dUser.destroy();
 		})
 		.then(function() {
+			return dLanguageInCountry.destroy();
+		})
+		.then(function() {
 			return dLanguage.destroy();
 		})
 		.then(function() {
@@ -164,6 +180,9 @@ describe('/language', function() {
 		it('should get all published languages', function(done) {
 			request(server)
 			.get('/language/GetAllPublishLanguage')
+			.query(qs.stringify({
+				Country: testLanguageInCountry1.Country
+			}))
 			.expect(200)
 			.end(function(err, res) {
 				expect(res.body).to.exist;
@@ -273,6 +292,23 @@ describe('/language', function() {
 				expect(res.body.success).to.equal(false);
 				expect(res.body.message).to.equal('No Access Permission...');
 				expect(res.body.data).to.equal('AccessPermission');
+				done();
+			});
+		});
+	});
+
+	describe('/language/uploadImage', function() {
+		it('should upload image for language', function(done) {
+			request(server)
+			.post('/language/uploadImage')
+			.attach(dLanguage.Id, __dirname + '/../MediaUploads/201672512326623.jpg')
+			.expect(200)
+			.end(function(err, res) {
+				expect(res.body).to.exist;
+				expect(res.body.success).to.equal(true);
+				expect(res.body.message).to.equal('Images Uploaded Successfully...');
+				expect(res.body.data.indexOf('.jpg')).to.not.equal(-1);
+				fs.unlinkSync(__dirname + '/../MediaUploads/' + res.body.data);
 				done();
 			});
 		});
