@@ -208,6 +208,13 @@ router.post('/uploadFile', function(req, res) {
             file.path = form.uploadDir + "/" + NewName + ext;
         } else if (strarr[1] == "OffIcon") {
             file.path = form.uploadDir + "/" + NewName + ext;
+        } else if (strarr[1] == "LocateOnIcon") {
+            file.path = form.uploadDir + "/" + NewName + ext;
+        } else if (strarr[1] == "LocateActiveIcon") {
+            NewName = parseInt(NewName) + 2;
+            file.path = form.uploadDir + "/" + NewName + ext;
+        } else if (strarr[1] == "LocateOffIcon") {
+            file.path = form.uploadDir + "/" + NewName + ext;
         }
         var obj = new Object();
         obj.Name = NewName + ext;
@@ -260,6 +267,39 @@ router.post('/uploadFile', function(req, res) {
                             }
                             OffIcon = FileName[i].Name;
                         }
+                        if (FileName[i].Type == "LocateOnIcon") {
+                            if (response.LocateOnIcon != '' && response.LocateOnIcon != null) {
+                                var oldFile = __dirname + '/../MediaUploads/FileUpload/' + response.LocateOnIcon;
+                                fs.exists(oldFile, function(exists) {
+                                    if (exists) {
+                                        fs.unlink(oldFile);
+                                    }
+                                });
+                            }
+                            LocateOnIcon = FileName[i].Name;
+                        }
+                        if (FileName[i].Type == "LocateActiveIcon") {
+                            if (response.LocateActiveIcon != '' && response.LocateActiveIcon != null) {
+                                var oldFile = __dirname + '/../MediaUploads/FileUpload/' + response.LocateActiveIcon;
+                                fs.exists(oldFile, function(exists) {
+                                    if (exists) {
+                                        fs.unlink(oldFile);
+                                    }
+                                });
+                            }
+                            LocateActiveIcon = FileName[i].Name;
+                        }
+                        if (FileName[i].Type == "LocateOffIcon") {
+                            if (response.LocateOffIcon != '' && response.LocateOffIcon != null) {
+                                var oldFile = __dirname + '/../MediaUploads/FileUpload/' + response.LocateOffIcon;
+                                fs.exists(oldFile, function(exists) {
+                                    if (exists) {
+                                        fs.unlink(oldFile);
+                                    }
+                                });
+                            }
+                            LocateOffIcon = FileName[i].Name;
+                        }
 
                         uploader(i + 1);
                     } else {
@@ -267,6 +307,9 @@ router.post('/uploadFile', function(req, res) {
                         if (OnIcon != '') { obj.OnIcon = OnIcon; }
                         if (OffIcon != '') { obj.OffIcon = OffIcon; }
                         if (ActiveIcon != '') { obj.ActiveIcon = ActiveIcon; }
+                        if (LocateOnIcon != '') { obj.LocateOnIcon = LocateOnIcon; }
+                        if (LocateOffIcon != '') { obj.LocateOffIcon = LocateOffIcon; }
+                        if (LocateActiveIcon != '') { obj.LocateActiveIcon = LocateActiveIcon; }
                         console.log("obj......", obj)
                         response.updateAttributes(obj).then(function(resUpdate) {
                             if (resUpdate != null) {
