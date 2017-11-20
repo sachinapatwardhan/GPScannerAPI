@@ -5,6 +5,7 @@ var User = models.tbluserinformation;
 var Vehicle = models.tblvehicle;
 
 router.get('/GetAllActivevehicletype', function(req, res) {
+
     VehicleType.findAll({ where: { IsActive: 1 } }).then(function(response) {
         res.json(response);
     }).catch(function(err) {
@@ -300,5 +301,20 @@ function GetUserNameFromDate() {
 
 
 }
+
+
+router.get('/GetActivevehicletype', function(req, res) {
+    console.log(req.query)
+    VehicleType.findOne({
+        where: {
+            IsActive: 1,
+            Type: req.query.Type
+        }
+    }).then(function(response) {
+        res.json(response);
+    }).catch(function(err) {
+        res.json({ success: false, data: err });
+    })
+})
 
 module.exports = router
