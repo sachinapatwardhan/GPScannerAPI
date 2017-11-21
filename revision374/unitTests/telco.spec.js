@@ -3,39 +3,21 @@ var require = require('really-need');
 var expect = require('chai').expect;
 var qs = require('qs');
 
-var testCountry1 = {
+var testTelco1 = {
 	id: 0,
-	Code: 0,
-	Country: 'UnitTestCountry1',
-	ShortName: null,
-	Seq: 0,
-	CreatedBy: 'UnitTest1',
+	Name: 'UnitTestTelco1',
 	CreatedDate: new Date(),
-	ModifiedBy: null,
+	CreatedBy: 'UnitTestUser1',
 	ModifiedDate: null,
-	IsEurope: false
+	ModifiedBy: null
 };
-var testState1 = {
+var testTelco2 = {
 	id: 0,
-	idCountry: 0,
-	Name: 'UnitTestState1',
-	ShortName: 'UTS1',
-	Seq: null,
-	CreatedBy: 'UnitTestUser1',
+	Name: 'UnitTestTelco2',
 	CreatedDate: new Date(),
-	ModifiedBy: null,
-	ModifiedDate: null
-};
-var testState2 = {
-	id: 0,
-	idCountry: 0,
-	Name: 'UnitTestState2',
-	ShortName: 'UTS2',
-	Seq: null,
 	CreatedBy: 'UnitTestUser1',
-	CreatedDate: new Date(),
-	ModifiedBy: null,
-	ModifiedDate: null
+	ModifiedDate: null,
+	ModifiedBy: null
 };
 var testUser1 = {
 	email: 'unittest.user@bugzstudio.com',
@@ -69,16 +51,14 @@ describe('/state', function() {
 	this.timeout(5000);
 
 	var server;
-	var Country;
-	var State;
+	var Telco;
 	var User;
 	var UserRole;
 	var Role;
 	var Module;
 	var Permission;
-	var dCountry;
-	var dState;
-	var dState2;
+	var dTelco;
+	var dTelco2;
 	var dUser;
 	var dRole;
 	var dUserRole;
@@ -90,22 +70,16 @@ describe('/state', function() {
 			bustCache: true
 		});
 
-		Country = models.tblcountrymgmt;
-		State = models.tblcountrystatemgmt;
+		Telco = models.tbltelco;
 		User = models.tbluserinformation;
 		UserRole = models.tbluserinrole;
 		Role = models.tblrole;
 		Module = models.tblmodulemgmt;
 		Permission = models.tbluserpermission;
 		
-		Country.create(testCountry1)
-		.then(function(rCountry) {
-			dCountry = rCountry;
-			testState1.idCountry = dCountry.id;
-			return State.create(testState1);
-		})
-		.then(function(rState) {
-			dState = rState;
+		Telco.create(testTelco1)
+		.then(function(rTelco) {
+			dTelco = rTelco;
 			testUser1.password = jwt.encode(testUser1.password, 'bugz');
 			return User.create(testUser1);
 		})
@@ -150,10 +124,7 @@ describe('/state', function() {
 			return dUser.destroy();
 		})
 		.then(function() {
-			return dState.destroy();
-		})
-		.then(function() {
-			return State.destroy({
+			return Telco.destroy({
 				where: {
 					Name: {
 						$like: 'UnitTest%'
@@ -162,17 +133,14 @@ describe('/state', function() {
 			});
 		})
 		.then(function() {
-			return dCountry.destroy();
-		})
-		.then(function() {
 			server.close(done);
 		});
 	});
 
-	describe('/state/GetAllState', function() {
-		it('should get all states', function(done) {
+	describe('/telco/GetAllCompany', function() {
+		it('should get all telcos', function(done) {
 			request(server)
-			.get('/state/GetAllState')
+			.get('/telco/GetAllCompany')
 			.end(function(err, res) {
 				expect(res.body).to.exist;
 				expect(res.body).to.be.an('array').that.has.property('length').of.at.least(1);
@@ -181,105 +149,23 @@ describe('/state', function() {
 		});
 	});
 
-	describe('/state/GetAllStateByPagging', function() {
-		it('should get all states by paging', function(done) {
-			request(server)
-			.get('/state/GetAllStateByPagging')
-			.query(qs.stringify({
-				draw: 1,
-				columns: [
-					{ data: 'tblcountrymgmt.Country', name: '', searchable: true, orderable: true, search: { value: '', regex: false } },
-					{ data: 'Name', name: '', searchable: true, orderable: true, search: { value: '', regex: false } },
-					{ data: 'ShortName', name: '', searchable: true, orderable: true, search: { value: '', regex: false } },
-				],
-				order: [
-					{ column: 1, dir: 'asc' }
-				],
-				start: 0,
-				length: 25,
-				search: {
-					value: '',
-					regex: false
-				},
-				_: 1500000000000
-			}))
-			.end(function(err, res) {
-				expect(res.body).to.exist;
-				expect(res.body.draw).to.not.equal(null);
-				expect(res.body.recordsTotal).to.not.equal(null);
-				expect(res.body.recordsFiltered).to.not.equal(null);
-				expect(res.body.data).to.be.an('array').that.has.property('length').of.at.least(1);
-				done();
-			});
-		});
-
-		it('should get all states by paging when searching', function(done) {
-			request(server)
-			.get('/state/GetAllStateByPagging')
-			.query(qs.stringify({
-				draw: 1,
-				columns: [
-					{ data: 'tblcountrymgmt.Country', name: '', searchable: true, orderable: true, search: { value: '', regex: false } },
-					{ data: 'Name', name: '', searchable: true, orderable: true, search: { value: '', regex: false } },
-					{ data: 'ShortName', name: '', searchable: true, orderable: true, search: { value: '', regex: false } },
-				],
-				order: [
-					{ column: 1, dir: 'asc' }
-				],
-				start: 0,
-				length: 25,
-				search: {
-					value: testState1.Name,
-					regex: false
-				},
-				_: 1500000000000
-			}))
-			.end(function(err, res) {
-				expect(res.body).to.exist;
-				expect(res.body.draw).to.not.equal(null);
-				expect(res.body.recordsTotal).to.not.equal(null);
-				expect(res.body.recordsFiltered).to.not.equal(null);
-				expect(res.body.data).to.be.an('array').that.has.property('length').of.at.least(1);
-				done();
-			});
-		});
-	});
-
-	describe('/state/GetAllStateByCountryId', function() {
-		it('should get all states by country ID', function(done) {
-			request(server)
-			.get('/state/GetAllStateByCountryId')
-			.query(qs.stringify({
-				CountryId: dCountry.id
-			}))
-			.end(function(err, res) {
-				expect(res.body).to.exist;
-				expect(res.body.success).to.equal(true);
-				expect(res.body.message).to.equal('Record found...');
-				expect(res.body.data).to.be.an('array').that.has.lengthOf(1);
-				done();
-			});
-		});
-	});
-
-	describe('/state/SaveState', function() {
-		it('should save save if credentials and permissions are correct', function(done) {
+	describe('/telco/SaveCompany', function() {
+		it('should save telco if credentials and permissions are correct', function(done) {
 			var token = {
 				username: dUser.username,
 				password: dUser.password
 			};
 			token = 'JWT ' + jwt.encode(token, 'bugz');
-			testState2.idCountry = dCountry.id;
 			
 			request(server)
-			.post('/state/SaveState')
+			.post('/telco/SaveCompany')
 			.set('authorization', token)
 			.set('x-requested-with', dModule.Module)
-			.send(testState2)
+			.send(testTelco2)
 			.end(function(err, res) {
 				expect(res.body).to.exist;
 				expect(res.body.success).to.equal(true);
-				expect(res.body.message).to.equal('State created successfully...');
+				expect(res.body.message).to.equal('Telephone Company created successfully...');
 				expect(res.body.data).to.be.an('array');
 				expect(res.body.data).to.have.lengthOf(2);
 				expect(res.body.data[0]).to.be.an('object');
@@ -291,8 +177,8 @@ describe('/state', function() {
 
 		it('should fail when credentials and permissions are wrong', function(done) {
 			request(server)
-			.post('/state/SaveState')
-			.send(testState2)
+			.post('/telco/SaveCompany')
+			.send(testTelco2)
 			.end(function(err, res) {
 				expect(res.body).to.exist;
 				expect(res.body.success).to.equal(false);
@@ -303,8 +189,8 @@ describe('/state', function() {
 		});
 	});
 
-	describe('/state/DeleteState', function() {
-		it('should delete state when credentials and permissions are correct', function(done) {
+	describe('/telco/DeleteTelCompany', function() {
+		it('should delete telco when credentials and permissions are correct', function(done) {
 			var token = {
 				username: dUser.username,
 				password: dUser.password
@@ -312,16 +198,16 @@ describe('/state', function() {
 			token = 'JWT ' + jwt.encode(token, 'bugz');
 
 			request(server)
-			.get('/state/DeleteState')
+			.get('/telco/DeleteTelCompany')
 			.set('authorization', token)
 			.set('x-requested-with', dModule.Module)
 			.query(qs.stringify({
-				StateId: dState2.id
+				id: dTelco.id
 			}))
 			.end(function(err, res) {
 				expect(res.body).to.exist;
 				expect(res.body.success).to.equal(true);
-				expect(res.body.message).to.equal('State deleted successfully...');
+				expect(res.body.message).to.equal('Telephone Company deleted successfully...');
 				expect(res.body.data).to.equal(1);
 				done();
 			});
@@ -329,7 +215,7 @@ describe('/state', function() {
 
 		it('should fail when credentials and permissions are wrong', function(done) {
 			request(server)
-			.get('/state/DeleteState')
+			.get('/telco/DeleteTelCompany')
 			.query(qs.stringify({
 				StateId: 0
 			}))
