@@ -36,6 +36,18 @@ module.exports = function(sequelize, DataTypes) {
     ActiveIcon: {
       type: DataTypes.STRING,
       allowNull: true
+    },
+    LocateOnIcon: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    LocateOffIcon: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    LocateActiveIcon: {
+      type: DataTypes.STRING,
+      allowNull: true
     }
   }, {
     tableName: 'tblvehicletype'
