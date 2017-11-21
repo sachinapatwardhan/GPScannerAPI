@@ -48,6 +48,11 @@ module.exports = function(sequelize, DataTypes) {
     LocateActiveIcon: {
       type: DataTypes.STRING,
       allowNull: true
+    },
+    LocateIsRotate: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+      defaultValue: '1'
     }
   }, {
     tableName: 'tblvehicletype'
