@@ -193,16 +193,16 @@ router.get('/ExportAllCanbusData', function(req, res) {
 
     if (objParam.StartDate != '') {
         if (search != "") {
-            search += ' and tcb.Date >= ' + unixStartdate;
+            search += ' and tcb.Datetime >= ' + unixStartdate;
         } else {
-            search += ' where tcb.Date >= ' + unixStartdate;
+            search += ' where tcb.Datetime >= ' + unixStartdate;
         }
     }
     if (objParam.EndDate != '') {
         if (search != "") {
-            search += ' and tcb.Date <= ' + unixEndDate;
+            search += ' and tcb.Datetime <= ' + unixEndDate;
         } else {
-            search += ' where tcb.Date <= ' + unixEndDate;
+            search += ' where tcb.Datetime <= ' + unixEndDate;
         }
     }
 
@@ -484,16 +484,16 @@ router.get('/ExportAllDrivingData', function(req, res) {
 
     if (objParam.StartDate != '') {
         if (search != "") {
-            search += ' and td.Date >= ' + unixStartdate;
+            search += ' and td.Datetime >= ' + unixStartdate;
         } else {
-            search += ' where td.Date >= ' + unixStartdate;
+            search += ' where td.Datetime >= ' + unixStartdate;
         }
     }
     if (objParam.EndDate != '') {
         if (search != "") {
-            search += ' and td.Date <= ' + unixEndDate;
+            search += ' and td.Datetime <= ' + unixEndDate;
         } else {
-            search += ' where td.Date <= ' + unixEndDate;
+            search += ' where td.Datetime <= ' + unixEndDate;
         }
     }
 
