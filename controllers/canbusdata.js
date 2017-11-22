@@ -48,16 +48,16 @@ router.get('/GetAllCanbusData', function(req, res) {
 
     if (objParam.StartDate != '') {
         if (search != "") {
-            search += ' and tcb.Date >= ' + unixStartdate;
+            search += ' and tcb.Datetime >= ' + unixStartdate;
         } else {
-            search += ' where tcb.Date >= ' + unixStartdate;
+            search += ' where tcb.Datetime >= ' + unixStartdate;
         }
     }
     if (objParam.EndDate != '') {
         if (search != "") {
-            search += ' and tcb.Date <= ' + unixEndDate;
+            search += ' and tcb.Datetime <= ' + unixEndDate;
         } else {
-            search += ' where tcb.Date <= ' + unixEndDate;
+            search += ' where tcb.Datetime <= ' + unixEndDate;
         }
     }
 
