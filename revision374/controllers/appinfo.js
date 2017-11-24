@@ -391,6 +391,8 @@ router.post('/uploadFile', function(req, res) {
     form.on('end', function() {
         var i = 0;
         var ImageLogo = '';
+        var WebAppLoginLogo = '';
+        var WebAppHeaderLogo = '';
         var IOSCertificate = '';
         var IOSKey = '';
         var Id = parseInt(lstUser[i]);
