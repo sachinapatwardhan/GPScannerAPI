@@ -204,9 +204,6 @@ describe('/email', function() {
 			.send(testEmailSetting2)
 			.end(function(err, res) {
 				expect(res.body).to.exist;
-				expect(res.body).to.have.property('success');
-				expect(res.body).to.have.property('message');
-				expect(res.body).to.have.property('data');
 				expect(res.body.success).to.equal(true);
 				expect(res.body.message).to.equal('Email Setting created successfully...');
 				expect(res.body.data).to.be.an('object');
@@ -221,9 +218,6 @@ describe('/email', function() {
 			.send(testEmailSetting2)
 			.end(function(err, res) {
 				expect(res.body).to.exist;
-				expect(res.body).to.have.property('success');
-				expect(res.body).to.have.property('message');
-				expect(res.body).to.have.property('data');
 				expect(res.body.success).to.equal(false);
 				expect(res.body.message).to.equal('Invalid token...');
 				expect(res.body.data).to.equal('TOKEN');
@@ -249,9 +243,6 @@ describe('/email', function() {
 			}))
 			.end(function(err, res) {
 				expect(res.body).to.exist;
-				expect(res.body).to.have.property('success');
-				expect(res.body).to.have.property('message');
-				expect(res.body).to.have.property('data');
 				expect(res.body.success).to.equal(true);
 				expect(res.body.message).to.equal('Email Setting deleted successfully...');
 				expect(res.body.data).to.equal(1);
@@ -267,9 +258,6 @@ describe('/email', function() {
 			}))
 			.end(function(err, res) {
 				expect(res.body).to.exist;
-				expect(res.body).to.have.property('success');
-				expect(res.body).to.have.property('message');
-				expect(res.body).to.have.property('data');
 				expect(res.body.success).to.equal(false);
 				expect(res.body.message).to.equal('Invalid token...');
 				expect(res.body.data).to.equal('TOKEN');
@@ -306,9 +294,6 @@ describe('/email', function() {
 			.send(testEmailTemplate2)
 			.end(function(err, res) {
 				expect(res.body).to.exist;
-				expect(res.body).to.have.property('success');
-				expect(res.body).to.have.property('message');
-				expect(res.body).to.have.property('data');
 				expect(res.body.success).to.equal(true);
 				expect(res.body.message).to.equal('EmailTemplate created successfully...');
 				expect(res.body.data).to.be.an('object');
@@ -323,9 +308,6 @@ describe('/email', function() {
 			.send(testEmailTemplate2)
 			.end(function(err, res) {
 				expect(res.body).to.exist;
-				expect(res.body).to.have.property('success');
-				expect(res.body).to.have.property('message');
-				expect(res.body).to.have.property('data');
 				expect(res.body.success).to.equal(false);
 				expect(res.body.message).to.equal('Invalid token...');
 				expect(res.body.data).to.equal('TOKEN');
@@ -351,9 +333,6 @@ describe('/email', function() {
 			}))
 			.end(function(err, res) {
 				expect(res.body).to.exist;
-				expect(res.body).to.have.property('success');
-				expect(res.body).to.have.property('message');
-				expect(res.body).to.have.property('data');
 				expect(res.body.success).to.equal(true);
 				expect(res.body.message).to.equal('EmailTemplate deleted successfully...');
 				expect(res.body.data).to.equal(1);
@@ -369,9 +348,6 @@ describe('/email', function() {
 			}))
 			.end(function(err, res) {
 				expect(res.body).to.exist;
-				expect(res.body).to.have.property('success');
-				expect(res.body).to.have.property('message');
-				expect(res.body).to.have.property('data');
 				expect(res.body.success).to.equal(false);
 				expect(res.body.message).to.equal('No Access Permission...');
 				expect(res.body.data).to.equal('AccessPermission');
