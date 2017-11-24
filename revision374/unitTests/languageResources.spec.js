@@ -93,6 +93,12 @@ describe('/languageresources', function() {
 		Module = models.tblmodulemgmt;
 		Permission = models.tbluserpermission;
 
+		// Make a backup copy of MobileLanguageResource.json
+		try {
+			fs.createReadStream(__dirname + '/../controllers/MultiLangugaeFile/MobileLanguageResource.json')
+			.pipe(fs.createWriteStream(__dirname + '/../controllers/MultiLangugaeFile/MobileLanguageResourceUnitTestBackup.json'));
+		} catch (err) {}
+
 		Language.create(testLanguage1)
 		.then(function(rLanguage) {
 			dLanguage = rLanguage;
@@ -131,6 +137,25 @@ describe('/languageresources', function() {
 	});
 
 	after(function(done) {
+		try {
+			fs.unlinkSync(__dirname + '/UnitTestMobileLanguageResource.xlsx');
+		} catch (err) {}
+
+		// Remove uploaded file
+		try {
+			fs.unlinkSync(__dirname + '/../MediaUploads/FileUpload/UnitTestMobileLanguageResource.xlsx');
+		} catch (err) {}
+
+		// Restore the backup file
+		try {
+			fs.createReadStream(__dirname + '/../controllers/MultiLangugaeFile/MobileLanguageResourceUnitTestBackup.json')
+			.pipe(fs.createWriteStream(__dirname + '/../controllers/MultiLangugaeFile/MobileLanguageResource.json'));
+		} catch (err) {}
+		// Delete the backup file
+		try {
+			fs.unlinkSync(__dirname + '/../controllers/MultiLangugaeFile/MobileLanguageResourceUnitTestBackup.json');
+		} catch (err) {}
+
 		dPermission.destroy()
 		.then(function() {
 			return dModule.destroy();
@@ -214,9 +239,6 @@ describe('/languageresources', function() {
 			])
 			.end(function(err, res) {
 				expect(res.body).to.exist;
-				expect(res.body).to.have.property('success');
-				expect(res.body).to.have.property('message');
-				expect(res.body).to.have.property('data');
 				expect(res.body.success).to.equal(true);
 				expect(res.body.message).to.equal('Mobile Language Resources updated successfully...');
 				expect(res.body.data).to.be.null;
@@ -229,9 +251,6 @@ describe('/languageresources', function() {
 			.post('/languageresources/SaveMobileLanguageData')
 			.end(function(err, res) {
 				expect(res.body).to.exist;
-				expect(res.body).to.have.property('success');
-				expect(res.body).to.have.property('message');
-				expect(res.body).to.have.property('data');
 				expect(res.body.success).to.equal(false);
 				expect(res.body.message).to.equal('No Access Permission...');
 				expect(res.body.data).to.equal('AccessPermission');
@@ -249,8 +268,52 @@ describe('/languageresources', function() {
 				expect(res.text).to.exist;
 				expect(res.header['content-type']).to.equal('application/vnd.openxmlformats');
 				expect(res.header['content-disposition']).to.equal('attachment; filename=MobileLanguageResource.xlsx');
+			})
+			.pipe(fs.createWriteStream(__dirname + '/UnitTestMobileLanguageResource.xlsx'))
+			.on('finish', done);
+		});
+	});
+
+	describe('/languageresources/ImportMobileLanguageResource', function() {
+		it('should import mobile language resources', function(done) {
+			var token = {
+				username: dUser.username,
+				password: dUser.password
+			};
+			token = 'JWT ' + jwt.encode(token, 'bugz');
+
+			request(server)
+			.post('/languageresources/ImportMobileLanguageResource')
+			.set('authorization', token)
+			.set('x-requested-with', dModule.Module)
+			.attach('files[]', __dirname + '/../MediaUploads/UnitTest/UnitTestMobileLanguageResource.xlsx')
+			.end(function(err, res) {
+				expect(res.body).to.exist;
+				expect(res.body.success).to.equal(true);
+				expect(res.body.message).to.equal('Mobile Language Resources updated successfully...');
+				expect(res.body.data).to.be.null;
 				done();
 			});
+		});
+		
+		it('should fail if excel file is protected', function(done) {
+			var token = {
+				username: dUser.username,
+				password: dUser.password
+			};
+			token = 'JWT ' + jwt.encode(token, 'bugz');
+	
+			request(server)
+			.post('/languageresources/ImportMobileLanguageResource')
+			.set('authorization', token)
+			.set('x-requested-with', dModule.Module)
+			.attach('files[]', __dirname + '/UnitTestMobileLanguageResource.xlsx')
+			.end(function(err, res) {
+				expect(res.body).to.exist;
+				expect(res.body.success).to.equal(false);
+				expect(res.body.message).to.equal('Error in Import , Excel File is Protected..');
+				done();
+			});	
 		});
 	});
 });

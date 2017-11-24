@@ -381,6 +381,13 @@ describe('/sim', function() {
 	});
 
 	after(function(done) {
+		try {
+			fs.unlinkSync(__dirname + '/UnitTestSimTemplate.xlsx');
+		} catch (err) {}
+		try {
+			fs.unlinkSync(__dirname + '/../MediaUploads/FileUpload/UnitTestSimTemplate.xlsx');
+		} catch (err) {}
+
 		dFence.destroy()
 		.then(function() {
 			return dAlarm.destroy();
@@ -427,8 +434,6 @@ describe('/sim', function() {
 			});
 		})
 		.then(function() {
-			fs.unlinkSync(__dirname + '/UnitTestSimTemplate.xlsx');
-			fs.unlinkSync(__dirname + '/../MediaUploads/FileUpload/UnitTestSimTemplate.xlsx');
 			server.close(done);
 		});
 	});
@@ -539,6 +544,20 @@ describe('/sim', function() {
 
 	describe('/sim/uploadExcelDevice', function() {
 		it('should upload device in excel format', function(done) {
+			request(server)
+			.post('/sim/uploadExcelDevice')
+			.set('x-requested-with', 'tblsimdetails')
+			.attach('files[]', __dirname + '/../MediaUploads/UnitTest/UnitTestSimTemplate.xlsx')
+			.field('idTelCo', 0)
+			.end(function(err, res) {
+				expect(res.body).to.exist;
+				expect(res.body.success).to.equal(true);
+				expect(res.body.message).to.equal('Excel File uploaded successfully..Failed To Import : 1');
+				done();
+			});
+		});
+
+		it('should fail if excel file is protected', function(done) {
 			request(server)
 			.post('/sim/uploadExcelDevice')
 			.set('x-requested-with', 'tblsimdetails')
