@@ -474,6 +474,14 @@ describe('/PetDevice', function() {
 	});
 
 	after(function(done) {
+		// Remove downloaded file
+		try {
+			fs.unlinkSync(__dirname + '/UnitTestTrackersManagementTemplate.xlsx');
+		} catch (err) {}
+		try {
+			fs.unlinkSync(__dirname + '/../MediaUploads/FileUpload/UnitTestTrackersManagementTemplate.xlsx');
+		} catch (err) {}
+
 		dDrivingData.destroy()
 		.then(function() {
 			return dCanvas.destroy();
@@ -764,6 +772,33 @@ describe('/PetDevice', function() {
 				expect(res.text).to.exist;
 				expect(res.header['content-type']).to.equal('application/vnd.openxmlformats');
 				expect(res.header['content-disposition']).to.equal('attachment; filename=TrackersManagement_Template.xlsx');
+			})
+			.pipe(fs.createWriteStream(__dirname + '/UnitTestTrackersManagementTemplate.xlsx'))
+			.on('finish', done);
+		});
+	});
+
+	describe('/PetDevice/uploadExcelDevice', function() {
+		it('should upload device in excel format', function(done) {
+			request(server)
+			.post('/PetDevice/uploadExcelDevice')
+			.attach('files[]', __dirname + '/../MediaUploads/UnitTest/UnitTestTrackersManagementTemplate.xlsx')
+			.end(function(err, res) {
+				expect(res.body).to.exist;
+				expect(res.body.success).to.equal(true);
+				expect(res.body.message).to.equal('Excel File uploaded successfully..');
+				done();
+			});
+		});
+
+		it('should fail if excel file is protected', function(done) {
+			request(server)
+			.post('/PetDevice/uploadExcelDevice')
+			.attach('files[]', __dirname + '/UnitTestTrackersManagementTemplate.xlsx')
+			.end(function(err, res) {
+				expect(res.body).to.exist;
+				expect(res.body.success).to.equal(false);
+				expect(res.body.message).to.equal('Error in Import , Excel File is Protected..');
 				done();
 			});
 		});
