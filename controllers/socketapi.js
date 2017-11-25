@@ -63,7 +63,7 @@ function SendIOSPushNotification(DeviceId) {
         title: 'Alert',
         message: '9787 is out of Home Fence. 9787 is out of Home Fence. 9787 is out of Home Fence. 9787 is out of Home Fence. 9787 is out of Home Fence. 9787 is out of Home Fence. 9787 is out of Home Fence. 9787 is out of Home Fence. 9787 is out of Home Fence.',
         soundname: 'sound50',
-        // messagecount: 2,
+        msgcnt: "2",
         otherfields: {
             deviceid: '123456',
             Id: 1,
@@ -74,7 +74,7 @@ function SendIOSPushNotification(DeviceId) {
     };
 
     // PushNotification.findAll({ where: { iduser: UserId } }).then(function(response) {
-
+    PushNotificationSettings.gcm.msgcnt = "10";
     PushNotificationSettings.apn.defaultData.sound = data.soundname + '.caf';
 
     var objPushNotificationSend = new PushNotifications(PushNotificationSettings);
@@ -414,6 +414,7 @@ router.get('/GenerateIMEI', function(req, res) {
     // var NewPassword = customPassword();
     // console.log(NewPassword);
     // }
+    console.log("Call IMEI")
 
     function InsertIMEI(i) {
         if (i < 10000) {
@@ -443,16 +444,17 @@ router.get('/GenerateIMEI', function(req, res) {
 
 
 //Private functions
-var maxLength = 16;
-var minLength = 16;
+var maxLength = 15;
+var minLength = 15;
 var uppercaseMinCount = 2;
 var lowercaseMinCount = 2;
-var numberMinCount = 16;
+var numberMinCount = 15;
 var specialMinCount = 1;
 var UPPERCASE_RE = /([A-Z])/g;
 var LOWERCASE_RE = /([a-z])/g;
 var NUMBER_RE = /([\d])/g;
-var NumberNotStartwithZero = /^((?!(0))(?!(.0))(?!(..0))[0-9]{16})$/g;
+var NumberNotStartwithZero = /^((?!(0))(?!(.0))(?!(..0))[0-9]{15})$/g;
+var NumberNotStartwithThreeFive = /^((?!(35))(?!(.35))(?!(..35))[0-9]{15})$/g;
 var SPECIAL_CHAR_RE = /([\?\-\^\$\#\@\!\%\&\*])/g;
 var NON_REPEATING_CHAR_RE = /([\w\d\?\-])\1{2,}/g;
 
@@ -461,10 +463,11 @@ function isStrongEnough(password) {
     // var lc = password.match(LOWERCASE_RE);
     var n = password.match(NUMBER_RE);
     var nc = password.match(NumberNotStartwithZero);
+    var ntf = password.match(NumberNotStartwithThreeFive);
     // var sc = password.match(SPECIAL_CHAR_RE);
     var nr = password.match(NON_REPEATING_CHAR_RE);
     return password.length >= minLength &&
-        n && n.length >= numberMinCount && nc;
+        n && n.length >= numberMinCount && nc && ntf;
     // &&
     // sc && sc.length >= specialMinCount;
 }
@@ -472,7 +475,7 @@ function isStrongEnough(password) {
 function customPassword() {
     var password = "";
     var randomLength = Math.floor(Math.random() * (maxLength - minLength)) + minLength;
-
+    //console.log(randomLength)
     while (!isStrongEnough(password)) {
         password = generatePassword(randomLength, false, /[\d\-]/);
     }
