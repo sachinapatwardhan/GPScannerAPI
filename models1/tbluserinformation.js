@@ -72,6 +72,15 @@ module.exports = function(sequelize, DataTypes) {
     idApp: {
       type: DataTypes.INTEGER(11),
       allowNull: true
+    },
+    Notification: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+      defaultValue: '0'
+    },
+    LastLogin: {
+      type: DataTypes.DATE,
+      allowNull: true
     }
   }, {
     tableName: 'tbluserinformation'
