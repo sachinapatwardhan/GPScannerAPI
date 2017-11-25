@@ -23,6 +23,10 @@ module.exports = function(sequelize, DataTypes) {
     Status: {
       type: DataTypes.STRING,
       allowNull: true
+    },
+    CreatedDate: {
+      type: DataTypes.DATE,
+      allowNull: true
     }
   }, {
     tableName: 'tblsharedemail'
