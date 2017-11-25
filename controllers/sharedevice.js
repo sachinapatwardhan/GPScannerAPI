@@ -172,6 +172,7 @@ router.post('/InvitedNewUser', jsonParser, function(req, res) {
                 ObjSharedEmail.SharedEmail = objUser.email;
                 ObjSharedEmail.Status = 'Pending';
                 ObjSharedEmail.idUser = objUser.idSharedUser;
+                ObjSharedEmail.CreatedDate = new Date();
                 SharedEmail.findOrCreate({
                     where: {
                         DeviceId: ObjSharedEmail.DeviceId,
