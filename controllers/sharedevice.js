@@ -173,6 +173,7 @@ router.post('/InvitedNewUser', jsonParser, function(req, res) {
                 ObjSharedEmail.Status = 'Pending';
                 ObjSharedEmail.idUser = objUser.idSharedUser;
                 ObjSharedEmail.CreatedDate = new Date();
+                ObjSharedEmail.CreatedBy = decoded.username;
                 SharedEmail.findOrCreate({
                     where: {
                         DeviceId: ObjSharedEmail.DeviceId,
@@ -181,6 +182,7 @@ router.post('/InvitedNewUser', jsonParser, function(req, res) {
                     defaults: ObjSharedEmail
                 }).then(function(SharedEmailExit) {
                     if (SharedEmailExit[1]) {
+                        funAuditLog.CreateAuditLog('Create shared Email', decoded.username, 'Save shared Email');
                         SystemEmail.findOne().then(function(objSystemEmail) {
                             EmailTemplate.findOne({
                                 where: {

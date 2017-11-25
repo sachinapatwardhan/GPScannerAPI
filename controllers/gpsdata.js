@@ -3082,9 +3082,8 @@ router.get('/DeleteGPSdatabyVehicleId', function(req, res) {
                         }).then(function(response) {
                             if (response) {
                                 response.updateAttributes({ IsDelete: true }).then(function(resUpdate) {
-                                    funAuditLog.CreateAuditLog('DeleteVehicle', UserExist.username, 'Delete Vehicle');
                                     if (resUpdate) {
-
+                                        funAuditLog.CreateAuditLog('Delete vehicle', decoded.username, 'Update IsDelete Status 1');
                                         if (req.query.flg == true || req.query.flg == 'true') {
                                             var obj = new Object();
                                             obj.idVehicle = response.id;
@@ -3095,6 +3094,7 @@ router.get('/DeleteGPSdatabyVehicleId', function(req, res) {
                                             obj.CreatedBy = UserExist.username;
                                             GpsDeleteCash.create(obj).then(function(CashCreate) {
                                                 if (CashCreate) {
+                                                    funAuditLog.CreateAuditLog('Create GpsDeleteCash data', decoded.username, 'Save GpsDeleteCash data');
                                                     res.json({
                                                         success: true,
                                                         message: "Vehicle Deleted Successfully",
