@@ -330,10 +330,34 @@ router.get('/RequestIMEINumberbyUDID', function(req, res) {
                 var obj = new Object();
                 obj.UDID = UDID;
                 obj.IMEI = objIMEI.IMEI;
+                obj.Type = 'IOS';
                 obj.CreatedDate = new Date();
                 IMEINumberMapping.create(obj).then(function(resUserIMEI) {
                     objIMEI.updateAttributes({ IsUse: true }).then(function(resIMEI) {
-                        res.json({ IMEI: objIMEI.IMEI });
+                        GPSDevice.findOne({ where: { IMEI: objIMEI.IMEI } }).then(function(resDevice) {
+                            if (resDevice == null) {
+                                var objDevice = new Object();
+                                objDevice.IMEI = objIMEI.IMEI;
+                                objDevice.DeviceId = objIMEI.IMEI.toString().substring((objIMEI.IMEI.toString()).length - 14);
+                                objDevice.CreatedDate = new Date();
+                                objDevice.Type = 'Mob';
+                                objDevice.CreatedBy = '';
+                                objDevice.IsActive = true;
+                                objDevice.AppName = req.query.AppName;
+                                objDevice.ActivationDate = new Date();
+                                var expireDate = new Date();
+                                expireDate.setFullYear(expireDate.getFullYear() + 1);
+                                expireDate.setHours(00);
+                                expireDate.setMinutes(00);
+                                expireDate.setSeconds(00);
+                                objDevice.ExpiryDate = expireDate;
+                                GPSDevice.create(objDevice).then(function(resCreate) {
+                                    res.json({ IMEI: objIMEI.IMEI });
+                                })
+                            } else {
+                                res.json({ IMEI: objIMEI.IMEI });
+                            }
+                        })
                     })
                 })
             })
@@ -341,6 +365,48 @@ router.get('/RequestIMEINumberbyUDID', function(req, res) {
     })
 
 });
+
+router.get('/RequestIMEINumberForAndroid', function(req, res) {
+    IMEINumberMapping.findOne({ where: { UDID: req.query.UDID } }).then(function(objUserIMEI) {
+        if (objUserIMEI != null) {
+            res.json({ IMEI: objUserIMEI.IMEI });
+        } else {
+            var obj = new Object();
+            obj.UDID = req.query.UDID;
+            obj.IMEI = req.query.IMEI;
+            obj.Type = req.query.Type;
+            obj.CreatedDate = new Date();
+            IMEINumberMapping.create(obj).then(function(resUserIMEI) {
+                if (resUserIMEI != null) {
+                    GPSDevice.findOne({ where: { IMEI: resUserIMEI.IMEI } }).then(function(resDevice) {
+                        if (resDevice == null) {
+                            var objDevice = new Object();
+                            objDevice.IMEI = resUserIMEI.IMEI;
+                            objDevice.DeviceId = resUserIMEI.IMEI.toString().substring((resUserIMEI.IMEI.toString()).length - 14);
+                            objDevice.CreatedDate = new Date();
+                            objDevice.Type = 'Mob';
+                            objDevice.CreatedBy = '';
+                            objDevice.IsActive = true;
+                            objDevice.AppName = req.query.AppName;
+                            objDevice.ActivationDate = new Date();
+                            var expireDate = new Date();
+                            expireDate.setFullYear(expireDate.getFullYear() + 1);
+                            expireDate.setHours(00);
+                            expireDate.setMinutes(00);
+                            expireDate.setSeconds(00);
+                            objDevice.ExpiryDate = expireDate;
+                            GPSDevice.create(objDevice).then(function(resCreate) {
+                                res.json({ IMEI: req.query.IMEI });
+                            })
+                        } else {
+                            res.json({ IMEI: req.query.IMEI });
+                        }
+                    })
+                }
+            })
+        }
+    })
+})
 
 router.get('/GenerateIMEI', function(req, res) {
     req.setTimeout(3600000);
