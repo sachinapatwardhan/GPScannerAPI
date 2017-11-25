@@ -9,6 +9,9 @@ var SystemEmail = models.tblemailsettingsys;
 var EmailTemplate = models.tblemailtemplate;
 var PushNotification = models.tblpushnotification;
 var Setting = models.tblsetting;
+var SharedEmailTbl = models.tblsharedemail;
+var ShareDevice = models.tblsharedevice;
+var Vehicle = models.tblvehicle;
 //End of Tables
 
 router.get('/login', jsonParser, function(req, res) {
@@ -1651,6 +1654,22 @@ router.get('/MobileApplogout', jsonParser, function(req, res) {
         })
     }
 })
+router.get('/SetLastLogin', jsonParser, function(req, res) {
+    User.findOne({ where: { id: req.query.useId } }).then(function(userExits) {
+        if (userExits) {
+            var LastLogin = new Date();
+            userExits.updateAttributes({ LastLogin: LastLogin }).then(function(userupdate) {
+                res.json(userupdate)
+
+            })
+        } else {
+            res.json({
+                success: false,
+                message: 'User not found.'
+            })
+        }
+    })
+})
 
 //End Mobile App
 
@@ -1676,6 +1695,8 @@ router.get('/MobileAppLoginNew', jsonParser, function(req, res) {
                     allowNull: false
                 }
             });
+            var LastLogin = new Date();
+            response.updateAttributes({ LastLogin: LastLogin }).then(function(UpdateLastLogin) {})
             UserInRole.findAll({
                 where: {
                     userId: response.id
@@ -1768,11 +1789,15 @@ router.post('/MobileRegisterNew', jsonParser, function(req, res) {
                     // global.sendSMS(objOTP, function(responseOTP) {
                     //     console.log(responseOTP)
                     // });
+                    var objshare = { email: resUserReg.email, id: resUserReg.id };
+                    AddNewShareDevice(objshare, function(response1) {
+                        res.json({
+                            success: true,
+                            message: "User Registered Successfully...",
+                            data: resUserReg
+                        });
+                    })
 
-                    res.json({
-                        success: true,
-                        message: "User Registered Successfully..."
-                    });
                 })
             } else {
                 var objRole = {
@@ -1795,11 +1820,16 @@ router.post('/MobileRegisterNew', jsonParser, function(req, res) {
                         // global.sendSMS(objOTP, function(responseOTP) {
                         //     console.log(responseOTP)
                         // });
+                        var objshare = { email: resUserReg.email, id: resUserReg.id };
+                        AddNewShareDevice(objshare, function(response1) {
+                            console.log("@@@@")
+                            res.json({
+                                success: true,
+                                message: "User Registered Successfully...",
+                                data: resUserReg
+                            });
+                        })
 
-                        res.json({
-                            success: true,
-                            message: "User Registered Successfully..."
-                        });
 
 
                         // res.json({
@@ -1817,6 +1847,75 @@ router.post('/MobileRegisterNew', jsonParser, function(req, res) {
         });
     })
 });
+
+function AddNewShareDevice(objparam, callback) {
+    SharedEmailTbl.findAll({
+        where: {
+            SharedEmail: objparam.email,
+            Status: 'Pending'
+        }
+    }).then(function(SharedEmailExit) {
+        if (SharedEmailExit.length > 0) {
+            function uploader(i) {
+                if (SharedEmailExit.length > i) {
+                    Vehicle.findOne({ where: { deviceid: SharedEmailExit[i].DeviceId } }).then(function(vehicleExit) {
+                        if (vehicleExit) {
+                            User.findOne({ where: { id: SharedEmailExit[i].idUser } }).then(function(userExit) {
+                                if (userExit) {
+                                    var obj = new Object();
+                                    obj.DeviceId = SharedEmailExit[i].DeviceId;
+                                    obj.idUser = objparam.id;
+                                    obj.idSharedUser = SharedEmailExit[i].idUser;
+                                    obj.idVehicle = vehicleExit.id;
+                                    obj.IsActive = 1;
+                                    obj.IsSharedUserNotification = 1;
+                                    obj.IsNotification = 1;
+                                    obj.CreatedDate = new Date();
+                                    obj.CreatedBy = userExit.username,
+                                        ShareDevice.create(obj).then(function(ShareDeviceCreated) {
+                                            if (ShareDeviceCreated) {
+                                                SharedEmailExit[i].updateAttributes({ Status: 'Complete' }).then(function(SharedEmailupdate) {
+                                                    callback({
+                                                        success: true,
+                                                        message: "Share vehicle added successfully..."
+                                                    });
+                                                    uploader(i + 1);
+                                                })
+
+
+                                            } else {
+                                                callback({
+                                                    success: false,
+                                                    message: "Share vehicle not added successfully..."
+                                                });
+                                            }
+                                        })
+                                } else {
+                                    callback({
+                                        success: false,
+                                        message: "shared User not exits..."
+                                    });
+                                }
+                            })
+
+                        } else {
+                            callback({
+                                success: false,
+                                message: "shared Vehicle not exits..."
+                            });
+                        }
+                    })
+                }
+            }
+            uploader(0);
+        } else {
+            callback({
+                success: false,
+                message: "Shared Device not found..."
+            });
+        }
+    })
+}
 
 router.get('/MobileForgotPasswordNew', function(req, res) {
     User.findOne({ where: { email: req.query.email, idApp: req.query.idApp, } }).then(function(objUser) {
