@@ -513,4 +513,195 @@ router.get('/TransferDevicetoUser', function(req, res) {
         })
     }
 })
+
+// router.get('/GetAllNotUseDevcie', function(req, res) {
+//     var objParam = req.query;
+//     var objColumns = objParam.columns;
+//     var objOrderBy = objParam.order;
+//     var objSearch = objParam.search;
+
+//     var Orderby = objColumns[parseInt(objOrderBy[0].column)].data + ' ' + objOrderBy[0].dir;
+
+//     var search = "";
+//     var date = new Date;
+//     date.setDate(date.getDate() - 30);
+
+//     // convertDate = convertdateformatForUnix(date);
+//     date = new Date(date).getTime() / 1000;
+//     date = date.toString().split('.');
+//     if (objSearch != '' && objSearch != null && objSearch != undefined) {
+//         search = ' and (tb.Name like "%' + objSearch + '%" or ';
+//         search = search + 'tb.deviceid like "%' + objSearch + '%" or ';
+//         search = search + 'tvt.Type like "%' + objSearch + '%" or ';
+//         search = search + 'td.Type like "%' + objSearch + '%" )  ';
+//     }
+//     if (req.query.UserId != null && req.query.UserId != '' && req.query.UserId != undefined) {
+//         search = " and (tb.iduser=" + req.query.UserId + " OR tsd.idUser=" + req.query.UserId + ")";
+//     }
+
+//     var qry = "SELECT  tb.Name,tb.deviceid,tvt.Type as vehicleType,td.Type,tpg.Datetime, tpg.Date,tu.email,tu.username,tu.phone" +
+//         " FROM tblvehicle tb" +
+//         " left join tbluserinformation tu on tu.id = tb.iduser" +
+//         " left join tblvehicletype tvt on tvt.id = tb.idType " +
+//         " left join tblsharedevice tsd ON tsd.idVehicle = tb.id" +
+//         " left join tblgpsdevice td On td.DeviceId = tb.deviceid" +
+//         " Inner JOIN tblgpsdata tpg ON tb.deviceid=tpg.DeviceId" +
+//         " INNER JOIN (SELECT DeviceId, MAX(Date) as maxDate FROM (SELECT DeviceId, Date FROM tblgpsdata ORDER BY Date DESC) d GROUP BY DeviceId)  b ON tpg.DeviceId = b.DeviceId AND tpg.Date = b.maxDate" +
+//         " where IsDelete=false and tpg.Date<=" + date[0] + search +
+//         " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
+//     var Countqry = "SELECT  count(tb.id) as TotalRecord" +
+//         " FROM tblvehicle tb" +
+//         " left join tbluserinformation tu on tu.id = tb.iduser" +
+//         " left join tblvehicletype tvt on tvt.id = tb.idType " +
+//         " left join tblsharedevice tsd ON tsd.idVehicle = tb.id" +
+//         " left join tblgpsdevice td On td.DeviceId = tb.deviceid" +
+//         " Inner JOIN tblgpsdata tpg ON tb.deviceid=tpg.DeviceId" +
+//         " INNER JOIN (SELECT DeviceId, MAX(Date) as maxDate FROM (SELECT DeviceId, Date FROM tblgpsdata ORDER BY Date DESC) d GROUP BY DeviceId)  b ON tpg.DeviceId = b.DeviceId AND tpg.Date = b.maxDate" +
+//         " where  IsDelete=false and tpg.Date<=" + date[0] + search;
+
+
+//     connection.query(qry, function(err, response) {
+//         if (response != undefined) {
+//             connection.query(Countqry, function(err, lstCount, fields) {
+//                 var response1 = new Object();
+//                 response1.draw = objParam.draw;
+//                 response1.recordsTotal = lstCount[0].TotalRecord;
+//                 response1.recordsFiltered = lstCount[0].TotalRecord;
+//                 response1.data = response;
+//                 res.json(response1);
+//             });
+//         } else {
+//             var response1 = new Object();
+//             response1.draw = objParam.draw;
+//             response1.recordsTotal = 0;
+//             response1.recordsFiltered = 0;
+//             response1.data = [];
+//             res.json(response1);
+//         }
+//     })
+// })
+
+
+router.get('/GetAllNotUseDevcie', function(req, res) {
+    var objParam = req.query;
+
+
+    var search = "";
+    var date = new Date;
+    date.setDate(date.getDate() - 30);
+
+    // convertDate = convertdateformatForUnix(date);
+    date = new Date(date).getTime() / 1000;
+    date = date.toString().split('.');
+
+    if (req.query.UserId != null && req.query.UserId != '' && req.query.UserId != undefined) {
+        search = " and (tb.iduser=" + req.query.UserId + " OR tsd.idUser=" + req.query.UserId + ")";
+    }
+
+    var qry = "SELECT  tb.Name,tb.deviceid,tvt.Type as vehicleType,td.Type,tpg.Datetime, tpg.Date,tpg.IsEngine,tu.email,tu.username,tu.phone,tpg.Latitude,tpg.Longitude" +
+        " FROM tblvehicle tb" +
+        " left join tbluserinformation tu on tu.id = tb.iduser" +
+        " left join tblvehicletype tvt on tvt.id = tb.idType " +
+        " left join tblsharedevice tsd ON tsd.idVehicle = tb.id" +
+        " left join tblgpsdevice td On td.DeviceId = tb.deviceid" +
+        " Inner JOIN tblgpsdata tpg ON tb.deviceid=tpg.DeviceId" +
+        // " INNER JOIN (SELECT DeviceId, MAX(Date) as maxDate FROM (SELECT DeviceId, Date FROM tblgpsdata ORDER BY Date DESC) d GROUP BY DeviceId)  b ON tpg.DeviceId = b.DeviceId AND tpg.Date = b.maxDate" +
+        " where IsDelete=false " + search;
+
+    var lstObject = [];
+    connection.query(qry, function(err, response) {
+        var GroupByDevice = u.groupBy(response, function(o) {
+            return o.deviceid;
+        });
+        var lstGroup = u.map(GroupByDevice, function(group, deviceid) {
+            var groups = u.sortBy(group, function(num) { return num.Date }).reverse();
+            // return groups;
+
+
+            console.log(groups[0].deviceid, "@@@@@@@@@...", groups[0].Date, "--------<-----", date[0], ".==", groups[0].Date < date[0]);
+            if (parseInt(groups[0].Date) < parseInt(date[0])) {
+                console.log("@@@@@@@@@");
+                return {
+                    Name: groups[0].Name,
+                    deviceid: groups[0].deviceid,
+                    Date: groups[0].Date,
+                    vehicleType: groups[0].vehicleType,
+                    Type: groups[0].Type,
+                    Datetime: groups[0].Datetime,
+                    email: groups[0].Date,
+                    username: groups[0].username,
+                    phone: groups[0].phone
+                }
+            } else {
+
+                var flg = true;
+                var i = 1;
+                console.log("else..............", groups[i].Date, ".....<", date[0], "----", parseInt(groups[i].Date) > parseInt(date[0]));
+                var record = 0;
+
+                function uploader(i) {
+                    console.log(parseInt(groups[i].Date), " > ", parseInt(date[0]), "==", parseInt(groups[i].Date) > parseInt(date[0]))
+                    if (flg == true) {
+                        console.log(groups[i].Date, "------------", date[0])
+                        console.log(groups[i].IsEngine == 0)
+                        console.log(groups[i - 1].Latitude, "==", groups[i].Latitude, "==", groups[i - 1].Latitude == groups[i].Latitude)
+                        console.log(groups[i - 1].Longitude, "==", groups[i].Longitude, "==", groups[i - 1].Longitude == groups[i].Longitude)
+                        if (groups[i].IsEngine == 0) {
+                            console.log("i.....", i);
+
+                            uploader(i + 1);
+                        } else {
+                            record = i;
+                            console.log("else....")
+                            flg = false;
+                        }
+
+                    }
+                }
+                uploader(i);
+                if (parseInt(groups[record].Date) < parseInt(date[0])) {
+                    return {
+                        Name: groups[record].Name,
+                        deviceid: groups[record].deviceid,
+                        Date: groups[record].Date,
+                        vehicleType: groups[record].vehicleType,
+                        Type: groups[record].Type,
+                        Datetime: groups[record].Datetime,
+                        email: groups[record].Date,
+                        username: groups[record].username,
+                        phone: groups[record].phone
+                    }
+                }
+            }
+
+
+
+        })
+
+        var response1 = [];
+        for (var i = 0; i < lstGroup.length; i++) {
+            if (lstGroup[i] != null) {
+                response1.push(lstGroup[i]);
+            }
+        }
+
+        res.json(response1)
+    })
+})
+
+
+function convertdateformatForUnix(date1) {
+    var date = new Date(date1);
+    var firstdayMonth = date.getMonth() + 1;
+    var firstdayDay = date.getDate();
+    var firstdayYear = date.getFullYear();
+    var firstdayHours = date.getHours();
+    var firstdayMinutes = date.getMinutes();
+    var firstdaySeconds = date.getSeconds();
+
+    return ("00" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("0000" + firstdayDay.toString()).slice(-2) + " " + ("00" + firstdayHours.toString()).slice(-2) + ':' + ("00" + firstdayMinutes.toString()).slice(-2) + ':' + ("00" + firstdaySeconds.toString()).slice(-2);
+
+}
+
+
 module.exports = router

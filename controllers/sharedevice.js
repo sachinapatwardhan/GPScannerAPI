@@ -1,6 +1,9 @@
 var router = express.Router();
 var User = models.tbluserinformation;
 var SharedDevice = models.tblsharedevice;
+var EmailTemplate = models.tblemailtemplate;
+var SystemEmail = models.tblemailsettingsys;
+var SharedEmail = models.tblsharedemail;
 
 router.get('/GetAllSharedDeviceByUser', function(req, res) {
     SharedDevice.belongsTo(User, {
@@ -17,11 +20,34 @@ router.get('/GetAllSharedDeviceByUser', function(req, res) {
         where: { DeviceId: req.query.DeviceId, $or: [{ idSharedUser: req.query.idSharedUser }, { idUser: req.query.idSharedUser }] },
         order: 'CreatedDate DESC'
     }).then(function(response) {
-        res.json(response);
+        SharedEmail.findAll({ where: { idUser: req.query.idSharedUser, DeviceId: req.query.DeviceId, Status: 'Pending' } }).then(function(resShare) {
+            res.json({ "lstSharedUser": response, "lstSharedInvite": resShare });
+        })
     }).catch(function(error) {
         res.json(error);
     })
 });
+
+// router.get('/GetAllSharedDeviceByUser', function(req, res) {
+//     SharedDevice.belongsTo(User, {
+//         foreignKey: {
+//             name: 'idUser',
+//             allowNull: false
+//         }
+//     });
+//     SharedDevice.findAll({
+//         include: [{
+//             model: User,
+//             attributes: ['id', 'email', 'username'],
+//         }],
+//         where: { DeviceId: req.query.DeviceId, $or: [{ idSharedUser: req.query.idSharedUser }, { idUser: req.query.idSharedUser }] },
+//         order: 'CreatedDate DESC'
+//     }).then(function(response) {
+//         res.json(response);
+//     }).catch(function(error) {
+//         res.json(error);
+//     })
+// });
 
 router.post('/SaveSharedUser', jsonParser, function(req, res) {
     objUser = req.body;
@@ -126,6 +152,90 @@ router.post('/SaveSharedUserNew', jsonParser, function(req, res) {
         res.json(InvalidToken);
     }
 })
+router.get('/GetAllInvitedEmail', jsonParser, function(req, res) {
+    SharedEmail.findAll({ where: { DeviceId: req.query.DeviceId } }).then(function(response) {
+        res.json(response);
+    })
+})
+router.post('/InvitedNewUser', jsonParser, function(req, res) {
+    objUser = req.body;
+
+    objHeader = req.headers;
+
+    var token = getToken(objHeader);
+    if (token) {
+        var decoded = jwt.decode(token, TokenKey);
+        User.findOne({ where: { username: decoded.username, password: decoded.password } }).then(function(UserExist) {
+            if (UserExist != null) {
+                var ObjSharedEmail = new Object();
+                ObjSharedEmail.DeviceId = objUser.DeviceId;
+                ObjSharedEmail.SharedEmail = objUser.email;
+                ObjSharedEmail.Status = 'Pending';
+                ObjSharedEmail.idUser = objUser.idSharedUser;
+                SharedEmail.findOrCreate({
+                    where: {
+                        DeviceId: ObjSharedEmail.DeviceId,
+                        SharedEmail: ObjSharedEmail.SharedEmail
+                    },
+                    defaults: ObjSharedEmail
+                }).then(function(SharedEmailExit) {
+                    if (SharedEmailExit[1]) {
+                        SystemEmail.findOne().then(function(objSystemEmail) {
+                            EmailTemplate.findOne({
+                                where: {
+                                    Type: "Invitation Email",
+                                }
+                            }).then(function(objEmailTemplate) {
+
+                                var fromid = '';
+                                if (UserExist.email == '' || UserExist.email == null || UserExist.email == undefined) {
+                                    fromid = objSystemEmail.DefaultEmailFrom;
+                                } else {
+                                    fromid = UserExist.email;
+                                }
+                                var body = objEmailTemplate.EmailBody.replace(/{AppName}/g, objUser.AppName).replace(/{email}/g, fromid);
+                                var mail = {
+                                    from: fromid,
+                                    to: objUser.email, // + ', ' + objSystemEmail.NotificationEmailTo,
+                                    // cc: objSetting.Value,
+                                    subject: UserExist.email + " " + objEmailTemplate.EmailSubject,
+                                    html: body
+                                };
+
+                                transporter.sendMail(mail, function(error, response) {
+                                    if (error) {
+                                        res.json(error);
+                                    } else {
+                                        // funAuditLog.CreateAuditLog('Send initation mail', decoded.username, 'Send initation mail');
+                                        res.json({
+                                            success: true,
+                                            message: "Invitation email send to this user successfully",
+                                            data: response
+                                        });
+                                    }
+                                });
+                            })
+                        })
+
+                    } else {
+                        res.json({
+                            success: true,
+                            message: "You have already invited this user",
+                            data: SharedEmailExit
+                        });
+                    }
+                })
+            } else {
+                res.json({
+                    success: false,
+                    InvalidToken: true,
+                    data: InvalidToken,
+                });
+            }
+        })
+    }
+
+})
 
 router.get('/ChangeSharedNotificationSetting', function(req, res) {
 
@@ -209,4 +319,30 @@ router.get('/RemoveSharedUser', function(req, res) {
     }
 })
 
+router.get('/RejectSharedInvitation', function(req, res) {
+    objHeader = req.headers;
+    var token = getToken(objHeader);
+    if (token) {
+        var decoded = jwt.decode(token, TokenKey);
+        SharedEmail.findOne({
+            where: {
+                Id: req.query.Id
+            }
+        }).then(function(response) {
+            if (response != null) {
+                response.updateAttributes({ Status: 'Rejected By Main User' }).then(function(resUpdate) {
+                    if (resUpdate != null) {
+                        funAuditLog.CreateAuditLog('RejectSharedInvitation', decoded.username, 'Reject Shared Invitation By Main User');
+                        res.json({ success: true, message: "User Removed successfully...", data: resUpdate });
+                    } else {
+                        res.json({ success: false, message: "Please Try Again Later...", data: resUpdate });
+                    }
+                })
+            }
+        })
+    } else {
+        res.json(InvalidToken);
+    }
+
+})
 module.exports = router

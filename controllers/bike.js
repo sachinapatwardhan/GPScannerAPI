@@ -138,16 +138,12 @@ router.get('/DeleteBike', function(req, res) {
                     }).then(function(response) {
                         if (response) {
                             response.updateAttributes({ IsDelete: true }).then(function(resUpdate) {
-                                // GPSData.destroy({ where: { DeviceId: req.query.DeviceId } }).then(function(responseGPS) {
-                                //     Alarm.destroy({ where: { DeviceId: req.query.DeviceId } }).then(function(responseAlarm) {
                                 funAuditLog.CreateAuditLog('DeleteBike', UserExist.username, 'Delete Vehicle');
                                 res.json({
                                     success: true,
                                     message: "Vehicle deleted successfully",
                                     data: response
                                 });
-                                //     });
-                                // });
                             });
                         } else {
                             res.json(RecordNotFound);

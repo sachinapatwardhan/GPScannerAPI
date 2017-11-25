@@ -5,6 +5,10 @@ var GpsDevice = models.tblgpsdevice;
 var Alarm = models.tblalarm;
 var Bike = models.tblvehicle;
 var momentz = require('moment-timezone');
+var Vehicle = models.tblvehicle;
+var EmailTemplate = models.tblemailtemplate;
+var SystemEmail = models.tblemailsettingsys;
+var GpsDeleteCash = models.tblgpsdeletecash;
 //gpsdata
 
 router.get('/GetAllGpsDataOld', function(req, res) {
@@ -3036,5 +3040,114 @@ function timeDifference(Start, End, flg) {
     }
 
 }
+
+
+router.get('/DeleteGPSdatabyVehicleId', function(req, res) {
+    objHeader = req.headers;
+    var token = getToken(objHeader);
+
+    var obj = {};
+    obj.headers = req.headers;
+    obj.query = req.query;
+    if (token) {
+        var decoded = jwt.decode(token, TokenKey);
+        var search = {};
+        search['$and'] = [];
+
+        var obj = new Object();
+        obj['username'] = {
+            $eq: decoded.username
+        };
+        search['$and'].push(obj);
+
+        var obj = new Object();
+        obj['password'] = {
+            $eq: decoded.password
+        };
+        search['$and'].push(obj);
+
+        User.findOne({
+            where: search
+        }).then(function(UserExist) {
+            if (UserExist != null) {
+
+                var Encryptpassword = jwt.encode(req.query.password, "bugz");
+                if (decoded.password == Encryptpassword) {
+                    if (req.query.DeviceId != '' && req.query.DeviceId != null) {
+                        Vehicle.findOne({
+                            where: {
+                                deviceid: req.query.DeviceId,
+                                IsDelete: false
+                            }
+                        }).then(function(response) {
+                            if (response) {
+                                response.updateAttributes({ IsDelete: true }).then(function(resUpdate) {
+                                    funAuditLog.CreateAuditLog('DeleteVehicle', UserExist.username, 'Delete Vehicle');
+                                    if (resUpdate) {
+
+                                        if (req.query.flg == true || req.query.flg == 'true') {
+                                            var obj = new Object();
+                                            obj.idVehicle = response.id;
+                                            obj.DeviceId = response.deviceid;
+                                            obj.idUser = response.iduser;
+                                            obj.Status = 'Pending';
+                                            obj.CreatedDate = new Date();
+                                            obj.CreatedBy = UserExist.username;
+                                            GpsDeleteCash.create(obj).then(function(CashCreate) {
+                                                if (CashCreate) {
+                                                    res.json({
+                                                        success: true,
+                                                        message: "Vehicle Deleted Successfully",
+                                                    })
+                                                } else {
+                                                    res.json({
+                                                        success: false,
+                                                        message: "Vehicle not Deleted Successfully",
+                                                    })
+                                                }
+
+                                            })
+
+                                        } else {
+                                            res.json({
+                                                success: false,
+                                                message: "Vehicle Deleted Successfully",
+                                            })
+                                        }
+                                    } else {
+                                        res.json({
+                                            success: false,
+                                            message: "Vehicle not Deleted Successfully",
+                                        })
+                                    }
+                                });
+                            } else {
+                                res.json(RecordNotFound);
+                            }
+
+                        })
+                    } else {
+                        res.json({
+                            success: false,
+                            message: "Select Vehicle To delete",
+                        });
+                    }
+                } else {
+                    res.json({
+                        success: false,
+                        message: "your password is wrong..",
+                    });
+                }
+            } else {
+                res.json(InvalidToken);
+            }
+        })
+    } else {
+        res.json(InvalidToken);
+    }
+
+})
+
+
 module.exports = router;
 //End of Tables
