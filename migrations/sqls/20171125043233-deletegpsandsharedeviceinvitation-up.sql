@@ -19,6 +19,7 @@ CREATE TABLE `tblsharedemail` (
   `idUser` int(11) DEFAULT NULL,
   `SharedEmail` varchar(200) DEFAULT NULL,
   `Status` varchar(45) DEFAULT NULL,
+  `CreatedDate` datetime DEFAULT NULL,
   PRIMARY KEY (`Id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
