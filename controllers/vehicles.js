@@ -513,6 +513,8 @@ router.get('/TransferDevicetoUser', function(req, res) {
                 res.json(InvalidToken);
             }
         })
+    } else {
+        res.json(InvalidToken)
     }
 })
 

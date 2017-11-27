@@ -928,8 +928,12 @@ router.get('/UpdateStatusold', function(req, res) {
                         res.json({ success: false, message: "Tracker Status not Updated successfully", data: response });
                     }
                 })
+            } else {
+                res.json({ success: false, message: "Tracker Device not found", data: response });
             }
         })
+    } else {
+        res.json(InvalidToken);
     }
 })
 
@@ -1007,8 +1011,12 @@ router.get('/UpdateStatus', function(req, res) {
                         }
                     }
                 })
+            } else {
+                res.json(InvalidToken);
             }
         })
+    } else {
+        res.json(InvalidToken);
     }
 })
 
