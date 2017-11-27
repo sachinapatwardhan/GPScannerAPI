@@ -27,6 +27,18 @@ module.exports = function(sequelize, DataTypes) {
     CreatedDate: {
       type: DataTypes.DATE,
       allowNull: true
+    },
+    CreatedBy: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    ModifiedDate: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    ModifiedBy: {
+      type: DataTypes.STRING,
+      allowNull: true
     }
   }, {
     tableName: 'tblsharedemail'
