@@ -229,11 +229,7 @@ router.post('/InvitedNewUser', jsonParser, function(req, res) {
                     }
                 })
             } else {
-                res.json({
-                    success: false,
-                    InvalidToken: true,
-                    data: InvalidToken,
-                });
+                res.json(InvalidToken)
             }
         })
     } else {
