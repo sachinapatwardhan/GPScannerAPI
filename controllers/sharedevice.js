@@ -177,7 +177,8 @@ router.post('/InvitedNewUser', jsonParser, function(req, res) {
                 SharedEmail.findOrCreate({
                     where: {
                         DeviceId: ObjSharedEmail.DeviceId,
-                        SharedEmail: ObjSharedEmail.SharedEmail
+                        SharedEmail: ObjSharedEmail.SharedEmail,
+                        $or: [{ Status: 'Complete' }, { Status: 'Pending' }],
                     },
                     defaults: ObjSharedEmail
                 }).then(function(SharedEmailExit) {
