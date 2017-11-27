@@ -1789,7 +1789,7 @@ router.post('/MobileRegisterNew', jsonParser, function(req, res) {
                     // global.sendSMS(objOTP, function(responseOTP) {
                     //     console.log(responseOTP)
                     // });
-                    var objshare = { email: resUserReg.email, id: resUserReg.id };
+                    var objshare = { email: resUserReg.email, id: resUserReg.id, username: resUserReg.username };
                     AddNewShareDevice(objshare, function(response1) {
                         res.json({
                             success: true,
@@ -1820,7 +1820,7 @@ router.post('/MobileRegisterNew', jsonParser, function(req, res) {
                         // global.sendSMS(objOTP, function(responseOTP) {
                         //     console.log(responseOTP)
                         // });
-                        var objshare = { email: resUserReg.email, id: resUserReg.id };
+                        var objshare = { email: resUserReg.email, id: resUserReg.id, username: resUserReg.username };
                         AddNewShareDevice(objshare, function(response1) {
                             console.log("@@@@")
                             res.json({
@@ -1871,25 +1871,25 @@ function AddNewShareDevice(objparam, callback) {
                                     obj.IsSharedUserNotification = 1;
                                     obj.IsNotification = 1;
                                     obj.CreatedDate = new Date();
-                                    obj.CreatedBy = userExit.username,
-                                        ShareDevice.create(obj).then(function(ShareDeviceCreated) {
-                                            if (ShareDeviceCreated) {
-                                                SharedEmailExit[i].updateAttributes({ Status: 'Complete' }).then(function(SharedEmailupdate) {
-                                                    callback({
-                                                        success: true,
-                                                        message: "Share vehicle added successfully..."
-                                                    });
-                                                    uploader(i + 1);
-                                                })
+                                    obj.CreatedBy = userExit.username;
+
+                                    ShareDevice.create(obj).then(function(ShareDeviceCreated) {
+
+                                        if (ShareDeviceCreated) {
+                                            SharedEmailExit[i].updateAttributes({ Status: 'Complete', ModifiedDate: new Date(), ModifiedBy: objparam.username }).then(function(SharedEmailupdate) {
+                                                funAuditLog.CreateAuditLog('update SharedEmailExit', objparam.username, 'Update SharedEmailExit');
+                                                uploader(i + 1);
+
+                                            })
 
 
-                                            } else {
-                                                callback({
-                                                    success: false,
-                                                    message: "Share vehicle not added successfully..."
-                                                });
-                                            }
-                                        })
+                                        } else {
+                                            callback({
+                                                success: false,
+                                                message: "Share vehicle not added successfully..."
+                                            });
+                                        }
+                                    })
                                 } else {
                                     callback({
                                         success: false,
@@ -1905,6 +1905,11 @@ function AddNewShareDevice(objparam, callback) {
                             });
                         }
                     })
+                } else {
+                    callback({
+                        success: true,
+                        message: "Share vehicle added successfully..."
+                    });
                 }
             }
             uploader(0);
