@@ -236,6 +236,8 @@ router.post('/InvitedNewUser', jsonParser, function(req, res) {
                 });
             }
         })
+    } else {
+        res.json(InvalidToken)
     }
 
 })
