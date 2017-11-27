@@ -178,7 +178,7 @@ router.post('/InvitedNewUser', jsonParser, function(req, res) {
                     where: {
                         DeviceId: ObjSharedEmail.DeviceId,
                         SharedEmail: ObjSharedEmail.SharedEmail,
-                        $or: [{ Status: 'Complete' }, { Status: 'Pending' }],
+                        $or: [{ Status: { $ne: 'Complete' } }, { Status: { $ne: 'Pending' } }],
                     },
                     defaults: ObjSharedEmail
                 }).then(function(SharedEmailExit) {
@@ -222,11 +222,51 @@ router.post('/InvitedNewUser', jsonParser, function(req, res) {
                         })
 
                     } else {
-                        res.json({
-                            success: true,
-                            message: "You have already invited this user",
-                            data: SharedEmailExit
-                        });
+                        var obj = { Status: "Pending", ModifiedBy: null, ModifiedDate: null, CreatedBy: decoded.username, CreatedDate: new Date() };
+                        SharedEmailExit[0].updateAttributes(obj).then(function(SystemEmailUpdate) {
+                            if (SystemEmailUpdate) {
+                                funAuditLog.CreateAuditLog('Create shared Email', decoded.username, 'Update shared Email');
+                                EmailTemplate.findOne({
+                                    where: {
+                                        Type: "Invitation Email",
+                                    }
+                                }).then(function(objEmailTemplate) {
+
+                                    var fromid = '';
+                                    if (UserExist.email == '' || UserExist.email == null || UserExist.email == undefined) {
+                                        fromid = objSystemEmail.DefaultEmailFrom;
+                                    } else {
+                                        fromid = UserExist.email;
+                                    }
+                                    var body = objEmailTemplate.EmailBody.replace(/{AppName}/g, objUser.AppName).replace(/{email}/g, fromid);
+                                    var mail = {
+                                        from: fromid,
+                                        to: objUser.email,
+                                        subject: UserExist.email + " " + objEmailTemplate.EmailSubject,
+                                        html: body
+                                    };
+
+                                    transporter.sendMail(mail, function(error, response) {
+                                        if (error) {
+                                            res.json(error);
+                                        } else {
+                                            res.json({
+                                                success: true,
+                                                message: "Invitation email send to this user successfully",
+                                                data: response
+                                            });
+                                        }
+                                    });
+                                })
+                            } else {
+                                res.json({
+                                    success: true,
+                                    message: "You have already invited this user",
+                                    data: SharedEmailExit
+                                });
+                            }
+                        })
+
                     }
                 })
             } else {
@@ -332,9 +372,9 @@ router.get('/RejectSharedInvitation', function(req, res) {
             }
         }).then(function(response) {
             if (response != null) {
-                response.updateAttributes({ Status: 'Rejected By Main User' }).then(function(resUpdate) {
+                response.updateAttributes({ Status: 'Rejected By Main User', ModifiedDate: new Date(), ModifiedBy: decoded.username }).then(function(resUpdate) {
                     if (resUpdate != null) {
-                        funAuditLog.CreateAuditLog('RejectSharedInvitation', decoded.username, 'Reject Shared Invitation By Main User');
+                        funAuditLog.CreateAuditLog('RejectSharedInvitation', decoded.username, response.SharedEmail + ' id Shared Invitation reject By Main User');
                         res.json({ success: true, message: "User Removed successfully...", data: resUpdate });
                     } else {
                         res.json({ success: false, message: "Please Try Again Later...", data: resUpdate });
