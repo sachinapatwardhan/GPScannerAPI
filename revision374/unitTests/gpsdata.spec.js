@@ -156,7 +156,7 @@ var testGpsData2 = {
 	AD1: null,
 	AD2: null,
 	OdoMeter: null,
-	Date: Math.floor(new Date().getTime() / 1000)
+	Date: null
 };
 var testGpsData3 = {
 	Datetime: new Date(),
@@ -240,6 +240,7 @@ var testUser1 = {
 	IsMobileVerify: false,
 	idApp: 1
 };
+var testOriginalPassword1 = testUser1.password;
 var testRole1 = {
 	RoleName: 'UnitTestUser',
 	Description: 'Unit Test User',
@@ -347,6 +348,7 @@ describe('/gpsdata', function() {
 		})
 		.then(function(rGpsData) {
 			dGpsData3 = rGpsData;
+			testGpsData2.Date = moment().add(10, 'minutes').unix();
 			return GpsData.create(testGpsData2);
 		})
 		.then(function(rGpsData) {
@@ -455,7 +457,6 @@ describe('/gpsdata', function() {
 				StartDate: moment.utc().startOf('month').format(),
 				EndDate: moment.utc().endOf('month').format()
 			}))
-			.expect(200)
 			.end(function(err, res) {
 				expect(res.body).to.exist;
 				expect(res.body).to.have.property('draw');
@@ -510,7 +511,6 @@ describe('/gpsdata', function() {
 				StartDate: moment.utc().startOf('month').format(),
 				EndDate: moment.utc().endOf('month').format()
 			}))
-			.expect(200)
 			.end(function(err, res) {
 				expect(res.body).to.exist;
 				expect(res.body).to.have.property('draw');
@@ -556,7 +556,6 @@ describe('/gpsdata', function() {
 				EndDate: moment.utc().endOf('month').format(),
 				AlarmCode: testAlarm1.AlarmCode
 			}))
-			.expect(200)
 			.end(function(err, res) {
 				expect(res.body).to.exist;
 				expect(res.body).to.have.property('draw');
@@ -600,7 +599,6 @@ describe('/gpsdata', function() {
 				EndDate: moment.utc().endOf('month').format(),
 				AlarmCode: testAlarm1.AlarmCode
 			}))
-			.expect(200)
 			.end(function(err, res) {
 				expect(res.body).to.exist;
 				expect(res.body).to.have.property('draw');
@@ -624,7 +622,6 @@ describe('/gpsdata', function() {
 			.query(qs.stringify({
 				idApp: testUser1.idApp
 			}))
-			.expect(200)
 			.end(function(err, res) {
 				expect(res.body).to.exist;
 				expect(res.body).to.be.an('array').that.has.property('length').of.at.least(1);
@@ -638,7 +635,6 @@ describe('/gpsdata', function() {
 			.query(qs.stringify({
 				idApp: 0
 			}))
-			.expect(200)
 			.end(function(err, res) {
 				expect(res.body).to.exist;
 				expect(res.body).to.be.an('array').that.is.empty;
@@ -656,7 +652,6 @@ describe('/gpsdata', function() {
 				StartDate: moment.utc().startOf('month').format(),
 				EndDate: moment.utc().endOf('month').format()
 			}))
-			.expect(200)
 			.end(function(err, res) {
 				expect(res.text).to.exist;
 				expect(res.header['content-type']).to.equal('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
@@ -679,7 +674,6 @@ describe('/gpsdata', function() {
 				TimeZone: 'Asia/Kuala_Lumpur',
 				CurrentOffset: '+08:00'
 			}))
-			.expect(200)
 			.end(function(err, res) {
 				expect(res.text).to.exist;
 				expect(res.header['content-type']).to.equal('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
@@ -703,7 +697,6 @@ describe('/gpsdata', function() {
 				length: 25,
 				TimeZone: 'Asia/Kuala_Lumpur'
 			}))
-			.expect(200)
 			.end(function(err, res) {
 				expect(res.body).to.exist;
 				expect(res.body.data).to.be.an('array').that.has.lengthOf(2);
@@ -725,7 +718,6 @@ describe('/gpsdata', function() {
 				length: 25,
 				TimeZone: 'Asia/Kuala_Lumpur'
 			}))
-			.expect(200)
 			.end(function(err, res) {
 				expect(res.body).to.exist;
 				expect(res.body.data).to.be.an('array').that.has.lengthOf(0);
@@ -747,7 +739,6 @@ describe('/gpsdata', function() {
 				DeviceId: '\'' + testGpsData1.DeviceId + '\'',
 				TimeZone: 'Asia/Kuala_Lumpur'
 			}))
-			.expect(200)
 			.end(function(err, res) {
 				expect(res.text).to.exist;
 				expect(res.header['content-type']).to.equal('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
@@ -768,7 +759,6 @@ describe('/gpsdata', function() {
 				DeviceId: '\'' + testGpsData1.DeviceId + '\'',
 				TimeZone: 'Asia/Kuala_Lumpur'
 			}))
-			.expect(200)
 			.end(function(err, res) {
 				expect(res.body).to.exist;
 				expect(res.body).to.be.an('array').that.has.lengthOf(1);
@@ -787,7 +777,6 @@ describe('/gpsdata', function() {
 				DeviceId: '\'\'',
 				TimeZone: 'Asia/Kuala_Lumpur'
 			}))
-			.expect(200)
 			.end(function(err, res) {
 				expect(res.body).to.exist;
 				expect(res.body).to.be.an('array').that.has.lengthOf(0);
@@ -806,7 +795,6 @@ describe('/gpsdata', function() {
 				EndDate: moment.utc().endOf('month').format(),
 				DeviceId: '\'\'',
 			}))
-			.expect(200)
 			.end(function(err, res) {
 				expect(res.text).to.exist;
 				expect(res.header['content-type']).to.equal('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
@@ -828,7 +816,6 @@ describe('/gpsdata', function() {
 				TimeZone: 'Asia/Kuala_Lumpur',
 				IdleSpeed: ''
 			}))
-			.expect(200)
 			.end(function(err, res) {
 				expect(res.body).to.exist;
 				expect(res.body).to.be.an('array').that.has.lengthOf(1);
@@ -848,7 +835,6 @@ describe('/gpsdata', function() {
 				TimeZone: 'Asia/Kuala_Lumpur',
 				IdleSpeed: ''
 			}))
-			.expect(200)
 			.end(function(err, res) {
 				expect(res.body).to.exist;
 				expect(res.body.success).to.equal(false);
@@ -870,7 +856,6 @@ describe('/gpsdata', function() {
 				DeviceId: '\'' + testGpsData1.DeviceId + '\'',
 				TimeZone: 'Asia/Kuala_Lumpur'
 			}))
-			.expect(200)
 			.end(function(err, res) {
 				expect(res.body).to.exist;
 				expect(res.body).to.be.an('array').that.has.lengthOf(1);
@@ -889,7 +874,6 @@ describe('/gpsdata', function() {
 				DeviceId: '\'\'',
 				TimeZone: 'Asia/Kuala_Lumpur'
 			}))
-			.expect(200)
 			.end(function(err, res) {
 				expect(res.body).to.exist;
 				expect(res.body).to.be.an('array').that.has.lengthOf(0);
@@ -909,11 +893,52 @@ describe('/gpsdata', function() {
 				DeviceId: '\'' + testGpsData1.DeviceId + '\'',
 				TimeZone: 'Asia/Kuala_Lumpur'
 			}))
-			.expect(200)
 			.end(function(err, res) {
 				expect(res.text).to.exist;
 				expect(res.header['content-type']).to.equal('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 				expect(res.header['content-disposition']).to.equal('attachment; filename=WorkingHourReport.xlsx');
+				done();
+			});
+		});
+	});
+
+	describe('/gpsdata/DeleteGPSdatabyVehicleId', function(req, res) {
+		it('should delete gps data by vehicle ID when credentials are correct', function(done) {
+			var token = {
+				username: dUser.username,
+				password: dUser.password
+			};
+			token = 'JWT ' + jwt.encode(token, 'bugz');
+			
+			request(server)
+			.get('/gpsdata/DeleteGPSdatabyVehicleId')
+			.set('authorization', token)
+			.query(qs.stringify({
+				DeviceId: testVehicle1.deviceid,
+				password: testOriginalPassword1,
+				flg: true
+			}))
+			.end(function(err, res) {
+				expect(res.body).to.exist;
+				expect(res.body.success).to.equal(true);
+				expect(res.body.message).to.equal('Vehicle Deleted Successfully');
+				done();
+			});
+		});
+
+		it('should fail when credentials are wrong', function(done) {
+			request(server)
+			.get('/gpsdata/DeleteGPSdatabyVehicleId')
+			.query(qs.stringify({
+				DeviceId: testVehicle1.deviceid,
+				password: testOriginalPassword1,
+				flg: true
+			}))
+			.end(function(err, res) {
+				expect(res.body).to.exist;
+				expect(res.body.success).to.equal(false);
+				expect(res.body.message).to.equal('Invalid token...');
+				expect(res.body.data).to.equal('TOKEN');
 				done();
 			});
 		});

@@ -205,7 +205,7 @@ var testPermission = {
 	Show: true
 };
 
-describe('bike.js', function() {
+describe('/bike', function() {
 	// Important! Because server setup is slow!
 	this.timeout(5000);
 

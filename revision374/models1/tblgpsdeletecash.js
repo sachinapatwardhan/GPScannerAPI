@@ -1,47 +1,42 @@
 /* jshint indent: 2 */
 
 module.exports = function(sequelize, DataTypes) {
-  return sequelize.define('tblpushnotification', {
-    id: {
+  return sequelize.define('tblgpsdeletecash', {
+    Id: {
       type: DataTypes.INTEGER(11),
       allowNull: false,
       primaryKey: true,
       autoIncrement: true
     },
-    udid: {
-      type: DataTypes.STRING,
-      allowNull: false
-    },
-    Platform: {
-      type: DataTypes.STRING,
-      allowNull: true
-    },
-    PushNotificationId: {
-      type: DataTypes.TEXT,
-      allowNull: true
-    },
-    iduser: {
+    idVehicle: {
       type: DataTypes.INTEGER(11),
       allowNull: true
     },
-    Country: {
+    DeviceId: {
       type: DataTypes.STRING,
       allowNull: true
     },
-    UserType: {
-      type: DataTypes.STRING,
-      allowNull: true
-    },
-    MessageCount: {
+    idUser: {
       type: DataTypes.INTEGER(11),
-      allowNull: true,
-      defaultValue: '0'
+      allowNull: true
     },
-    AppVersion: {
+    Status: {
       type: DataTypes.STRING,
+      allowNull: true
+    },
+    CreatedDate: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    CreatedBy: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    ModifiedDate: {
+      type: DataTypes.DATE,
       allowNull: true
     }
   }, {
-    tableName: 'tblpushnotification'
+    tableName: 'tblgpsdeletecash'
   });
 };

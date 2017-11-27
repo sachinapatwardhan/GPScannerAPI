@@ -11,7 +11,8 @@ var testPushNotification1 = {
 	iduser: 0,
 	Country: 'Malaysia',
 	UserType: 'Android',
-	MessageCount: 0
+	MessageCount: 0,
+	AppVersion: '0.0.0'
 };
 var testUser1 = {
 	email: 'unittest.user@bugzstudio.com',
@@ -130,7 +131,6 @@ describe('/pushnotification', function() {
 			request(server)
 			.post('/pushnotification/Subscribe')
 			.send(testPushNotification1)
-			.expect(200)
 			.end(function(err, res) {
 				expect(res.body).to.exist;
 				expect(res.body.success).to.equal(true);
@@ -157,7 +157,6 @@ describe('/pushnotification', function() {
 				UserType: testPushNotification1.UserType,
 				UserId: testPushNotification1.iduser
 			}))
-			.expect(200)
 			.end(function(err, res) {
 				expect(res.body).to.exist;
 				expect(res.body.success).to.equal(true);
@@ -181,7 +180,6 @@ describe('/pushnotification', function() {
 				UserType: testPushNotification1.UserType,
 				UserId: testPushNotification1.iduser
 			}))
-			.expect(200)
 			.end(function(err, res) {
 				expect(res.body).to.exist;
 				expect(res.body.success).to.equal(false);
@@ -200,7 +198,6 @@ describe('/pushnotification', function() {
 				udid: testPushNotification1.udid,
 				UserType: testPushNotification1.UserType
 			}))
-			.expect(200)
 			.end(function(err, res) {
 				expect(res.body).to.exist;
 				expect(res.body.success).to.equal(true);
@@ -228,7 +225,6 @@ describe('/pushnotification', function() {
 				UserType: testPushNotification1.UserType,
 				Country: 'Malaysia'
 			})
-			.expect(200)
 			.end(function(err, res) {
 				expect(res.body).to.exist;
 				expect(res.body.success).to.equal(true);
@@ -247,7 +243,6 @@ describe('/pushnotification', function() {
 			
 			request(server)
 			.post('/pushnotification/SendPushNotification')
-			.expect(200)
 			.end(function(err, res) {
 				expect(res.body).to.exist;
 				expect(res.body.success).to.equal(false);

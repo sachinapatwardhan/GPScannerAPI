@@ -9,7 +9,7 @@ var testVehicle1 = {
 	Name: 'UnitTestVehicle1',
 	deviceid: '1234567890123x',
 	renewaldate: new Date(),
-	IsOnline: false,
+	IsOnline: true,
 	HandshakDatetime: new Date(),
 	CreatedDate: new Date(),
 	MaxSpeed: 0.0000,
@@ -141,6 +141,23 @@ var testGpsDevice1 = {
 	idSim: null,
 	ActivationDate: new Date()
 };
+var testGpsDevice2 = {
+	DeviceId: '1234567890124x',
+	IMEI: '51234567890124x',
+	CreatedDate: new Date(),
+	Type: 'TEST100',
+	Version: null,
+	CreatedBy: 'UnitTest',
+	CountryId: null,
+	TelCoId: null,
+	SimNum: null,
+	idSalesAgent: null,
+	IsActive: true,
+	ExpiryDate: new Date(),
+	AppName: 'UnitTest1',
+	idSim: null,
+	ActivationDate: new Date()
+};
 var testDrivingData1 = {
 	int: 0,
 	DeviceId: '1234567890123x',
@@ -183,6 +200,23 @@ var testGpsData1 = {
 	OdoMeter: null,
 	Date: Math.floor(new Date().getTime() / 1000)
 };
+var testDefaultValue1 = {
+	id: 0,
+	Type: 'UnitTestType1',
+	Value: 0
+};
+var testFence1 = {
+	id: 0,
+	name: 'UnitTestFence1',
+	deviceId: '1234567890123x',
+	range: 207.10958715342082,
+	status: 1,
+	lat: 29.567861478493672,
+	lng: 106.4535975929175,
+	fencedraw: 'circle',
+	IsInFence: true,
+	IsFenceOnline: false
+};
 var testUser1 = {
 	email: 'unittest.user@bugzstudio.com',
 	username: 'unittest.user@bugzstudio.com',
@@ -202,14 +236,19 @@ describe('/vehicles', function() {
 	var GpsDevice;
 	var DrivingData;
 	var GpsData;
+	var DefaultValue;
+	var Fence;
 	var User;
 	var dVehicle;
 	var dVehicle2;
 	var dVehicle3;
 	var dVehicleType;
 	var dGpsDevice;
+	var dGpsDevice2;
 	var dDrivingData;
 	var dGpsData;
+	var dDefaultValue;
+	var dFence;
 	var dUser;
 
 	before(function(done) {
@@ -222,6 +261,8 @@ describe('/vehicles', function() {
 		GpsDevice = models.tblgpsdevice;
 		DrivingData = models.tbldrivingdata;
 		GpsData = models.tblgpsdata;
+		DefaultValue = models.tbldefaultvalue;
+		Fence = models.tblfence;
 		User = models.tbluserinformation;
 
 		User.create(testUser1)
@@ -241,6 +282,10 @@ describe('/vehicles', function() {
 		})
 		.then(function(rGpsDevice) {
 			dGpsDevice = rGpsDevice;
+			return GpsDevice.create(testGpsDevice2);
+		})
+		.then(function(rGpsDevice) {
+			dGpsDevice2 = rGpsDevice;
 			testVehicle3.iduser = dUser.id;
 			return Vehicle.create(testVehicle3);
 		})
@@ -254,14 +299,31 @@ describe('/vehicles', function() {
 		})
 		.then(function(rGpsData) {
 			dGpsData = rGpsData;
+			return DefaultValue.create(testDefaultValue1);
+		})
+		.then(function(rDefaultValue) {
+			dDefaultValue = rDefaultValue;
+			return Fence.create(testFence1);
+		})
+		.then(function(rFence) {
+			dFence = rFence;
 			done();
 		});
 	});
 
 	after(function(done) {
-		dGpsData.destroy()
+		dFence.destroy()
+		.then(function() {
+			return dDefaultValue.destroy();
+		})
+		.then(function() {
+			return dGpsData.destroy();
+		})
 		.then(function() {
 			return dDrivingData.destroy();
+		})
+		.then(function() {
+			return dGpsDevice2.destroy();
 		})
 		.then(function() {
 			return dGpsDevice.destroy();
@@ -443,7 +505,7 @@ describe('/vehicles', function() {
 			}))
 			.end(function(err, res) {
 				expect(res.body).to.exist;
-				expect(res.body).to.be.an('array').that.has.lengthOf(2);
+				expect(res.body).to.be.an('array').that.has.lengthOf(3);
 				done();
 			});
 		});
@@ -547,6 +609,192 @@ describe('/vehicles', function() {
 				expect(res.body.success).to.equal(false);
 				expect(res.body.message).to.equal('Requested Record(s) not Found....');
 				expect(res.body.data).to.be.null;
+				done();
+			});
+		});
+	});
+
+	describe('/vehicles/GetAllOnlineVehicle', function() {
+		it('should get all online vehicles by paging', function(done) {
+			request(server)
+			.get('/vehicles/GetAllOnlineVehicle')
+			.query(qs.stringify({
+				draw: 1,
+				columns: [
+					{ data: 'id', name: '', searchable: true, orderable: true, search: { value: '', regex: false } },
+					{ data: 'Name', name: '', searchable: true, orderable: true, search: { value: '', regex: false } },
+					{ data: 'deviceid', name: '', searchable: true, orderable: true, search: { value: '', regex: false } },
+					{ data: 'DeviceType', name: '', searchable: true, orderable: true, search: { value: '', regex: false } },
+					{ data: 'IsOnline', name: '', searchable: true, orderable: true, search: { value: '', regex: false } }
+				],
+				order: [
+					{ column: 1, dir: 'asc' }
+				],
+				start: 0,
+				length: 25,
+				search: '',
+				appId: testUser1.idApp,
+				_: 1500000000000
+			}))
+			.end(function(err, res) {
+				expect(res.body).to.exist;
+				expect(res.body.draw).to.not.equal(null);
+				expect(res.body.recordsTotal).to.not.equal(null);
+				expect(res.body.recordsFiltered).to.not.equal(null);
+				expect(res.body.data).to.be.an('array').that.has.property('length').of.at.least(1);
+				done();
+			});
+		});
+
+		it('should get all online vehicles by paging when searching', function(done) {
+			request(server)
+			.get('/vehicles/GetAllOnlineVehicle')
+			.query(qs.stringify({
+				draw: 1,
+				columns: [
+					{ data: 'id', name: '', searchable: true, orderable: true, search: { value: '', regex: false } },
+					{ data: 'Name', name: '', searchable: true, orderable: true, search: { value: '', regex: false } },
+					{ data: 'deviceid', name: '', searchable: true, orderable: true, search: { value: '', regex: false } },
+					{ data: 'DeviceType', name: '', searchable: true, orderable: true, search: { value: '', regex: false } },
+					{ data: 'IsOnline', name: '', searchable: true, orderable: true, search: { value: '', regex: false } }
+				],
+				order: [
+					{ column: 1, dir: 'asc' }
+				],
+				start: 0,
+				length: 25,
+				search: testUser1.username,
+				appId: testUser1.idApp,
+				_: 1500000000000
+			}))
+			.end(function(err, res) {
+				expect(res.body).to.exist;
+				expect(res.body.draw).to.not.equal(null);
+				expect(res.body.recordsTotal).to.not.equal(null);
+				expect(res.body.recordsFiltered).to.not.equal(null);
+				expect(res.body.data).to.be.an('array').that.has.property('length').of.at.least(1);
+				done();
+			});
+		});
+	});
+
+	describe('/vehicles/getAllDefaultValue', function() {
+		it('should get all default values', function(done) {
+			request(server)
+			.get('/vehicles/getAllDefaultValue')
+			.end(function(err, res) {
+				expect(res.body).to.exist;
+				expect(res.body).to.be.an('array').that.has.property('length').of.at.least(1);
+				done();
+			});
+		});
+	});
+
+	describe('/vehicles/UpdateDefultValue', function() {
+		it('should update default value when credentials are correct', function(done) {
+			var token = {
+				username: dUser.username,
+				password: dUser.password
+			};
+			token = 'JWT ' + jwt.encode(token, 'bugz');
+			
+			request(server)
+			.get('/vehicles/UpdateDefultValue')
+			.set('authorization', token)
+			.query(qs.stringify({
+				Type: testDefaultValue1.Type,
+				Value: testDefaultValue1.Value
+			}))
+			.end(function(err, res) {
+				expect(res.body).to.exist;
+				expect(res.body.success).to.equal(true);
+				expect(res.body.message).to.equal(' updated successfully');
+				expect(res.body.data).to.be.an('object');
+				done();
+			});
+		});
+
+		it('should fail when credentials are wrong', function(done) {
+			request(server)
+			.get('/vehicles/UpdateDefultValue')
+			.query(qs.stringify({
+				Type: testDefaultValue1.Type,
+				Value: testDefaultValue1.Value
+			}))
+			.end(function(err, res) {
+				expect(res.body).to.exist;
+				expect(res.body.success).to.equal(false);
+				expect(res.body.message).to.equal('Invalid token...');
+				expect(res.body.data).to.equal('TOKEN');
+				done();
+			});
+		});
+	});
+
+	describe('/vehicles/GetAllNotAssignDevice', function() {
+		it('should get all device that are not assigned', function(done) {
+			request(server)
+			.get('/vehicles/GetAllNotAssignDevice')
+			.end(function(err, res) {
+				expect(res.body).to.exist;
+				expect(res.body.success).to.equal(true);
+				expect(res.body.data).to.be.an('array').that.has.property('length').of.at.least(1);
+				done();
+			});
+		});
+	});
+
+	describe('/vehicles/TransferDevicetoUser', function() {
+		it('should transfer device to user when credentials are correct', function(done) {
+			var token = {
+				username: dUser.username,
+				password: dUser.password
+			};
+			token = 'JWT ' + jwt.encode(token, 'bugz');
+			
+			request(server)
+			.get('/vehicles/TransferDevicetoUser')
+			.set('authorization', token)
+			.query(qs.stringify({
+				deviceid: testVehicle1.deviceid,
+				id: dVehicle.id
+			}))
+			.end(function(err, res) {
+				expect(res.body).to.exist;
+				expect(res.body.success).to.equal(true);
+				expect(res.body.message).to.equal('Device Transfer successfully..');
+				expect(res.body.data).to.be.an('object');
+				done();
+			});
+		});
+
+		it('should fail when credentials are wrong', function(done) {
+			request(server)
+			.get('/vehicles/TransferDevicetoUser')
+			.query(qs.stringify({
+				deviceid: testVehicle1.deviceid,
+				id: dVehicle.id
+			}))
+			.end(function(err, res) {
+				expect(res.body).to.exist;
+				expect(res.body.success).to.equal(false);
+				expect(res.body.message).to.equal('Invalid token...');
+				expect(res.body.data).to.equal('TOKEN');
+				done();
+			});
+		});
+	});
+
+	describe('/vehicles/GetAllNotUseDevcie', function() {
+		it('should get all devices that are not in use', function(done) {
+			request(server)
+			.get('/vehicles/GetAllNotUseDevcie')
+			.query(qs.stringify({
+				UserId: dUser.id
+			}))
+			.end(function(err, res) {
+				expect(res.body).to.exist;
+				expect(res.body).to.be.an('array').that.has.lengthOf(0);
 				done();
 			});
 		});

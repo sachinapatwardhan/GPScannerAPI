@@ -63,7 +63,7 @@ function SendIOSPushNotification(DeviceId) {
         title: 'Alert',
         message: '9787 is out of Home Fence. 9787 is out of Home Fence. 9787 is out of Home Fence. 9787 is out of Home Fence. 9787 is out of Home Fence. 9787 is out of Home Fence. 9787 is out of Home Fence. 9787 is out of Home Fence. 9787 is out of Home Fence.',
         soundname: 'sound50',
-        // messagecount: 2,
+        msgcnt: "2",
         otherfields: {
             deviceid: '123456',
             Id: 1,
@@ -74,7 +74,7 @@ function SendIOSPushNotification(DeviceId) {
     };
 
     // PushNotification.findAll({ where: { iduser: UserId } }).then(function(response) {
-
+    PushNotificationSettings.gcm.msgcnt = "10";
     PushNotificationSettings.apn.defaultData.sound = data.soundname + '.caf';
 
     var objPushNotificationSend = new PushNotifications(PushNotificationSettings);
@@ -330,10 +330,34 @@ router.get('/RequestIMEINumberbyUDID', function(req, res) {
                 var obj = new Object();
                 obj.UDID = UDID;
                 obj.IMEI = objIMEI.IMEI;
+                obj.Type = 'IOS';
                 obj.CreatedDate = new Date();
                 IMEINumberMapping.create(obj).then(function(resUserIMEI) {
                     objIMEI.updateAttributes({ IsUse: true }).then(function(resIMEI) {
-                        res.json({ IMEI: objIMEI.IMEI });
+                        GPSDevice.findOne({ where: { IMEI: objIMEI.IMEI } }).then(function(resDevice) {
+                            if (resDevice == null) {
+                                var objDevice = new Object();
+                                objDevice.IMEI = objIMEI.IMEI;
+                                objDevice.DeviceId = objIMEI.IMEI.toString().substring((objIMEI.IMEI.toString()).length - 14);
+                                objDevice.CreatedDate = new Date();
+                                objDevice.Type = 'Mob';
+                                objDevice.CreatedBy = '';
+                                objDevice.IsActive = true;
+                                objDevice.AppName = req.query.AppName;
+                                objDevice.ActivationDate = new Date();
+                                var expireDate = new Date();
+                                expireDate.setFullYear(expireDate.getFullYear() + 1);
+                                expireDate.setHours(00);
+                                expireDate.setMinutes(00);
+                                expireDate.setSeconds(00);
+                                objDevice.ExpiryDate = expireDate;
+                                GPSDevice.create(objDevice).then(function(resCreate) {
+                                    res.json({ IMEI: objIMEI.IMEI });
+                                })
+                            } else {
+                                res.json({ IMEI: objIMEI.IMEI });
+                            }
+                        })
                     })
                 })
             })
@@ -342,12 +366,55 @@ router.get('/RequestIMEINumberbyUDID', function(req, res) {
 
 });
 
+router.get('/RequestIMEINumberForAndroid', function(req, res) {
+    IMEINumberMapping.findOne({ where: { UDID: req.query.UDID } }).then(function(objUserIMEI) {
+        if (objUserIMEI != null) {
+            res.json({ IMEI: objUserIMEI.IMEI });
+        } else {
+            var obj = new Object();
+            obj.UDID = req.query.UDID;
+            obj.IMEI = req.query.IMEI;
+            obj.Type = req.query.Type;
+            obj.CreatedDate = new Date();
+            IMEINumberMapping.create(obj).then(function(resUserIMEI) {
+                if (resUserIMEI != null) {
+                    GPSDevice.findOne({ where: { IMEI: resUserIMEI.IMEI } }).then(function(resDevice) {
+                        if (resDevice == null) {
+                            var objDevice = new Object();
+                            objDevice.IMEI = resUserIMEI.IMEI;
+                            objDevice.DeviceId = resUserIMEI.IMEI.toString().substring((resUserIMEI.IMEI.toString()).length - 14);
+                            objDevice.CreatedDate = new Date();
+                            objDevice.Type = 'Mob';
+                            objDevice.CreatedBy = '';
+                            objDevice.IsActive = true;
+                            objDevice.AppName = req.query.AppName;
+                            objDevice.ActivationDate = new Date();
+                            var expireDate = new Date();
+                            expireDate.setFullYear(expireDate.getFullYear() + 1);
+                            expireDate.setHours(00);
+                            expireDate.setMinutes(00);
+                            expireDate.setSeconds(00);
+                            objDevice.ExpiryDate = expireDate;
+                            GPSDevice.create(objDevice).then(function(resCreate) {
+                                res.json({ IMEI: req.query.IMEI });
+                            })
+                        } else {
+                            res.json({ IMEI: req.query.IMEI });
+                        }
+                    })
+                }
+            })
+        }
+    })
+})
+
 router.get('/GenerateIMEI', function(req, res) {
     req.setTimeout(3600000);
     // for (var i = 0; i < 10; i++) {
     // var NewPassword = customPassword();
     // console.log(NewPassword);
     // }
+    console.log("Call IMEI")
 
     function InsertIMEI(i) {
         if (i < 10000) {
@@ -377,16 +444,17 @@ router.get('/GenerateIMEI', function(req, res) {
 
 
 //Private functions
-var maxLength = 16;
-var minLength = 16;
+var maxLength = 15;
+var minLength = 15;
 var uppercaseMinCount = 2;
 var lowercaseMinCount = 2;
-var numberMinCount = 16;
+var numberMinCount = 15;
 var specialMinCount = 1;
 var UPPERCASE_RE = /([A-Z])/g;
 var LOWERCASE_RE = /([a-z])/g;
 var NUMBER_RE = /([\d])/g;
-var NumberNotStartwithZero = /^((?!(0))(?!(.0))(?!(..0))[0-9]{16})$/g;
+var NumberNotStartwithZero = /^((?!(0))(?!(.0))(?!(..0))[0-9]{15})$/g;
+var NumberNotStartwithThreeFive = /^((?!(35))(?!(.35))(?!(..35))[0-9]{15})$/g;
 var SPECIAL_CHAR_RE = /([\?\-\^\$\#\@\!\%\&\*])/g;
 var NON_REPEATING_CHAR_RE = /([\w\d\?\-])\1{2,}/g;
 
@@ -395,10 +463,11 @@ function isStrongEnough(password) {
     // var lc = password.match(LOWERCASE_RE);
     var n = password.match(NUMBER_RE);
     var nc = password.match(NumberNotStartwithZero);
+    var ntf = password.match(NumberNotStartwithThreeFive);
     // var sc = password.match(SPECIAL_CHAR_RE);
     var nr = password.match(NON_REPEATING_CHAR_RE);
     return password.length >= minLength &&
-        n && n.length >= numberMinCount && nc;
+        n && n.length >= numberMinCount && nc && ntf;
     // &&
     // sc && sc.length >= specialMinCount;
 }
@@ -406,7 +475,7 @@ function isStrongEnough(password) {
 function customPassword() {
     var password = "";
     var randomLength = Math.floor(Math.random() * (maxLength - minLength)) + minLength;
-
+    //console.log(randomLength)
     while (!isStrongEnough(password)) {
         password = generatePassword(randomLength, false, /[\d\-]/);
     }

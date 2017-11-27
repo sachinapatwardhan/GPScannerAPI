@@ -1,47 +1,34 @@
 /* jshint indent: 2 */
 
 module.exports = function(sequelize, DataTypes) {
-  return sequelize.define('tblpushnotification', {
-    id: {
+  return sequelize.define('tblsharedemail', {
+    Id: {
       type: DataTypes.INTEGER(11),
       allowNull: false,
       primaryKey: true,
       autoIncrement: true
     },
-    udid: {
-      type: DataTypes.STRING,
-      allowNull: false
-    },
-    Platform: {
+    DeviceId: {
       type: DataTypes.STRING,
       allowNull: true
     },
-    PushNotificationId: {
-      type: DataTypes.TEXT,
-      allowNull: true
-    },
-    iduser: {
+    idUser: {
       type: DataTypes.INTEGER(11),
       allowNull: true
     },
-    Country: {
+    SharedEmail: {
       type: DataTypes.STRING,
       allowNull: true
     },
-    UserType: {
+    Status: {
       type: DataTypes.STRING,
       allowNull: true
     },
-    MessageCount: {
-      type: DataTypes.INTEGER(11),
-      allowNull: true,
-      defaultValue: '0'
-    },
-    AppVersion: {
-      type: DataTypes.STRING,
+    CreatedDate: {
+      type: DataTypes.DATE,
       allowNull: true
     }
   }, {
-    tableName: 'tblpushnotification'
+    tableName: 'tblsharedemail'
   });
 };

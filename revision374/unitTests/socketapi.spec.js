@@ -42,7 +42,7 @@ var testVehicle1 = {
 };
 var testGpsDevice1 = {
 	DeviceId: '1234567890123x',
-	IMEI: '51234567890123x',
+	IMEI: '556473829105647',
 	CreatedDate: new Date(),
 	Type: 'TEST100',
 	Version: null,
@@ -56,6 +56,18 @@ var testGpsDevice1 = {
 	AppName: 'UnitTest1',
 	idSim: null,
 	ActivationDate: new Date()
+};
+var testImeiNumber = {
+	id: 0,
+	IMEI: 556473829105647,
+	IsUse: false
+};
+var testIosImeiNumberMapping = {
+	id: 0,
+	UDID: 'UnitTestUdid',
+	IMEI: 556473829105647,
+	CreatedDate: new Date(),
+	Type: 'IOS'
 };
 var testUser1 = {
 	email: 'unittest.user@bugzstudio.com',
@@ -78,9 +90,13 @@ describe('/socketapi', function() {
 	var User;
 	var Vehicle;
 	var GpsDevice;
+	var ImeiNumber;
+	var IosImeiNumberMapping;
 	var dUser;
 	var dVehicle;
 	var dGpsDevice;
+	var dImeiNumber;
+	var dIosImeiNumberMapping;
 
 	before(function(done) {
 		server = require('../server', {
@@ -90,6 +106,8 @@ describe('/socketapi', function() {
 		User = models.tbluserinformation;
 		Vehicle = models.tblvehicle;
 		GpsDevice = models.tblgpsdevice;
+		ImeiNumber = models.tblimeinumber;
+		IosImeiNumberMapping = models.tbliosimeinumbermapping;
 
 		User.create(testUser1)
 		.then(function(rUser) {
@@ -103,16 +121,54 @@ describe('/socketapi', function() {
 		})
 		.then(function(rGpsDevice) {
 			dGpsDevice = rGpsDevice;
+			return ImeiNumber.create(testImeiNumber);
+		})
+		.then(function(rImeiNumber) {
+			dImeiNumber = rImeiNumber;
+			return IosImeiNumberMapping.create(testIosImeiNumberMapping);
+		})
+		.then(function(rIosImeiNumberMapping) {
+			dIosImeiNumberMapping = rIosImeiNumberMapping;
 			done();
 		});
 	});
 
 	after(function(done) {
-		dGpsDevice.destroy()
+		dIosImeiNumberMapping.destroy()
+		.then(function() { return dImeiNumber.destroy(); })
+		.then(function() { return dGpsDevice.destroy(); })
 		.then(function() { return dVehicle.destroy(); })
 		.then(function() { return dUser.destroy(); })
-		.then(function() {
-			done();
+		.then(function() { done(); });
+	});
+
+	describe('/socketapi/RequestIMEINumberbyUDID', function() {
+		it('should request IMEI number by UDID for IOS', function(done) {
+			request(server)
+			.get('/socketapi/RequestIMEINumberbyUDID')
+			.query(qs.stringify({
+				UDID: testIosImeiNumberMapping.UDID
+			}))
+			.end(function(err, res) {
+				expect(res.body).to.exist;
+				expect(res.body.IMEI).to.equal(testIosImeiNumberMapping.IMEI);
+				done();
+			});
+		});
+	});
+
+	describe('/socketapi/RequestIMEINumberForAndroid', function() {
+		it('should request IMEI number by UDID for Android', function(done) {
+			request(server)
+			.get('/socketapi/RequestIMEINumberForAndroid')
+			.query(qs.stringify({
+				UDID: testIosImeiNumberMapping.UDID
+			}))
+			.end(function(err, res) {
+				expect(res.body).to.exist;
+				expect(res.body.IMEI).to.equal(testIosImeiNumberMapping.IMEI);
+				done();
+			});
 		});
 	});
 

@@ -80,6 +80,22 @@ var testSharedDevice2 = {
 	IsSharedUserNotification: true,
 	IsNotification: true
 };
+var testSharedEmail1 = {
+	Id: 0,
+	DeviceId: '1234567890123x',
+	idUser: 0,
+	SharedEmail: 'unittest.user2@bugzstudio.com',
+	Status: 'Pending',
+	CreatedDate: new Date()
+};
+var testSharedEmail2 = {
+	Id: 0,
+	DeviceId: '1234567890123x',
+	idUser: 0,
+	SharedEmail: 'unittest.user3@bugzstudio.com',
+	Status: 'Pending',
+	CreatedDate: new Date()
+};
 
 describe('/sharedevice', function() {
 	this.timeout(5000);
@@ -88,11 +104,13 @@ describe('/sharedevice', function() {
 	var User;
 	var Vehicle;
 	var SharedDevice;
+	var SharedEmail;
 	var dUser;
 	var dUser2;
 	var dVehicle;
 	var dSharedDevice;
 	var dSharedDevice2;
+	var dSharedEmail;
 
 	before(function(done) {
 		server = require('../server', {
@@ -102,6 +120,7 @@ describe('/sharedevice', function() {
 		User = models.tbluserinformation;
 		Vehicle = models.tblvehicle;
 		SharedDevice = models.tblsharedevice;
+		SharedEmail = models.tblsharedemail;
 
 		User.create(testUser1)
 		.then(function(rUser) {
@@ -121,6 +140,11 @@ describe('/sharedevice', function() {
 		})
 		.then(function(rSharedDevice) {
 			dSharedDevice = rSharedDevice;
+			testSharedEmail1.idUser = dUser2.id;
+			return SharedEmail.create(testSharedEmail1);
+		})
+		.then(function(rSharedEmail) {
+			dSharedEmail = rSharedEmail;
 			done();
 		});
 	});
@@ -132,6 +156,13 @@ describe('/sharedevice', function() {
 					$like: 'UnitTest%'
 				}
 			}
+		})
+		.then(function() {
+			return SharedEmail.destroy({
+				where: {
+					DeviceId: '1234567890123x'
+				}
+			});
 		})
 		.then(function() {
 			return dSharedDevice.destroy();
@@ -160,18 +191,21 @@ describe('/sharedevice', function() {
 			}))
 			.end(function(err, res) {
 				expect(res.body).to.exist;
-				expect(res.body).to.be.an('array').that.has.lengthOf(1);
-				expect(res.body[0]).to.be.an('object').that.has.property('CreatedBy').that.is.equal(testSharedDevice1.CreatedBy);
+				expect(res.body.lstSharedUser).to.be.an('array').that.has.lengthOf(1);
+				expect(res.body.lstSharedUser[0]).to.be.an('object').that.has.property('CreatedBy').that.is.equal(testSharedDevice1.CreatedBy);
+				expect(res.body.lstSharedInvite).to.be.an('array').that.has.lengthOf(1);
+				expect(res.body.lstSharedInvite[0]).to.have.property('SharedEmail').that.is.equal(testSharedEmail1.SharedEmail);
 				done();
 			});
 		});
-
+		
 		it('should fail when no shared device found', function(done) {
 			request(server)
 			.get('/sharedevice/GetAllSharedDeviceByUser')
 			.end(function(err, res) {
 				expect(res.body).to.exist;
-				expect(res.body).to.be.an('array').that.has.lengthOf(0);
+				expect(res.body.lstSharedUser).to.be.an('array').that.has.lengthOf(0);
+				expect(res.body.lstSharedInvite).to.be.an('array').that.has.lengthOf(0);
 				done();
 			});
 		});
@@ -205,6 +239,66 @@ describe('/sharedevice', function() {
 			request(server)
 			.post('/sharedevice/SaveSharedUserNew')
 			.send(testSharedDevice2)
+			.end(function(err, res) {
+				expect(res.body).to.exist;
+				expect(res.body.success).to.equal(false);
+				expect(res.body.message).to.equal('Invalid token...');
+				expect(res.body.data).to.equal('TOKEN');
+				done();
+			});
+		});
+	});
+
+	describe('/sharedevice/GetAllInvitedEmail', function() {
+		it('should get all invited email', function(done) {
+			request(server)
+			.get('/sharedevice/GetAllInvitedEmail')
+			.query(qs.stringify({
+				DeviceId: testSharedEmail1.DeviceId
+			}))
+			.end(function(err, res) {
+				expect(res.body).to.exist;
+				expect(res.body).to.be.an('array').that.has.lengthOf(1);
+				expect(res.body[0]).to.be.an('object').that.has.property('SharedEmail').that.is.equal(testSharedEmail1.SharedEmail);
+				done();
+			});
+		});
+		
+		it('should fail when no invited emails found', function(done) {
+			request(server)
+			.get('/sharedevice/GetAllInvitedEmail')
+			.end(function(err, res) {
+				expect(res.body).to.exist;
+				expect(res.body).to.be.an('array').that.has.lengthOf(0);
+				done();
+			});
+		});
+	});
+
+	describe('/sharedevice/InvitedNewUser', function() {
+		it('should invite new user when credentials are correct', function(done) {
+			var token = {
+				username: dUser.username,
+				password: dUser.password
+			};
+			token = 'JWT ' + jwt.encode(token, 'bugz');
+			
+			request(server)
+			.post('/sharedevice/InvitedNewUser')
+			.set('authorization', token)
+			.send(testSharedEmail2)
+			.end(function(err, res) {
+				expect(res.body).to.exist;
+				expect(res.body.success).to.equal(true);
+				expect(res.body.message).to.equal('Invitation email send to this user successfully');
+				done();
+			});
+		});
+
+		it('should fail when credentials are wrong', function(done) {
+			request(server)
+			.post('/sharedevice/InvitedNewUser')
+			.send(testSharedEmail2)
 			.end(function(err, res) {
 				expect(res.body).to.exist;
 				expect(res.body.success).to.equal(false);
@@ -307,6 +401,45 @@ describe('/sharedevice', function() {
 			request(server)
 			.get('/sharedevice/RemoveSharedUser')
 			.query(qs.stringify(dSharedDevice2))
+			.end(function(err, res) {
+				expect(res.body).to.exist;
+				expect(res.body.success).to.equal(false);
+				expect(res.body.message).to.equal('Invalid token...');
+				expect(res.body.data).to.equal('TOKEN');
+				done();
+			});
+		});
+	});
+
+	describe('/sharedevice/RejectSharedInvitation', function() {
+		it('should reject shared invitation when credentials are correct', function(done) {
+			var token = {
+				username: dUser.username,
+				password: dUser.password
+			};
+			token = 'JWT ' + jwt.encode(token, 'bugz');
+
+			request(server)
+			.get('/sharedevice/RejectSharedInvitation')
+			.set('authorization', token)
+			.query(qs.stringify({
+				Id: dSharedEmail.Id
+			}))
+			.end(function(err, res) {
+				expect(res.body).to.exist;
+				expect(res.body.success).to.equal(true);
+				expect(res.body.message).to.equal('User Removed successfully...');
+				expect(res.body.data).to.be.an('object').that.has.property('SharedEmail').that.is.equal(testSharedEmail1.SharedEmail);
+				done();
+			});
+		});
+
+		it('should fail when credentials are wrong', function(done) {
+			request(server)
+			.get('/sharedevice/RejectSharedInvitation')
+			.query(qs.stringify({
+				Id: dSharedEmail.Id
+			}))
 			.end(function(err, res) {
 				expect(res.body).to.exist;
 				expect(res.body.success).to.equal(false);
