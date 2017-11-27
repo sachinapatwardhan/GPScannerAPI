@@ -9,6 +9,7 @@ var TaxSetting = models.tblsetting;
 var HandShake = models.tblhandshake;
 var Vehicle = models.tblvehicle;
 var GPSData = models.tblgpsdata;
+var GPSDevice = models.tblgpsdevice;
 var momentz = require('moment-timezone');
 
 //End of Tables
