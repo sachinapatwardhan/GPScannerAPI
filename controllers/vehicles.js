@@ -468,6 +468,8 @@ router.get('/UpdateDefultValue', function(req, res) {
                 res.json(InvalidToken);
             }
         })
+    } else {
+        res.json(InvalidToken);
     }
 
 })
