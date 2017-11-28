@@ -6,6 +6,17 @@ var SystemEmail = models.tblemailsettingsys;
 var SharedEmail = models.tblsharedemail;
 
 router.get('/GetAllSharedDeviceByUser', function(req, res) {
+    SharedDevice.findAll({
+        where: { DeviceId: req.query.DeviceId, $or: [{ idSharedUser: req.query.idSharedUser }, { idUser: req.query.idSharedUser }] },
+        order: 'CreatedDate DESC'
+    }).then(function(response) {
+        res.json(response);
+    }).catch(function(error) {
+        res.json(error);
+    })
+});
+
+router.get('/GetAllSharedDeviceByUserNew', function(req, res) {
     SharedDevice.belongsTo(User, {
         foreignKey: {
             name: 'idUser',
