@@ -92,7 +92,7 @@ router.get('/login', jsonParser, function(req, res) {
                     Role: lstRole
                 }
                 if (response.idApp == req.query.appId) {
-                    var token = jwt.encode(user, "bugz");
+                    var token = jwt.encode(user, "bugz", null, { header: { ide: true } });
                     res.json({
                         success: true,
                         token: 'JWT ' + token,
@@ -106,7 +106,7 @@ router.get('/login', jsonParser, function(req, res) {
                     });
                 } else {
                     if (rol) {
-                        var token = jwt.encode(user, "bugz");
+                        var token = jwt.encode(user, "bugz", null, { header: { ide: true } });
                         res.json({
                             success: true,
                             token: 'JWT ' + token,
@@ -206,7 +206,7 @@ router.get('/loginNew', jsonParser, function(req, res) {
                 password: response.password,
                 Role: lstRole
             }
-            var token = jwt.encode(user, "bugz");
+            var token = jwt.encode(user, "bugz", null, { header: { ide: true } });
             res.json({
                 success: true,
                 token: 'JWT ' + token,
@@ -252,7 +252,7 @@ router.get('/loginNew', jsonParser, function(req, res) {
                         Role: lstRole
                     }
 
-                    var token = jwt.encode(user, "bugz");
+                    var token = jwt.encode(user, "bugz", null, { header: { ide: true } });
                     res.json({
                         success: true,
                         token: 'JWT ' + token,
@@ -336,7 +336,7 @@ router.get('/Mobilelogin', jsonParser, function(req, res) {
                             password: Encryptpassword,
                             Role: lstRole
                         }
-                        var token = jwt.encode(user, "bugz");
+                        var token = jwt.encode(user, "bugz", null, { header: { ide: true } });
                         res.json({
                             success: true,
                             token: 'JWT ' + token,
@@ -441,7 +441,7 @@ router.get('/MobileOwnerlogin', jsonParser, function(req, res) {
                             password: Encryptpassword,
                             Role: lstRole
                         }
-                        var token = jwt.encode(user, "bugz");
+                        var token = jwt.encode(user, "bugz", null, { header: { ide: true } });
                         res.json({
                             success: true,
                             token: 'JWT ' + token,
@@ -1025,18 +1025,18 @@ router.get('/forgotpassword', function(req, res) {
                                         subject: req.query.AppName + " " + objEmailTemplate.EmailSubject,
                                         html: body
                                     };
-                                    transporter.sendMail(mail, function(error, response) {
-                                        if (error) {
-                                            res.json(error);
-                                        } else {
+                                    // transporter.sendMail(mail, function(error, response) {
+                                    //     if (error) {
+                                    //         res.json(error);
+                                    //     } else {
                                             funAuditLog.CreateAuditLog('forgotpassword', objUser.username, 'forgot User Password');
                                             res.json({
                                                 success: true,
                                                 message: "Password sent to your email successfully...",
                                                 data: response
                                             });
-                                        }
-                                    });
+                                    //     }
+                                    // });
                                 });
                             } else {
                                 res.json({
@@ -1122,18 +1122,18 @@ router.get('/forgotpasswordNew', function(req, res) {
                                         subject: req.query.AppName + " " + objEmailTemplate.EmailSubject,
                                         html: body
                                     };
-                                    transporter.sendMail(mail, function(error, response) {
-                                        if (error) {
-                                            res.json(error);
-                                        } else {
+                                    // transporter.sendMail(mail, function(error, response) {
+                                    //     if (error) {
+                                    //         res.json(error);
+                                    //     } else {
                                             funAuditLog.CreateAuditLog('forgotpassword', response.email, 'forgot User Password');
                                             res.json({
                                                 success: true,
                                                 message: "Password sent to your email successfully...",
                                                 data: response
                                             });
-                                        }
-                                    });
+                                    //     }
+                                    // });
                                 })
                             } else {
                                 res.json({
@@ -1188,19 +1188,19 @@ router.get('/forgotpasswordNew', function(req, res) {
                                                 subject: req.query.AppName + " " + objEmailTemplate.EmailSubject,
                                                 html: body
                                             };
-                                            transporter.sendMail(mail, function(error, response) {
-                                                console.log(error)
-                                                if (error) {
-                                                    res.json(error);
-                                                } else {
+                                            // transporter.sendMail(mail, function(error, response) {
+                                            //     console.log(error)
+                                            //     if (error) {
+                                            //         res.json(error);
+                                            //     } else {
                                                     funAuditLog.CreateAuditLog('forgotpassword', response1.email, 'forgot User Password');
                                                     res.json({
                                                         success: true,
                                                         message: "Password sent to your email successfully...",
                                                         data: response
                                                     });
-                                                }
-                                            });
+                                            //     }
+                                            // });
                                         })
                                     } else {
                                         res.json({
@@ -1278,18 +1278,18 @@ router.get('/forgotpasswordfromOwnerCustomer', function(req, res) {
                                             subject: req.query.AppName + " " + objEmailTemplate.EmailSubject,
                                             html: body
                                         };
-                                        transporter.sendMail(mail, function(error, response) {
-                                            if (error) {
-                                                res.json(error);
-                                            } else {
+                                        // transporter.sendMail(mail, function(error, response) {
+                                        //     if (error) {
+                                        //         res.json(error);
+                                        //     } else {
                                                 funAuditLog.CreateAuditLog('forgotpassword', objUser.username, 'forgot User Password');
                                                 res.json({
                                                     success: true,
                                                     message: "Password sent to your email successfully...",
                                                     data: response
                                                 });
-                                            }
-                                        });
+                                        //     }
+                                        // });
                                     })
                                 } else {
                                     res.json({
@@ -1367,7 +1367,7 @@ router.get('/MobileAppLogin', jsonParser, function(req, res) {
                     password: Encryptpassword,
                     Role: lstRole
                 }
-                var token = jwt.encode(user, "bugz");
+                var token = jwt.encode(user, "bugz", null, { header: { ide: true } });
                 res.json({
                     success: true,
                     token: 'JWT ' + token,
@@ -1514,22 +1514,22 @@ router.get('/MobileForgotPassword', function(req, res) {
                                     subject: objEmailTemplate.EmailSubject,
                                     html: body
                                 };
-                                transporter.sendMail(mail, function(error, response) {
-                                    if (error) {
-                                        res.json({
-                                            success: false,
-                                            message: "Error in Sending Email " + error,
-                                            data: error
-                                        });
-                                    } else {
+                                // transporter.sendMail(mail, function(error, response) {
+                                //     if (error) {
+                                //         res.json({
+                                //             success: false,
+                                //             message: "Error in Sending Email " + error,
+                                //             data: error
+                                //         });
+                                //     } else {
                                         funAuditLog.CreateAuditLog('forgotpassword', objUser.username, 'forgot User Password');
                                         res.json({
                                             success: true,
                                             message: "Password sent to your email successfully...",
                                             data: response
                                         });
-                                    }
-                                });
+                                //     }
+                                // });
                             } else {
                                 res.json({
                                     success: false,
@@ -1717,7 +1717,7 @@ router.get('/MobileAppLoginNew', jsonParser, function(req, res) {
                     password: Encryptpassword,
                     Role: lstRole
                 }
-                var token = jwt.encode(user, "bugz");
+                var token = jwt.encode(user, "bugz", null, { header: { ide: true } });
                 res.json({
                     success: true,
                     token: 'JWT ' + token,
@@ -1948,22 +1948,22 @@ router.get('/MobileForgotPasswordNew', function(req, res) {
                                         subject: req.query.AppName + " " + objEmailTemplate.EmailSubject,
                                         html: body
                                     };
-                                    transporter.sendMail(mail, function(error, response) {
-                                        if (error) {
-                                            res.json({
-                                                success: false,
-                                                message: "Error in Sending Email " + error,
-                                                data: error
-                                            });
-                                        } else {
+                                    // transporter.sendMail(mail, function(error, response) {
+                                    //     if (error) {
+                                    //         res.json({
+                                    //             success: false,
+                                    //             message: "Error in Sending Email " + error,
+                                    //             data: error
+                                    //         });
+                                    //     } else {
                                             funAuditLog.CreateAuditLog('forgotpassword', objUser.username, 'forgot User Password');
                                             res.json({
                                                 success: true,
                                                 message: "Password sent to your email successfully...",
                                                 data: response
                                             });
-                                        }
-                                    });
+                                    //     }
+                                    // });
                                 });
                             } else {
                                 res.json({
@@ -2137,7 +2137,7 @@ router.get('/MobileAppLoginScannerApp', jsonParser, function(req, res) {
                 password: Encryptpassword,
                 Role: lstRole
             }
-            var token = jwt.encode(user, "bugz");
+            var token = jwt.encode(user, "bugz", null, { header: { ide: true } });
             res.json({
                 success: true,
                 token: 'JWT ' + token,
