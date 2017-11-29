@@ -191,6 +191,33 @@ describe('/sharedevice', function() {
 			}))
 			.end(function(err, res) {
 				expect(res.body).to.exist;
+				expect(res.body).to.be.an('array').that.has.lengthOf(1);
+				expect(res.body[0]).to.be.an('object').that.has.property('CreatedBy').that.is.equal(testSharedDevice1.CreatedBy);
+				done();
+			});
+		});
+
+		it('should fail when no shared device found', function(done) {
+			request(server)
+			.get('/sharedevice/GetAllSharedDeviceByUser')
+			.end(function(err, res) {
+				expect(res.body).to.exist;
+				expect(res.body).to.be.an('array').that.has.lengthOf(0);
+				done();
+			});
+		});
+	});
+
+	describe('/sharedevice/GetAllSharedDeviceByUserNew', function() {
+		it('should get all shared device by user', function(done) {
+			request(server)
+			.get('/sharedevice/GetAllSharedDeviceByUserNew')
+			.query(qs.stringify({
+				DeviceId: testSharedDevice1.DeviceId,
+				idSharedUser: dUser2.id
+			}))
+			.end(function(err, res) {
+				expect(res.body).to.exist;
 				expect(res.body.lstSharedUser).to.be.an('array').that.has.lengthOf(1);
 				expect(res.body.lstSharedUser[0]).to.be.an('object').that.has.property('CreatedBy').that.is.equal(testSharedDevice1.CreatedBy);
 				expect(res.body.lstSharedInvite).to.be.an('array').that.has.lengthOf(1);
@@ -201,7 +228,7 @@ describe('/sharedevice', function() {
 		
 		it('should fail when no shared device found', function(done) {
 			request(server)
-			.get('/sharedevice/GetAllSharedDeviceByUser')
+			.get('/sharedevice/GetAllSharedDeviceByUserNew')
 			.end(function(err, res) {
 				expect(res.body).to.exist;
 				expect(res.body.lstSharedUser).to.be.an('array').that.has.lengthOf(0);
