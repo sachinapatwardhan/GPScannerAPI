@@ -322,7 +322,7 @@ app.use('/petfence', require('./controllers/petFence'))
 app.use('/facebookpagesetting', require('./controllers/facebookpagesetting'))
 app.use('/sharedevice', require('./controllers/sharedevice'))
 
-//End of Settin g
+//End of Setting
 
 //Bike
 app.use('/bike', require('./controllers/bike'))
