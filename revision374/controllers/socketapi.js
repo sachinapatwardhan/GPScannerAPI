@@ -9,6 +9,7 @@ var TaxSetting = models.tblsetting;
 var HandShake = models.tblhandshake;
 var Vehicle = models.tblvehicle;
 var GPSData = models.tblgpsdata;
+var GPSDevice = models.tblgpsdevice;
 var momentz = require('moment-timezone');
 
 //End of Tables
@@ -694,6 +695,7 @@ global.Command9955 = function(line, Callback) {
                     Latitude: Latitude,
                     Longitude: Longitude,
                     Direction: Direction,
+                    OdoMeter: OdoMeter,
                     IsRelayToStopTheCar: IsRelayToStopTheCar,
                     IsSirenSound: IsSirenSound,
                     IsUserDefined: IsUserDefined,

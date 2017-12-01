@@ -5,17 +5,6 @@ var EmailTemplate = models.tblemailtemplate;
 var SystemEmail = models.tblemailsettingsys;
 var SharedEmail = models.tblsharedemail;
 
-router.get('/GetAllSharedDeviceByUser', function(req, res) {
-    SharedDevice.findAll({
-        where: { DeviceId: req.query.DeviceId, $or: [{ idSharedUser: req.query.idSharedUser }, { idUser: req.query.idSharedUser }] },
-        order: 'CreatedDate DESC'
-    }).then(function(response) {
-        res.json(response);
-    }).catch(function(error) {
-        res.json(error);
-    })
-});
-
 router.get('/GetAllSharedDeviceByUserNew', function(req, res) {
     SharedDevice.belongsTo(User, {
         foreignKey: {
@@ -39,26 +28,26 @@ router.get('/GetAllSharedDeviceByUserNew', function(req, res) {
     })
 });
 
-// router.get('/GetAllSharedDeviceByUser', function(req, res) {
-//     SharedDevice.belongsTo(User, {
-//         foreignKey: {
-//             name: 'idUser',
-//             allowNull: false
-//         }
-//     });
-//     SharedDevice.findAll({
-//         include: [{
-//             model: User,
-//             attributes: ['id', 'email', 'username'],
-//         }],
-//         where: { DeviceId: req.query.DeviceId, $or: [{ idSharedUser: req.query.idSharedUser }, { idUser: req.query.idSharedUser }] },
-//         order: 'CreatedDate DESC'
-//     }).then(function(response) {
-//         res.json(response);
-//     }).catch(function(error) {
-//         res.json(error);
-//     })
-// });
+router.get('/GetAllSharedDeviceByUser', function(req, res) {
+    SharedDevice.belongsTo(User, {
+        foreignKey: {
+            name: 'idUser',
+            allowNull: false
+        }
+    });
+    SharedDevice.findAll({
+        include: [{
+            model: User,
+            attributes: ['id', 'email', 'username'],
+        }],
+        where: { DeviceId: req.query.DeviceId, $or: [{ idSharedUser: req.query.idSharedUser }, { idUser: req.query.idSharedUser }] },
+        order: 'CreatedDate DESC'
+    }).then(function(response) {
+        res.json(response);
+    }).catch(function(error) {
+        res.json(error);
+    })
+});
 
 router.post('/SaveSharedUser', jsonParser, function(req, res) {
     objUser = req.body;
