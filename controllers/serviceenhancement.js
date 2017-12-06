@@ -149,13 +149,13 @@ router.get('/DeleteRemiderService', function(req, res) {
                 if (response) {
                     res.json({
                         success: true,
-                        message: 'Remider service deleted Successfully',
+                        message: 'Reminder service deleted Successfully',
                         err: null
                     })
                 } else {
                     res.json({
                         success: false,
-                        message: 'Remider service not deleted Successfully',
+                        message: 'Reminder service not deleted Successfully',
                         err: null
                     })
                 }
@@ -163,7 +163,7 @@ router.get('/DeleteRemiderService', function(req, res) {
         } else {
             res.json({
                 success: false,
-                message: 'Remider service not Exist',
+                message: 'Reminder service not Exist',
                 err: null
             })
         }
