@@ -567,6 +567,42 @@ describe('/petAlarm', function() {
 		});
 	});
 
+	// Update status before delete
+	describe('/petAlarm/UpdateReadStatus', function() {
+		it('should update read status when credentials are correct', function(done) {
+			var token = {
+				username: dUser.username,
+				password: dUser.password
+			};
+			token = 'JWT ' + jwt.encode(token, 'bugz');
+			
+			request(server)
+			.post('/petAlarm/UpdateReadStatus')
+			.set('authorization', token)
+			.send([dAlarm.Id])
+			.end(function(err, res) {
+				expect(res.body).to.exist;
+				expect(res.body.success).to.equal(true);
+				expect(res.body.data).to.be.an('array').that.has.lengthOf(1);
+				expect(res.body.data[0]).to.equal(1);
+				done();
+			});
+		});
+
+		it('should fail when credentials are wrong', function(done) {
+			request(server)
+			.post('/petAlarm/UpdateReadStatus')
+			.send([dAlarm.Id])
+			.end(function(err, res) {
+				expect(res.body).to.exist;
+				expect(res.body.success).to.equal(false);
+				expect(res.body.message).to.equal('Invalid token...');
+				expect(res.body.data).to.equal('TOKEN');
+				done();
+			});
+		});
+	});
+
 	describe('/petAlarm/DeleteVehicleAlarm', function() {
 		it('should delete vehicle alarm when credentials are correct', function(done) {
 			var token = {
@@ -583,9 +619,6 @@ describe('/petAlarm', function() {
 			}))
 			.end(function(err, res) {
 				expect(res.body).to.exist;
-				expect(res.body).to.have.property('success');
-				expect(res.body).to.have.property('message');
-				expect(res.body).to.have.property('data');
 				expect(res.body.success).to.equal(true);
 				expect(res.body.message).to.equal('Vehicle Alarm deleted successfully...');
 				expect(res.body.data).to.equal(1);
@@ -601,12 +634,42 @@ describe('/petAlarm', function() {
 			}))
 			.end(function(err, res) {
 				expect(res.body).to.exist;
-				expect(res.body).to.have.property('success');
-				expect(res.body).to.have.property('message');
-				expect(res.body).to.have.property('data');
 				expect(res.body.success).to.equal(false);
 				expect(res.body.message).to.equal('Invalid token...');
 				expect(res.body.data).to.equal('TOKEN');
+				done();
+			});
+		});
+	});
+
+	describe('/petAlarm/GetTotalNotificationCount', function() {
+		it('should get total notification count', function(done) {
+			request(server)
+			.get('/petAlarm/GetTotalNotificationCount')
+			.query(qs.stringify({
+				DeviceId: testAlarm1.DeviceId
+			}))
+			.end(function(err, res) {
+				expect(res.body).to.exist;
+				expect(res.body.success).to.equal(true);
+				expect(res.body.data).to.be.an('array').that.has.lengthOf(1);
+				expect(res.body.data[0]).to.be.an('object').that.has.property('TotalNotificationCount').that.is.equal(0);
+				done();
+			});
+		});
+	});
+	
+	describe('/petAlarm/GetAllTotalNotificationCount', function() {
+		it('should get all total notification counts', function(done) {
+			request(server)
+			.get('/petAlarm/GetAllTotalNotificationCount')
+			.query(qs.stringify({
+				iduser: dUser.id
+			}))
+			.end(function(err, res) {
+				expect(res.body).to.exist;
+				expect(res.body.data).to.be.an('array').that.has.lengthOf(1);
+				expect(res.body.data[0]).to.be.an('object').that.has.property('TotalNotificationCount').that.is.equal(0);
 				done();
 			});
 		});
