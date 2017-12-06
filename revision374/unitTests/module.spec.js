@@ -31,7 +31,20 @@ var testModule3 = {
 	IsActive: true,
 	DisplayOrder: 99997
 };
-var testPermission = {
+var testModule4 = {
+	Module: 'UnitTestModule4',
+	IsActive: true,
+	DisplayOrder: 99997
+};
+var testPermission1 = {
+	idModule: 0,
+	RoleName: testRole1.RoleName,
+	Added: true,
+	Modified: true,
+	Deleted: true,
+	Show: true
+};
+var testPermission2 = {
 	idModule: 0,
 	RoleName: testRole1.RoleName,
 	Added: true,
@@ -59,7 +72,9 @@ describe('/module', function() {
 	var dModule;
 	var dModule2;
 	var dModule3;
+	var dModule4;
 	var dPermission;
+	var dPermission2;
 
 	before(function(done) {
 		server = require('../server', {
@@ -96,11 +111,20 @@ describe('/module', function() {
 		})
 		.then(function(rModule) {
 			dModule = rModule;
-			testPermission.idModule = dModule.id;
-			return Permission.create(testPermission);
+			testPermission1.idModule = dModule.id;
+			return Permission.create(testPermission1);
 		})
 		.then(function(rPermission) {
 			dPermission = rPermission;
+			return Module.create(testModule4);
+		})
+		.then(function(rModule) {
+			dModule4 = rModule;
+			testPermission2.idModule = dModule4.id;
+			return Permission.create(testPermission2);
+		})
+		.then(function(rPermission) {
+			dPermission2 = rPermission;
 			done();
 		});
 	});
@@ -121,6 +145,13 @@ describe('/module', function() {
 		})
 		.then(function() {
 			return dModule2.destroy();
+		})
+		.then(function() {
+			return Permission.destroy({
+				where: {
+					idModule: dModule4.id
+				}
+			});
 		})
 		.then(function() {
 			return Module.destroy({
@@ -266,6 +297,40 @@ describe('/module', function() {
 		it('should fail if credentials are wrong', function(done) {
 			request(server)
 			.get('/module/DeleteModule/' + dModule3.id)
+			.expect(200)
+			.end(function(err, res) {
+				expect(res.body).to.exist;
+				expect(res.body.success).to.equal(false);
+				expect(res.body.message).to.equal('Invalid token...');
+				expect(res.body.data).to.equal('TOKEN');
+				done();
+			});
+		});
+	});
+
+	describe('/module/DeleteModuleAndpermission', function() {
+		it('should delete module and permission if credentials are correct', function(done) {
+			var token = {
+				username: dUser.username,
+				password: dUser.password
+			};
+			token = 'JWT ' + jwt.encode(token, 'bugz');
+
+			request(server)
+			.get('/module/DeleteModuleAndpermission/' + dModule4.id)
+			.set('authorization', token)
+			.expect(200)
+			.end(function(err, res) {
+				expect(res.body).to.exist;
+				expect(res.body.success).to.equal(true);
+				expect(res.body.message).to.equal('Module deleted successfully...');
+				done();
+			});
+		});
+		
+		it('should fail if credentials are wrong', function(done) {
+			request(server)
+			.get('/module/DeleteModuleAndpermission/' + dModule4.id)
 			.expect(200)
 			.end(function(err, res) {
 				expect(res.body).to.exist;
