@@ -43,3 +43,11 @@ CREATE TABLE `tblserviceenhancementtype` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+
+INSERT INTO `tblserviceenhancementtype` (`Type`,`CreatedBy`,`CreatedDate`) VALUES ('Car Service','Admin','2017-11-21 10:16:58');
+INSERT INTO `tblserviceenhancementtype` (`Type`,`CreatedBy`,`CreatedDate`) VALUES ('Insurance Renewal','Admin','2017-11-21 10:16:58');
+INSERT INTO `tblserviceenhancementtype` (`Type`,`CreatedBy`,`CreatedDate`) VALUES ('Driving Licence Renewal','Admin','2017-11-21 10:16:58');
+INSERT INTO `tblserviceenhancementtype` (`Type`,`CreatedBy`,`CreatedDate`) VALUES ('Battery Replacement','Admin','2017-11-21 10:16:58');
+INSERT INTO `tblserviceenhancementtype` (`Type`,`CreatedBy`,`CreatedDate`) VALUES ('PUC Renewal','Admin','2017-11-21 10:16:58');
+INSERT INTO `tblserviceenhancementtype` (`Type`,`CreatedBy`,`CreatedDate`) VALUES ('Road Tax Renewal','Admin','2017-11-21 10:16:58');
+
