@@ -3,6 +3,15 @@ var require = require('really-need');
 var expect = require('chai').expect;
 var qs = require('qs');
 
+var testUser1 = {
+	email: 'unittest.user@bugzstudio.com',
+	username: 'unittest.user@bugzstudio.com',
+	password: 'unittest.user',
+	ProfileName: 'Unit Test User',
+	IsMobileVerify: false,
+	idApp: 1
+};
+var testOriginalPassword1 = testUser1.password;
 var testAppInfo1 = {
 	Id: 0,
 	AppName: 'Test1',
@@ -17,15 +26,22 @@ var testAppInfo1 = {
 };
 var testAppVersion = {
 	id: 0,
-	Name: 'Test',
+	Name: 'UnitTestAppVersion1',
 	AndroidVersion: '0.0.1',
-	AndroidURL: 'https://play.google.com/store/apps/details?id=com.disolutions.test',
+	AndroidURL: 'https://play.google.com/store/apps/details?id=com.disolutions.unittest1',
 	IOSVersion: '0.0.1',
 	IOSURL: 'https://itunes.apple.com/us/app/maark/id1234567890?ls=1&mt=8',
 	UpdateAppText: 'A new app version is available!'
 };
-var testEmail = 'lenqxue95@gmail.com';
-var testPassword = 'dino.saw';
+var testAppVersion2 = {
+	id: 0,
+	Name: 'UnitTestAppVersion2',
+	AndroidVersion: '0.0.1',
+	AndroidURL: 'https://play.google.com/store/apps/details?id=com.disolutions.unittest2',
+	IOSVersion: '0.0.1',
+	IOSURL: 'https://itunes.apple.com/us/app/maark/id1234567891?ls=1&mt=8',
+	UpdateAppText: 'A new app version is available!'
+};
 
 describe('app settings', function() {
 	// Important! Because server setup is slow!
@@ -35,110 +51,84 @@ describe('app settings', function() {
 	var AppInfo;
 	var AppVersion;
 	var User;
+	var dAppInfo;
+	var dAppVersion;
+	var dUser;
 
-	before(function() {
+	before(function(done) {
 		server = require('../server', {
 			bustCache: true
 		});
 		AppInfo = models.tblappinfo;
 		AppVersion = models.tblappversion;
 		User = models.tbluserinformation;
+
+		User.create(testUser1)
+		.then(function(rUser) {
+			dUser = rUser;
+			return AppInfo.create(testAppInfo1);
+		})
+		.then(function(rAppInfo) {
+			dAppInfo = rAppInfo;
+			return AppVersion.create(testAppVersion);
+		})
+		.then(function(rAppVersion) {
+			dAppVersion = rAppVersion;
+			done();
+		});
 	});
 
 	after(function(done) {
-		server.close(done);
+		dAppInfo.destroy()
+		.then(function() {
+			return dUser.destroy();
+		})
+		.then(function() {
+			return AppVersion.destroy({
+				where: {
+					Name: {
+						$like: 'UnitTest%'
+					}
+				}
+			});
+		})
+		.then(function() {
+			server.close(done);
+		});
 	});
 	
 	describe('/appsetting/GetAllAppName', function() {
-		var dAppInfo;
-		
-		before(function(done) {
-			AppInfo.create(testAppInfo1)
-			.then(function(rAppInfo) {
-				dAppInfo = rAppInfo;
-				done();
-			});
-		});
-
-		after(function(done) {
-			dAppInfo.destroy()
-			.then(function() {
-				done();
-			});
-		});
-
 		it('should get all app names not in tblappversion', function(done) {
 			request(server)
 			.get('/appsetting/GetAllAppName')
-			.expect(200)
 			.end(function(err, res) {
 				expect(res.body).to.exist;
-				expect(res.body).to.have.property('success');
-				expect(res.body).to.have.property('data');
 				expect(res.body.success).to.equal(true);
-				expect(res.body.data).to.be.an('array');
-				expect(res.body.data).to.have.property('length').of.at.least(1);
+				expect(res.body.data).to.be.an('array').that.has.property('length').of.at.least(1);
 				done();
 			});
 		});
 	});
 
 	describe('/appsetting/GetAllAppVersion', function() {
-		var dAppVersion;
-
-		before(function(done) {
-			AppVersion.create(testAppVersion)
-			.then(function(rAppVersion) {
-				dAppVersion = rAppVersion;
-				done();
-			});
-		});
-
-		after(function(done) {
-			dAppVersion.destroy()
-			.then(function() {
-				done();
-			});
-		});
-
 		it('should get all app versions', function(done) {
 			request(server)
 			.get('/appsetting/GetAllAppVersion')
-			.expect(200)
 			.end(function(err, res) {
 				expect(res.body).to.exist;
-				expect(res.body).to.be.an('array');
-				expect(res.body).to.have.property('length').of.at.least(1);
+				expect(res.body).to.be.an('array').that.has.property('length').of.at.least(1);
 				done();
 			});
 		});
 	});
 
 	describe('/appsetting/GetAppVersionByName', function() {
-		var dAppVersion;
-
-		before(function(done) {
-			AppVersion.create(testAppVersion)
-			.then(function(rAppVersion) {
-				dAppVersion = rAppVersion;
-				done();
-			});
-		});
-
-		after(function(done) {
-			dAppVersion.destroy()
-			.then(function() {
-				done();
-			});
-		});
-
 		it('should get app version by name', function(done) {
 			request(server)
 			.get('/appsetting/GetAppVersionByName')
 			.query(qs.stringify({
 				Name: testAppVersion.Name
 			}))
-			.expect(200)
 			.end(function(err, res) {
 				expect(res.body).to.exist;
 				expect(res.body).to.be.an('object');
@@ -150,54 +140,19 @@ describe('app settings', function() {
 	});
 
 	describe('/appsetting/SaveAppVersionInfo', function() {
-		var dUser;
-		
-		before(function(done) {
-			User.create({
-				username: testEmail,
-				email: testEmail,
-				password: jwt.encode(testPassword, 'bugz'),
-				IsMobileVerify: false,
-				idApp: 1
-			})
-			.then(function(rUser) {
-				dUser = rUser;
-				done();
-			});
-		});
-
-		after(function(done) {
-			dUser.destroy()
-			.then(function() {
-				return AppVersion.destroy({
-					where: {
-						Name: testAppVersion.Name,
-						AndroidVersion: testAppVersion.AndroidVersion
-					}
-				});
-			})
-			.then(function() {
-				done();
-			});
-		});
-
 		it('should save app version if credentials are correct', function(done) {
-			var token = jwt.encode({
-				username: testEmail,
-				password: jwt.encode(testPassword, 'bugz')
-			}, 'bugz');
-			token = 'JWT ' + token;
+			var token = {
+				username: dUser.username,
+				password: dUser.password
+			};
+			token = 'JWT ' + jwt.encode(token, 'bugz');
 
 			request(server)
 			.post('/appsetting/SaveAppVesionInfo')
 			.set('authorization', token)
-			.send(testAppVersion)
-			.expect(200)
+			.send(testAppVersion2)
 			.end(function(err, res) {
 				expect(res.body).to.exist;
-				expect(res.body).to.have.property('success');
-				expect(res.body).to.have.property('message');
-				expect(res.body).to.have.property('data');
 				expect(res.body.success).to.equal(true);
 				expect(res.body.message).to.equal('App Version created successfully...');
 				expect(res.body.data).to.be.an('object');
@@ -207,48 +162,12 @@ describe('app settings', function() {
 	});
 
 	describe('/appsetting/DeleteAppVersion', function() {
-		var dUser;
-		var dAppVersion;
-		
-		before(function(done) {
-			User.create({
-				username: testEmail,
-				email: testEmail,
-				password: jwt.encode(testPassword, 'bugz'),
-				IsMobileVerify: false,
-				idApp: 1
-			})
-			.then(function(rUser) {
-				dUser = rUser;
-				return AppVersion.create(testAppVersion);
-			})
-			.then(function(rAppVersion) {
-				dAppVersion = rAppVersion;
-				done();
-			});
-		});
-
-		after(function(done) {
-			dUser.destroy()
-			.then(function() {
-				return AppVersion.destroy({
-					where: {
-						Name: testAppVersion.Name,
-						AndroidVersion: testAppVersion.AndroidVersion
-					}
-				});
-			})
-			.then(function() {
-				done();
-			});
-		});
-
 		it('should delete app version if credentials are correct', function(done) {
-			var token = jwt.encode({
-				username: testEmail,
-				password: jwt.encode(testPassword, 'bugz')
-			}, 'bugz');
-			token = 'JWT ' + token;
+			var token = {
+				username: dUser.username,
+				password: dUser.password
+			};
+			token = 'JWT ' + jwt.encode(token, 'bugz');
 
 			request(server)
 			.get('/appsetting/DeleteAppVersion')
@@ -256,12 +175,8 @@ describe('app settings', function() {
 			.query(qs.stringify({
 				Id: dAppVersion.id
 			}))
-			.expect(200)
 			.end(function(err, res) {
 				expect(res.body).to.exist;
-				expect(res.body).to.have.property('success');
-				expect(res.body).to.have.property('message');
-				expect(res.body).to.have.property('data');
 				expect(res.body.success).to.equal(true);
 				expect(res.body.message).to.equal('App Version successfully...');
 				done();
@@ -271,12 +186,8 @@ describe('app settings', function() {
 		it('should fail if credentials are wrong', function(done) {
 			request(server)
 			.get('/appsetting/DeleteAppVersion')
-			.expect(200)
 			.end(function(err, res) {
 				expect(res.body).to.exist;
-				expect(res.body).to.have.property('success');
-				expect(res.body).to.have.property('message');
-				expect(res.body).to.have.property('data');
 				expect(res.body.success).to.equal(false);
 				expect(res.body.message).to.equal('Invalid token...');
 				expect(res.body.data).to.equal('TOKEN');
@@ -286,27 +197,9 @@ describe('app settings', function() {
 	});
 
 	describe('/appsetting/GetAllAppInfo', function() {
-		var dAppInfo;
-		
-		before(function(done) {
-			AppInfo.create(testAppInfo1)
-			.then(function(rAppInfo) {
-				dAppInfo = rAppInfo;
-				done();
-			});
-		});
-
-		after(function(done) {
-			dAppInfo.destroy()
-			.then(function() {
-				done();
-			});
-		});
-
 		it('should get all app info', function(done) {
 			request(server)
 			.get('/appsetting/GetAllAppInfo')
-			.expect(200)
 			.end(function(err, res) {
 				expect(res.body).to.exist;
 				expect(res.body).to.be.an('array');
