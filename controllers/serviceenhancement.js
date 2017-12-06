@@ -173,17 +173,49 @@ router.get('/DeleteRemiderService', function(req, res) {
     })
 })
 
+router.post('/UpdateReadStatus', jsonParser, function(req, res) {
+    objIdList = req.body;
+    objHeader = req.headers;
+    var token = getToken(objHeader);
+    if (token) {
+        var decoded = jwt.decode(token, TokenKey);
+        User.findOne({
+            where: {
+                username: decoded.username,
+                password: decoded.password
+            }
+        }).then(function(UserExist) {
+            if (UserExist != null) {
+                ServiceEnhancementNotification.update({
+                    IsRead: 1
+                }, {
+                    where: { Id: { in: objIdList } }
+                }).then(function(response) {
+                    io.sockets.emit(UserExist.id + 'UpdateAlertNotification');
+                    res.json({ success: true, data: response });
+                })
+            } else {
+                res.json(InvalidToken);
+            }
+        })
+    } else {
+        res.json(InvalidToken);
+    }
+})
+
 //Call Every Day '15:00 Minit'
 var rule = new schedule.RecurrenceRule();
 rule.minute = new schedule.Range(0, 59, 0);
 
 
 var AddAllServiceNotification = schedule.scheduleJob(rule, function() {
-    console.log("Call Alert Notification Every 01:00 Minite", new Date());
+    console.log("Call Alert Notification Every 01:00 Minute", new Date());
     var date = new Date();
-    date.setHours(0);
-    date.setMinutes(0);
-    date.setSeconds(0);
+    date.setUTCDate((new Date()).getDate() - 1);
+    date.setUTCHours(0);
+    date.setUTCMinutes(0);
+    date.setUTCSeconds(0);
+    console.log(date)
 
     ServiceEnhacement.belongsTo(Vehicle, {
         foreignKey: {
@@ -205,14 +237,19 @@ var AddAllServiceNotification = schedule.scheduleJob(rule, function() {
                     date2 = response[i].Todate;
 
                     var timeDiff = Math.abs(date2.getTime() - date1.getTime());
-                    var diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
-                    if (diffDays == 30 || diffDays == 3 || diffDays == 1) {
+                    var diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24)) - 2;
+                    console.log(diffDays, response[i].Todate)
+                    if (diffDays == 30 || diffDays == 3 || diffDays == 0 || diffDays == -1) {
                         var obj = new Object();
                         obj.IdServiceEnhancement = response[i].id;
                         obj.CreatedDate = new Date();
+                        obj.days = diffDays;
+                        obj.IsRead = false;
+                        obj.idvehicle = response[i].tblvehicle.id;
                         ServiceEnhancementNotification.findOrCreate({
                             where: {
-                                IdServiceEnhancement: obj.IdServiceEnhancement
+                                IdServiceEnhancement: obj.IdServiceEnhancement,
+                                days: diffDays
                             },
                             defaults: obj
                         }).then(function(ServiceEnhacementcerated) {
@@ -224,7 +261,10 @@ var AddAllServiceNotification = schedule.scheduleJob(rule, function() {
                                 NewObj.CreatedDate = ServiceEnhacementcerated[0].CreatedDate;
                                 NewObj.Message = ServiceEnhacementcerated[0].Message;
                                 NewObj.tblserviceenhancement = response[i];
-                                io.sockets.emit('ServiceEnhacementNotification', JSON.stringify(NewObj));
+                                NewObj.days = diffDays;
+                                NewObj.IsRead = false;
+                                NewObj.idvehicle = response[i].tblvehicle.id;
+                                io.sockets.emit(response[i].tblvehicle.iduser + 'ServiceEnhacementNotification', JSON.stringify(NewObj));
 
                                 var Message = "";
 

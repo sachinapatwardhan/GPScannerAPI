@@ -12,6 +12,10 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.INTEGER(11),
       allowNull: true
     },
+    idvehicle: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true
+    },
     CreatedDate: {
       type: DataTypes.DATE,
       allowNull: true
@@ -19,6 +23,15 @@ module.exports = function(sequelize, DataTypes) {
     Message: {
       type: DataTypes.STRING,
       allowNull: true
+    },
+    days: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true
+    },
+    IsRead: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+      defaultValue: '0'
     }
   }, {
     tableName: 'tblserviceenhancementnotification'
