@@ -80,6 +80,18 @@ router.get('/getAllServiceNotification', function(req, res) {
 
 router.post('/SaveService', jsonParser, function(req, res) {
     objService = req.body;
+    var date = objService.Todate + " GMT"
+
+    var targetTime = new Date(date);
+    var lstoffsethour = CurrentOffset.split(":");
+    //get the timezone offset from local time in minutes
+    var tzDifference = parseFloat(lstoffsethour[0]) * 60 + parseFloat(lstoffsethour[1]);
+    //convert the offset to milliseconds, add to targetTime, and make a new Date
+    var offsetTime = new Date(targetTime.getTime() + tzDifference * 60 * 1000);
+    objService.Todate = ConvertAlertDate(offsetTime);
+
+    // objService.Todate = ConvertAlertDate(new Date(objService.Todate));
+
     objHeader = req.headers;
     try {
         var token = getToken(objHeader);
@@ -245,7 +257,7 @@ var AddAllServiceNotification = schedule.scheduleJob(rule, function() {
                         obj.CreatedDate = new Date();
                         obj.days = diffDays;
                         obj.IsRead = false;
-                        obj.idvehicle = response[i].tblvehicle.id;
+                        // obj.idvehicle = response[i].tblvehicle.id;
                         ServiceEnhancementNotification.findOrCreate({
                             where: {
                                 IdServiceEnhancement: obj.IdServiceEnhancement,
@@ -339,6 +351,21 @@ function convertdateformat(date) {
 
 }
 
+function ConvertAlertDate(today) {
+
+
+    var sec = today.getUTCSeconds();
+    var min = today.getUTCMinutes();
+    var hour = today.getUTCHours();
+
+    var year = today.getUTCFullYear();
+    var month = today.getUTCMonth() + 1; // beware: January = 0; February = 1, etc.
+    var day = today.getUTCDate();
+
+    //return year + "-" + month + "-" + day + " " + hour + ":" + min + ":" + sec;
+
+    return ("0000" + year.toString()).slice(-4) + "-" + ("00" + month.toString()).slice(-2) + "-" + ("00" + day.toString()).slice(-2) + " " + ("00" + hour.toString()).slice(-2) + ":" + ("00" + min.toString()).slice(-2) + ":" + ("00" + sec.toString()).slice(-2);
+}
 
 
 module.exports = router
