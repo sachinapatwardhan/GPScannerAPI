@@ -137,7 +137,7 @@ function clone(obj) {
     return copy;
 }
 
-function SendPushNotification(data, UserId, objAppInfo) {
+global.SendPushNotification = function(data, UserId, objAppInfo) {
     // var deviceIds = [];
     connection.query("SELECT PushNotificationId,Platform,MessageCount,UserType,udid from tblpushnotification where iduser in (" + UserId + ") group by PushNotificationId, Platform", function(err, response, fields) {
         if (!err && response.length > 0) {

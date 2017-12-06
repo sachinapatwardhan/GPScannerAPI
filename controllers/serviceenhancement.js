@@ -179,12 +179,25 @@ rule.minute = new schedule.Range(0, 59, 0);
 
 
 var AddAllServiceNotification = schedule.scheduleJob(rule, function() {
-    console.log("Call Every 15:00 Minit");
+    console.log("Call Alert Notification Every 01:00 Minite", new Date());
     var date = new Date();
     date.setHours(0);
     date.setMinutes(0);
     date.setSeconds(0);
-    ServiceEnhacement.findAll({ where: { Todate: { $gte: date }, IsDelete: 0 } }).then(function(response) {
+
+    ServiceEnhacement.belongsTo(Vehicle, {
+        foreignKey: {
+            name: 'idvehicle',
+            allowNull: false
+        }
+    });
+
+    ServiceEnhacement.findAll({
+        where: { Todate: { $gte: date }, IsDelete: 0 },
+        include: [{
+            model: Vehicle
+        }]
+    }).then(function(response) {
         if (response) {
             function uploader(i) {
                 if (response.length > i) {
@@ -212,8 +225,52 @@ var AddAllServiceNotification = schedule.scheduleJob(rule, function() {
                                 NewObj.Message = ServiceEnhacementcerated[0].Message;
                                 NewObj.tblserviceenhancement = response[i];
                                 io.sockets.emit('ServiceEnhacementNotification', JSON.stringify(NewObj));
+
+                                var Message = "";
+
+                                if (response[i].Type == 'Car Service') {
+                                    Message = "Please get your vehicle " + response[i].tblvehicle.Name + " to the service station.";
+                                } else if (response[i].Type == 'Insurance Renewal') {
+                                    Message = "Your vehicle " + response[i].tblvehicle.Name + "'s insurance has expired. Renew your insurance.";
+                                } else if (response[i].Type == 'Driving Licence Renewal') {
+                                    Message = "We're sorry, your license has expired. Renew your driving license.";
+                                } else if (response[i].Type == 'Battery Replacement') {
+                                    Message = "We're sorry, your license has expired. Renew your driving license.";
+                                } else if (response[i].Type == 'PUC Renewal') {
+                                    Message = "We're sorry, your PUC for " + response[i].tblvehicle.Name + " has expired. Renew your PUC license.";
+                                } else if (response[i].Type == 'Road Tax Renewal') {
+                                    Message = "Renew your expired road tax.";
+                                } else if (response[i].Type == 'Tyre Replacement') {
+                                    Message = "We're sorry, your license has expired. Renew your PUC license.";
+                                }
+
+                                //push Notification Send
+
+                                connection.query("SELECT tu.id, tu.username, ta.AppName, ta.IOSCertificate, ta.IOSKey, ta.AndroidId, ta.AndroidSenderId FROM tbluserinformation as tu inner Join tblappinfo as ta ON ta.id = tu.idApp where tu.id=" + response[i].idUser, function(err, objAppInfo, fields) {
+                                    var soundname = "Default";
+                                    var AllUser = response[i].idUser.toString();
+                                    var PushNotificationdata = {
+                                        title: 'Alert',
+                                        message: Message,
+                                        // Fence: 'Default',
+                                        soundname: soundname,
+                                        otherfields: {
+                                            deviceid: response[i].tblvehicle.deviceid,
+                                            Id: response[i].tblvehicle.id,
+                                            VehicleName: response[i].tblvehicle.Name,
+                                            NotificationType: response[i].Type,
+                                            Type: 'Notification'
+                                        }
+                                    };
+
+                                    SendPushNotification(PushNotificationdata, AllUser, objAppInfo[0]);
+
+                                    uploader(i + 1);
+                                });
+                            } else {
+                                uploader(i + 1);
                             }
-                            uploader(i + 1);
+
                         })
                     } else {
                         uploader(i + 1)
