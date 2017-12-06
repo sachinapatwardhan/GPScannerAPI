@@ -28,23 +28,6 @@ router.get('/GetAllServiceData', function(req, res) {
         limit: 10,
         order: 'id DESC'
     }).then(function(ResData) {
-        var date = new Date();
-        date.setDate(date.getDate() - 1);
-        date.setHours(0);
-        date.setMinutes(0);
-        date.setSeconds(0);
-        for (var i = 0; i < ResData.length; i++) {
-
-            if (ResData[i].Todate < date) {
-                ResData[i].dataValues.expiryOn = true;
-            } else {
-                ResData[i].dataValues.expiryOn = false;
-                var timeDiff = Math.abs(ResData[i].Todate.getTime() - date.getTime());
-                var diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
-                ResData[i].dataValues.Days = diffDays;
-            }
-
-        }
         res.json(ResData);
     }).catch(function(err) {
         res.json(err);
