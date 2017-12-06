@@ -227,7 +227,7 @@ var AddAllServiceNotification = schedule.scheduleJob(rule, function() {
     date.setUTCHours(0);
     date.setUTCMinutes(0);
     date.setUTCSeconds(0);
-    console.log(date)
+    // console.log("Main date = ", date)
 
     ServiceEnhacement.belongsTo(Vehicle, {
         foreignKey: {
@@ -245,12 +245,15 @@ var AddAllServiceNotification = schedule.scheduleJob(rule, function() {
         if (response) {
             function uploader(i) {
                 if (response.length > i) {
-                    date1 = date;
+                    date1 = new Date();
                     date2 = response[i].Todate;
 
-                    var timeDiff = Math.abs(date2.getTime() - date1.getTime());
-                    var diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24)) - 2;
-                    console.log(diffDays, response[i].Todate)
+                    date1.setUTCHours(0);
+                    date1.setUTCMinutes(0);
+                    date1.setUTCSeconds(0);
+
+                    var timeDiff = date2.getTime() - date1.getTime();
+                    var diffDays = Math.round(timeDiff / (1000 * 3600 * 24));
                     if (diffDays == 30 || diffDays == 3 || diffDays == 0 || diffDays == -1) {
                         var obj = new Object();
                         obj.IdServiceEnhancement = response[i].id;
@@ -336,8 +339,6 @@ var AddAllServiceNotification = schedule.scheduleJob(rule, function() {
     })
 
 });
-
-
 
 function convertdateformat(date) {
     var firstdayMonth = date.getMonth() + 1;
