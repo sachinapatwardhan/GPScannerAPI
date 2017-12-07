@@ -109,7 +109,7 @@ router.post('/SaveService', jsonParser, function(req, res) {
                             }
                         } else {
                             res.json({
-                                success: true,
+                                success: false,
                                 message: 'No Device Found!',
                                 err: null
                             })
