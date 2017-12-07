@@ -321,8 +321,8 @@ app.use('/pushnotification', require('./controllers/pushnotification'))
 app.use('/petfence', require('./controllers/petFence'))
 app.use('/facebookpagesetting', require('./controllers/facebookpagesetting'))
 app.use('/sharedevice', require('./controllers/sharedevice'))
-
-//End of Setting
+    // app.use('/advancefence', require('./controllers/advancefence'))
+    //End of Setting
 
 //Bike
 app.use('/bike', require('./controllers/bike'))
@@ -348,6 +348,8 @@ app.use('/sim', require('./controllers/sim'));
 app.use('/appsetting', require('./controllers/appsetting'));
 app.use('/vehicletype', require('./controllers/vehicletype'));
 app.use('/mainsetting', require('./controllers/mainsetting'));
+app.use('/DeviceStock', require('./controllers/DeviceStock'));
+app.use('/serviceenhancement', require('./controllers/serviceenhancement'));
 
 //socket API End
 
