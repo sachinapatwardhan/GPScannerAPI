@@ -92,7 +92,7 @@ router.get('/login', jsonParser, function(req, res) {
                     Role: lstRole
                 }
                 if (response.idApp == req.query.appId) {
-                    var token = jwt.encode(user, "bugz", null, { header: { ide: true } });
+                    var token = jwt.encode(user, "bugz");
                     res.json({
                         success: true,
                         token: 'JWT ' + token,
@@ -106,7 +106,7 @@ router.get('/login', jsonParser, function(req, res) {
                     });
                 } else {
                     if (rol) {
-                        var token = jwt.encode(user, "bugz", null, { header: { ide: true } });
+                        var token = jwt.encode(user, "bugz");
                         res.json({
                             success: true,
                             token: 'JWT ' + token,
@@ -206,7 +206,7 @@ router.get('/loginNew', jsonParser, function(req, res) {
                 password: response.password,
                 Role: lstRole
             }
-            var token = jwt.encode(user, "bugz", null, { header: { ide: true } });
+            var token = jwt.encode(user, "bugz");
             res.json({
                 success: true,
                 token: 'JWT ' + token,
@@ -252,7 +252,7 @@ router.get('/loginNew', jsonParser, function(req, res) {
                         Role: lstRole
                     }
 
-                    var token = jwt.encode(user, "bugz", null, { header: { ide: true } });
+                    var token = jwt.encode(user, "bugz");
                     res.json({
                         success: true,
                         token: 'JWT ' + token,
@@ -336,7 +336,7 @@ router.get('/Mobilelogin', jsonParser, function(req, res) {
                             password: Encryptpassword,
                             Role: lstRole
                         }
-                        var token = jwt.encode(user, "bugz", null, { header: { ide: true } });
+                        var token = jwt.encode(user, "bugz");
                         res.json({
                             success: true,
                             token: 'JWT ' + token,
@@ -441,7 +441,7 @@ router.get('/MobileOwnerlogin', jsonParser, function(req, res) {
                             password: Encryptpassword,
                             Role: lstRole
                         }
-                        var token = jwt.encode(user, "bugz", null, { header: { ide: true } });
+                        var token = jwt.encode(user, "bugz");
                         res.json({
                             success: true,
                             token: 'JWT ' + token,
@@ -1367,7 +1367,7 @@ router.get('/MobileAppLogin', jsonParser, function(req, res) {
                     password: Encryptpassword,
                     Role: lstRole
                 }
-                var token = jwt.encode(user, "bugz", null, { header: { ide: true } });
+                var token = jwt.encode(user, "bugz");
                 res.json({
                     success: true,
                     token: 'JWT ' + token,
@@ -1717,7 +1717,7 @@ router.get('/MobileAppLoginNew', jsonParser, function(req, res) {
                     password: Encryptpassword,
                     Role: lstRole
                 }
-                var token = jwt.encode(user, "bugz", null, { header: { ide: true } });
+                var token = jwt.encode(user, "bugz");
                 res.json({
                     success: true,
                     token: 'JWT ' + token,
@@ -2142,7 +2142,7 @@ router.get('/MobileAppLoginScannerApp', jsonParser, function(req, res) {
                 password: Encryptpassword,
                 Role: lstRole
             }
-            var token = jwt.encode(user, "bugz", null, { header: { ide: true } });
+            var token = jwt.encode(user, "bugz");
             res.json({
                 success: true,
                 token: 'JWT ' + token,
