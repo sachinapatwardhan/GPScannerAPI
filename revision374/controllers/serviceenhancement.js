@@ -28,23 +28,6 @@ router.get('/GetAllServiceData', function(req, res) {
         limit: 10,
         order: 'id DESC'
     }).then(function(ResData) {
-        var date = new Date();
-        date.setDate(date.getDate() - 1);
-        date.setHours(0);
-        date.setMinutes(0);
-        date.setSeconds(0);
-        for (var i = 0; i < ResData.length; i++) {
-
-            if (ResData[i].Todate < date) {
-                ResData[i].dataValues.expiryOn = true;
-            } else {
-                ResData[i].dataValues.expiryOn = false;
-                var timeDiff = Math.abs(ResData[i].Todate.getTime() - date.getTime());
-                var diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
-                ResData[i].dataValues.Days = diffDays;
-            }
-
-        }
         res.json(ResData);
     }).catch(function(err) {
         res.json(err);
@@ -80,6 +63,18 @@ router.get('/getAllServiceNotification', function(req, res) {
 
 router.post('/SaveService', jsonParser, function(req, res) {
     objService = req.body;
+    var date = objService.Todate + " GMT"
+
+    var targetTime = new Date(date);
+    var lstoffsethour = CurrentOffset.split(":");
+    //get the timezone offset from local time in minutes
+    var tzDifference = parseFloat(lstoffsethour[0]) * 60 + parseFloat(lstoffsethour[1]);
+    //convert the offset to milliseconds, add to targetTime, and make a new Date
+    var offsetTime = new Date(targetTime.getTime() + tzDifference * 60 * 1000);
+    objService.Todate = ConvertAlertDate(offsetTime);
+
+    // objService.Todate = ConvertAlertDate(new Date(objService.Todate));
+
     objHeader = req.headers;
     try {
         var token = getToken(objHeader);
@@ -215,7 +210,7 @@ var AddAllServiceNotification = schedule.scheduleJob(rule, function() {
     date.setUTCHours(0);
     date.setUTCMinutes(0);
     date.setUTCSeconds(0);
-    console.log(date)
+    // console.log("Main date = ", date)
 
     ServiceEnhacement.belongsTo(Vehicle, {
         foreignKey: {
@@ -233,19 +228,22 @@ var AddAllServiceNotification = schedule.scheduleJob(rule, function() {
         if (response) {
             function uploader(i) {
                 if (response.length > i) {
-                    date1 = date;
+                    date1 = new Date();
                     date2 = response[i].Todate;
 
-                    var timeDiff = Math.abs(date2.getTime() - date1.getTime());
-                    var diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24)) - 2;
-                    console.log(diffDays, response[i].Todate)
+                    date1.setUTCHours(0);
+                    date1.setUTCMinutes(0);
+                    date1.setUTCSeconds(0);
+
+                    var timeDiff = date2.getTime() - date1.getTime();
+                    var diffDays = Math.round(timeDiff / (1000 * 3600 * 24));
                     if (diffDays == 30 || diffDays == 3 || diffDays == 0 || diffDays == -1) {
                         var obj = new Object();
                         obj.IdServiceEnhancement = response[i].id;
                         obj.CreatedDate = new Date();
                         obj.days = diffDays;
                         obj.IsRead = false;
-                        obj.idvehicle = response[i].tblvehicle.id;
+                        // obj.idvehicle = response[i].tblvehicle.id;
                         ServiceEnhancementNotification.findOrCreate({
                             where: {
                                 IdServiceEnhancement: obj.IdServiceEnhancement,
@@ -268,20 +266,58 @@ var AddAllServiceNotification = schedule.scheduleJob(rule, function() {
 
                                 var Message = "";
 
-                                if (response[i].Type == 'Car Service') {
-                                    Message = "Please get your vehicle " + response[i].tblvehicle.Name + " to the service station.";
-                                } else if (response[i].Type == 'Insurance Renewal') {
-                                    Message = "Your vehicle " + response[i].tblvehicle.Name + "'s insurance has expired. Renew your insurance.";
-                                } else if (response[i].Type == 'Driving Licence Renewal') {
-                                    Message = "We're sorry, your license has expired. Renew your driving license.";
-                                } else if (response[i].Type == 'Battery Replacement') {
-                                    Message = "We're sorry, your license has expired. Renew your driving license.";
-                                } else if (response[i].Type == 'PUC Renewal') {
-                                    Message = "We're sorry, your PUC for " + response[i].tblvehicle.Name + " has expired. Renew your PUC license.";
-                                } else if (response[i].Type == 'Road Tax Renewal') {
-                                    Message = "Renew your expired road tax.";
-                                } else if (response[i].Type == 'Tyre Replacement') {
-                                    Message = "We're sorry, your license has expired. Renew your PUC license.";
+                                if (diffDays == 30 || diffDays == 3) {
+                                    var RenewDate = moment(new Date(date2));
+                                    var RenewDateFormat = RenewDate.format("DD MMMM YYYY");
+                                    if (response[i].Type == 'Car Service') {
+                                        Message = "Your vehicle " + response[i].tblvehicle.Name + " service due on " + RenewDateFormat + ". Pls get your vehicle serviced.";
+                                    } else if (response[i].Type == 'Insurance Renewal') {
+                                        Message = "Your vehicle " + response[i].tblvehicle.Name + " insurance will expire on " + RenewDateFormat + ".Pls renew it on time.";
+                                    } else if (response[i].Type == 'Driving Licence Renewal') {
+                                        Message = "Your driving license will expire on " + RenewDateFormat + ". Pls renew it on time.";
+                                    } else if (response[i].Type == 'Battery Replacement') {
+                                        Message = "Your vehicle " + response[i].tblvehicle.Name + " battery need replacement before " + RenewDateFormat + ". Pls replace it on time.";
+                                    } else if (response[i].Type == 'PUC Renewal') {
+                                        Message = "Your vehicle " + response[i].tblvehicle.Name + " PUC will expire on " + RenewDateFormat + ".Pls renew it on time.";
+                                    } else if (response[i].Type == 'Road Tax Renewal') {
+                                        Message = "Your vehicle " + response[i].tblvehicle.Name + " road tax due on " + RenewDateFormat + ". Pls renew your road tax.";
+                                    } else if (response[i].Type == 'Tyre Replacement') {
+                                        Message = "Your vehicle " + response[i].tblvehicle.Name + " tyre need replacement before " + RenewDateFormat + ". Pls replace it on time.";
+                                    }
+
+                                } else if (diffDays == 0) {
+                                    if (response[i].Type == 'Car Service') {
+                                        Message = "Your vehicle " + response[i].tblvehicle.Name + " service has due today. Pls get your vehicle serviced.";
+                                    } else if (response[i].Type == 'Insurance Renewal') {
+                                        Message = "Your vehicle " + response[i].tblvehicle.Name + " insurance has expired today. Pls renew today to avoid uncovered moments.";
+                                    } else if (response[i].Type == 'Driving Licence Renewal') {
+                                        Message = "Your driving license has expired today. Pls renew today to avoid uncovered moments.";
+                                    } else if (response[i].Type == 'Battery Replacement') {
+                                        Message = "Your vehicle " + response[i].tblvehicle.Name + " battery need replacement today. Pls replace it.";
+                                    } else if (response[i].Type == 'PUC Renewal') {
+                                        Message = "Your vehicle " + response[i].tblvehicle.Name + " PUC has expired today. Pls renew today.";
+                                    } else if (response[i].Type == 'Road Tax Renewal') {
+                                        Message = "Your vehicle " + response[i].tblvehicle.Name + " road tax is due for renewal. Pls renew today to avoid uncovered moments.";
+                                    } else if (response[i].Type == 'Tyre Replacement') {
+                                        Message = "Your vehicle " + response[i].tblvehicle.Name + " tyre need replacement today. Pls replace it.";
+                                    }
+                                } else {
+
+                                    if (response[i].Type == 'Car Service') {
+                                        Message = "Your vehicle " + response[i].tblvehicle.Name + " need a service. Pls get your vehicle serviced.";
+                                    } else if (response[i].Type == 'Insurance Renewal') {
+                                        Message = "Your vehicle " + response[i].tblvehicle.Name + " insurance has expired. Pls renew your insurance.";
+                                    } else if (response[i].Type == 'Driving Licence Renewal') {
+                                        Message = "Your driving license has expired. Pls renew your driving license.";
+                                    } else if (response[i].Type == 'Battery Replacement') {
+                                        Message = "Your vehicle " + response[i].tblvehicle.Name + " battery need replacement. Get your car battery replaced.";
+                                    } else if (response[i].Type == 'PUC Renewal') {
+                                        Message = "We're sorry, your PUC for " + response[i].tblvehicle.Name + " has expired. Renew your PUC license.";
+                                    } else if (response[i].Type == 'Road Tax Renewal') {
+                                        Message = "Your vehicle " + response[i].tblvehicle.Name + " road tax has expired. Pls renew your expired road tax.";
+                                    } else if (response[i].Type == 'Tyre Replacement') {
+                                        Message = "Your vehicle " + response[i].tblvehicle.Name + " tyre need replacement. Get your car tyre replaced.";
+                                    }
                                 }
 
                                 //push Notification Send
@@ -325,8 +361,6 @@ var AddAllServiceNotification = schedule.scheduleJob(rule, function() {
 
 });
 
-
-
 function convertdateformat(date) {
     var firstdayMonth = date.getMonth() + 1;
     var firstdayDay = date.getDate();
@@ -339,6 +373,21 @@ function convertdateformat(date) {
 
 }
 
+function ConvertAlertDate(today) {
+
+
+    var sec = today.getUTCSeconds();
+    var min = today.getUTCMinutes();
+    var hour = today.getUTCHours();
+
+    var year = today.getUTCFullYear();
+    var month = today.getUTCMonth() + 1; // beware: January = 0; February = 1, etc.
+    var day = today.getUTCDate();
+
+    //return year + "-" + month + "-" + day + " " + hour + ":" + min + ":" + sec;
+
+    return ("0000" + year.toString()).slice(-4) + "-" + ("00" + month.toString()).slice(-2) + "-" + ("00" + day.toString()).slice(-2) + " " + ("00" + hour.toString()).slice(-2) + ":" + ("00" + min.toString()).slice(-2) + ":" + ("00" + sec.toString()).slice(-2);
+}
 
 
 module.exports = router

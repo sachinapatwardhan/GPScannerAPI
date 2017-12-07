@@ -14,8 +14,6 @@ global.CurrentOffset = (('00' + offset).slice(-2) >= 0 ? "+" : "-") + ('00' + pa
 global.bodyParser = require('body-parser');
 global.jsonParser = bodyParser.json();
 global.passport = require('passport');
-// DES Key MUST be defined BEFORE require jwt
-global.DesKey = process.env.DesKey;
 global.jwt = require('jwt-simple');
 global.validator = require('validator');
 global.nodemailer = require('nodemailer');

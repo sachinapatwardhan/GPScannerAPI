@@ -96,6 +96,22 @@ var testSharedEmail2 = {
 	Status: 'Pending',
 	CreatedDate: new Date()
 };
+var testAppInfo1 = {
+	Id: 0,
+	AppName: 'UnitTestAppInfo1',
+	BundleId: 'com.disolutions.unittestappinfo1',
+	IOSCertificate: null,
+	IOSKey: null,
+	AndroidId: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA1',
+	AndroidSenderId: '999999999991',
+	CreatedDate: new Date(),
+	CreatedBy: 'Admin',
+	ImageLogo: null,
+	AdminUrl: 'http://unittestadmin1.maark.my',
+	WebAppUrl: 'http://unittestwebapp1.maark.my',
+	WebAppLoginLogo: null,
+	WebAppHeaderLogo: null
+};
 
 describe('/sharedevice', function() {
 	this.timeout(5000);
@@ -105,12 +121,14 @@ describe('/sharedevice', function() {
 	var Vehicle;
 	var SharedDevice;
 	var SharedEmail;
+	var AppInfo;
 	var dUser;
 	var dUser2;
 	var dVehicle;
 	var dSharedDevice;
 	var dSharedDevice2;
 	var dSharedEmail;
+	var dAppInfo;
 
 	before(function(done) {
 		server = require('../server', {
@@ -121,6 +139,7 @@ describe('/sharedevice', function() {
 		Vehicle = models.tblvehicle;
 		SharedDevice = models.tblsharedevice;
 		SharedEmail = models.tblsharedemail;
+		AppInfo = models.tblappinfo;
 
 		User.create(testUser1)
 		.then(function(rUser) {
@@ -145,17 +164,24 @@ describe('/sharedevice', function() {
 		})
 		.then(function(rSharedEmail) {
 			dSharedEmail = rSharedEmail;
+			return AppInfo.create(testAppInfo1);
+		})
+		.then(function(rAppInfo) {
+			dAppInfo = rAppInfo;
 			done();
 		});
 	});
 
 	after(function(done) {
-		SharedDevice.destroy({
-			where: {
-				CreatedBy: {
-					$like: 'UnitTest%'
+		dAppInfo.destroy()
+		.then(function() {
+			return SharedDevice.destroy({
+				where: {
+					CreatedBy: {
+						$like: 'UnitTest%'
+					}
 				}
-			}
+			});
 		})
 		.then(function() {
 			return SharedEmail.destroy({
@@ -309,6 +335,7 @@ describe('/sharedevice', function() {
 				password: dUser.password
 			};
 			token = 'JWT ' + jwt.encode(token, 'bugz');
+			testSharedEmail2.AppName = testAppInfo1.AppName;
 			
 			request(server)
 			.post('/sharedevice/InvitedNewUser')
