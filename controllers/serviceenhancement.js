@@ -3,12 +3,33 @@ var User = models.tbluserinformation;
 var ServiceEnhacement = models.tblserviceenhancement;
 var ServiceEnhacementType = models.tblserviceenhancementtype;
 var Vehicle = models.tblvehicle;
-var ServiceEnhancementNotification = models.tblserviceenhancementnotification
+var ServiceEnhancementNotification = models.tblserviceenhancementnotification;
+var ServiceEnhancementinCountry = models.tblserviceenhancementincountry;
 
 
 //find all serveicetype
 router.get('/GetAllServiceEnhacementType', function(req, res) {
     ServiceEnhacementType.findAll().then(function(resType) {
+        res.json(resType);
+    }).catch(function(resErr) {
+        res.json(resErr);
+    })
+})
+router.get('/GetAllServiceEnhacementTypebyCountry', function(req, res) {
+    ServiceEnhacementType.hasMany(ServiceEnhancementinCountry, {
+        foreignKey: {
+            name: 'IdServiceEnhancementType',
+            allowNull: false
+        }
+    });
+    ServiceEnhacementType.findAll({
+        include: [{
+            model: ServiceEnhancementinCountry,
+            where: {
+                $or: [{ Country: req.query.Country }, { Country: 'All' }]
+            }
+        }],
+    }).then(function(resType) {
         res.json(resType);
     }).catch(function(resErr) {
         res.json(resErr);
