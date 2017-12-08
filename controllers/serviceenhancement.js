@@ -63,16 +63,17 @@ router.get('/getAllServiceNotification', function(req, res) {
 
 router.post('/SaveService', jsonParser, function(req, res) {
     objService = req.body;
-    var date = objService.Todate + " GMT"
+    if (objService.Todate != null) {
+        var date = objService.Todate + " GMT"
 
-    var targetTime = new Date(date);
-    var lstoffsethour = CurrentOffset.split(":");
-    //get the timezone offset from local time in minutes
-    var tzDifference = parseFloat(lstoffsethour[0]) * 60 + parseFloat(lstoffsethour[1]);
-    //convert the offset to milliseconds, add to targetTime, and make a new Date
-    var offsetTime = new Date(targetTime.getTime() + tzDifference * 60 * 1000);
-    objService.Todate = ConvertAlertDate(offsetTime);
-
+        var targetTime = new Date(date);
+        var lstoffsethour = CurrentOffset.split(":");
+        //get the timezone offset from local time in minutes
+        var tzDifference = parseFloat(lstoffsethour[0]) * 60 + parseFloat(lstoffsethour[1]);
+        //convert the offset to milliseconds, add to targetTime, and make a new Date
+        var offsetTime = new Date(targetTime.getTime() + tzDifference * 60 * 1000);
+        objService.Todate = ConvertAlertDate(offsetTime);
+    }
     // objService.Todate = ConvertAlertDate(new Date(objService.Todate));
 
     objHeader = req.headers;
@@ -89,22 +90,53 @@ router.post('/SaveService', jsonParser, function(req, res) {
                 if (UserExist != null) {
                     Vehicle.findOne({
                         where: {
-                            DeviceId: objService.DeviceId
+                            DeviceId: objService.DeviceId,
                         }
                     }).then(function(ExistDevice) {
                         if (ExistDevice != null) {
                             if (objService.id == 0) {
-                                objService.idvehicle = ExistDevice.id;
-                                objService.CreatedDate = new Date();
-                                objService.CreatedBy = decoded.username;
-                                ServiceEnhacement.create(objService).then(function(saveService) {
-                                    if (saveService != null) {
+                                ServiceEnhacement.findOne({ where: { DeviceId: objService.DeviceId, Type: objService.Type, IsDelete: 0 } }).then(function(ServiceEnhacementExist) {
+                                    if (ServiceEnhacementExist) {
                                         res.json({
-                                            success: true,
-                                            message: 'Service Save Successfully',
+                                            success: false,
+                                            message: 'Service reminder already created',
                                             err: null
                                         })
+                                    } else {
+                                        objService.idvehicle = ExistDevice.id;
+                                        objService.CreatedDate = new Date();
+                                        objService.CreatedBy = decoded.username;
+                                        ServiceEnhacement.create(objService).then(function(saveService) {
+                                            if (saveService != null) {
+                                                res.json({
+                                                    success: true,
+                                                    message: 'Service Save Successfully',
+                                                    err: null
+                                                })
+                                            }
+                                        })
                                     }
+                                })
+                            } else {
+                                objService.idvehicle = ExistDevice.id;
+                                objService.ModifiedDate = new Date();
+                                objService.ModifiedBy = decoded.username;
+                                ServiceEnhacement.findOne({ where: { id: objService.id } }).then(function(ServiceEnhacementExist) {
+                                    ServiceEnhacementExist.updateAttributes(objService).then(function(response) {
+                                        if (response) {
+                                            res.json({
+                                                success: true,
+                                                message: 'Service reminder updated successfully',
+                                                data: response
+                                            })
+                                        } else {
+                                            res.json({
+                                                success: false,
+                                                message: 'Service reminder not updated successfully',
+                                                err: null
+                                            })
+                                        }
+                                    })
                                 })
                             }
                         } else {
@@ -133,39 +165,65 @@ router.post('/SaveService', jsonParser, function(req, res) {
 
 
 router.get('/DeleteRemiderService', function(req, res) {
+    objHeader = req.headers;
+    try {
+        var token = getToken(objHeader);
+        if (token) {
+            var decoded = jwt.decode(token, TokenKey);
+            User.findOne({
+                where: {
+                    username: decoded.username,
+                    password: decoded.password
+                }
+            }).then(function(UserExist) {
+                if (UserExist != null) {
+                    ServiceEnhacement.findOne({
+                        where: {
+                            id: req.query.id,
+                        }
+                    }).then(function(ServiceEnhacementEixst) {
+                        if (ServiceEnhacementEixst) {
+                            ServiceEnhacementEixst.updateAttributes({ IsDelete: 1, ModifiedDate: new Date(), ModifiedBy: decoded.username }).then(function(response) {
+                                if (response) {
+                                    res.json({
+                                        success: true,
+                                        message: 'Reminder service deleted Successfully',
+                                        err: null
+                                    })
+                                } else {
+                                    res.json({
+                                        success: false,
+                                        message: 'Reminder service not deleted Successfully',
+                                        err: null
+                                    })
+                                }
+                            })
+                        } else {
+                            res.json({
+                                success: false,
+                                message: 'Reminder service not Exist',
+                                err: null
+                            })
+                        }
 
-    ServiceEnhacement.findOne({
-        where: {
-            id: req.query.id,
-        }
-    }).then(function(ServiceEnhacementEixst) {
-        if (ServiceEnhacementEixst) {
-            ServiceEnhacementEixst.updateAttributes({ IsDelete: 1 }).then(function(response) {
-                if (response) {
-                    res.json({
-                        success: true,
-                        message: 'Reminder service deleted Successfully',
-                        err: null
+                    }).catch(function(err) {
+                        res.json(err);
                     })
                 } else {
-                    res.json({
-                        success: false,
-                        message: 'Reminder service not deleted Successfully',
-                        err: null
-                    })
+                    res.json(InvalidToken);
                 }
             })
         } else {
-            res.json({
-                success: false,
-                message: 'Reminder service not Exist',
-                err: null
-            })
+            res.json(InvalidToken);
         }
+    } catch (err) {
+        res.json({
+            success: false,
+            message: '',
+            err: err
+        })
+    }
 
-    }).catch(function(err) {
-        res.json(err);
-    })
 })
 
 router.post('/UpdateReadStatus', jsonParser, function(req, res) {
@@ -360,6 +418,82 @@ var AddAllServiceNotification = schedule.scheduleJob(rule, function() {
     })
 
 });
+
+router.get('/CompleteSevice', function(req, res) {
+
+    objHeader = req.headers;
+    try {
+        var token = getToken(objHeader);
+        if (token) {
+            var decoded = jwt.decode(token, TokenKey);
+            User.findOne({
+                where: {
+                    username: decoded.username,
+                    password: decoded.password
+                }
+            }).then(function(UserExist) {
+                if (UserExist != null) {
+                    ServiceEnhacement.findOne({ where: { id: req.query.id } }).then(function(ServiceEnhacementExist) {
+                        if (ServiceEnhacement) {
+                            ServiceEnhacementExist.updateAttributes({ IsDelete: 1, ModifiedDate: new Date(), ModifiedBy: decoded.username }).then(function(updatedata) {
+                                if (updatedata) {
+                                    ServiceEnhacementType.findOne({ where: { Type: updatedata.Type } }).then(function(servicetypeExist) {
+                                        if (servicetypeExist) {
+                                            var obj = new Object();
+                                            obj.IsDelete = 0;
+                                            obj.Type = updatedata.Type;
+                                            obj.idvehicle = updatedata.idvehicle;
+                                            obj.idUser = updatedata.idUser;
+                                            obj.DeviceId = updatedata.DeviceId;
+                                            obj.IsActive = updatedata.IsActive;
+                                            obj.CreatedBy = updatedata.CreatedBy;
+                                            obj.CreatedDate = updatedata.CreatedDate;
+                                            obj.Title = updatedata.Title;
+                                            if (updatedata.Type == 'Car Service' || updatedata.Type == 'Tyre Replacement') {
+                                                obj.Currentkm = req.query.OdoMeter;
+                                                obj.Expiredkm = parseInt(req.query.OdoMeter) + servicetypeExist.Month;
+                                                obj.WorkShop = updatedata.WorkShop;
+                                                obj.ContectNo = updatedata.ContectNo;
+                                            } else {
+                                                obj.Todate = new Date(updatedata.Todate);
+                                                obj.Todate.setMonth(obj.Todate.getMonth() + servicetypeExist.Month);
+                                            }
+
+                                            ServiceEnhacement.create(obj).then(function(response) {
+                                                if (response) {
+                                                    res.json({ success: true, message: 'New service reminder created successfully' })
+                                                } else {
+                                                    res.json({ success: false, message: 'New Service reminder not created successfully' })
+                                                }
+                                            })
+                                        } else {
+                                            res.json({ success: false, message: 'Service is not  Exist!' })
+                                        }
+                                    })
+                                } else {
+                                    res.json({ success: false, message: 'Service not completed successfully!' })
+                                }
+                            })
+                        } else {
+                            res.json({ success: false, message: 'Service reminder not found!' })
+                        }
+                    })
+                } else {
+                    res.json(InvalidToken);
+                }
+            })
+        } else {
+            res.json(InvalidToken);
+        }
+    } catch (err) {
+        res.json({
+            success: false,
+            message: '',
+            err: err
+        })
+    }
+
+})
 
 function convertdateformat(date) {
     var firstdayMonth = date.getMonth() + 1;
