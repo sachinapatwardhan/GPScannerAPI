@@ -73,6 +73,14 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.BOOLEAN,
       allowNull: true,
       defaultValue: '0'
+    },
+    WorkShop: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    ContectNo: {
+      type: DataTypes.STRING,
+      allowNull: true
     }
   }, {
     tableName: 'tblserviceenhancement'

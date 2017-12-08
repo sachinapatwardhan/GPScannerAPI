@@ -27,6 +27,10 @@ module.exports = function(sequelize, DataTypes) {
     ModifiedDate: {
       type: DataTypes.DATE,
       allowNull: true
+    },
+    Month: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true
     }
   }, {
     tableName: 'tblserviceenhancementtype'
