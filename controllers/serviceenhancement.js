@@ -456,7 +456,7 @@ router.get('/CompleteSevice', function(req, res) {
                 if (UserExist != null) {
                     ServiceEnhacement.findOne({ where: { id: req.query.id } }).then(function(ServiceEnhacementExist) {
                         if (ServiceEnhacement) {
-                            ServiceEnhacementExist.updateAttributes({ IsDelete: 1, ModifiedDate: new Date(), ModifiedBy: decoded.username }).then(function(updatedata) {
+                            ServiceEnhacementExist.updateAttributes({ IsComplete: 1, ModifiedDate: new Date(), ModifiedBy: decoded.username }).then(function(updatedata) {
                                 if (updatedata) {
                                     ServiceEnhacementType.findOne({ where: { Type: updatedata.Type } }).then(function(servicetypeExist) {
                                         if (servicetypeExist) {
