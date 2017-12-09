@@ -330,7 +330,7 @@ router.post('/SaveService', jsonParser, function(req, res) {
                     }).then(function(ExistDevice) {
                         if (ExistDevice != null) {
                             if (objService.id == 0) {
-                                ServiceEnhacement.findOne({ where: { DeviceId: objService.DeviceId, Type: objService.Type, IsDelete: 0 } }).then(function(ServiceEnhacementExist) {
+                                ServiceEnhacement.findOne({ where: { DeviceId: objService.DeviceId, Type: objService.Type, IsDelete: 0, IsComplete: 0 } }).then(function(ServiceEnhacementExist) {
                                     if (ServiceEnhacementExist) {
                                         res.json({
                                             success: false,
@@ -343,6 +343,7 @@ router.post('/SaveService', jsonParser, function(req, res) {
                                         objService.CreatedBy = decoded.username;
                                         ServiceEnhacement.create(objService).then(function(saveService) {
                                             if (saveService != null) {
+                                                funAuditLog.CreateAuditLog('Save Sevice Reminder', UserExist.username, 'Cerate Sevcie Reminder');
                                                 res.json({
                                                     success: true,
                                                     message: 'Service Save Successfully',
@@ -359,6 +360,7 @@ router.post('/SaveService', jsonParser, function(req, res) {
                                 ServiceEnhacement.findOne({ where: { id: objService.id } }).then(function(ServiceEnhacementExist) {
                                     ServiceEnhacementExist.updateAttributes(objService).then(function(response) {
                                         if (response) {
+                                            funAuditLog.CreateAuditLog('Update Sevice Reminder', UserExist.username, 'update Sevcie Reminder');
                                             res.json({
                                                 success: true,
                                                 message: 'Service reminder updated successfully',
@@ -420,6 +422,7 @@ router.get('/DeleteRemiderService', function(req, res) {
                         if (ServiceEnhacementEixst) {
                             ServiceEnhacementEixst.updateAttributes({ IsDelete: 1, ModifiedDate: new Date(), ModifiedBy: decoded.username }).then(function(response) {
                                 if (response) {
+                                    funAuditLog.CreateAuditLog('Delete Sevice Reminder', UserExist.username, 'Delete Sevcie Reminder');
                                     res.json({
                                         success: true,
                                         message: 'Reminder service deleted Successfully',
@@ -696,6 +699,7 @@ router.get('/CompleteSevice', function(req, res) {
 
                                             ServiceEnhacement.create(obj).then(function(response) {
                                                 if (response) {
+                                                    funAuditLog.CreateAuditLog('Craete Sevice Reminder', UserExist.username, 'Craete Sevcie Reminder');
                                                     res.json({ success: true, message: 'New service reminder created successfully' })
                                                 } else {
                                                     res.json({ success: false, message: 'New Service reminder not created successfully' })
