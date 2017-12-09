@@ -84,7 +84,8 @@ module.exports = function(sequelize, DataTypes) {
     },
     IsComplete: {
       type: DataTypes.BOOLEAN,
-      allowNull: true
+      allowNull: true,
+      defaultValue: '0'
     }
   }, {
     tableName: 'tblserviceenhancement'
