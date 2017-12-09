@@ -9,12 +9,226 @@ var ServiceEnhancementinCountry = models.tblserviceenhancementincountry;
 
 //find all serveicetype
 router.get('/GetAllServiceEnhacementType', function(req, res) {
-    ServiceEnhacementType.findAll().then(function(resType) {
+    ServiceEnhacementType.findAll({ order: 'Type asc' }).then(function(resType) {
         res.json(resType);
     }).catch(function(resErr) {
         res.json(resErr);
     })
 })
+router.get('/getAllSericeInCountry', function(req, res) {
+    ServiceEnhancementinCountry.findAll({ where: { IdServiceEnhancementType: req.query.id } }).then(function(response) {
+        res.json(response);
+    }).catch(function(error) {
+        res.json(error);
+    })
+})
+
+router.post('/SaveServiceType', jsonParser, function(req, res) {
+    console.log(req.body)
+    objServiceType = req.body;
+    objHeader = req.headers;
+    console.log(objServiceType)
+        //Set Parameter for User Permission
+    req.query['tablename'] = req.headers['x-requested-with'];
+    var token = getToken(objHeader);
+    if (token) {
+        var decoded = jwt.decode(token, TokenKey);
+        User.findOne({ where: { username: decoded.username, password: decoded.password } }).then(function(UserExist) {
+            if (UserExist != null) {
+                if (objServiceType.id == 0) {
+                    objServiceType.CreatedDate = new Date();
+                    objServiceType.CreatedBy = UserExist.username;
+
+                    ServiceEnhacementType.findOrCreate({ where: { Type: objServiceType.Type }, defaults: objServiceType }).then(function(response) {
+                        if ((response[1])) {
+                            funAuditLog.CreateAuditLog('Save Sevice type', UserExist.username, 'Cerate Sevcie Type');
+                            res.json({ success: true, message: "Service Type created successfully...", data: response });
+                        } else {
+                            res.json({ success: false, message: "Service Type is already Exist...", data: response });
+                        }
+                    })
+                } else {
+                    objServiceType.ModifiedDate = new Date();
+                    objServiceType.ModifiedBy = UserExist.username;
+                    ServiceEnhacementType.findOne({ where: { Type: objServiceType.Type } }).then(function(objSimsExist) {
+                        if (objSimsExist != null && objServiceType.id != objSimsExist.id) {
+                            res.json({ success: false, message: "Service Type is already Exist...", data: objSimsExist });
+                        } else {
+                            ServiceEnhacementType.update(objServiceType, { where: { id: objServiceType.id } }).then(function(response) {
+                                if (response[0]) {
+                                    funAuditLog.CreateAuditLog('Update Service Type', UserExist.username, 'Update Service Type');
+                                    res.json({ success: true, message: "Service Type updated successfully...", data: response });
+                                } else {
+                                    res.json({ success: false, message: "Service Type not updated successfully...", data: response });
+                                }
+                            })
+                        }
+                    })
+                }
+            } else {
+                res.json(InvalidToken);
+            }
+        })
+    }
+})
+
+
+router.post('/SaveServiceInCountry', jsonParser, function(req, res) {
+    objServiceCountry = req.body;
+    objHeader = req.headers;
+
+    //Set Parameter for User Permission
+    req.query['tablename'] = req.headers['x-requested-with'];
+
+    var token = getToken(objHeader);
+    if (token) {
+        var decoded = jwt.decode(token, TokenKey);
+        User.findOne({ where: { username: decoded.username, password: decoded.password } }).then(function(UserExist) {
+            if (UserExist != null) {
+
+                //set Parameter
+                req.query['permission'] = "Added";
+
+                var obj = {};
+                obj.headers = req.headers;
+                obj.query = req.query;
+
+                funAccessPermission.CheckUserAccessPermission(obj, function(responseAccessPermission) {
+                    var AccessPermission = responseAccessPermission.success;
+                    if (AccessPermission) {
+                        if (objServiceCountry.Country == 'All') {
+                            ServiceEnhancementinCountry.destroy({ where: { IdServiceEnhancementType: objServiceCountry.IdServiceEnhancementType } }).then(function(resposeDelete) {
+                                ServiceEnhancementinCountry.create(objServiceCountry).then(function(response) {
+                                    if (response) {
+                                        funAuditLog.CreateAuditLog('Add Service country', UserExist.username, 'Create Add Service country');
+                                        res.json({ success: true, message: "Service add for all country successfully...", data: response });
+                                    } else {
+                                        res.json({ success: false, message: "Service is already exist in country...", data: response });
+                                    }
+                                })
+                            })
+
+
+                        } else {
+                            ServiceEnhancementinCountry.findOrCreate({ where: { IdServiceEnhancementType: objServiceCountry.IdServiceEnhancementType, Country: objServiceCountry.Country }, defaults: objServiceCountry }).then(function(response) {
+                                if ((response[1])) {
+                                    funAuditLog.CreateAuditLog('Add Service country', UserExist.username, 'Create Add Service country');
+                                    res.json({ success: true, message: "Service add in country successfully...", data: response });
+                                } else {
+                                    res.json({ success: false, message: "Service is already exist in country...", data: response });
+                                }
+                            })
+                        }
+                    } else {
+                        res.json(NoAccessPermission);
+                    }
+                });
+            } else {
+                res.json(InvalidToken);
+            }
+        })
+    } else {
+        res.json(InvalidToken);
+    }
+})
+
+
+
+router.get('/DeleteServicefromCountry', function(req, res) {
+    objHeader = req.headers;
+    var token = getToken(objHeader);
+
+    //Set Parameter for User Permission
+    req.query['tablename'] = req.headers['x-requested-with'];
+    req.query['permission'] = "Deleted";
+
+    var obj = {};
+    obj.headers = req.headers;
+    obj.query = req.query;
+
+    funAccessPermission.CheckUserAccessPermission(obj, function(responseAccessPermission) {
+        var AccessPermission = responseAccessPermission.success;
+        if (AccessPermission) {
+
+            if (token) {
+                var decoded = jwt.decode(token, TokenKey);
+                User.findOne({ where: { username: decoded.username, password: decoded.password } }).then(function(UserExist) {
+                    if (UserExist != null) {
+
+                        ServiceEnhancementinCountry.destroy({ where: { IdServiceEnhancementType: req.query.IdServiceEnhancementType, Country: req.query.Country } }).then(function(response) {
+                            if (response) {
+                                funAuditLog.CreateAuditLog('Delete Service from country', UserExist.username, 'Delete Service from country');
+                                res.json({ success: true, message: "Service remove from country successfully...", data: response });
+                            } else {
+                                res.json({ success: true, message: "Service not remove from country successfully...", data: response });
+                            }
+                        })
+                    } else {
+                        res.json(InvalidToken);
+                    }
+                })
+            } else {
+                res.json(InvalidToken);
+            }
+        } else {
+            res.json(NoAccessPermission);
+        }
+    });
+});
+
+
+router.get('/DeleteSevcieType', function(req, res) {
+    objHeader = req.headers;
+    var token = getToken(objHeader);
+    var obj = {};
+    obj.headers = req.headers;
+    obj.query = req.query;
+
+    if (token) {
+        var decoded = jwt.decode(token, TokenKey);
+
+
+        User.findOne({
+            where: {
+                username: decoded.username,
+                password: decoded.password
+            }
+        }).then(function(UserExist) {
+            if (UserExist != null) {
+                if (req.query.id != '' && req.query.id != null) {
+
+                    ServiceEnhacementType.destroy({
+                        where: {
+                            id: req.query.id
+                        }
+                    }).then(function(response) {
+                        if (response) {
+                            funAuditLog.CreateAuditLog('Delete sevice type', UserExist.username, 'Delete sevice type');
+                            res.json({
+                                success: true,
+                                message: "Sevcie Type deleted successfully...",
+                                data: response
+                            });
+                        } else {
+                            res.json(RecordNotFound);
+                        }
+                    })
+                } else {
+                    res.json({
+                        success: false,
+                        message: "Sevcie Type To delete",
+                    });
+                }
+            } else {
+                res.json(InvalidToken);
+            }
+        })
+    } else {
+        res.json(InvalidToken);
+    }
+
+});
+
 router.get('/GetAllServiceEnhacementTypebyCountry', function(req, res) {
     ServiceEnhacementType.hasMany(ServiceEnhancementinCountry, {
         foreignKey: {
