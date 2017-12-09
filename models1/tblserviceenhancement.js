@@ -81,6 +81,10 @@ module.exports = function(sequelize, DataTypes) {
     ContectNo: {
       type: DataTypes.STRING,
       allowNull: true
+    },
+    IsComplete: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true
     }
   }, {
     tableName: 'tblserviceenhancement'
