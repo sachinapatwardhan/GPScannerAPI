@@ -10,6 +10,9 @@ var HandShake = models.tblhandshake;
 var Vehicle = models.tblvehicle;
 var GPSData = models.tblgpsdata;
 var GPSDevice = models.tblgpsdevice;
+var ServiceEnhacement = models.tblserviceenhancement;
+var ServiceEnhacementType = models.tblserviceenhancementtype;
+var ServiceEnhancementNotification = models.tblserviceenhancementnotification;
 var momentz = require('moment-timezone');
 
 //End of Tables
@@ -695,7 +698,7 @@ global.Command9955 = function(line, Callback) {
                     Latitude: Latitude,
                     Longitude: Longitude,
                     Direction: Direction,
-                    OdoMeter: OdoMeter,
+                    OdoMeter: Odometer,
                     IsRelayToStopTheCar: IsRelayToStopTheCar,
                     IsSirenSound: IsSirenSound,
                     IsUserDefined: IsUserDefined,
@@ -1033,6 +1036,138 @@ global.Command9955 = function(line, Callback) {
                     io.sockets.emit(DeviceId + 'RelaySetting', JSON.stringify(objRelay));
                 }
             });
+
+
+            //Check Odometer for send Service Enhancement notification
+
+            var CheckOdometer = Math.floor(parseFloat(Odometer) / 1000);
+            ServiceEnhacement.belongsTo(Vehicle, {
+                foreignKey: {
+                    name: 'idvehicle',
+                    allowNull: false
+                }
+            });
+
+            ServiceEnhacement.findAll({
+                where: { Expiredkm: { $gte: (CheckOdometer - 10) }, IsDelete: 0, IsComplete: 0 },
+                include: [{
+                    model: Vehicle,
+                    where: { deviceid: DeviceId }
+                }]
+            }).then(function(response) {
+                if (response) {
+                    function uploader(i) {
+                        if (response.length > i) {
+
+                            var ExpiredKM = response[i].Expiredkm;
+                            var kmdiff = parseFloat(ExpiredKM) - parseFloat(CheckOdometer);
+                            var diffkm = 0;
+                            var IskmNotification = false;
+
+                            if (kmdiff > 45 && kmdiff < 55) {
+                                diffkm = 50;
+                                IskmNotification = true;
+                            } else if (kmdiff > 5 && kmdiff < 15) {
+                                diffkm = 10;
+                                IskmNotification = true;
+                            } else if (kmdiff > -5 && kmdiff < 5) {
+                                diffkm = 0;
+                                IskmNotification = true;
+                            } else if (kmdiff > -15 && kmdiff < -5) {
+                                diffkm = -10;
+                                IskmNotification = true;
+                            }
+                            if (IskmNotification == true) {
+                                var obj = new Object();
+                                obj.IdServiceEnhancement = response[i].id;
+                                obj.CreatedDate = new Date();
+                                obj.days = diffkm;
+                                obj.IsRead = false;
+                                // obj.idvehicle = response[i].tblvehicle.id;
+                                ServiceEnhancementNotification.findOrCreate({
+                                    where: {
+                                        IdServiceEnhancement: obj.IdServiceEnhancement,
+                                        days: diffkm
+                                    },
+                                    defaults: obj
+                                }).then(function(ServiceEnhacementcerated) {
+
+                                    if (ServiceEnhacementcerated[1]) {
+                                        var NewObj = new Object()
+                                        NewObj.Id = ServiceEnhacementcerated[0].Id;
+                                        NewObj.IdServiceEnhancement = ServiceEnhacementcerated[0].IdServiceEnhancement;
+                                        NewObj.CreatedDate = ServiceEnhacementcerated[0].CreatedDate;
+                                        NewObj.Message = ServiceEnhacementcerated[0].Message;
+                                        NewObj.tblserviceenhancement = response[i];
+                                        NewObj.days = diffkm;
+                                        NewObj.IsRead = false;
+                                        NewObj.idvehicle = response[i].tblvehicle.id;
+                                        io.sockets.emit(response[i].tblvehicle.iduser + 'ServiceEnhacementNotification', JSON.stringify(NewObj));
+
+                                        var Message = "";
+
+                                        if (diffkm == 50 || diffkm == 10) {
+                                            var RenewDate = moment(new Date(date2));
+                                            var RenewDateFormat = RenewDate.format("DD MMMM YYYY");
+                                            if (response[i].Type == 'Car Service') {
+                                                Message = "Your vehicle " + response[i].tblvehicle.Name + " service due after" + kmdiff + " km. Pls get your vehicle serviced.";
+                                            } else if (response[i].Type == 'Tyre Replacement') {
+                                                Message = "Your vehicle " + response[i].tblvehicle.Name + " tyre need replacement after " + kmdiff + " km. Pls replace it on time.";
+                                            }
+
+                                        } else if (diffkm == 0) {
+                                            if (response[i].Type == 'Car Service') {
+                                                Message = "Your vehicle " + response[i].tblvehicle.Name + " service has due. Pls get your vehicle serviced.";
+                                            } else if (response[i].Type == 'Tyre Replacement') {
+                                                Message = "Your vehicle " + response[i].tblvehicle.Name + " tyre need replacement. Pls replace it.";
+                                            }
+                                        } else {
+
+                                            if (response[i].Type == 'Car Service') {
+                                                Message = "Your vehicle " + response[i].tblvehicle.Name + " need a service. Pls get your vehicle serviced.";
+                                            } else if (response[i].Type == 'Tyre Replacement') {
+                                                Message = "Your vehicle " + response[i].tblvehicle.Name + " tyre need replacement. Get your car tyre replaced.";
+                                            }
+                                        }
+
+                                        //push Notification Send
+
+                                        connection.query("SELECT tu.id, tu.username, ta.AppName, ta.IOSCertificate, ta.IOSKey, ta.AndroidId, ta.AndroidSenderId FROM tbluserinformation as tu inner Join tblappinfo as ta ON ta.id = tu.idApp where tu.id=" + response[i].idUser, function(err, objAppInfo, fields) {
+                                            var soundname = "Default";
+                                            var AllUser = response[i].idUser.toString();
+                                            var PushNotificationdata = {
+                                                title: 'Alert',
+                                                message: Message,
+                                                // Fence: 'Default',
+                                                soundname: soundname,
+                                                otherfields: {
+                                                    deviceid: response[i].tblvehicle.deviceid,
+                                                    Id: response[i].tblvehicle.id,
+                                                    VehicleName: response[i].tblvehicle.Name,
+                                                    NotificationType: response[i].Type,
+                                                    Type: 'Notification'
+                                                }
+                                            };
+
+                                            SendPushNotification(PushNotificationdata, AllUser, objAppInfo[0]);
+
+                                            uploader(i + 1);
+                                        });
+                                    } else {
+                                        uploader(i + 1);
+                                    }
+
+                                })
+                            } else {
+                                uploader(i + 1)
+                            }
+                        }
+                    }
+                    uploader(0)
+                } else {
+                    res.json({ success: false });
+                }
+            })
         }
 
     } catch (ex) {

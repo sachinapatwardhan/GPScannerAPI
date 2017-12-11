@@ -516,7 +516,7 @@ var AddAllServiceNotification = schedule.scheduleJob(rule, function() {
     });
 
     ServiceEnhacement.findAll({
-        where: { Todate: { $gte: date }, IsDelete: 0 },
+        where: { Todate: { $gte: date }, IsDelete: 0, IsComplete: 0 },
         include: [{
             model: Vehicle
         }]
