@@ -18,8 +18,20 @@ CREATE TABLE `tblserviceenhancement` (
   `Currentkm` varchar(45) DEFAULT NULL,
   `Expiredkm` varchar(45) DEFAULT NULL,
   `IsDelete` tinyint(1) DEFAULT '0',
+  `WorkShop` varchar(100) DEFAULT NULL,
+  `ContectNo` varchar(20) DEFAULT NULL,
+  `IsComplete` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+CREATE TABLE `tblserviceenhancementincountry` (
+  `Id` int(11) NOT NULL AUTO_INCREMENT,
+  `IdServiceEnhancementType` int(11) DEFAULT NULL,
+  `Country` varchar(45) DEFAULT NULL,
+  PRIMARY KEY (`Id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 
 
 CREATE TABLE `tblserviceenhancementnotification` (
@@ -33,6 +45,7 @@ CREATE TABLE `tblserviceenhancementnotification` (
   PRIMARY KEY (`Id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+
 CREATE TABLE `tblserviceenhancementtype` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `Type` varchar(45) DEFAULT NULL,
@@ -40,8 +53,10 @@ CREATE TABLE `tblserviceenhancementtype` (
   `CreatedDate` datetime DEFAULT NULL,
   `ModifiedBy` varchar(45) DEFAULT NULL,
   `ModifiedDate` datetime DEFAULT NULL,
+  `Month` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 
 
 INSERT INTO `tblserviceenhancementtype` (`Type`,`CreatedBy`,`CreatedDate`) VALUES ('Car Service','Admin','2017-11-21 10:16:58');
@@ -50,4 +65,5 @@ INSERT INTO `tblserviceenhancementtype` (`Type`,`CreatedBy`,`CreatedDate`) VALUE
 INSERT INTO `tblserviceenhancementtype` (`Type`,`CreatedBy`,`CreatedDate`) VALUES ('Battery Replacement','Admin','2017-11-21 10:16:58');
 INSERT INTO `tblserviceenhancementtype` (`Type`,`CreatedBy`,`CreatedDate`) VALUES ('PUC Renewal','Admin','2017-11-21 10:16:58');
 INSERT INTO `tblserviceenhancementtype` (`Type`,`CreatedBy`,`CreatedDate`) VALUES ('Road Tax Renewal','Admin','2017-11-21 10:16:58');
+INSERT INTO `tblserviceenhancementtype` (`Type`,`CreatedBy`,`CreatedDate`) VALUES ('Tyre Replacement','Admin','2017-11-21 10:16:58');
 
