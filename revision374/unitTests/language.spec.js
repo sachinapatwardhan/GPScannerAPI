@@ -1,5 +1,4 @@
 var request = require('supertest');
-var require = require('really-need');
 var expect = require('chai').expect;
 var qs = require('qs');
 
@@ -80,9 +79,7 @@ describe('/language', function() {
 	var dPermission;
 
 	before(function(done) {
-		server = require('../server', {
-			bustCache: true
-		});
+		server = require('../server');
 
 		Language = models.language;
 		LanguageInCountry = models.tbllanguageincountry;

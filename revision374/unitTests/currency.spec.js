@@ -1,5 +1,4 @@
 var request = require('supertest');
-var require = require('really-need');
 var expect = require('chai').expect;
 var qs = require('qs');
 
@@ -60,9 +59,7 @@ describe('/currency', function() {
 	var dPermission;
 
 	before(function(done) {
-		server = require('../server', {
-			bustCache: true
-		});
+		server = require('../server');
 
 		Currency = models.tblcurrency;
 		User = models.tbluserinformation;

@@ -1,5 +1,4 @@
 var request = require('supertest');
-var require = require('really-need');
 var expect = require('chai').expect;
 var qs = require('qs');
 
@@ -19,7 +18,7 @@ var testDynamicPage1 = {
 	ModifiedDate: new Date()
 };
 
-describe('/dashboard', function() {
+describe('/dynamicpage', function() {
 	// Important! Because server setup is slow!
 	this.timeout(5000);
 
@@ -28,9 +27,7 @@ describe('/dashboard', function() {
 	var dDynamicPage;
 
 	before(function(done) {
-		server = require('../server', {
-			bustCache: true
-		});
+		server = require('../server');
 
 		DynamicPage = models.tbldynamicpagemgmt;
 

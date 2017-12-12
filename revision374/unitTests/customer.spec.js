@@ -1,5 +1,4 @@
 var request = require('supertest');
-var require = require('really-need');
 var expect = require('chai').expect;
 var qs = require('qs');
 
@@ -9,9 +8,7 @@ describe('/customer', function() {
 	var server;
 
 	before(function(done) {
-		server = require('../server', {
-			bustCache: true
-		});
+		server = require('../server');
 		done();
 	});
 

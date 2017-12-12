@@ -1,5 +1,4 @@
 var request = require('supertest');
-var require = require('really-need');
 var expect = require('chai').expect;
 var qs = require('qs');
 
@@ -81,9 +80,7 @@ describe('/languageresources', function() {
 	var dPermission;
 
 	before(function(done) {
-		server = require('../server', {
-			bustCache: true
-		});
+		server = require('../server');
 
 		Language = models.language;
 		LocaleStringResource = models.localestringresource;

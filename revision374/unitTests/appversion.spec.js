@@ -1,5 +1,4 @@
 var request = require('supertest');
-var require = require('really-need');
 var expect = require('chai').expect;
 var qs = require('qs');
 
@@ -38,9 +37,7 @@ describe('/appversion', function() {
 	var dAppInfo;
 
 	before(function(done) {
-		server = require('../server', {
-			bustCache: true
-		});
+		server = require('../server');
 		AppVersion = models.tblappversion;
 		AppInfo = models.tblappinfo;
 

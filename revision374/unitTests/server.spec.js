@@ -1,5 +1,4 @@
 var request = require('supertest');
-var require = require('really-need');
 
 describe('starting express', function() {
 	// Important! Because server setup is slow!
@@ -7,13 +6,11 @@ describe('starting express', function() {
 
 	var server;
 
-	beforeEach(function() {
-		server = require('../server', {
-			bustCache: true
-		});
+	before(function() {
+		server = require('../server');
 	});
 
-	afterEach(function(done) {
+	after(function(done) {
 		server.close(done);
 	});
 

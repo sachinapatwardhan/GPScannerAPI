@@ -1,5 +1,4 @@
 var request = require('supertest');
-var require = require('really-need');
 var expect = require('chai').expect;
 var qs = require('qs');
 
@@ -54,7 +53,7 @@ var testUser1 = {
 	idApp: 1
 };
 
-describe('/gpsdata', function() {
+describe('/settings', function() {
 	// Important! Because server setup is slow!
 	this.timeout(5000);
 
@@ -67,9 +66,7 @@ describe('/gpsdata', function() {
 	var dHandshake;
 
 	before(function(done) {
-		server = require('../server', {
-			bustCache: true
-		});
+		server = require('../server');
 
 		User = models.tbluserinformation;
 		Vehicle = models.tblvehicle;

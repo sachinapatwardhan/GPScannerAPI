@@ -1,5 +1,4 @@
 var request = require('supertest');
-var require = require('really-need');
 var expect = require('chai').expect;
 var qs = require('qs');
 
@@ -77,9 +76,7 @@ describe('/module', function() {
 	var dPermission2;
 
 	before(function(done) {
-		server = require('../server', {
-			bustCache: true
-		});
+		server = require('../server');
 
 		Country = models.tblcountrymgmt;
 		User = models.tbluserinformation;

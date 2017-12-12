@@ -1,5 +1,4 @@
 var request = require('supertest');
-var require = require('really-need');
 var expect = require('chai').expect;
 var qs = require('qs');
 
@@ -118,9 +117,7 @@ describe('/user', function() {
 	var uploadedImgPath;
 
 	before(function(done) {
-		server = require('../server', {
-			bustCache: true
-		});
+		server = require('../server');
 		
 		Vehicle = models.tblvehicle;
 		User = models.tbluserinformation;

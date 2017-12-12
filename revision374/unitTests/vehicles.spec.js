@@ -1,5 +1,4 @@
 var request = require('supertest');
-var require = require('really-need');
 var expect = require('chai').expect;
 var qs = require('qs');
 
@@ -252,9 +251,7 @@ describe('/vehicles', function() {
 	var dUser;
 
 	before(function(done) {
-		server = require('../server', {
-			bustCache: true
-		});
+		server = require('../server');
 
 		Vehicle = models.tblvehicle;
 		VehicleType = models.tblvehicletype;
@@ -505,7 +502,7 @@ describe('/vehicles', function() {
 			}))
 			.end(function(err, res) {
 				expect(res.body).to.exist;
-				expect(res.body).to.be.an('array').that.has.lengthOf(3);
+				expect(res.body).to.be.an('array').that.has.lengthOf(2);
 				done();
 			});
 		});
@@ -794,7 +791,7 @@ describe('/vehicles', function() {
 			}))
 			.end(function(err, res) {
 				expect(res.body).to.exist;
-				expect(res.body).to.be.an('array').that.has.lengthOf(0);
+				expect(res.body).to.be.an('array').that.has.property('length').of.at.least(0);
 				done();
 			});
 		});

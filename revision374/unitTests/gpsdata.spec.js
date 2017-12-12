@@ -1,5 +1,4 @@
 var request = require('supertest');
-var require = require('really-need');
 var expect = require('chai').expect;
 var qs = require('qs');
 
@@ -292,9 +291,7 @@ describe('/gpsdata', function() {
 	var dSim;
 
 	before(function(done) {
-		server = require('../server', {
-			bustCache: true
-		});
+		server = require('../server');
 
 		User = models.tbluserinformation;
 		Role = models.tblrole;

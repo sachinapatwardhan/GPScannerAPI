@@ -1,4 +1,3 @@
-var require = require('really-need');
 var request = require('supertest');
 var expect = require('chai').expect;
 var qs = require('qs');
@@ -31,9 +30,7 @@ describe('/DeviceStock', function() {
 	var dStockEntry;
 
 	before(function(done) {
-		server = require('../server', {
-			bustCache: true
-		});
+		server = require('../server');
 
 		Type = models.tbltype;
 		StockEntry = models.tblstockentry;

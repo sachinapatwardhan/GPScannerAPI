@@ -1,5 +1,4 @@
 var request = require('supertest');
-var require = require('really-need');
 var expect = require('chai').expect;
 var qs = require('qs');
 
@@ -43,7 +42,7 @@ var testAppVersion2 = {
 	UpdateAppText: 'A new app version is available!'
 };
 
-describe('app settings', function() {
+describe('/appsetting', function() {
 	// Important! Because server setup is slow!
 	this.timeout(5000);
 
@@ -56,9 +55,8 @@ describe('app settings', function() {
 	var dUser;
 
 	before(function(done) {
-		server = require('../server', {
-			bustCache: true
-		});
+		server = require('../server');
+		
 		AppInfo = models.tblappinfo;
 		AppVersion = models.tblappversion;
 		User = models.tbluserinformation;

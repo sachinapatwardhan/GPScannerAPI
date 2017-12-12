@@ -1,5 +1,4 @@
 var request = require('supertest');
-var require = require('really-need');
 var expect = require('chai').expect;
 var qs = require('qs');
 
@@ -307,7 +306,7 @@ var testPermission = {
 	Show: true
 };
 
-describe('/gpsdata', function() {
+describe('/MapData', function() {
 	// Important! Because server setup is slow!
 	this.timeout(5000);
 
@@ -344,9 +343,7 @@ describe('/gpsdata', function() {
 	var dDrivingData;
 
 	before(function(done) {
-		server = require('../server', {
-			bustCache: true
-		});
+		server = require('../server');
 
 		User = models.tbluserinformation;
 		Role = models.tblrole;

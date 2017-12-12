@@ -1,5 +1,4 @@
 var request = require('supertest');
-var require = require('really-need');
 var expect = require('chai').expect;
 var qs = require('qs');
 
@@ -46,7 +45,7 @@ var testPermission = {
 	Show: true
 };
 
-describe('/state', function() {
+describe('/telco', function() {
 	// Important! Because server setup is slow!
 	this.timeout(5000);
 
@@ -66,9 +65,7 @@ describe('/state', function() {
 	var dPermission;
 
 	before(function(done) {
-		server = require('../server', {
-			bustCache: true
-		});
+		server = require('../server');
 
 		Telco = models.tbltelco;
 		User = models.tbluserinformation;

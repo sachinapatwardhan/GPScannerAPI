@@ -1,5 +1,4 @@
 var request = require('supertest');
-var require = require('really-need');
 var expect = require('chai').expect;
 var qs = require('qs');
 
@@ -99,9 +98,7 @@ describe('/city', function() {
 	var dPermission;
 
 	before(function(done) {
-		server = require('../server', {
-			bustCache: true
-		});
+		server = require('../server');
 
 		City = models.tblstatecitymgmt;
 		State = models.tblcountrystatemgmt;
