@@ -356,6 +356,7 @@ app.use('/serviceenhancement', require('./controllers/serviceenhancement'));
 // MAARK Install App
 app.use('/salesAgent', require('./controllers/salesAgent'));
 app.use('/retailer', require('./controllers/retailer'));
+app.use('/admin', require('./controllers/admin'));
 
 // MAARK Install App End
 
