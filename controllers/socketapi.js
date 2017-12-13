@@ -2556,11 +2556,12 @@ router.get('/SetOdometerSetting', function(req, res) {
 global.SetOdometerSetting = function(objdata, Callback) {
 
     var DeviceId = objdata.DeviceId;
-    var odometer = a2hex(('0000' + objdata.odometer).slice(-4));
-
-    var Data = "40400015" + DeviceId + "4145" + odometer;
-    Data = Data + CalculateCRCbyHex(Data) + '0D0A';
-
+    var odometer = a2hex(objdata.odometer);
+    var datalength = 8;
+    var Data = DeviceId + "4145" + odometer;
+    datalength = datalength + (Data.length / 2);
+    Data = "4040" + ('0000' + datalength.toString(16)).slice(-4) + Data + CalculateCRCbyHex(Data) + '0D0A';
+    console.log(Data)
     var client = new net.Socket();
     var Sendflag = false;
 
