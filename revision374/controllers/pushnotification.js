@@ -9,7 +9,10 @@ var User = models.tbluserinformation;
 
 router.post('/Subscribe', jsonParser, function(req, res) {
     objPushNotification = req.body;
-    // console.log(objPushNotification)
+    console.log(objPushNotification)
+    if (objPushNotification.AppVersion == undefined) {
+        objPushNotification.AppVersion = null;
+    }
     PushNotification.findOne({
         where: {
             udid: objPushNotification.udid,
@@ -18,6 +21,7 @@ router.post('/Subscribe', jsonParser, function(req, res) {
     }).then(function(PushnotificationExist) {
         if (PushnotificationExist != null) {
             if (objPushNotification.Country) {
+
                 PushnotificationExist.updateAttributes({
                     Country: objPushNotification.Country,
                     PushNotificationId: objPushNotification.PushNotificationId,
@@ -168,6 +172,7 @@ router.get('/UpdateUserIdByUdId', function(req, res) {
 });
 
 router.get('/UpdatePushnotificationCounter', function(req, res) {
+    console.log(req.query)
     connection.query("Update tblpushnotification set messagecount=0 where udid='" + req.query.udid + "' and UserType='" + req.query.UserType + "'", function(errupdate, updateresp, fields) {
         res.json({
             success: true,
