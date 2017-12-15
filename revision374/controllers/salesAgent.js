@@ -21,57 +21,6 @@
 
 	//////////
 
-	// deviceId, userId
-	router.post('/assignDevice', jsonParser, function(req, res) {
-		GpsDevice.findOne({
-			where: {
-				DeviceId: req.body.deviceId
-			}
-		})
-		.then(function(rGpsDevice) {
-			if (!rGpsDevice) {
-				var err = new Error('GPS device not found.');
-				err.name = 'BugzError';
-				throw err;
-			}
-
-			return User.findOne({
-				where: {
-					id: req.body.userId
-				}
-			})
-			.then(function(rUser) {
-				if (!rUser) {
-					var err = new Error('User not found.');
-					err.name = 'BugzError';
-					throw err;
-				}
-
-				return [rGpsDevice, rUser];
-			});
-		})
-		.spread(function(rGpsDevice, rUser) {
-			return DeviceAgentRetailer.create({
-				agentId: rUser.id,
-				deviceId: rGpsDevice.DeviceId,
-				createdDatetime: new Date()
-			});
-		})
-		.then(function(rDeviceAgentRetailer) {
-			res.json({
-				success: true,
-				message: 'Assigned device to agent.',
-				data: rDeviceAgentRetailer
-			});
-		})
-		.catch(function(err) {
-			res.json({
-				success: false,
-				message: err.message
-			});
-		});
-	});
-
 	router.post('/registerRetailerAccount', jsonParser, function(req, res) {
 		sequelize.transaction(function(t) {
 			var now = new Date()
