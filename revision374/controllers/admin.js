@@ -82,19 +82,23 @@
 		});
 	});
 
-	// deviceId, fromAgentId, toAgentId
+	// deviceId, toAgentId
 	router.post('/transferStock', jsonParser, function(req, res) {
+		var err = new Error();
+		err.name = 'BugzApiError';
+		
 		DeviceAgentRetailer.findOne({
 			where: {
-				deviceId: req.body.deviceId,
-				agentId: req.body.fromAgentId,
-				retailerId: null
+				deviceId: req.body.deviceId
 			}
 		})
 		.then(function(rDeviceAgentRetailer) {
 			if (!rDeviceAgentRetailer) {
-				var err = new Error('Either this device ID not found or this device already activated by customer.');
-				err.name = 'BugzApiError';
+				err.message = 'Unable to transfer device. Device ID not found.';
+				throw err;
+			}
+			if (rDeviceAgentRetailer.retailerId) {
+				err.message = 'Unable to transfer device. This device has already been sold.';
 				throw err;
 			}
 
@@ -237,7 +241,8 @@
 
 				return GpsDevice.findOne({
 					where: {
-						DeviceId: req.body.deviceId
+						DeviceId: req.body.deviceId,
+						AppName: req.body.appName
 					}
 				});
 			})
@@ -355,6 +360,9 @@
 		});
 
 		form.on('end', function() {
+			var err = new Error();
+			err.name = 'BugzApiError';
+
 			var workbook = XLSX.readFile(fileName, { type: 'binary' });
 			var sheet1 = workbook.SheetNames[0];
 			var worksheet = workbook.Sheets[sheet1];
@@ -398,21 +406,20 @@
 				})
 				.then(function(rDeviceAgentRetailer) {
 					if (rDeviceAgentRetailer) {
-						var err = new Error('Device is already assigned.');
-						err.name = 'BugzApiError';
+						err.message = 'Device is already assigned.';
 						throw err;
 					}
 	
 					return GpsDevice.findOne({
 						where: {
-							DeviceId: o.deviceId
+							DeviceId: o.deviceId,
+							AppName: appName
 						}
 					});
 				})
 				.then(function(rGpsDevice) {
 					if (!rGpsDevice) {
-						var err = new Error('GPS device not found.');
-						err.name = 'BugzError';
+						err.message = 'GPS device not found.';
 						throw err;
 					}
 		
@@ -423,8 +430,7 @@
 					})
 					.then(function(rUser) {
 						if (!rUser) {
-							var err = new Error('User not found.');
-							err.name = 'BugzError';
+							err.message = 'User not found.';
 							throw err;
 						}
 		
