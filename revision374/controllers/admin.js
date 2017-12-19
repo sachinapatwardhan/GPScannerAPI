@@ -140,7 +140,9 @@
 			required: false
 		};
 		if (req.query.agentId) {
-			darModel.agentId = +req.query.agentId;
+			darModel.where = {
+				agentId: +req.query.agentId
+			};
 			darModel.required = true;
 		}
 
@@ -224,8 +226,11 @@
 	});
 
 	
-	// deviceId, userId
+	// deviceId, userId, assign, appName
 	router.post('/assignDevice', jsonParser, function(req, res) {
+		var err = new Error();
+		err.name = 'BugzApiError';
+		
 		if (req.body.assign) {
 			DeviceAgentRetailer.findOne({
 				where: {
@@ -234,8 +239,7 @@
 			})
 			.then(function(rDeviceAgentRetailer) {
 				if (rDeviceAgentRetailer) {
-					var err = new Error('Device is already assigned.');
-					err.name = 'BugzApiError';
+					err.message = 'Device is already assigned.';
 					throw err;
 				}
 
@@ -248,8 +252,7 @@
 			})
 			.then(function(rGpsDevice) {
 				if (!rGpsDevice) {
-					var err = new Error('GPS device not found.');
-					err.name = 'BugzError';
+					err.message = 'GPS device not found.';
 					throw err;
 				}
 	
@@ -260,8 +263,7 @@
 				})
 				.then(function(rUser) {
 					if (!rUser) {
-						var err = new Error('User not found.');
-						err.name = 'BugzError';
+						err.message = 'User not found.';
 						throw err;
 					}
 	
@@ -305,14 +307,12 @@
 			})
 			.then(function(rDeviceAgentRetailer) {
 				if (!rDeviceAgentRetailer) {
-					var err = new Error('Unable to unassign device. Device not assigned.');
-					err.name = 'BugzApiError';
+					err.message = 'Unable to unassign device. Device not assigned.';
 					throw err;
 				}
 
 				if (rDeviceAgentRetailer.retailerId) {
-					var err = new Error('Unable to unassign device. Device has already been activated.');
-					err.name = 'BugzApiError';
+					err.message = 'Unable to unassign device. Device has already been activated.';
 					throw err;
 				}
 
@@ -394,6 +394,7 @@
 					success: false,
 					message: 'Unable to import. Excel file does not contain any data.'
 				});
+				return;
 			}
 
 			// Array to store which assign failed
@@ -447,8 +448,8 @@
 				.catch(function(err) {
 					if (err.name === 'BugzApiError') {
 						whichFailed.push({
-							deviceId: deviceId,
-							agentId: agentId,
+							deviceId: o.deviceId,
+							agentUsername: o.username,
 							message: err.message
 						});
 					} else {
@@ -471,18 +472,27 @@
 
 			Bluebird.all(promises)
 			.then(function() {
-				console.log('Done!');
-				res.json({
+				var reply = {
 					success: true,
 					message: 'Device(s) assigned.'
-				});
+				};
+
+				if (whichFailed.length) {
+					reply.message = 'Device(s) assigned but some failed.';
+				}
+				if (whichFailed.length === rows.length) {
+					reply.success = false;
+					reply.message = 'Failed to assign any devices.';
+				}
+
+				res.json(reply);
 			})
 			.catch(function(err) {
-				console.log(err);
 				res.json({
 					success: false,
 					message: 'Unable to assign device(s). Please try again later.'
 				});
+				console.error('[' + moment().format('DD/MM/YYYY hh:mm:ss a') + '] ' + (err.stack || err.message));
 			});
 		});
 	});

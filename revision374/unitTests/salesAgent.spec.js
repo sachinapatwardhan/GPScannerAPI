@@ -108,6 +108,7 @@ describe('/salesAgent', function() {
 		})
 		.then(function(rAgentRetailer) {
 			dAgentRetailer = rAgentRetailer;
+			testDeviceAgentRetailer1.agentId = dUser.id;
 			return DeviceAgentRetailer.create(testDeviceAgentRetailer1);
 		})
 		.then(function(rDeviceAgentRetailer) {
@@ -117,106 +118,24 @@ describe('/salesAgent', function() {
 	});
 
 	after(function(done) {
-		DeviceAgentRetailer.destroy({
-			where: {
-				agentId: dDeviceAgentRetailer2.agentId,
-				deviceId: dDeviceAgentRetailer2.deviceId
-			}
+		DeviceAgentRetailer.destroy({ where: { deviceId: '1234567890123x' } })
+		.then(function() {
+			return AgentRetailer.destroy({ where: { agentId: dUser.id } });
 		})
 		.then(function() {
-			return AgentRetailer.destroy({
-				where: {
-					agentId: dUser.id,
-					retailerId: dUser2.id,
-				}
-			});
+			return GpsDevice.destroy({ where: { DeviceId: '1234567890123x' } });
 		})
 		.then(function() {
-			return UserRole.destroy({
-				where: {
-					userId: dUser2.id
-				}
-			});
+			return UserRole.destroy({ where: { $or: { userId: dUser2.id, roleId: dRole.id } } });
 		})
 		.then(function() {
-			return User.destroy({
-				where: {
-					username: {
-						$like: 'unittest.user2%'
-					}
-				}
-			});
+			return Role.destroy({ where: { RoleName: { $like: 'UnitTest%' } } });
 		})
 		.then(function() {
-			return dDeviceAgentRetailer.destroy();
-		})
-		.then(function() {
-			return dAgentRetailer.destroy();
-		})
-		.then(function() {
-			return dGpsDevice.destroy();
-		})
-		.then(function() {
-			return dUserRole.destroy();
-		})
-		.then(function() {
-			return dRole.destroy();
-		})
-		.then(function() {
-			return dUser.destroy();
+			return User.destroy({ where: { username: { $like: 'unittest%' } } });
 		})
 		.then(function() {
 			done();
-		});
-	});
-
-	describe('/salesAgent/assignDevice', function() {
-		it('should assign device to sales agent', function(done) {
-			request(server)
-			.post('/salesAgent/assignDevice')
-			.send({
-				deviceId: testGpsDevice1.DeviceId,
-				userId: dUser.id
-			})
-			.expect(200)
-			.end(function(err, res) {
-				expect(res.body).to.exist;
-				expect(res.body.success).to.equal(true);
-				expect(res.body.message).to.equal('Assigned device to agent.');
-				expect(res.body.data).to.be.an('object');
-				dDeviceAgentRetailer2 = res.body.data;
-				done();
-			});
-		});
-		
-		it('should fail when gps device not found', function(done) {
-			request(server)
-			.post('/salesAgent/assignDevice')
-			.send({
-				userId: dUser.id
-			})
-			.expect(200)
-			.end(function(err, res) {
-				expect(res.body).to.exist;
-				expect(res.body.success).to.equal(false);
-				expect(res.body.message).to.equal('GPS device not found.');
-				done();
-			});
-		});
-
-		it('should fail when user not found', function(done) {
-			request(server)
-			.post('/salesAgent/assignDevice')
-			.send({
-				deviceId: testGpsDevice1.DeviceId
-			})
-			.expect(200)
-			.end(function(err, res) {
-				expect(res.body).to.exist;
-				expect(res.body.success).to.equal(false);
-				expect(res.body.message).to.equal('User not found.');
-				done();
-			});
 		});
 	});
 
@@ -227,7 +146,6 @@ describe('/salesAgent', function() {
 			request(server)
 			.post('/salesAgent/registerRetailerAccount')
 			.send(testUser2)
-			.expect(200)
 			.end(function(err, res) {
 				expect(res.body).to.exist;
 				expect(res.body.success).to.equal(true);
@@ -242,7 +160,6 @@ describe('/salesAgent', function() {
 			request(server)
 			.post('/salesAgent/registerRetailerAccount')
 			.send(testUser2)
-			.expect(200)
 			.end(function(err, res) {
 				expect(res.body).to.exist;
 				expect(res.body.success).to.equal(false);
@@ -259,7 +176,6 @@ describe('/salesAgent', function() {
 			.query(qs.stringify({
 				agentId: dUser.id
 			}))
-			.expect(200)
 			.end(function(err, res) {
 				expect(res.body).to.exist;
 				expect(res.body.success).to.equal(true);
@@ -296,7 +212,6 @@ describe('/salesAgent', function() {
 				_: 1500000000000,
 				agentId: dUser.id
 			}))
-			.expect(200)
 			.end(function(err, res) {
 				expect(res.body).to.exist;
 				expect(res.body.success).to.equal(true);
@@ -333,7 +248,6 @@ describe('/salesAgent', function() {
 				_: 1500000000000,
 				agentId: dUser.id
 			}))
-			.expect(200)
 			.end(function(err, res) {
 				expect(res.body).to.exist;
 				expect(res.body.success).to.equal(true);

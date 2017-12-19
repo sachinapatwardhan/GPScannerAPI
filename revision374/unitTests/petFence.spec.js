@@ -247,7 +247,7 @@ var testFence2 = {
 	id: 0,
 	name: 'UnitTestFence2',
 	deviceId: '1234567890123x',
-	range: 207.10958715342082,
+	range: 207.10958715342083,
 	status: 1,
 	lat: 29.567861478493672,
 	lng: 106.4535975929175,
@@ -316,7 +316,7 @@ var testModule1 = {
 	IsActive: true,
 	DisplayOrder: 99999
 };
-var testPermission = {
+var testPermission1 = {
 	idModule: 0,
 	RoleName: testRole1.RoleName,
 	Added: true,
@@ -402,8 +402,8 @@ describe('/petfence', function() {
 		})
 		.then(function(rModule) {
 			dModule = rModule;
-			testPermission.idModule = dModule.id;
-			return Permission.create(testPermission);
+			testPermission1.idModule = dModule.id;
+			return Permission.create(testPermission1);
 		})
 		.then(function(rPermission) {
 			dPermission = rPermission;
@@ -471,72 +471,48 @@ describe('/petfence', function() {
 	});
 
 	after(function(done) {
-		dDrivingData.destroy()
+		DrivingData.destroy({ where: { DeviceId: '1234567890123x' } })
 		.then(function() {
-			return dCanvas.destroy();
+			return CanvasData.destroy({ where: { DeviceId: '1234567890123x' } });
 		})
 		.then(function() {
-			return dFence.destroy();
+			return Fence.destroy({ where: { name: { $like: 'UnitTest%' } } });
 		})
 		.then(function() {
-			return dAlarm.destroy();
+			return Alarm.destroy({ where: { FenceName: { $like: 'UnitTest%' } } });
 		})
 		.then(function() {
-			return dGpsDevice.destroy();
+			return GpsDevice.destroy({ where: { AppName: { $like: 'UnitTest%' } } });
 		})
 		.then(function() {
-			return dSim.destroy();
+			return Sim.destroy({ where: { SerialNum: '1234567890123' } });
 		})
 		.then(function() {
-			return dGpsData2.destroy();
+			return GpsData.destroy({ where: { DeviceId: '1234567890123x' } });
 		})
 		.then(function() {
-			return dGpsData3.destroy();
+			return ShareDevice.destroy({ where: { CreatedBy: { $like: 'unittest%' } } });
 		})
 		.then(function() {
-			return dGpsData.destroy();
+			return Vehicle.destroy({ where: { Name: { $like: 'UnitTest%' } } });
 		})
 		.then(function() {
-			return dShareDevice.destroy();
+			return VehicleType.destroy({ where: { Type: { $like: 'UnitTest%' } } });
 		})
 		.then(function() {
-			return dVehicle.destroy();
+			return Permission.destroy({ where: { RoleName: { $like: 'UnitTest%' } } });
 		})
 		.then(function() {
-			return dVehicleType.destroy();
-		})
-		.then(function() {
-			return dPermission.destroy();
-		})
-		.then(function() {
-			return dModule.destroy();
+			return Module.destroy({ where: { Module: { $like: 'UnitTest%' } } });
 		})
 		.then(function() {
 			return dUserRole.destroy();
 		})
 		.then(function() {
-			return dRole.destroy();
+			return Role.destroy({ where: { RoleName: { $like: 'UnitTest%' } } });
 		})
 		.then(function() {
-			return dUser.destroy();
-		})
-		.then(function() {
-			return Fence.destroy({
-				where: {
-					name: {
-						$like: 'UnitTest%'
-					}
-				}
-			});
-		})
-		.then(function() {
-			return GpsDevice.destroy({
-				where: {
-					AppName: {
-						$like: 'UnitTest%'
-					}
-				}
-			});
+			return User.destroy({ where: { email: { $like: 'unittest%' } } });
 		})
 		.then(function() {
 			server.close(done);
@@ -550,7 +526,6 @@ describe('/petfence', function() {
 			.query(qs.stringify({
 				deviceId: testFence1.deviceId
 			}))
-			.expect(200)
 			.end(function(err, res) {
 				expect(res.body).to.exist;
 				expect(res.body.success).to.equal(true);
@@ -563,7 +538,6 @@ describe('/petfence', function() {
 		it('should fail when deviceId does not match', function(done) {
 			request(server)
 			.get('/petfence/GetAllFenceByVehicle')
-			.expect(200)
 			.end(function(err, res) {
 				expect(res.body).to.exist;
 				expect(res.body.success).to.equal(true);
@@ -581,7 +555,6 @@ describe('/petfence', function() {
 			.query(qs.stringify({
 				idFence: dFence.id
 			}))
-			.expect(200)
 			.end(function(err, res) {
 				expect(res.body).to.exist;
 				expect(res.body.success).to.equal(true);
@@ -594,7 +567,6 @@ describe('/petfence', function() {
 		it('should fail when idFence does not match', function(done) {
 			request(server)
 			.get('/petfence/GetFenceById')
-			.expect(200)
 			.end(function(err, res) {
 				expect(res.body).to.exist;
 				expect(res.body.success).to.equal(false);
@@ -610,21 +582,49 @@ describe('/petfence', function() {
 			request(server)
 			.post('/petfence/SaveFenceById')
 			.send({
+				name: testFence2.name,
 				deviceId: testFence2.deviceId,
 				range: testFence2.range,
 				status: testFence2.status,
 				lat: testFence2.lat,
 				lng: testFence2.lng,
 				fencedraw: testFence2.fencedraw,
-				name: testFence2.name,
+				IsInFence: testFence2.IsInFence,
+				IsFenceOnline: testFence2.IsFenceOnline,
 				idFence: dFence2.id
 			})
-			.expect(200)
 			.end(function(err, res) {
 				expect(res.body).to.exist;
 				expect(res.body.success).to.equal(true);
 				expect(res.body.message).to.equal('Fence updated successfully...');
 				expect(res.body.data).to.be.an('array').that.has.lengthOf(1);
+				done();
+			});
+		});
+	});
+
+	describe('/petfence/SaveFenceByIdNew', function() {
+		it('should save fence when idFence matches', function(done) {
+			request(server)
+			.post('/petfence/SaveFenceByIdNew')
+			.send({
+				name: testFence2.name,
+				deviceId: testFence2.deviceId,
+				range: testFence2.range,
+				status: testFence2.status,
+				lat: testFence2.lat,
+				lng: testFence2.lng,
+				fencedraw: testFence2.fencedraw,
+				IsInFence: testFence2.IsInFence,
+				IsFenceOnline: testFence2.IsFenceOnline,
+				idFence: dFence2.id
+			})
+			.end(function(err, res) {
+				expect(res.body).to.exist;
+				expect(res.body.success).to.equal(true);
+				expect(res.body.message).to.equal('Fence updated successfully...');
+				expect(res.body.data).to.be.an('array').that.has.lengthOf(1);
+				expect(res.body.data[0]).to.equal(1);
 				done();
 			});
 		});
@@ -638,7 +638,6 @@ describe('/petfence', function() {
 				id: dFence2.id,
 				name: testFence2.name
 			})
-			.expect(200)
 			.end(function(err, res) {
 				expect(res.body).to.exist;
 				expect(res.body.success).to.equal(true);
@@ -655,11 +654,40 @@ describe('/petfence', function() {
 				id: 0,
 				name: testFence2.name
 			})
-			.expect(200)
 			.end(function(err, res) {
 				expect(res.body).to.exist;
 				expect(res.body.success).to.equal(false);
 				expect(res.body.message).to.equal('Fence Name not updated...');
+				done();
+			});
+		});
+	});
+
+	// Test get before delete
+	describe('/petfence/GetFencedeivce', function() {
+		it('should get fences when query matches', function(done) {
+			request(server)
+			.get('/petfence/GetFencedeivce')
+			.query(qs.stringify({
+				name: testFence2.name	
+			}))
+			.end(function(err, res) {
+				expect(res.body).to.exist;
+				expect(res.body).to.be.an('array').that.has.lengthOf(1);
+				expect(res.body[0]).to.be.an('object').that.has.property('range').that.is.equal(testFence2.range.toString());
+				done();
+			});
+		});
+
+		it('should fail when query does not match', function(done) {
+			request(server)
+			.get('/petfence/GetFencedeivce')
+			.query(qs.stringify({
+				name: ''
+			}))
+			.end(function(err, res) {
+				expect(res.body).to.exist;
+				expect(res.body).to.be.an('array').that.has.lengthOf(0);
 				done();
 			});
 		});
@@ -672,7 +700,6 @@ describe('/petfence', function() {
 			.query(qs.stringify({
 				idFence: dFence2.id
 			}))
-			.expect(200)
 			.end(function(err, res) {
 				expect(res.body).to.exist;
 				expect(res.body.success).to.equal(true);
@@ -685,7 +712,6 @@ describe('/petfence', function() {
 		it('should fail when idFence does not match', function(done) {
 			request(server)
 			.get('/petfence/DeleteFenceById')
-			.expect(200)
 			.end(function(err, res) {
 				expect(res.body).to.exist;
 				expect(res.body.success).to.equal(false);

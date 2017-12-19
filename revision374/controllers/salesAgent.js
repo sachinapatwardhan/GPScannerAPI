@@ -176,7 +176,6 @@
 			};
 
 			if (notActivatedCount + activatedCount === 0) {
-				ro.success = false;
 				ro.message = 'No record(s) found.';
 			}
 
