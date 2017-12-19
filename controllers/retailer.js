@@ -162,7 +162,10 @@
 	router.post('/activateDevice', jsonParser, function(req, res) {
 		DeviceAgentRetailer.findOne({
 			where: {
-				deviceId: req.body.deviceId
+				$or: {
+					deviceId: req.body.deviceId,
+					simSerial: req.body.simSerial
+				}
 			},
 			$or: [
 				{ activatedDatetime: { $eq: null } },
@@ -178,6 +181,7 @@
 			
 			return rDeviceAgentRetailer.update({
 				retailerId: req.body.retailerId,
+				simSerial: req.body.simSerial,
 				activatedDatetime: moment(),
 				expiryDatetime: moment().add(1, 'year'),
 				lastModifiedDatetime: moment()
