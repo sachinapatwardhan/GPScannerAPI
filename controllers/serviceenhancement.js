@@ -256,7 +256,7 @@ router.get('/GetAllServiceData', function(req, res) {
     ServiceEnhacement.findAll({
         where: {
             DeviceId: req.query.DeviceId,
-            idUser: req.query.idUser,
+            // idUser: req.query.idUser,
             IsDelete: 0
         },
         offset: offset,
@@ -284,7 +284,7 @@ router.get('/getAllServiceNotification', function(req, res) {
             model: ServiceEnhacement,
             where: {
                 DeviceId: req.query.DeviceId,
-                idUser: req.query.idUser
+                // idUser: req.query.idUser
             },
         }],
         offset: offset,
@@ -618,9 +618,9 @@ var AddAllServiceNotification = schedule.scheduleJob(rule, function() {
 
                                 //push Notification Send
 
-                                connection.query("SELECT tu.id, tu.username, ta.AppName, ta.IOSCertificate, ta.IOSKey, ta.AndroidId, ta.AndroidSenderId FROM tbluserinformation as tu inner Join tblappinfo as ta ON ta.id = tu.idApp where tu.id=" + response[i].idUser, function(err, objAppInfo, fields) {
+                                connection.query("SELECT tu.id, tu.username, ta.AppName, ta.IOSCertificate, ta.IOSKey, ta.AndroidId, ta.AndroidSenderId FROM tbluserinformation as tu inner Join tblappinfo as ta ON ta.id = tu.idApp where tu.id=" + response[i].tblvehicle.iduser, function(err, objAppInfo, fields) {
                                     var soundname = "Default";
-                                    var AllUser = response[i].idUser.toString();
+                                    var AllUser = response[i].tblvehicle.iduser.toString();
                                     var PushNotificationdata = {
                                         title: 'Alert',
                                         message: Message,
@@ -671,7 +671,18 @@ router.get('/CompleteSevice', function(req, res) {
                 }
             }).then(function(UserExist) {
                 if (UserExist != null) {
-                    ServiceEnhacement.findOne({ where: { id: req.query.id } }).then(function(ServiceEnhacementExist) {
+                    ServiceEnhacement.belongsTo(Vehicle, {
+                        foreignKey: {
+                            name: 'idvehicle',
+                            allowNull: false
+                        }
+                    });
+                    ServiceEnhacement.findOne({
+                        where: { id: req.query.id },
+                        include: [{
+                            model: Vehicle
+                        }]
+                    }).then(function(ServiceEnhacementExist) {
                         if (ServiceEnhacement) {
                             ServiceEnhacementExist.updateAttributes({ IsComplete: 1, ModifiedDate: new Date(), ModifiedBy: decoded.username }).then(function(updatedata) {
                                 if (updatedata) {
@@ -681,7 +692,7 @@ router.get('/CompleteSevice', function(req, res) {
                                             obj.IsDelete = 0;
                                             obj.Type = updatedata.Type;
                                             obj.idvehicle = updatedata.idvehicle;
-                                            obj.idUser = updatedata.idUser;
+                                            obj.idUser = updatedata.tblvehicle.iduser;
                                             obj.DeviceId = updatedata.DeviceId;
                                             obj.IsActive = updatedata.IsActive;
                                             obj.CreatedBy = updatedata.CreatedBy;

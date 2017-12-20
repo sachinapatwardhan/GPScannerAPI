@@ -1132,9 +1132,9 @@ global.Command9955 = function(line, Callback) {
 
                                         //push Notification Send
 
-                                        connection.query("SELECT tu.id, tu.username, ta.AppName, ta.IOSCertificate, ta.IOSKey, ta.AndroidId, ta.AndroidSenderId FROM tbluserinformation as tu inner Join tblappinfo as ta ON ta.id = tu.idApp where tu.id=" + response[i].idUser, function(err, objAppInfo, fields) {
+                                        connection.query("SELECT tu.id, tu.username, ta.AppName, ta.IOSCertificate, ta.IOSKey, ta.AndroidId, ta.AndroidSenderId FROM tbluserinformation as tu inner Join tblappinfo as ta ON ta.id = tu.idApp where tu.id=" + response[i].tblvehicle.iduser, function(err, objAppInfo, fields) {
                                             var soundname = "Default";
-                                            var AllUser = response[i].idUser.toString();
+                                            var AllUser = response[i].tblvehicle.iduser.toString();
                                             var PushNotificationdata = {
                                                 title: 'Alert',
                                                 message: Message,

@@ -38,9 +38,22 @@ router.get('/GetCurrentCountry', function(req, res) {
         if (body.indexOf("Error") >= 0) {
             res.json(null);
         } else {
-            var data = eval('(' + body + ')');
-            var objCurrentCountry = data
-            res.json(objCurrentCountry);
+            try {
+                var data = eval('(' + body + ')');
+                var objCurrentCountry = data
+                res.json(objCurrentCountry);
+            } catch (ex) {
+                var mail = {
+                    from: 'soham.patel@bugzstudio.com',
+                    to: 'soham.patel@bugzstudio.com',
+                    subject: 'Maark Get Current Country API error',
+                    text: body
+                };
+                transporter.sendMail(mail, function(error, response) {
+
+                });
+                res.json(null);
+            }
         }
     })
 });
