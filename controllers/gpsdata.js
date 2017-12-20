@@ -1327,6 +1327,182 @@ router.get('/GetAllWoringHourForReport', function(req, res) {
     });
 })
 
+//New Working hour report
+router.get('/GetAllWoringHourForReportNew', function(req, res) {
+    var objParam = req.query;
+    var WhereCondition = " ";
+    var wherecondition1 = "";
+    if (objParam.DeviceId != null && objParam.DeviceId != undefined && objParam.DeviceId != '') {
+        WhereCondition += " Where gps.DeviceId in (" + objParam.DeviceId + ")";
+        wherecondition1 = ' and tblalarm.deviceid in (' + req.query.DeviceId + ')';
+    }
+    if (objParam.StartDate != '' && objParam.EndDate != '') {
+        var StartDate = convertdateformatForUnix(objParam.StartDate);
+        var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
+        var EndDate = convertdateformatForUnix(objParam.EndDate);
+        var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
+        WhereCondition += " And gps.Date between '" + unixStartdate + "' And '" + unixEndDate + "'";
+    } else if (objParam.StartDate != null && objParam.StartDate != '') {
+        var StartDate = convertdateformatForUnix(objParam.StartDate);
+        var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
+        WhereCondition += " And gps.Date >='" + unixStartdate + "'";
+    } else if (objParam.EndDate != null && objParam.EndDate != '') {
+        var EndDate = convertdateformatForUnix(objParam.EndDate);
+        var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
+        WhereCondition += " And gps.Date <='" + unixEndDate + "'";
+
+    }
+
+    var query = "select " +
+        "gps.DeviceId,gps.Date,gps.Speed,gps.IsEngine,gps.Latitude,gps.Longitude,gps.GPSPositioning,Bike.Name,Bike.id,Bike.deviceid " +
+        "from tblvehicle  As Bike " +
+        "inner  join tblgpsdata as gps " +
+        "on " +
+        "gps.DeviceId = Bike.deviceid " +
+        WhereCondition +
+        " order by gps.Date Asc";
+    connection.query(query, function(err, response, fields) {
+        if (!err) {
+            var query1 = "select tblalarm.*,tblvehicle.deviceid from tblalarm left join tblvehicle on tblalarm.deviceid = tblvehicle.deviceid Where tblvehicle.iduser=" + req.query.idUser + "  and tblalarm.Date >= '" + unixStartdate + "' and tblalarm.Date <= '" + unixEndDate + "'" + wherecondition1 + ";"
+            connection.query(query1, function(alarmerr, alarmresponse, alarmfields) {
+
+                var GroupByDevice = u.groupBy(response, function(data) { return data.DeviceId; });
+                var TotalAllDrivingTime = 0;
+                var TotalAllParkingTime = 0;
+                var TotalAllTime = 0;
+                var lstGroup = u.map(GroupByDevice, function(group, DeviceId) {
+                    var IsDriving = 0;
+                    var DrivingStartPosition = 0;
+                    var TotalDrivingtime = 0;
+                    var IsParking = 0;
+                    var ParkingStartPosition = 0;
+                    var TotalParkingtime = 0;
+                    var TotalSpeed = 0;
+                    var TotalSpeedRecord = 0;
+                    var HighestSpeed = 0;
+                    var TotalMileage = 0;
+                    var s_id = 0;
+                    var e_id = 0;
+                    var StartMilage = 0;
+                    var Milageco = 0;
+                    var Engineco = 0;
+                    var OverSpeed = 0;
+                    for (var i = 0; i < group.length; i++) {
+
+                        group[i].Date = new Date(group[i].Date * 1000);
+
+                        if (group[i].IsEngine == true) {
+
+                            if (Engineco == 0) {
+                                StartMilage = i;
+                                Engineco = 1;
+                            }
+                            if ((i != 0) && group[i].GPSPositioning == 'A') {
+                                if (parseFloat(group[i].Speed) > 1) {
+                                    Milageco = 0;
+                                    TotalMileage += distance(parseFloat(group[StartMilage].Latitude), parseFloat(group[StartMilage].Longitude), parseFloat(group[i].Latitude), parseFloat(group[i].Longitude));
+                                    StartMilage = i;
+                                } else {
+
+                                    if (Milageco == 0) {
+                                        TotalMileage += distance(parseFloat(group[StartMilage].Latitude), parseFloat(group[StartMilage].Longitude), parseFloat(group[i].Latitude), parseFloat(group[i].Longitude));
+                                        StartMilage = i;
+                                    }
+                                    Milageco = 1;
+                                }
+                            }
+                            if (group[i].GPSPositioning == "A" && group[i].Speed > 1) {
+                                if (HighestSpeed < parseFloat(group[i].Speed)) {
+                                    HighestSpeed = parseFloat(group[i].Speed);
+                                }
+                                TotalSpeed = TotalSpeed + parseFloat(group[i].Speed);
+                                TotalSpeedRecord = TotalSpeedRecord + 1;
+                            }
+                            if (IsParking == 1) {
+                                IsParking = 0;
+                                TotalParkingtime = TotalParkingtime + calcDateDiffCalInSec(moment(group[i].Date), moment(group[ParkingStartPosition].Date));
+                            }
+                            if (parseFloat(group[i].Speed) > 1) {
+                                if (IsDriving == 0) {
+                                    DrivingStartPosition = i;
+                                }
+                                IsDriving = 1;
+                            }
+                        } else {
+                            Engineco = 0;
+                            if (IsDriving == 1) {
+                                IsDriving = 0;
+                                s_id = group[DrivingStartPosition].Id;
+                                TotalDrivingtime = TotalDrivingtime + calcDateDiffCalInSec(moment(group[i].Date), moment(group[DrivingStartPosition].Date));
+                                TotalMileage += distance(parseFloat(group[StartMilage].Latitude), parseFloat(group[StartMilage].Longitude), parseFloat(group[i].Latitude), parseFloat(group[i].Longitude));
+                            }
+
+                            if (IsParking == 0) {
+                                ParkingStartPosition = i;
+                            }
+                            IsParking = 1;
+                        }
+                    }
+
+                    if (IsParking == 1) {
+                        IsParking = 0;
+                        TotalParkingtime = TotalParkingtime + calcDateDiffCalInSec(moment(group[group.length - 1].Date), moment(group[ParkingStartPosition].Date));
+                    }
+
+                    if (IsDriving == 1) {
+                        IsDriving = 0;
+                        TotalDrivingtime = TotalDrivingtime + calcDateDiffCalInSec(moment(group[group.length - 1].Date), moment(group[DrivingStartPosition].Date));
+                    }
+                    if (TotalSpeedRecord == 0) {
+                        TotalSpeedRecord = 1;
+                    }
+
+                    var TotalDrivingTimeDisplay = calhrminsecfromsec(TotalDrivingtime);
+                    var TotalParkingTimeDisplay = calhrminsecfromsec(TotalParkingtime);
+                    var TotalTiming = TotalDrivingtime + TotalParkingtime;
+                    var TotalTimingDisplay = calhrminsecfromsec(TotalTiming);
+                    var AverageSpeed = (TotalSpeed / TotalSpeedRecord).toFixed(2);
+                    if (alarmresponse.length > 0) {
+                        for (var h = 0; h < alarmresponse.length; h++) {
+                            if (alarmresponse[h].deviceid == DeviceId) {
+                                if (alarmresponse[h].AlarmCode == '11') {
+                                    OverSpeed = OverSpeed + 1;
+                                }
+                            }
+                        }
+                    }
+                    TotalAllDrivingTime = TotalAllDrivingTime + TotalDrivingtime;
+                    TotalAllParkingTime = TotalAllParkingTime + TotalParkingtime;
+                    TotalAllTime = TotalAllTime + TotalTiming;
+                    return {
+                        Name: group[0].Name,
+                        DeviceId: DeviceId,
+                        DrivingTime: TotalDrivingTimeDisplay,
+                        Parkingtime: TotalParkingTimeDisplay,
+                        AverageSpeed: AverageSpeed + " km/h",
+                        HighestSpeed: HighestSpeed.toFixed(2) + " km/h",
+                        TotalMileage: TotalMileage.toFixed(2) + " km",
+                        OverSpeed: OverSpeed,
+                        TotalTiming: TotalTimingDisplay,
+                    }
+                });
+                // console.log(TotalAllDrivingTime, " - ", TotalAllParkingTime, " - ", TotalAllTime);
+                TotalAllDrivingTime = calhrminsecfromsec(TotalAllDrivingTime);
+                TotalAllParkingTime = calhrminsecfromsec(TotalAllParkingTime);
+                TotalAllTime = calhrminsecfromsec(TotalAllTime);
+                var obj = new Object();
+                obj.Array = lstGroup;
+                obj.TotalAllDrivingTime = TotalAllDrivingTime;
+                obj.TotalAllParkingTime = TotalAllParkingTime;
+                obj.TotalAllTime = TotalAllTime;
+                res.json(obj)
+            })
+        } else {
+            res.json([])
+        }
+    });
+})
+
 //export Working Hour
 router.get('/ExportAllWoringHourForReport', function(req, res) {
     var conf = {};
@@ -1698,6 +1874,500 @@ router.get('/ExportAllWoringHourForReport', function(req, res) {
             //}
 
             //}
+        })
+    });
+})
+
+router.get('/ExportAllWoringHourForReportNew', function(req, res) {
+    var conf = {};
+    conf.name = "Sheet1";
+    conf.cols = [{
+            caption: 'Assest Name',
+            type: 'string'
+        }, {
+            caption: 'Driving Time',
+            type: 'string'
+        }, {
+            caption: 'Parking Time',
+            type: 'string'
+        }, {
+            caption: 'Total Time',
+            type: 'string'
+        },
+        {
+            caption: 'Total Mileage',
+            type: 'string'
+        },
+        {
+            caption: 'Average Speed',
+            type: 'number'
+        },
+        {
+            caption: 'Highest Speed',
+            type: 'number'
+        }, {
+            caption: 'Over Speed(Times)',
+            type: 'number'
+        },
+    ];
+
+
+    var objParam = req.query;
+
+    var WhereCondition = " ";
+    var wherecondition1 = "";
+    if (objParam.DeviceId != null && objParam.DeviceId != undefined && objParam.DeviceId != '') {
+        WhereCondition += " Where gps.DeviceId in (" + objParam.DeviceId + ")";
+        wherecondition1 = ' and tblalarm.deviceid in (' + req.query.DeviceId + ')';
+    }
+    if (objParam.StartDate != '' && objParam.EndDate != '') {
+        var StartDate = convertdateformatForUnix(objParam.StartDate);
+        var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
+        var EndDate = convertdateformatForUnix(objParam.EndDate);
+        var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
+        WhereCondition += " And gps.Date between '" + unixStartdate + "' And '" + unixEndDate + "'";
+
+    } else if (objParam.StartDate != null && objParam.StartDate != '') {
+        var StartDate = convertdateformatForUnix(objParam.StartDate);
+        var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
+        WhereCondition += " And gps.Date >='" + unixStartdate + "'";
+    } else if (objParam.EndDate != null && objParam.EndDate != '') {
+        var EndDate = convertdateformatForUnix(objParam.EndDate);
+        var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
+        WhereCondition += " And gps.Date <='" + unixEndDate + "'";
+
+    }
+
+
+    var query = "select " +
+        "gps.DeviceId,gps.Date,gps.Speed,gps.IsEngine,gps.Latitude,gps.Longitude,gps.GPSPositioning,Bike.Name,Bike.id,Bike.deviceid " +
+        "from tblvehicle  As Bike " +
+        "inner  join tblgpsdata as gps " +
+        "on " +
+        "gps.DeviceId = Bike.deviceid " +
+        WhereCondition +
+        " order by gps.Date Asc";
+    connection.query(query, function(err, response, fields) {
+        var query1 = "select tblalarm.*,tblvehicle.deviceid from tblalarm left join tblvehicle on tblalarm.deviceid = tblvehicle.deviceid Where tblvehicle.iduser=" + req.query.idUser + "  and tblalarm.Date >= '" + unixStartdate + "' and tblalarm.Date <= '" + unixEndDate + "'" + wherecondition1 + ";"
+        connection.query(query1, function(alarmerr, alarmresponse, alarmfields) {
+            var DeviceId = null;
+            var response1 = [];
+
+
+            var DeviceId = null;
+            var GroupByDevice = u.groupBy(response, function(data) { return data.DeviceId; });
+            var TotalAllDrivingTime = 0;
+            var TotalAllParkingTime = 0;
+            var TotalAllTime = 0;
+
+            var lstGroup = u.map(GroupByDevice, function(group, DeviceId) {
+                var IsDriving = 0;
+                var DrivingStartPosition = 0;
+                var TotalDrivingtime = 0;
+                var IsParking = 0;
+                var ParkingStartPosition = 0;
+                var TotalParkingtime = 0;
+                var TotalSpeed = 0;
+                var TotalSpeedRecord = 0;
+                var HighestSpeed = 0;
+                var TotalMileage = 0;
+                var StartMilage = 0;
+                var Milageco = 0;
+                var Engineco = 0;
+                var OverSpeed = 0;
+
+                for (var i = 0; i < group.length; i++) {
+
+                    group[i].Date = new Date(group[i].Date * 1000);
+
+                    if (group[i].IsEngine == true) {
+
+                        if (Engineco == 0) {
+                            StartMilage = i;
+                            Engineco = 1;
+                        }
+                        if ((i != 0) && group[i].GPSPositioning == 'A') {
+                            if (parseFloat(group[i].Speed) > 1) {
+                                Milageco = 0;
+                                TotalMileage += distance(parseFloat(group[StartMilage].Latitude), parseFloat(group[StartMilage].Longitude), parseFloat(group[i].Latitude), parseFloat(group[i].Longitude));
+                                StartMilage = i;
+                            } else {
+
+                                if (Milageco == 0) {
+                                    TotalMileage += distance(parseFloat(group[StartMilage].Latitude), parseFloat(group[StartMilage].Longitude), parseFloat(group[i].Latitude), parseFloat(group[i].Longitude));
+                                    StartMilage = i;
+                                }
+                                Milageco = 1;
+                            }
+                        }
+
+
+                        if (group[i].GPSPositioning == "A" && group[i].Speed > 1) {
+                            if (HighestSpeed < parseFloat(group[i].Speed)) {
+                                HighestSpeed = parseFloat(group[i].Speed);
+                            }
+                            TotalSpeed = TotalSpeed + parseFloat(group[i].Speed);
+                            TotalSpeedRecord = TotalSpeedRecord + 1;
+                        }
+
+                        if (IsParking == 1) {
+                            IsParking = 0;
+                            TotalParkingtime = TotalParkingtime + calcDateDiffCalInSec(moment(group[i].Date), moment(group[ParkingStartPosition].Date));
+                        }
+                        if (parseFloat(group[i].Speed) > 1) {
+                            if (IsDriving == 0) {
+                                DrivingStartPosition = i;
+                            }
+                            IsDriving = 1;
+                        }
+
+                    } else {
+                        Engineco = 0;
+                        if (IsDriving == 1) {
+                            IsDriving = 0;
+                            TotalDrivingtime = TotalDrivingtime + calcDateDiffCalInSec(moment(group[i].Date), moment(group[DrivingStartPosition].Date));
+                            TotalMileage += distance(parseFloat(group[StartMilage].Latitude), parseFloat(group[StartMilage].Longitude), parseFloat(group[i].Latitude), parseFloat(group[i].Longitude));
+                        }
+
+                        if (IsParking == 0) {
+                            ParkingStartPosition = i;
+                        }
+                        IsParking = 1;
+                    }
+                }
+
+                if (IsParking == 1) {
+                    IsParking = 0;
+                    TotalParkingtime = TotalParkingtime + calcDateDiffCalInSec(moment(group[group.length - 1].Date), moment(group[ParkingStartPosition].Date));
+                }
+
+                if (IsDriving == 1) {
+                    IsDriving = 0;
+                    TotalDrivingtime = TotalDrivingtime + calcDateDiffCalInSec(moment(group[group.length - 1].Date), moment(group[DrivingStartPosition].Date));
+                }
+                if (TotalSpeedRecord == 0) {
+                    TotalSpeedRecord = 1;
+                }
+
+                var TotalDrivingTimeDisplay = calhrminsecfromsec(TotalDrivingtime);
+                var TotalParkingTimeDisplay = calhrminsecfromsec(TotalParkingtime);
+                var TotalTiming = TotalDrivingtime + TotalParkingtime;
+                var TotalTimingDisplay = calhrminsecfromsec(TotalTiming);
+                var AverageSpeed = (TotalSpeed / TotalSpeedRecord).toFixed(2);
+                if (alarmresponse.length > 0) {
+                    for (var h = 0; h < alarmresponse.length; h++) {
+                        if (alarmresponse[h].deviceid == DeviceId) {
+                            if (alarmresponse[h].AlarmCode == '11') {
+                                OverSpeed = OverSpeed + 1;
+                            }
+                        }
+                    }
+                }
+                TotalAllDrivingTime = TotalAllDrivingTime + TotalDrivingtime;
+                TotalAllParkingTime = TotalAllParkingTime + TotalParkingtime;
+                TotalAllTime = TotalAllTime + TotalTiming;
+                return {
+                    Name: group[0].Name,
+                    DeviceId: DeviceId,
+                    DrivingTime: TotalDrivingTimeDisplay,
+                    Parkingtime: TotalParkingTimeDisplay,
+                    AverageSpeed: AverageSpeed + " km/h",
+                    HighestSpeed: HighestSpeed.toFixed(2) + " km/h",
+                    TotalMileage: TotalMileage.toFixed(2) + " km",
+                    OverSpeed: OverSpeed,
+                    TotalTiming: TotalTimingDisplay,
+                }
+            });
+
+            response1 = lstGroup;
+
+            conf.rows = [];
+
+            response1 = u.sortBy(response1, function(num) { return num.Name })
+
+            for (var i = 0; i < response1.length; i++) {
+                var row = [];
+                row.push(response1[i].Name, response1[i].DrivingTime, response1[i].Parkingtime, response1[i].TotalTiming, response1[i].TotalMileage, response1[i].AverageSpeed, response1[i].HighestSpeed, response1[i].OverSpeed);
+                conf.rows.push(row);
+
+            }
+
+            var row = [];
+            // console.log(TotalAllDrivingTime, " - ", TotalAllParkingTime, " - ", TotalAllTime);
+            TotalAllDrivingTime = calhrminsecfromsec(TotalAllDrivingTime)
+            TotalAllParkingTime = calhrminsecfromsec(TotalAllParkingTime)
+            TotalAllTime = calhrminsecfromsec(TotalAllTime)
+            row.push('Total:', TotalAllDrivingTime, TotalAllParkingTime, TotalAllTime, '', '', '', '');
+            conf.rows.push(row);
+            var result = nodeExcel.execute(conf);
+            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            res.setHeader("Content-Disposition", "attachment; filename=WorkingHourReport.xlsx");
+            res.end(result, 'binary');
+
+        })
+    });
+})
+
+
+
+router.get('/PrintAllWoringHourForReportNew', function(req, res) {
+
+    var objParam = req.query;
+
+    var WhereCondition = " ";
+    var wherecondition1 = "";
+    if (objParam.DeviceId != null && objParam.DeviceId != undefined && objParam.DeviceId != '') {
+        WhereCondition += " Where gps.DeviceId in (" + objParam.DeviceId + ")";
+        wherecondition1 = ' and tblalarm.deviceid in (' + req.query.DeviceId + ')';
+    }
+    if (objParam.StartDate != '' && objParam.EndDate != '') {
+        var StartDate = convertdateformatForUnix(objParam.StartDate);
+        var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
+        var EndDate = convertdateformatForUnix(objParam.EndDate);
+        var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
+        WhereCondition += " And gps.Date between '" + unixStartdate + "' And '" + unixEndDate + "'";
+
+    } else if (objParam.StartDate != null && objParam.StartDate != '') {
+        var StartDate = convertdateformatForUnix(objParam.StartDate);
+        var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
+        WhereCondition += " And gps.Date >='" + unixStartdate + "'";
+    } else if (objParam.EndDate != null && objParam.EndDate != '') {
+        var EndDate = convertdateformatForUnix(objParam.EndDate);
+        var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
+        WhereCondition += " And gps.Date <='" + unixEndDate + "'";
+
+    }
+
+
+    var query = "select " +
+        "gps.DeviceId,gps.Date,gps.Speed,gps.IsEngine,gps.Latitude,gps.Longitude,gps.GPSPositioning,Bike.Name,Bike.id,Bike.deviceid " +
+        "from tblvehicle  As Bike " +
+        "inner  join tblgpsdata as gps " +
+        "on " +
+        "gps.DeviceId = Bike.deviceid " +
+        WhereCondition +
+        " order by gps.Date Asc";
+    connection.query(query, function(err, response, fields) {
+        var query1 = "select tblalarm.*,tblvehicle.deviceid from tblalarm left join tblvehicle on tblalarm.deviceid = tblvehicle.deviceid Where tblvehicle.iduser=" + req.query.idUser + "  and tblalarm.Date >= '" + unixStartdate + "' and tblalarm.Date <= '" + unixEndDate + "'" + wherecondition1 + ";"
+        connection.query(query1, function(alarmerr, alarmresponse, alarmfields) {
+            var DeviceId = null;
+            var response1 = [];
+
+
+            var DeviceId = null;
+            var GroupByDevice = u.groupBy(response, function(data) { return data.DeviceId; });
+            var TotalAllDrivingTime = 0;
+            var TotalAllParkingTime = 0;
+            var TotalAllTime = 0;
+
+            var lstGroup = u.map(GroupByDevice, function(group, DeviceId) {
+                var IsDriving = 0;
+                var DrivingStartPosition = 0;
+                var TotalDrivingtime = 0;
+                var IsParking = 0;
+                var ParkingStartPosition = 0;
+                var TotalParkingtime = 0;
+                var TotalSpeed = 0;
+                var TotalSpeedRecord = 0;
+                var HighestSpeed = 0;
+                var TotalMileage = 0;
+                var StartMilage = 0;
+                var Milageco = 0;
+                var Engineco = 0;
+                var OverSpeed = 0;
+
+                for (var i = 0; i < group.length; i++) {
+
+                    group[i].Date = new Date(group[i].Date * 1000);
+
+                    if (group[i].IsEngine == true) {
+
+                        if (Engineco == 0) {
+                            StartMilage = i;
+                            Engineco = 1;
+                        }
+                        if ((i != 0) && group[i].GPSPositioning == 'A') {
+                            if (parseFloat(group[i].Speed) > 1) {
+                                Milageco = 0;
+                                TotalMileage += distance(parseFloat(group[StartMilage].Latitude), parseFloat(group[StartMilage].Longitude), parseFloat(group[i].Latitude), parseFloat(group[i].Longitude));
+                                StartMilage = i;
+                            } else {
+
+                                if (Milageco == 0) {
+                                    TotalMileage += distance(parseFloat(group[StartMilage].Latitude), parseFloat(group[StartMilage].Longitude), parseFloat(group[i].Latitude), parseFloat(group[i].Longitude));
+                                    StartMilage = i;
+                                }
+                                Milageco = 1;
+                            }
+                        }
+
+
+                        if (group[i].GPSPositioning == "A" && group[i].Speed > 1) {
+                            if (HighestSpeed < parseFloat(group[i].Speed)) {
+                                HighestSpeed = parseFloat(group[i].Speed);
+                            }
+                            TotalSpeed = TotalSpeed + parseFloat(group[i].Speed);
+                            TotalSpeedRecord = TotalSpeedRecord + 1;
+                        }
+
+                        if (IsParking == 1) {
+                            IsParking = 0;
+                            TotalParkingtime = TotalParkingtime + calcDateDiffCalInSec(moment(group[i].Date), moment(group[ParkingStartPosition].Date));
+                        }
+                        if (parseFloat(group[i].Speed) > 1) {
+                            if (IsDriving == 0) {
+                                DrivingStartPosition = i;
+                            }
+                            IsDriving = 1;
+                        }
+
+                    } else {
+                        Engineco = 0;
+                        if (IsDriving == 1) {
+                            IsDriving = 0;
+                            TotalDrivingtime = TotalDrivingtime + calcDateDiffCalInSec(moment(group[i].Date), moment(group[DrivingStartPosition].Date));
+                            TotalMileage += distance(parseFloat(group[StartMilage].Latitude), parseFloat(group[StartMilage].Longitude), parseFloat(group[i].Latitude), parseFloat(group[i].Longitude));
+                        }
+
+                        if (IsParking == 0) {
+                            ParkingStartPosition = i;
+                        }
+                        IsParking = 1;
+                    }
+                }
+
+                if (IsParking == 1) {
+                    IsParking = 0;
+                    TotalParkingtime = TotalParkingtime + calcDateDiffCalInSec(moment(group[group.length - 1].Date), moment(group[ParkingStartPosition].Date));
+                }
+
+                if (IsDriving == 1) {
+                    IsDriving = 0;
+                    TotalDrivingtime = TotalDrivingtime + calcDateDiffCalInSec(moment(group[group.length - 1].Date), moment(group[DrivingStartPosition].Date));
+                }
+                if (TotalSpeedRecord == 0) {
+                    TotalSpeedRecord = 1;
+                }
+
+                var TotalDrivingTimeDisplay = calhrminsecfromsec(TotalDrivingtime);
+                var TotalParkingTimeDisplay = calhrminsecfromsec(TotalParkingtime);
+                var TotalTiming = TotalDrivingtime + TotalParkingtime;
+                var TotalTimingDisplay = calhrminsecfromsec(TotalTiming);
+                var AverageSpeed = (TotalSpeed / TotalSpeedRecord).toFixed(2);
+                if (alarmresponse.length > 0) {
+                    for (var h = 0; h < alarmresponse.length; h++) {
+                        if (alarmresponse[h].deviceid == DeviceId) {
+                            if (alarmresponse[h].AlarmCode == '11') {
+                                OverSpeed = OverSpeed + 1;
+                            }
+                        }
+                    }
+                }
+                TotalAllDrivingTime = TotalAllDrivingTime + TotalDrivingtime;
+                TotalAllParkingTime = TotalAllParkingTime + TotalParkingtime;
+                TotalAllTime = TotalAllTime + TotalTiming;
+                return {
+                    Name: group[0].Name,
+                    DeviceId: DeviceId,
+                    DrivingTime: TotalDrivingTimeDisplay,
+                    Parkingtime: TotalParkingTimeDisplay,
+                    AverageSpeed: AverageSpeed + " km/h",
+                    HighestSpeed: HighestSpeed.toFixed(2) + " km/h",
+                    TotalMileage: TotalMileage.toFixed(2) + " km",
+                    OverSpeed: OverSpeed,
+                    TotalTiming: TotalTimingDisplay,
+                }
+            });
+
+            response1 = lstGroup;
+
+
+            response1 = u.sortBy(response1, function(num) { return num.Name })
+            var TodayDate = momentz.utc(new Date()).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
+            // var table = '<h2 style="text-align:center"><b>Working Hour Report</b></h2><h5 style="text-align:right">' + TodayDate + '</h5><hr/><table style="width:100%">' +
+            //     '<tr><th style="text-align:left">No</th>' +
+            //     '<th style="text-align:left">Asset Name</th>' +
+            //     '<th style="text-align:left">Driving Time</th>' +
+            //     '<th style="text-align:left">Parking Time</th>' +
+            //     '<th style="text-align:left">Total Time</th>' +
+            //     '<th style="text-align:left">Total Mileage</th>' +
+            //     '<th style="text-align:left">Average Speed(km/h)</th>' +
+            //     '<th style="text-align:left">Highest Speed</th>' +
+            //     '<th style="text-align:left">Over Speed(Times)</th></tr>';
+
+
+            var table = '<div style="font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; font-size: 12px; padding:0 15px;">' +
+                '<div style="padding:15px; border-bottom:1px solid #000;">' +
+                '<h1 style="text-transform: uppercase; text-align:center; font-weight: normal;">Working Hour Report</h1>' +
+                '<div style="text-align: right;"><strong>' + TodayDate + '</strong></div>' +
+                '</div>' +
+                '<div>' +
+                '<table style="width:100%; margin:0; padding: 0;">' +
+                '<thead>' +
+                '<tr>' +
+                '<th style="padding: 10px 5px; border-bottom: 1px dotted #000; border-right: 1px dotted #000;">No</th>' +
+                '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Asset Name</th>' +
+                '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Driving Time</th>' +
+                '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Parking Time</th>' +
+                '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Total Time</th>' +
+                '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Total Mileage</th>' +
+                '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Average Speed(km/h)</th>' +
+                '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Highest Speed</th>' +
+                '<th style="border-bottom: 1px dotted #000;">Over Speed(Times)</th></tr>' +
+                '</thead><tbody>';
+
+            for (var i = 0; i < response1.length; i++) {
+                table += '<tr>' +
+                    '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + (i + 1) + '</td>' +
+                    '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">' + response1[i].Name + '</td>' +
+                    '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + response1[i].DrivingTime + '</td>' +
+                    '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + response1[i].Parkingtime + '</td>' +
+                    '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + response1[i].TotalTiming + '</td>' +
+                    '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + response1[i].TotalMileage + '</td>' +
+                    '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + response1[i].AverageSpeed + '</td>' +
+                    '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + response1[i].HighestSpeed + '</td>' +
+                    '<td style="border-bottom: 1px dotted #000;">' + response1[i].OverSpeed + '</td>' +
+                    '</tr>';
+
+            }
+
+
+            TotalAllDrivingTime = calhrminsecfromsec(TotalAllDrivingTime)
+            TotalAllParkingTime = calhrminsecfromsec(TotalAllParkingTime)
+            TotalAllTime = calhrminsecfromsec(TotalAllTime)
+
+            table += '</tbody><tfoot style="font-weight: bold;">' +
+                ' <tr>' +
+                ' <td style="padding: 8px 5px; border-bottom: 1px dotted #000; border-right: 1px dotted #000;" colspan="2">Total:</td>' +
+                '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + TotalAllDrivingTime + '</td>' +
+                '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + TotalAllParkingTime + '</td>' +
+                '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + TotalAllTime + '</td>' +
+                '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;"></td>' +
+                '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;"></td>' +
+                '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;"></td>' +
+                '<td style="border-bottom: 1px dotted #000;"></td>' +
+                '</tr>' +
+                '</tfoot>';
+            table += '</table>' +
+                ' </div>' +
+                '</div>';
+            var html = table;
+            var options = {
+                format: 'A4',
+                footer: {
+                    height: '35px',
+                    contents: { default: '<hr/><span style="color: #444;text-align:right">{{page}}</span>' },
+                    last: 'Last Page'
+                },
+                header: {
+                    "height": "35px",
+                },
+            };
+
+            pdf.create(html, options).toStream(function(err, stream) {
+                stream.pipe(res);
+            });
+
         })
     });
 })
@@ -2375,6 +3045,298 @@ router.get('/GetAllDriverReport', function(req, res) {
 
 })
 
+
+router.get('/GetAllDriverReportNew', function(req, res) {
+    var objParam = req.query;
+    var wherecondition1 = "";
+    var WhereCondition = "";
+    if (objParam.DeviceId != null && objParam.DeviceId != undefined && objParam.DeviceId != '') {
+        WhereCondition += " Where gps.DeviceId in ( " + objParam.DeviceId + ")";
+        wherecondition1 += " Where ta.deviceid in ( " + objParam.DeviceId + ")";
+
+    }
+    if (objParam.StartDate != '' && objParam.EndDate != '') {
+        var StartDate = convertdateformatForUnix(objParam.StartDate);
+        var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
+        var EndDate = convertdateformatForUnix(objParam.EndDate);
+        var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
+        WhereCondition += " And gps.Date between '" + unixStartdate + "' And '" + unixEndDate + "'";
+        wherecondition1 += " And ta.Date between '" + unixStartdate + "' And '" + unixEndDate + "'";
+
+    } else if (objParam.StartDate != null && objParam.StartDate != '') {
+        var StartDate = convertdateformatForUnix(objParam.StartDate);
+        var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
+        WhereCondition += " And gps.Date >='" + unixStartdate + "'";
+        wherecondition1 += " And gps.Date >='" + unixStartdate + "'";
+
+    } else if (objParam.EndDate != null && objParam.EndDate != '') {
+        var EndDate = convertdateformatForUnix(objParam.EndDate);
+        var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
+        WhereCondition += " And gps.Date <='" + unixEndDate + "'";
+        wherecondition1 += " And ta.Date <='" + unixEndDate + "'";
+
+    }
+
+
+    wherecondition1 += " And ta.AlarmCode = '11'";
+    //WhereCondition += " And Gps.DeviceId = 075034901552";
+    // WhereCondition += " And Gps.IsEngine = false";
+    var query = "select " +
+        " gps.*,Bike.*  " +
+        "from tblvehicle  As Bike " +
+        "inner  join tblgpsdata as gps " +
+        "on " +
+        "gps.DeviceId = Bike.deviceid " +
+        WhereCondition +
+        " order by gps.Date Asc";
+    // console.log(query);
+    var query1 = "select ta.Datetime, ta.Date, ta.deviceid from tblalarm as ta left join tblvehicle As Bike on ta.deviceid = Bike.deviceid " + wherecondition1 + ";"
+        // console.log(query1)
+    connection.query(query, function(err, response, fields) {
+        if (response.length > 0) {
+            connection.query(query1, function(alarmerr, alarmresponse, alarmfields) {
+                var groups = u.groupBy(response, function(o) {
+                    return o.DeviceId;
+                });
+                var lstGroup = u.map(groups, function(group) {
+                    return {
+                        data: group
+                    }
+                });
+                // for (var i = 0; i < lstGroup.length; i++) {
+                //     for (var k = 0; k < lstGroup[i].data.length; k++) {
+                //         if (lstGroup[i].data[k].IsEngine == 1) {
+
+                //         } else {
+
+                //         }
+                //     }
+
+                // }
+                var l = 0;
+                var D = 0;
+                var Array = [];
+                var TotalDrivingtime = 0;
+                for (var i = 0; i < lstGroup.length; i++) {
+
+                    var IsDriving = 0;
+                    var DrivingStartPosition = 0;
+
+
+                    var Speed6090 = 0;
+                    var Speed90130 = 0;
+                    var Over130 = 0;
+                    var LocateNumber = 0;
+                    var objSpeed = [];
+                    var TotalRecord = 0;
+                    var Mileage = 0.00;
+                    var Totalsum = 0;
+                    // var StartMilage = 0;
+                    // var Milageco = 0;
+                    // var Engineco = 0;
+                    if (lstGroup[i].data.length > 0) {
+                        var StartMilage = 0;
+                        var Milageco = 0;
+                        var Engineco = 0;
+                        var id = 0;
+                        for (var k = 0; k < lstGroup[i].data.length; k++) {
+                            lstGroup[i].data[k].Date = new Date(lstGroup[i].data[k].Date * 1000);
+
+                            if (lstGroup[i].data[k].IsEngine == true) {
+                                if (lstGroup[i].data[k].Speed > 1 && lstGroup[i].data[k].GPSPositioning == 'A') {
+                                    objSpeed.push(parseFloat(lstGroup[i].data[k].Speed));
+                                    if (lstGroup[i].data[k].Speed > 60 && lstGroup[i].data[k].Speed <= 90) {
+                                        Speed6090 = Speed6090 + 1;
+                                    }
+                                    if (lstGroup[i].data[k].Speed > 90 && lstGroup[i].data[k].Speed <= 130) {
+                                        Speed90130 = Speed6090 + 1;
+                                    }
+                                    if (lstGroup[i].data[k].Speed > 130) {
+                                        Over130 = Over130 + 1;
+                                    }
+                                    TotalRecord = TotalRecord + 1;
+
+                                }
+
+                                if (Engineco == 0) {
+                                    StartMilage = k;
+                                    // Milageco = 1;
+                                    Engineco = 1;
+                                    // id = lstGroup[i].data[k].Id;
+                                }
+                                // obj.s_id = 0;
+                                if ((k != 0) && lstGroup[i].data[k].GPSPositioning == 'A') {
+
+                                    if (parseFloat(lstGroup[i].data[k].Speed) > 1) {
+                                        Milageco = 0;
+                                        Mileage += distance(parseFloat(lstGroup[i].data[StartMilage].Latitude), parseFloat(lstGroup[i].data[StartMilage].Longitude), parseFloat(lstGroup[i].data[k].Latitude), parseFloat(lstGroup[i].data[k].Longitude));
+                                        StartMilage = k;
+                                    } else {
+
+                                        if (Milageco == 0) {
+                                            Mileage += distance(parseFloat(lstGroup[i].data[StartMilage].Latitude), parseFloat(lstGroup[i].data[StartMilage].Longitude), parseFloat(lstGroup[i].data[k].Latitude), parseFloat(lstGroup[i].data[k].Longitude));
+                                            StartMilage = k;
+                                        }
+                                        Milageco = 1;
+                                    }
+                                }
+                                // if ((k) != 0 && lstGroup[i].data[k].GPSPositioning == 'A') {
+                                //     if (k == 0) {
+                                //         Mileage += distance(parseFloat(lstGroup[i].data[k - 1].Latitude), parseFloat(lstGroup[i].data[k - 1].Longitude), parseFloat(lstGroup[i].data[k].Latitude), parseFloat(lstGroup[i].data[k].Longitude));
+                                //     } else {
+                                //         if (lstGroup[i].data[k].Speed > 1) {
+                                //             Mileage += distance(parseFloat(lstGroup[i].data[k - 1].Latitude), parseFloat(lstGroup[i].data[k - 1].Longitude), parseFloat(lstGroup[i].data[k].Latitude), parseFloat(lstGroup[i].data[k].Longitude));
+                                //         }
+                                //     }
+                                // } 
+                                if (k == 0) { LocateNumber = 1; } else {
+                                    if (lstGroup[i].data[k].Latitude != lstGroup[i].data[k - 1].Latitude && lstGroup[i].data[k].Longitude != lstGroup[i].data[k - 1].Longitude) {
+                                        {
+                                            LocateNumber = LocateNumber + 1;
+                                        }
+                                    }
+                                }
+                                if (parseFloat(lstGroup[i].data[k].Speed) > 1) {
+                                    if (IsDriving == 0) {
+                                        DrivingStartPosition = k;
+                                        var obj = new Object();
+                                        // obj.s_id = lstGroup[i].data[k].Id;
+                                        obj.OverSpeed = 0;
+                                        obj.StartLatitude = lstGroup[i].data[k].Latitude;
+                                        obj.StartLongitude = lstGroup[i].data[k].Longitude;
+                                        obj.DeviceId = lstGroup[i].data[k].DeviceId;
+                                        obj.StartSpeed = parseFloat(lstGroup[i].data[k].Speed).toFixed(2);
+                                        obj.Name = lstGroup[i].data[k].Name;
+                                        obj.StartAddress = "No Address Found";
+                                        obj.EndAddress = "No Address Found";
+                                        // obj.StartId = lstGroup[i].data[k].Id;
+                                        obj.DrivingStartTime = momentz.utc(lstGroup[i].data[k].Date).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a')
+                                        obj.DrivingStartTime1 = momentz.utc(lstGroup[i].data[k].Date).tz(req.query.TimeZone).format('MM-DD-YYYY hh:mm:ss a')
+                                        obj.StartTime1 = lstGroup[i].data[k].Date;
+                                    }
+                                    IsDriving = 1;
+                                }
+                            } else {
+                                Engineco = 0;
+                                if (IsDriving == 1) {
+                                    IsDriving = 0;
+                                    obj.EndLatitude = lstGroup[i].data[k].Latitude;
+                                    obj.EndLongitude = lstGroup[i].data[k].Longitude;
+                                    obj.EndSpeed = parseFloat(lstGroup[i].data[k].Speed).toFixed(2);
+                                    obj.EndDrivingTime = momentz.utc(lstGroup[i].data[k].Date).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
+                                    obj.EndDrivingTime1 = momentz.utc(lstGroup[i].data[k].Date).tz(req.query.TimeZone).format('MM-DD-YYYY hh:mm:ss a');
+                                    obj.EndTime1 = lstGroup[i].data[k].Date;
+                                    // obj.EndId = lstGroup[i].data[k].Id;
+                                    // obj.MaxSpeed = parseFloat(u.max(objSpeed, function(MaxSpeeddata) { return MaxSpeeddata; })).toFixed(2);
+                                    obj.Speed6090 = Speed6090;
+                                    obj.Speed90130 = Speed90130;
+                                    obj.Over130 = Over130;
+                                    // if (Milageco == 1) {
+                                    Mileage += distance(parseFloat(lstGroup[i].data[StartMilage].Latitude), parseFloat(lstGroup[i].data[StartMilage].Longitude), parseFloat(lstGroup[i].data[k].Latitude), parseFloat(lstGroup[i].data[k].Longitude));
+                                    // Milageco = 0;
+                                    // }
+                                    obj.Mileage = parseFloat(Mileage); //.toFixed(2);
+                                    var sum = 0;
+
+                                    for (var m = 0; m < objSpeed.length; m++) {
+                                        sum += parseFloat(objSpeed[m]);
+                                    }
+                                    // console.log(sum)
+                                    if (sum != 0) {
+                                        obj.avgSpeed = parseFloat(sum / TotalRecord).toFixed(2);
+                                        obj.MaxSpeed = parseFloat(u.max(objSpeed, function(MaxSpeeddata) { return MaxSpeeddata; })).toFixed(2);
+                                    } else {
+                                        obj.avgSpeed = 0;
+                                        obj.MaxSpeed = 0;
+                                    }
+                                    //obj.avgSpeed = parseFloat(sum / TotalRecord).toFixed(2);
+                                    obj.LocateNumber = LocateNumber;
+                                    obj.DrivingTime = calhrminsecfromsec(calcDateDiffCalInSec(moment(lstGroup[i].data[k].Date), moment(lstGroup[i].data[DrivingStartPosition].Date)));
+                                    TotalDrivingtime = TotalDrivingtime + calcDateDiffCalInSec(moment(lstGroup[i].data[k].Date), moment(lstGroup[i].data[DrivingStartPosition].Date));
+                                    // console.log(obj.s_id, "====", obj.EndId)
+                                    if (obj.DrivingTime != "0 sec") {
+                                        Array.push(obj);
+                                    }
+                                    StartVehical = 0;
+                                    Speed6090 = 0;
+                                    Speed90130 = 0;
+                                    Over130 = 0;
+                                    LocateNumber = 0;
+                                    objSpeed = [];
+                                    TotalRecord = 0;
+                                    Mileage = 0.00;
+                                }
+                            }
+                        }
+                        if (IsDriving == 1) {
+                            IsDriving = 0;
+                            var lastposition = lstGroup[i].data.length - 1;
+                            obj.EndLatitude = lstGroup[i].data[lastposition].Latitude;
+                            obj.EndLongitude = lstGroup[i].data[lastposition].Longitude;
+                            obj.EndSpeed = parseFloat(lstGroup[i].data[lastposition].Speed).toFixed(2);
+                            obj.EndDrivingTime = momentz.utc(lstGroup[i].data[lastposition].Date).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
+                            // obj.EndId = lstGroup[i].data[lastposition].Id;
+                            obj.EndDrivingTime1 = momentz.utc(lstGroup[i].data[lastposition].Date).tz(req.query.TimeZone).format('MM-DD-YYYY hh:mm:ss a');
+                            obj.EndTime1 = lstGroup[i].data[lastposition].Date;
+                            obj.Speed6090 = Speed6090;
+                            obj.Speed90130 = Speed90130;
+                            obj.Over130 = Over130;
+                            obj.Mileage = parseFloat(Mileage).toFixed(2);
+                            var sum = 0;
+                            for (var m = 0; m < objSpeed.length; m++) {
+                                sum += parseFloat(objSpeed[m]);
+                            }
+                            // console.log(sum)
+                            if (sum != 0) {
+                                obj.avgSpeed = parseFloat(sum / TotalRecord).toFixed(2);
+                                obj.MaxSpeed = parseFloat(u.max(objSpeed, function(MaxSpeeddata) { return MaxSpeeddata; })).toFixed(2);
+                            } else {
+                                obj.avgSpeed = 0;
+                                obj.MaxSpeed = 0;
+                            }
+                            obj.LocateNumber = LocateNumber;
+                            obj.DrivingTime = calhrminsecfromsec(calcDateDiffCalInSec(moment(lstGroup[i].data[lastposition].Date), moment(lstGroup[i].data[DrivingStartPosition].Date)));
+                            TotalDrivingtime = TotalDrivingtime + calcDateDiffCalInSec(moment(lstGroup[i].data[lastposition].Date), moment(lstGroup[i].data[DrivingStartPosition].Date));
+                            // console.log(obj.s_id, "====", obj.EndId)
+                            if (obj.DrivingTime != "0 sec") {
+                                Array.push(obj);
+                            }
+                        }
+                    }
+                }
+                var obj = new Object();
+                obj.TotalDrivingTime = calhrminsecfromsec(TotalDrivingtime);
+
+                if (alarmresponse.length > 0) {
+                    for (var i = 0; i <= Array.length; i++) {
+                        if (i < Array.length) {
+                            for (var h = 0; h < alarmresponse.length; h++) {
+                                var alarmDate = momentz.utc(new Date(alarmresponse[h].Date * 1000)).tz(req.query.TimeZone).format('MM-DD-YYYY hh:mm:ss a');
+
+                                if (alarmresponse[h].deviceid == Array[i].DeviceId) {
+                                    if (new Date(alarmDate) >= new Date(Array[i].DrivingStartTime1) && new Date(alarmDate) <= new Date(Array[i].EndDrivingTime1)) {
+                                        Array[i].OverSpeed = Array[i].OverSpeed + 1;
+                                    }
+                                }
+                            }
+                        } else {
+                            obj.Array = Array;
+                            res.json(obj);
+                        }
+                    }
+                } else {
+                    obj.Array = Array;
+                    res.json(obj);
+                }
+            })
+        } else {
+            res.json(null);
+        }
+
+    });
+
+})
+
 router.get('/ExportDriverReport', function(req, res) {
     var conf = {};
     conf.name = "Sheet1";
@@ -2998,6 +3960,865 @@ router.get('/ExportDriverReport', function(req, res) {
     });
 })
 
+router.get('/PrintDriverReportNew', function(req, res) {
+
+
+    var objParam = req.query;
+    var wherecondition1 = "";
+    var WhereCondition = "";
+    if (objParam.DeviceId != null && objParam.DeviceId != undefined && objParam.DeviceId != '') {
+        WhereCondition += " Where gps.DeviceId in (" + objParam.DeviceId + ")";
+        wherecondition1 += " Where ta.deviceid in (" + objParam.DeviceId + ")";
+
+    }
+    if (objParam.StartDate != '' && objParam.EndDate != '') {
+        var StartDate = convertdateformatForUnix(objParam.StartDate);
+        var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
+        var EndDate = convertdateformatForUnix(objParam.EndDate);
+        var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
+        WhereCondition += " And gps.Date between '" + unixStartdate + "' And '" + unixEndDate + "'";
+        wherecondition1 += " And ta.Date between '" + unixStartdate + "' And '" + unixEndDate + "'";
+
+
+    } else if (objParam.StartDate != null && objParam.StartDate != '') {
+        var StartDate = convertdateformatForUnix(objParam.StartDate);
+        var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
+        WhereCondition += " And gps.Date >='" + unixStartdate + "'";
+        wherecondition1 += " And ta.Date >='" + unixStartdate + "'";
+
+    } else if (objParam.EndDate != null && objParam.EndDate != '') {
+        var EndDate = convertdateformatForUnix(objParam.EndDate);
+        var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
+        WhereCondition += " And gps.Date <='" + unixEndDate + "'";
+        wherecondition1 += " And ta.Date <='" + unixEndDate + "'";
+
+
+    }
+
+
+    wherecondition1 += " And ta.AlarmCode = '11'";
+
+    //WhereCondition += " And Gps.DeviceId = 075034901552";
+    // WhereCondition += " And Gps.IsEngine = false";
+    var query = "select " +
+        " gps.*,Bike.*  " +
+        "from tblvehicle  As Bike " +
+        "inner  join tblgpsdata as gps " +
+        "on " +
+        "gps.DeviceId = Bike.deviceid " +
+        WhereCondition +
+        " order by gps.Date Asc";
+    var query1 = "select ta.Datetime, ta.Date, ta.deviceid from tblalarm as ta left join tblvehicle As Bike on ta.deviceid = Bike.deviceid " + wherecondition1 + ";"
+
+    connection.query(query, function(err, response, fields) {
+        connection.query(query1, function(alarmerr, alarmresponse, alarmfields) {
+            if (response.length > 0) {
+
+                var groups = u.groupBy(response, function(o) {
+                    return o.DeviceId;
+                });
+
+                var TodayDate = momentz.utc(new Date()).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
+
+
+
+                var table = '<div style="font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; font-size: 12px; padding:0 15px;">' +
+                    '<div style="padding:15px; border-bottom:1px solid #000;">' +
+                    '<h1 style="text-transform: uppercase; text-align:center; font-weight: normal;">Driving Report</h1>' +
+                    '<div style="text-align: right;"><strong>' + TodayDate + '</strong></div>' +
+                    '</div>' +
+                    '<div>' +
+                    '<table style="width:100%; margin:0; padding: 0;">' +
+                    '<thead>' +
+                    '<tr>' +
+                    '<th style="padding: 10px 5px; border-bottom: 1px dotted #000; border-right: 1px dotted #000;">No</th>' +
+                    '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Assest Name</th>' +
+                    '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Start Time</th>' +
+                    '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">End Time</th>' +
+                    '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Driving Time</th>' +
+                    '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">60-90 Speed (km/h)</th>' +
+                    '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">90-130 Speed (km/h)</th>' +
+                    '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Over 130 Speed (km/h)</th>' +
+                    '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Max Speed</th>' +
+                    '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Avearge Speed</th>' +
+                    '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Over Speed(times)</th>' +
+                    '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Mileage</th>' +
+                    '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Start Longitude</th>' +
+                    '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Start Latitude</th>' +
+                    '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">End Longitude</th>' +
+                    '<th style="border-bottom: 1px dotted #000;">End Latitude</th></tr>' +
+                    '</thead><tbody>';
+                var lstGroup = u.map(groups, function(group) {
+
+                    return {
+                        data: group
+                    }
+                });
+                var l = 0;
+                var D = 0;
+                var Array = [];
+                var TotalDrivingtime = 0;
+                for (var i = 0; i < lstGroup.length; i++) {
+
+                    var IsDriving = 0;
+                    var DrivingStartPosition = 0;
+                    var TotalDrivingtime = 0;
+
+                    var Speed6090 = 0;
+                    var Speed90130 = 0;
+                    var Over130 = 0;
+                    var LocateNumber = 0;
+                    var objSpeed = [];
+                    var TotalRecord = 0;
+                    var Mileage = 0.00;
+                    var Totalsum = 0;
+                    // var StartMilage = 0;
+                    // var Milageco = 0;
+                    // var Engineco = 0;
+                    if (lstGroup[i].data.length > 0) {
+                        var StartMilage = 0;
+                        var Milageco = 0;
+                        var Engineco = 0;
+                        var id = 0;
+                        for (var k = 0; k < lstGroup[i].data.length; k++) {
+                            lstGroup[i].data[k].Date = new Date(lstGroup[i].data[k].Date * 1000);
+
+                            if (lstGroup[i].data[k].IsEngine == true) {
+                                if (lstGroup[i].data[k].Speed > 1 && lstGroup[i].data[k].GPSPositioning == 'A') {
+                                    objSpeed.push(parseFloat(lstGroup[i].data[k].Speed));
+                                    if (lstGroup[i].data[k].Speed > 60 && lstGroup[i].data[k].Speed <= 90) {
+                                        Speed6090 = Speed6090 + 1;
+                                    }
+                                    if (lstGroup[i].data[k].Speed > 90 && lstGroup[i].data[k].Speed <= 130) {
+                                        Speed90130 = Speed6090 + 1;
+                                    }
+                                    if (lstGroup[i].data[k].Speed > 130) {
+                                        Over130 = Over130 + 1;
+                                    }
+                                    TotalRecord = TotalRecord + 1;
+
+                                }
+
+                                if (Engineco == 0) {
+                                    StartMilage = k;
+                                    Engineco = 1;
+                                }
+                                if ((k != 0) && lstGroup[i].data[k].GPSPositioning == 'A') {
+
+                                    if (parseFloat(lstGroup[i].data[k].Speed) > 1) {
+                                        Milageco = 0;
+                                        Mileage += distance(parseFloat(lstGroup[i].data[StartMilage].Latitude), parseFloat(lstGroup[i].data[StartMilage].Longitude), parseFloat(lstGroup[i].data[k].Latitude), parseFloat(lstGroup[i].data[k].Longitude));
+                                        StartMilage = k;
+                                    } else {
+
+                                        if (Milageco == 0) {
+                                            Mileage += distance(parseFloat(lstGroup[i].data[StartMilage].Latitude), parseFloat(lstGroup[i].data[StartMilage].Longitude), parseFloat(lstGroup[i].data[k].Latitude), parseFloat(lstGroup[i].data[k].Longitude));
+                                            StartMilage = k;
+                                        }
+                                        Milageco = 1;
+                                    }
+                                }
+                                if (k == 0) { LocateNumber = 1; } else {
+                                    if (lstGroup[i].data[k].Latitude != lstGroup[i].data[k - 1].Latitude && lstGroup[i].data[k].Longitude != lstGroup[i].data[k - 1].Longitude) {
+                                        {
+                                            LocateNumber = LocateNumber + 1;
+                                        }
+                                    }
+                                }
+                                if (parseFloat(lstGroup[i].data[k].Speed) > 1) {
+                                    if (IsDriving == 0) {
+                                        DrivingStartPosition = k;
+                                        var obj = new Object();
+                                        obj.OverSpeed = 0;
+                                        obj.StartLatitude = lstGroup[i].data[k].Latitude;
+                                        obj.StartLongitude = lstGroup[i].data[k].Longitude;
+                                        obj.DeviceId = lstGroup[i].data[k].DeviceId;
+                                        obj.StartSpeed = parseFloat(lstGroup[i].data[k].Speed).toFixed(2);
+                                        obj.Name = lstGroup[i].data[k].Name;
+                                        obj.StartAddress = "No Address Found";
+                                        obj.EndAddress = "No Address Found";
+                                        obj.DrivingStartTime = momentz.utc(lstGroup[i].data[k].Date).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a')
+                                        obj.DrivingStartTime1 = momentz.utc(lstGroup[i].data[k].Date).tz(req.query.TimeZone).format('MM-DD-YYYY hh:mm:ss a')
+                                    }
+                                    IsDriving = 1;
+                                }
+                            } else {
+                                Engineco = 0;
+                                if (IsDriving == 1) {
+                                    IsDriving = 0;
+                                    obj.EndLatitude = lstGroup[i].data[k].Latitude;
+                                    obj.EndLongitude = lstGroup[i].data[k].Longitude;
+                                    obj.EndSpeed = parseFloat(lstGroup[i].data[k].Speed).toFixed(2);
+                                    obj.EndDrivingTime = momentz.utc(lstGroup[i].data[k].Date).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
+                                    obj.EndDrivingTime1 = momentz.utc(lstGroup[i].data[k].Date).tz(req.query.TimeZone).format('MM-DD-YYYY hh:mm:ss a');
+                                    obj.Speed6090 = Speed6090;
+                                    obj.Speed90130 = Speed90130;
+                                    obj.Over130 = Over130;
+                                    Mileage += distance(parseFloat(lstGroup[i].data[StartMilage].Latitude), parseFloat(lstGroup[i].data[StartMilage].Longitude), parseFloat(lstGroup[i].data[k].Latitude), parseFloat(lstGroup[i].data[k].Longitude));
+                                    obj.Mileage = parseFloat(Mileage).toFixed(2);
+                                    var sum = 0;
+
+                                    for (var m = 0; m < objSpeed.length; m++) {
+                                        sum += parseFloat(objSpeed[m]);
+                                    }
+                                    if (sum != 0) {
+                                        obj.avgSpeed = parseFloat(sum / TotalRecord).toFixed(2);
+                                        obj.MaxSpeed = parseFloat(u.max(objSpeed, function(MaxSpeeddata) { return MaxSpeeddata; })).toFixed(2);
+                                    } else {
+                                        obj.avgSpeed = 0;
+                                        obj.MaxSpeed = 0;
+                                    }
+                                    obj.LocateNumber = LocateNumber;
+                                    obj.DrivingTime = calhrminsecfromsec(calcDateDiffCalInSec(moment(lstGroup[i].data[k].Date), moment(lstGroup[i].data[DrivingStartPosition].Date)));
+                                    TotalDrivingtime = TotalDrivingtime + calcDateDiffCalInSec(moment(lstGroup[i].data[k].Date), moment(lstGroup[i].data[DrivingStartPosition].Date));
+                                    if (obj.DrivingTime != "0 sec") {
+                                        Array.push(obj);
+                                    }
+                                    StartVehical = 0;
+                                    Speed6090 = 0;
+                                    Speed90130 = 0;
+                                    Over130 = 0;
+                                    LocateNumber = 0;
+                                    objSpeed = [];
+                                    TotalRecord = 0;
+                                    Mileage = 0.00;
+                                }
+                            }
+                        }
+                        if (IsDriving == 1) {
+                            IsDriving = 0;
+                            var lastposition = lstGroup[i].data.length - 1;
+                            obj.EndLatitude = lstGroup[i].data[lastposition].Latitude;
+                            obj.EndLongitude = lstGroup[i].data[lastposition].Longitude;
+                            obj.EndSpeed = parseFloat(lstGroup[i].data[lastposition].Speed).toFixed(2);
+                            obj.EndDrivingTime = momentz.utc(lstGroup[i].data[lastposition].Date).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
+                            obj.EndDrivingTime1 = momentz.utc(lstGroup[i].data[lastposition].Date).tz(req.query.TimeZone).format('MM-DD-YYYY hh:mm:ss a');
+
+                            obj.Speed6090 = Speed6090;
+                            obj.Speed90130 = Speed90130;
+                            obj.Over130 = Over130;
+                            obj.Mileage = parseFloat(Mileage).toFixed(2);
+                            var sum = 0;
+                            for (var m = 0; m < objSpeed.length; m++) {
+                                sum += parseFloat(objSpeed[m]);
+                            }
+                            if (sum != 0) {
+                                obj.avgSpeed = parseFloat(sum / TotalRecord).toFixed(2);
+                                obj.MaxSpeed = parseFloat(u.max(objSpeed, function(MaxSpeeddata) { return MaxSpeeddata; })).toFixed(2);
+                            } else {
+                                obj.avgSpeed = 0;
+                                obj.MaxSpeed = 0;
+                            }
+                            obj.LocateNumber = LocateNumber;
+                            obj.DrivingTime = calhrminsecfromsec(calcDateDiffCalInSec(moment(lstGroup[i].data[lastposition].Date), moment(lstGroup[i].data[DrivingStartPosition].Date)));
+                            TotalDrivingtime = TotalDrivingtime + calcDateDiffCalInSec(moment(lstGroup[i].data[lastposition].Date), moment(lstGroup[i].data[DrivingStartPosition].Date));
+                            if (obj.DrivingTime != "0 sec") {
+                                Array.push(obj);
+                            }
+                        }
+                    }
+                }
+                TotalDrivingtime = calhrminsecfromsec(TotalDrivingtime);
+                if (alarmresponse.length > 0) {
+                    for (var i = 0; i <= Array.length; i++) {
+                        if (i < Array.length) {
+                            for (var h = 0; h < alarmresponse.length; h++) {
+                                var alarmDate = momentz.utc(new Date(alarmresponse[h].Date * 1000)).tz(req.query.TimeZone).format('MM-DD-YYYY hh:mm:ss a');
+                                if (alarmresponse[h].deviceid == Array[i].DeviceId) {
+                                    if (new Date(alarmDate) >= new Date(Array[i].DrivingStartTime1) && new Date(alarmDate) <= new Date(Array[i].EndDrivingTime1)) {
+                                        Array[i].OverSpeed = Array[i].OverSpeed + 1;
+                                    }
+                                }
+                            }
+                        } else {
+                            if (Array.length > 0) {
+                                var data = u.sortBy(Array, function(num) { return new Date(num.DrivingStartTime1) });
+                                Array = data;
+                            }
+                            GetDrivingData(0);
+                        }
+                    }
+                } else {
+                    if (Array.length > 0) {
+                        var data = u.sortBy(Array, function(num) { return new Date(num.DrivingStartTime1) });
+                        Array = data;
+                    }
+                    GetDrivingData(0);
+                }
+
+
+                function GetDrivingData(i) {
+                    var Name = '';
+                    var DrivingStartTime = '';
+                    var EndDrivingTime = '';
+                    var DrivingTime = '';
+                    var LocateNumber = '';
+                    var Speed6090 = '';
+                    var Speed90130 = '';
+                    var Over130 = '';
+                    var MaxSpeed = 0.0;
+                    var avgSpeed = 0.0;
+                    var OverSpeed = 0.0;
+                    var StartSpeed = '';
+                    var EndSpeed = '';
+                    var StartLongitude = '';
+                    var StartLatitude = '';
+                    var EndLongitude = '';
+                    var EndLatitude = '';
+                    if (i < Array.length) {
+
+                        if (Array[i].Name != null && Array[i].Name != '' && Array[i].Name != undefined) {
+                            Name = Array[i].Name;
+                        }
+                        if (Array[i].DrivingStartTime != null && Array[i].DrivingStartTime != '' && Array[i].DrivingStartTime != undefined) {
+                            DrivingStartTime = Array[i].DrivingStartTime.toString();
+                        }
+                        if (Array[i].EndDrivingTime != null && Array[i].EndDrivingTime != '' && Array[i].EndDrivingTime != undefined) {
+                            EndDrivingTime = Array[i].EndDrivingTime.toString();
+                        }
+                        if (Array[i].DrivingTime != null && Array[i].DrivingTime != '' && Array[i].DrivingTime != undefined) {
+                            DrivingTime = Array[i].DrivingTime.toString();
+                        }
+
+                        if (Array[i].LocateNumber != null && Array[i].LocateNumber != '' && Array[i].LocateNumber != undefined) {
+                            LocateNumber = Array[i].LocateNumber.toString();
+                        }
+                        if (Array[i].Speed6090 != null && Array[i].Speed6090 != undefined) {
+                            Speed6090 = Array[i].Speed6090.toString();
+                        }
+                        if (Array[i].Speed90130 != null && Array[i].Speed90130 != undefined) {
+                            Speed90130 = Array[i].Speed90130.toString();
+                        }
+                        if (Array[i].Over130 != null && Array[i].Over130 != undefined) {
+                            Over130 = Array[i].Over130.toString();
+                        }
+                        if (Array[i].MaxSpeed != null && Array[i].MaxSpeed != '' && Array[i].MaxSpeed != undefined) {
+                            MaxSpeed = Array[i].MaxSpeed.toString();
+                        }
+                        if (Array[i].avgSpeed != null && Array[i].avgSpeed != '' && Array[i].avgSpeed != undefined) {
+                            avgSpeed = Array[i].avgSpeed.toString();
+                        }
+
+                        if (Array[i].OverSpeed != null && Array[i].OverSpeed != '' && Array[i].OverSpeed != undefined) {
+                            OverSpeed = Array[i].OverSpeed.toString();
+                        }
+                        if (Array[i].Mileage != null && Array[i].Mileage != '' && Array[i].Mileage != undefined) {
+                            StartSpeed = Array[i].Mileage.toString();
+                        }
+                        if (Array[i].StartLongitude != null && Array[i].StartLongitude != '' && Array[i].StartLongitude != undefined) {
+                            StartLongitude = Array[i].StartLongitude.toString();
+                        }
+                        if (Array[i].StartLatitude != null && Array[i].StartLatitude != '' && Array[i].StartLatitude != undefined) {
+                            StartLatitude = Array[i].StartLatitude.toString();
+                        }
+                        if (Array[i].EndLongitude != null && Array[i].EndLongitude != '' && Array[i].EndLongitude != undefined) {
+                            EndLongitude = Array[i].EndLongitude.toString();
+                        }
+                        if (Array[i].EndLatitude != null && Array[i].EndLatitude != '' && Array[i].EndLatitude != undefined) {
+                            EndLatitude = Array[i].EndLatitude.toString();
+                        }
+                        table += '<tr>' +
+                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + (i + 1) + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">' + Name + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + DrivingStartTime + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + EndDrivingTime + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + DrivingTime + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + Speed6090 + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + Speed90130 + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + Over130 + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + MaxSpeed + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + avgSpeed + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + OverSpeed + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + StartSpeed + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + StartLongitude + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + StartLatitude + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + EndLongitude + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;">' + EndLatitude + '</td>' +
+                            '</tr>';
+
+                        GetDrivingData(i + 1);
+                    } else {
+
+
+                        table += '</tbody><tfoot style="font-weight: bold;">' +
+                            ' <tr>' +
+                            ' <td style="padding: 8px 5px; border-bottom: 1px dotted #000; border-right: 1px dotted #000;" colspan="2">Total:</td>' +
+                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;"> </td>' +
+                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;"></td>' +
+                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + TotalDrivingtime + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;"></td>' +
+                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;"></td>' +
+                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;"></td>' +
+                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;"></td>' +
+                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;"></td>' +
+                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;"></td>' +
+                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;"></td>' +
+                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;"></td>' +
+                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;"></td>' +
+                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;"></td>' +
+                            '<td style="border-bottom: 1px dotted #000;"></td>' +
+                            '</tr>' +
+                            '</tfoot>';
+                        table += '</table>' +
+                            ' </div>' +
+                            '</div>';
+                        // table += '<tr><td> Total:</td>' +
+                        //     '<td></td><td></td><td></td><td>' + TotalDrivingtime + '</td>' +
+                        //     '<td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td> </td></tr></table>';
+                        var html = table;
+                        var options = {
+                            format: 'A4',
+                            orientation: "landscape",
+                            footer: {
+                                height: '35px',
+                                contents: { default: '<hr/><span style="color: #444;text-align:right">{{page}}</span>' },
+                                last: 'Last Page'
+                            },
+                            header: {
+                                "height": "35px",
+                            },
+                        };
+
+                        pdf.create(html, options).toStream(function(err, stream) {
+                            stream.pipe(res);
+                        });
+                    }
+
+                }
+
+            } else {
+                var html = table;
+                var options = {
+                    format: 'A4',
+                    footer: {
+                        height: '35px',
+                        contents: { default: '<hr/><span style="color: #444;text-align:right">{{page}}</span>' },
+                        last: 'Last Page'
+                    },
+                    header: {
+                        "height": "35px",
+                    },
+                };
+
+                pdf.create(html, options).toStream(function(err, stream) {
+                    stream.pipe(res);
+                });
+            }
+        })
+    });
+})
+
+
+router.get('/ExportDriverReportNew', function(req, res) {
+    var conf = {};
+    conf.name = "Sheet1";
+    conf.cols = [{
+            caption: 'Assest Name',
+            type: 'string'
+        },
+        {
+            caption: 'StartTime',
+            type: 'string'
+        },
+        {
+            caption: 'End Time',
+            type: 'string'
+        },
+        {
+            caption: 'Driving Time',
+            type: 'string'
+        },
+        {
+            caption: '60-90 Speed (km/h)',
+            type: 'string'
+        }, {
+            caption: '90-130 Speed (km/h)',
+            type: 'string'
+        }, {
+            caption: 'Over 130 Speed (km/h)',
+            type: 'string'
+        }, {
+            caption: 'Max Speed',
+            type: 'number'
+        },
+        {
+            caption: 'Avearge Speed',
+            type: 'number'
+        },
+        {
+            caption: 'Over Speed(times)',
+            type: 'number'
+        },
+        {
+            caption: 'Mileage',
+            type: 'string'
+        },
+        {
+            caption: 'Start Longitude',
+            type: 'string'
+        },
+        {
+            caption: 'Start Latitude',
+            type: 'string'
+        },
+        {
+            caption: 'End Longitude',
+            type: 'string'
+        },
+        {
+            caption: 'End Latitude',
+            type: 'string'
+        },
+    ];
+    var objParam = req.query;
+    var wherecondition1 = "";
+    var WhereCondition = "";
+    if (objParam.DeviceId != null && objParam.DeviceId != undefined && objParam.DeviceId != '') {
+        WhereCondition += " Where gps.DeviceId in (" + objParam.DeviceId + ")";
+        wherecondition1 += " Where ta.deviceid in (" + objParam.DeviceId + ")";
+
+    }
+    if (objParam.StartDate != '' && objParam.EndDate != '') {
+        var StartDate = convertdateformatForUnix(objParam.StartDate);
+        var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
+        var EndDate = convertdateformatForUnix(objParam.EndDate);
+        var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
+        WhereCondition += " And gps.Date between '" + unixStartdate + "' And '" + unixEndDate + "'";
+        wherecondition1 += " And ta.Date between '" + unixStartdate + "' And '" + unixEndDate + "'";
+
+
+    } else if (objParam.StartDate != null && objParam.StartDate != '') {
+        var StartDate = convertdateformatForUnix(objParam.StartDate);
+        var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
+        WhereCondition += " And gps.Date >='" + unixStartdate + "'";
+        wherecondition1 += " And ta.Date >='" + unixStartdate + "'";
+
+    } else if (objParam.EndDate != null && objParam.EndDate != '') {
+        var EndDate = convertdateformatForUnix(objParam.EndDate);
+        var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
+        WhereCondition += " And gps.Date <='" + unixEndDate + "'";
+        wherecondition1 += " And ta.Date <='" + unixEndDate + "'";
+
+
+    }
+
+
+    wherecondition1 += " And ta.AlarmCode = '11'";
+
+    //WhereCondition += " And Gps.DeviceId = 075034901552";
+    // WhereCondition += " And Gps.IsEngine = false";
+    var query = "select " +
+        " gps.*,Bike.*  " +
+        "from tblvehicle  As Bike " +
+        "inner  join tblgpsdata as gps " +
+        "on " +
+        "gps.DeviceId = Bike.deviceid " +
+        WhereCondition +
+        " order by gps.Date Asc";
+    var query1 = "select ta.Datetime, ta.Date, ta.deviceid from tblalarm as ta left join tblvehicle As Bike on ta.deviceid = Bike.deviceid " + wherecondition1 + ";"
+
+    connection.query(query, function(err, response, fields) {
+        conf.rows = [];
+        connection.query(query1, function(alarmerr, alarmresponse, alarmfields) {
+            if (response.length > 0) {
+
+                var groups = u.groupBy(response, function(o) {
+                    return o.DeviceId;
+                });
+                var lstGroup = u.map(groups, function(group) {
+
+                    return {
+                        data: group
+                    }
+                });
+                var l = 0;
+                var D = 0;
+                var Array = [];
+                var TotalDrivingtime = 0;
+                for (var i = 0; i < lstGroup.length; i++) {
+
+                    var IsDriving = 0;
+                    var DrivingStartPosition = 0;
+                    var TotalDrivingtime = 0;
+
+                    var Speed6090 = 0;
+                    var Speed90130 = 0;
+                    var Over130 = 0;
+                    var LocateNumber = 0;
+                    var objSpeed = [];
+                    var TotalRecord = 0;
+                    var Mileage = 0.00;
+                    var Totalsum = 0;
+                    // var StartMilage = 0;
+                    // var Milageco = 0;
+                    // var Engineco = 0;
+                    if (lstGroup[i].data.length > 0) {
+                        var StartMilage = 0;
+                        var Milageco = 0;
+                        var Engineco = 0;
+                        var id = 0;
+                        for (var k = 0; k < lstGroup[i].data.length; k++) {
+                            lstGroup[i].data[k].Date = new Date(lstGroup[i].data[k].Date * 1000);
+
+                            if (lstGroup[i].data[k].IsEngine == true) {
+                                if (lstGroup[i].data[k].Speed > 1 && lstGroup[i].data[k].GPSPositioning == 'A') {
+                                    objSpeed.push(parseFloat(lstGroup[i].data[k].Speed));
+                                    if (lstGroup[i].data[k].Speed > 60 && lstGroup[i].data[k].Speed <= 90) {
+                                        Speed6090 = Speed6090 + 1;
+                                    }
+                                    if (lstGroup[i].data[k].Speed > 90 && lstGroup[i].data[k].Speed <= 130) {
+                                        Speed90130 = Speed6090 + 1;
+                                    }
+                                    if (lstGroup[i].data[k].Speed > 130) {
+                                        Over130 = Over130 + 1;
+                                    }
+                                    TotalRecord = TotalRecord + 1;
+
+                                }
+
+                                if (Engineco == 0) {
+                                    StartMilage = k;
+                                    Engineco = 1;
+                                }
+                                if ((k != 0) && lstGroup[i].data[k].GPSPositioning == 'A') {
+
+                                    if (parseFloat(lstGroup[i].data[k].Speed) > 1) {
+                                        Milageco = 0;
+                                        Mileage += distance(parseFloat(lstGroup[i].data[StartMilage].Latitude), parseFloat(lstGroup[i].data[StartMilage].Longitude), parseFloat(lstGroup[i].data[k].Latitude), parseFloat(lstGroup[i].data[k].Longitude));
+                                        StartMilage = k;
+                                    } else {
+
+                                        if (Milageco == 0) {
+                                            Mileage += distance(parseFloat(lstGroup[i].data[StartMilage].Latitude), parseFloat(lstGroup[i].data[StartMilage].Longitude), parseFloat(lstGroup[i].data[k].Latitude), parseFloat(lstGroup[i].data[k].Longitude));
+                                            StartMilage = k;
+                                        }
+                                        Milageco = 1;
+                                    }
+                                }
+                                if (k == 0) { LocateNumber = 1; } else {
+                                    if (lstGroup[i].data[k].Latitude != lstGroup[i].data[k - 1].Latitude && lstGroup[i].data[k].Longitude != lstGroup[i].data[k - 1].Longitude) {
+                                        {
+                                            LocateNumber = LocateNumber + 1;
+                                        }
+                                    }
+                                }
+                                if (parseFloat(lstGroup[i].data[k].Speed) > 1) {
+                                    if (IsDriving == 0) {
+                                        DrivingStartPosition = k;
+                                        var obj = new Object();
+                                        obj.OverSpeed = 0;
+                                        obj.StartLatitude = lstGroup[i].data[k].Latitude;
+                                        obj.StartLongitude = lstGroup[i].data[k].Longitude;
+                                        obj.DeviceId = lstGroup[i].data[k].DeviceId;
+                                        obj.StartSpeed = parseFloat(lstGroup[i].data[k].Speed).toFixed(2);
+                                        obj.Name = lstGroup[i].data[k].Name;
+                                        obj.StartAddress = "No Address Found";
+                                        obj.EndAddress = "No Address Found";
+                                        obj.DrivingStartTime = momentz.utc(lstGroup[i].data[k].Date).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a')
+                                        obj.DrivingStartTime1 = momentz.utc(lstGroup[i].data[k].Date).tz(req.query.TimeZone).format('MM-DD-YYYY hh:mm:ss a')
+                                    }
+                                    IsDriving = 1;
+                                }
+                            } else {
+                                Engineco = 0;
+                                if (IsDriving == 1) {
+                                    IsDriving = 0;
+                                    obj.EndLatitude = lstGroup[i].data[k].Latitude;
+                                    obj.EndLongitude = lstGroup[i].data[k].Longitude;
+                                    obj.EndSpeed = parseFloat(lstGroup[i].data[k].Speed).toFixed(2);
+                                    obj.EndDrivingTime = momentz.utc(lstGroup[i].data[k].Date).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
+                                    obj.EndDrivingTime1 = momentz.utc(lstGroup[i].data[k].Date).tz(req.query.TimeZone).format('MM-DD-YYYY hh:mm:ss a');
+                                    obj.Speed6090 = Speed6090;
+                                    obj.Speed90130 = Speed90130;
+                                    obj.Over130 = Over130;
+                                    Mileage += distance(parseFloat(lstGroup[i].data[StartMilage].Latitude), parseFloat(lstGroup[i].data[StartMilage].Longitude), parseFloat(lstGroup[i].data[k].Latitude), parseFloat(lstGroup[i].data[k].Longitude));
+                                    obj.Mileage = parseFloat(Mileage).toFixed(2);
+                                    var sum = 0;
+
+                                    for (var m = 0; m < objSpeed.length; m++) {
+                                        sum += parseFloat(objSpeed[m]);
+                                    }
+                                    if (sum != 0) {
+                                        obj.avgSpeed = parseFloat(sum / TotalRecord).toFixed(2);
+                                        obj.MaxSpeed = parseFloat(u.max(objSpeed, function(MaxSpeeddata) { return MaxSpeeddata; })).toFixed(2);
+                                    } else {
+                                        obj.avgSpeed = 0;
+                                        obj.MaxSpeed = 0;
+                                    }
+                                    obj.LocateNumber = LocateNumber;
+                                    obj.DrivingTime = calhrminsecfromsec(calcDateDiffCalInSec(moment(lstGroup[i].data[k].Date), moment(lstGroup[i].data[DrivingStartPosition].Date)));
+                                    TotalDrivingtime = TotalDrivingtime + calcDateDiffCalInSec(moment(lstGroup[i].data[k].Date), moment(lstGroup[i].data[DrivingStartPosition].Date));
+                                    if (obj.DrivingTime != "0 sec") {
+                                        Array.push(obj);
+                                    }
+                                    StartVehical = 0;
+                                    Speed6090 = 0;
+                                    Speed90130 = 0;
+                                    Over130 = 0;
+                                    LocateNumber = 0;
+                                    objSpeed = [];
+                                    TotalRecord = 0;
+                                    Mileage = 0.00;
+                                }
+                            }
+                        }
+                        if (IsDriving == 1) {
+                            IsDriving = 0;
+                            var lastposition = lstGroup[i].data.length - 1;
+                            obj.EndLatitude = lstGroup[i].data[lastposition].Latitude;
+                            obj.EndLongitude = lstGroup[i].data[lastposition].Longitude;
+                            obj.EndSpeed = parseFloat(lstGroup[i].data[lastposition].Speed).toFixed(2);
+                            obj.EndDrivingTime = momentz.utc(lstGroup[i].data[lastposition].Date).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
+                            obj.EndDrivingTime1 = momentz.utc(lstGroup[i].data[lastposition].Date).tz(req.query.TimeZone).format('MM-DD-YYYY hh:mm:ss a');
+
+                            obj.Speed6090 = Speed6090;
+                            obj.Speed90130 = Speed90130;
+                            obj.Over130 = Over130;
+                            obj.Mileage = parseFloat(Mileage).toFixed(2);
+                            var sum = 0;
+                            for (var m = 0; m < objSpeed.length; m++) {
+                                sum += parseFloat(objSpeed[m]);
+                            }
+                            if (sum != 0) {
+                                obj.avgSpeed = parseFloat(sum / TotalRecord).toFixed(2);
+                                obj.MaxSpeed = parseFloat(u.max(objSpeed, function(MaxSpeeddata) { return MaxSpeeddata; })).toFixed(2);
+                            } else {
+                                obj.avgSpeed = 0;
+                                obj.MaxSpeed = 0;
+                            }
+                            obj.LocateNumber = LocateNumber;
+                            obj.DrivingTime = calhrminsecfromsec(calcDateDiffCalInSec(moment(lstGroup[i].data[lastposition].Date), moment(lstGroup[i].data[DrivingStartPosition].Date)));
+                            TotalDrivingtime = TotalDrivingtime + calcDateDiffCalInSec(moment(lstGroup[i].data[lastposition].Date), moment(lstGroup[i].data[DrivingStartPosition].Date));
+                            if (obj.DrivingTime != "0 sec") {
+                                Array.push(obj);
+                            }
+                        }
+                    }
+                }
+                TotalDrivingtime = calhrminsecfromsec(TotalDrivingtime);
+                if (alarmresponse.length > 0) {
+                    for (var i = 0; i <= Array.length; i++) {
+                        if (i < Array.length) {
+                            for (var h = 0; h < alarmresponse.length; h++) {
+                                var alarmDate = momentz.utc(new Date(alarmresponse[h].Date * 1000)).tz(req.query.TimeZone).format('MM-DD-YYYY hh:mm:ss a');
+                                if (alarmresponse[h].deviceid == Array[i].DeviceId) {
+                                    if (new Date(alarmDate) >= new Date(Array[i].DrivingStartTime1) && new Date(alarmDate) <= new Date(Array[i].EndDrivingTime1)) {
+                                        Array[i].OverSpeed = Array[i].OverSpeed + 1;
+                                    }
+                                }
+                            }
+                        } else {
+                            if (Array.length > 0) {
+                                var data = u.sortBy(Array, function(num) { return new Date(num.DrivingStartTime1) });
+                                Array = data;
+                            }
+                            GetDrivingData(0);
+                        }
+                    }
+                } else {
+                    if (Array.length > 0) {
+                        var data = u.sortBy(Array, function(num) { return new Date(num.DrivingStartTime1) });
+                        Array = data;
+                    }
+                    GetDrivingData(0);
+                }
+
+                function GetDrivingData(i) {
+                    var Name = '';
+                    var DrivingStartTime = '';
+                    var EndDrivingTime = '';
+                    var DrivingTime = '';
+                    var LocateNumber = '';
+                    var Speed6090 = '';
+                    var Speed90130 = '';
+                    var Over130 = '';
+                    var MaxSpeed = 0.0;
+                    var avgSpeed = 0.0;
+                    var OverSpeed = 0.0;
+                    var StartSpeed = '';
+                    var EndSpeed = '';
+                    var StartLongitude = '';
+                    var StartLatitude = '';
+                    var EndLongitude = '';
+                    var EndLatitude = '';
+                    var row = [];
+                    if (i < Array.length) {
+
+                        if (Array[i].Name != null && Array[i].Name != '' && Array[i].Name != undefined) {
+                            Name = Array[i].Name;
+                        }
+                        if (Array[i].DrivingStartTime != null && Array[i].DrivingStartTime != '' && Array[i].DrivingStartTime != undefined) {
+                            DrivingStartTime = Array[i].DrivingStartTime.toString();
+                        }
+                        if (Array[i].EndDrivingTime != null && Array[i].EndDrivingTime != '' && Array[i].EndDrivingTime != undefined) {
+                            EndDrivingTime = Array[i].EndDrivingTime.toString();
+                        }
+                        if (Array[i].DrivingTime != null && Array[i].DrivingTime != '' && Array[i].DrivingTime != undefined) {
+                            DrivingTime = Array[i].DrivingTime.toString();
+                        }
+
+                        if (Array[i].LocateNumber != null && Array[i].LocateNumber != '' && Array[i].LocateNumber != undefined) {
+                            LocateNumber = Array[i].LocateNumber.toString();
+                        }
+                        if (Array[i].Speed6090 != null && Array[i].Speed6090 != undefined) {
+                            Speed6090 = Array[i].Speed6090.toString();
+                        }
+                        if (Array[i].Speed90130 != null && Array[i].Speed90130 != undefined) {
+                            Speed90130 = Array[i].Speed90130.toString();
+                        }
+                        if (Array[i].Over130 != null && Array[i].Over130 != undefined) {
+                            Over130 = Array[i].Over130.toString();
+                        }
+                        if (Array[i].MaxSpeed != null && Array[i].MaxSpeed != '' && Array[i].MaxSpeed != undefined) {
+                            MaxSpeed = Array[i].MaxSpeed.toString();
+                        }
+                        if (Array[i].avgSpeed != null && Array[i].avgSpeed != '' && Array[i].avgSpeed != undefined) {
+                            avgSpeed = Array[i].avgSpeed.toString();
+                        }
+
+                        if (Array[i].OverSpeed != null && Array[i].OverSpeed != '' && Array[i].OverSpeed != undefined) {
+                            OverSpeed = Array[i].OverSpeed.toString();
+                        }
+                        if (Array[i].Mileage != null && Array[i].Mileage != '' && Array[i].Mileage != undefined) {
+                            StartSpeed = Array[i].Mileage.toString();
+                        }
+                        if (Array[i].StartLongitude != null && Array[i].StartLongitude != '' && Array[i].StartLongitude != undefined) {
+                            StartLongitude = Array[i].StartLongitude.toString();
+                        }
+                        if (Array[i].StartLatitude != null && Array[i].StartLatitude != '' && Array[i].StartLatitude != undefined) {
+                            StartLatitude = Array[i].StartLatitude.toString();
+                        }
+                        if (Array[i].EndLongitude != null && Array[i].EndLongitude != '' && Array[i].EndLongitude != undefined) {
+                            EndLongitude = Array[i].EndLongitude.toString();
+                        }
+                        if (Array[i].EndLatitude != null && Array[i].EndLatitude != '' && Array[i].EndLatitude != undefined) {
+                            EndLatitude = Array[i].EndLatitude.toString();
+                        }
+                        row.push(Name, DrivingStartTime, EndDrivingTime, DrivingTime, /* LocateNumber,*/ Speed6090, Speed90130, Over130, MaxSpeed, avgSpeed, OverSpeed, StartSpeed, StartLongitude, StartLatitude, EndLongitude, EndLatitude);
+                        conf.rows.push(row);
+                        GetDrivingData(i + 1);
+                    } else {
+                        row.push('Total :', '', '', TotalDrivingtime, '', '', /* LocateNumber,*/ '', '', '', '', '', '', '', '', '', '', '');
+                        conf.rows.push(row);
+                        var result = nodeExcel.execute(conf);
+                        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+                        res.setHeader("Content-Disposition", "attachment; filename=DrivingReport.xlsx");
+                        res.end(result, 'binary');
+                    }
+
+                }
+
+            } else {
+                var result = nodeExcel.execute(conf);
+                res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+                res.setHeader("Content-Disposition", "attachment; filename=DrivingReport.xlsx");
+                res.end(result, 'binary');
+            }
+        })
+    });
+})
+
+
 //--------------------------Driving Report End-------------------------------------------//
 
 function getGeocodeGenrate(lat, long, callback) {
@@ -3150,4 +4971,4 @@ router.get('/DeleteGPSdatabyVehicleId', function(req, res) {
 
 
 module.exports = router;
-//End of Tables
+//End of Tables;
