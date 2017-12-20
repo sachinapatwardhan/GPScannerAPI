@@ -69,6 +69,7 @@ global.RoutePath = process.env.RoutePath;
 
 //Push Notification
 global.PushNotifications = require('node-pushnotifications');
+global.pdf = require('html-pdf');
 
 
 if (global.IsProduction == false || global.IsProduction == "false") {
