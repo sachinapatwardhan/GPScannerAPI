@@ -166,7 +166,12 @@ function CheckUserAccessPermission(ObjParams, callback) {
         var objUser = jwt.decode(token, TokenKey);
         if (objUser) {
             //Check User Exist or not
-            User.findOne({ where: { username: objUser.username, password: objUser.password } }).then(function(UserExist) {
+            User.findOne({
+                where: {
+                    username: objUser.username,
+                    password: objUser.password
+                }
+            }).then(function(UserExist) {
                 if (UserExist != null) {
 
                     var tablename = ObjParams.query.tablename;
@@ -174,7 +179,11 @@ function CheckUserAccessPermission(ObjParams, callback) {
                     var username = objUser.username;
 
                     //Get Module
-                    Module.findOne({ where: { Module: tablename } }).then(function(objModule) {
+                    Module.findOne({
+                        where: {
+                            Module: tablename
+                        }
+                    }).then(function(objModule) {
                         if (objModule != null) {
                             UserInRole.belongsTo(Role, {
                                 foreignKey: {
@@ -183,7 +192,9 @@ function CheckUserAccessPermission(ObjParams, callback) {
                                 }
                             });
                             UserInRole.findAll({
-                                where: { userId: UserExist.id },
+                                where: {
+                                    userId: UserExist.id
+                                },
                                 include: [{
                                     model: Role
                                 }]
@@ -192,7 +203,12 @@ function CheckUserAccessPermission(ObjParams, callback) {
                                 function uploader(i) {
                                     if (i < strRole.length) {
 
-                                        UserPermission.findOne({ where: { idModule: objModule.id, RoleName: strRole[i].tblrole.RoleName } }).then(function(objUserPermission) {
+                                        UserPermission.findOne({
+                                            where: {
+                                                idModule: objModule.id,
+                                                RoleName: strRole[i].tblrole.RoleName
+                                            }
+                                        }).then(function(objUserPermission) {
                                             if (objUserPermission != null) {
 
                                                 if (permission == "Added") {
@@ -380,7 +396,9 @@ var MonthlyUserReport = schedule.scheduleJob('10 0 1 * *', function() {
 
                 var objDate = new Date();
                 var locale = "en-us";
-                var Month = objDate.toLocaleString(locale, { month: "short" });
+                var Month = objDate.toLocaleString(locale, {
+                    month: "short"
+                });
                 var Year = objDate.getUTCFullYear();
                 var result = nodeExcel.execute(conf);
                 var ConsoleStream = fs.createWriteStream('MediaUploads/UserReportFileUpload/MonthlyUserReport__' + Month + '_' + Year + '.xlsx');
@@ -931,7 +949,7 @@ router.get('/GetMobileLanguageData', function(req, res) {
     //         "Birthday Required!": "Geburtstag erforderlich!",
     //         "DeviceId Required!": "DeviceId erforderlich!",
     //         "Renewal Date Required!": "Verlängerungsdatum erforderlich!",
-    //         //Latest 
+    //         //Latest
     //         "Standby": "Bereithalten",
     //         "Credit Expire Date": "Ablaufen Kredit Datum",
     //         "Credit Expire Date Required!": "Kreditablaufdatum erforderlich!",
@@ -1893,7 +1911,9 @@ var IsActiveDeviceCheck = schedule.scheduleJob('1 0 0 1,16 * *', function() {
                 }
                 var objDate = new Date();
                 var locale = "en-us";
-                var Month = objDate.toLocaleString(locale, { month: "short" });
+                var Month = objDate.toLocaleString(locale, {
+                    month: "short"
+                });
                 var Year = objDate.getUTCFullYear();
                 var Day = objDate.getUTCDate();
                 var result = nodeExcel.execute(conf);
@@ -2284,9 +2304,9 @@ function SendPushNotification(data, UserId, objAppInfo) {
                     //     if (lstSetting[0].Value == 1) {
                     var deviceIds = [];
                     deviceIds.push(response[i].PushNotificationId)
-                        //SendNotification(i + 1);
-                        // } else {
-                        // console.log(deviceIds)
+                    //SendNotification(i + 1);
+                    // } else {
+                    // console.log(deviceIds)
                     var objData = clone(data);
 
                     if (response[i].Platform == 'ios') {
@@ -2340,5 +2360,229 @@ function SendPushNotification(data, UserId, objAppInfo) {
 
     })
 }
+
+//============================Order Service======================================
+global.CreateOrderServiceGlobal = CreateOrderServiceGlobal;
+var OrderService = models.tblorderservice;
+var OrderServiceStatus = models.tblorderservicestatus;
+var OrderServiceDetail = models.tblorderserviceitem;
+var Product = models.product;
+var ProductAttributeMapping = models.product_productattribute_mapping;
+var ProductAttribute = models.productattribute;
+var ProductAttributeValue = models.productattributevalue;
+
+function GetCharges(Country, callback) {
+    var TotalAmount = 0;
+    // Country = "India";
+    // Country = "Malaysia";
+    try {
+        GetExpiryProductByName(function(resProductId) {
+            TotalAmount = 0;
+            if (resProductId > 0) {
+                GetProductAttributes(resProductId, Country, function(resAllAttributes) {
+                    for (var i = 0; i < resAllAttributes.length; i++) {
+                        TotalAmount += resAllAttributes[i].PriceAdjustment;
+                    }
+                    return callback(TotalAmount);
+                });
+            } else {
+                return callback(TotalAmount);
+            }
+        });
+
+    } catch (err) {
+        return callback(TotalAmount);
+    }
+}
+
+function GetExpiryProductByName(callback) {
+    Product.findOne({
+        where: {
+            Name: "Expiry Product"
+        },
+        attributes: ['Id', 'Name'],
+    }).then(function(response) {
+        if (response != null) {
+            return callback(response.Id);
+        } else {
+            return callback(0);
+        }
+    })
+}
+
+function GetProductAttributes(idProduct, Country, callback) {
+    ProductAttributeMapping.belongsTo(ProductAttribute, {
+        foreignKey: {
+            name: 'ProductAttributeId',
+            allowNull: false
+        }
+    });
+    ProductAttributeMapping.hasMany(ProductAttributeValue, {
+        foreignKey: {
+            name: 'ProductAttributeMappingId',
+            allowNull: false
+        }
+    });
+    ProductAttributeValue.belongsTo(Product, {
+        foreignKey: {
+            name: 'AssociatedProductId',
+            allowNull: false
+        }
+    });
+    ProductAttributeMapping.findAll({
+        where: {
+            ProductId: idProduct
+        },
+        include: [{
+            model: ProductAttribute
+        }, {
+            model: ProductAttributeValue,
+            include: [{
+                model: Product,
+                attributes: ['Id', 'Name']
+            }]
+        }]
+    }).then(function(resAttributes) {
+        var AllAttributeValue = [];
+        for (var i = 0; i < resAttributes.length; i++) {
+            var value = resAttributes[i];
+            for (var j = 0; j < value.productattributevalues.length; j++) {
+                var InnerVal = value.productattributevalues[j];
+                var obj1 = new Object();
+                obj1.Id = InnerVal.Id;
+                obj1.Name = InnerVal.Name;
+                obj1.PriceAdjustment = InnerVal.PriceAdjustment;
+                obj1.mapid = InnerVal.ProductAttributeMappingId;
+                obj1.AName = value.productattribute.Name;
+                obj1.AId = value.Id;
+                if (Country == obj1.AName) {
+                    AllAttributeValue.push(obj1);
+                }
+            }
+        }
+        return callback(AllAttributeValue);
+    }).catch(function(error) {
+        return callback([]);
+    })
+}
+
+function convertdateUTCformat(date1, flg) {
+    var date = new Date(date1);
+    var firstdayMonth = date.getUTCMonth() + 1;
+    var firstdayDay = date.getUTCDate();
+    var firstdayYear = date.getUTCFullYear();
+    var firstdayHours = date.getUTCHours();
+    var firstdayMinutes = date.getUTCMinutes();
+    var firstdaySeconds = date.getUTCSeconds();
+    if (flg == 2) {
+        return ("0000" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("00" + firstdayDay.toString()).slice(-2) + " 23:59:59";
+    } else {
+        return ("0000" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("00" + firstdayDay.toString()).slice(-2) + " 00:00:00";
+    }
+}
+
+function AddDate(oldDate, offset, offsetType) {
+    var year = parseInt(oldDate.getFullYear());
+    var month = parseInt(oldDate.getMonth());
+    var date = parseInt(oldDate.getDate());
+    var hour = parseInt(oldDate.getHours());
+    var newDate;
+    if (offsetType == "Year") {
+        newDate = new Date(year + offset, month, date, hour);
+    } else if (offsetType == "Month") {
+        newDate = new Date(year, month + offset, date, hour);
+    } else if (offsetType == "Day" || offsetType == "Week") {
+        newDate = new Date(year, month, date + offset, hour);
+    }
+    return newDate;
+}
+
+var maxLength = 1;
+var minLength = 1;
+var uppercaseMinCount = 1;
+var numberMinCount = 1;
+var UPPERCASE_RE = /([A-Z])/g;
+var NUMBER_RE = /([\d])/g;
+var NON_REPEATING_CHAR_RE = /([\w\d\?\-])\1{2,}/g;
+
+function isStrongEnough(randomWord) {
+    var uc = randomWord.match(UPPERCASE_RE);
+    var n = randomWord.match(NUMBER_RE);
+    var nr = randomWord.match(NON_REPEATING_CHAR_RE);
+    return randomWord.length >= minLength && !nr && uc && uc.length >= uppercaseMinCount;
+}
+
+function GetRandomWord() {
+
+    var randomWord = "";
+    var randomLength = Math.floor(Math.random() * (maxLength - minLength)) + minLength;
+    while (!isStrongEnough(randomWord)) {
+        randomWord = generatePassword(randomLength, false, /[\w\d\?\-]/);
+    }
+    return randomWord;
+}
+
+
+function CreateOrderServiceGlobal(Country, UserId, DeviceId, UserName, callback) {
+    GetCharges(Country, function(OrderTotal) {
+        var objOrder = new Object();
+        objOrder.CustomerId = UserId;
+        objOrder.CreatedOnUtc = new Date();
+        objOrder.ExpiryDate = AddDate(objOrder.CreatedOnUtc, 1, "Year");
+        objOrder.ExpiryDurationValue = 1;
+        objOrder.ExpiryDurationType = "Year";
+        objOrder.MerchantId = 0;
+        var PurchaseOrderNumber = new Date();
+        objOrder.PurchaseOrderNumber = "BILLNO" + GetRandomWord() + Date.parse(PurchaseOrderNumber);
+        objOrder.CustomerCurrencyCode = "MYR / Rs";
+        objOrder.OrderTotal = OrderTotal;
+        objOrder.OrderNotes = DeviceId;
+        objOrder.SettlementCur = "MYR / Rs";
+        objOrder.OrderStatusId = 1;
+        objOrder.SubscriptionTransactionId = 0;
+        objOrder.ShippingStatusId = 0;
+        objOrder.PaymentMethodSystemName = "CASH";
+        objOrder.CustomerTaxDisplayTypeId = 0;
+        objOrder.OrderSubtotalInclTax = OrderTotal;
+        objOrder.OrderSubtotalExclTax = OrderTotal;
+        objOrder.OrderSubTotalDiscountInclTax = 0;
+        objOrder.OrderSubTotalDiscountExclTax = 0;
+        objOrder.OrderShippingInclTax = 0;
+        objOrder.OrderShippingExclTax = 0;
+        objOrder.TaxRates = 0;
+        objOrder.OrderTax = 0;
+        objOrder.OrderDiscount = 0;
+        objOrder.RefundedAmount = 0;
+        objOrder.RewardPointsWereAdded = 0;
+        objOrder.CustomerLanguageId = 0;
+        objOrder.AffiliateId = 0;
+        objOrder.AllowStoringCreditCardNumber = 0;
+        objOrder.CreatedBy = UserName;
+        objOrder.PaymentMethodAdditionalFeeInclTax = OrderTotal;
+        objOrder.PaymentMethodAdditionalFeeExclTax = OrderTotal;
+        objOrder.ProcessingCharges = 0;
+        objOrder.PaymentStatusId = null;
+        objOrder.ShippAddress1 = Country;
+        OrderService.create(objOrder).then(function(response) {
+            var objOrderDetail = new Object();
+            objOrderDetail.OrderId = response.id;
+            objOrderDetail.ProductName = "CASH SALE";
+            objOrderDetail.Quantity = 1;
+            objOrderDetail.UnitPriceInclTax = OrderTotal;
+            objOrderDetail.UnitPriceExclTax = OrderTotal;
+            objOrderDetail.idOrderStatus = 1;
+            objOrderDetail.PriceInclTax = OrderTotal;
+            objOrderDetail.PriceExclTax = OrderTotal;
+            OrderServiceDetail.create(objOrderDetail).then(function(responseOrderDetail) {
+                return callback({
+                    success: true,
+                    message: "Order placed successfully..."
+                })
+            });
+        });
+    });
+}
+
+//============================Order Service======================================
 
 module.exports = router

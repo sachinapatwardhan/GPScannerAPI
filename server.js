@@ -322,8 +322,17 @@ app.use('/pushnotification', require('./controllers/pushnotification'))
 app.use('/petfence', require('./controllers/petFence'))
 app.use('/facebookpagesetting', require('./controllers/facebookpagesetting'))
 app.use('/sharedevice', require('./controllers/sharedevice'))
+app.use('/productAttribute', require('./controllers/productAttribute'))
+app.use('/product', require('./controllers/product'))
+app.use('/productAttributeMapping', require('./controllers/productAttributeMapping'))
+app.use('/productAttributeValue', require('./controllers/productAttributeValue'))
+app.use('/productAttributeCombination', require('./controllers/productAttributeCombination'))
+app.use('/productPictureMapping', require('./controllers/productPictureMapping'))
+app.use('/orderservice', require('./controllers/orderservice'))
     // app.use('/advancefence', require('./controllers/advancefence'))
     //End of Setting
+
+
 
 //Bike
 app.use('/bike', require('./controllers/bike'))
