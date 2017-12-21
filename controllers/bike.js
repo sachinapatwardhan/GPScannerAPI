@@ -217,6 +217,7 @@ router.get('/GetVehicleCurrentLocation', function(req, res) {
     GPSData.findOne({
         where: {
             DeviceId: req.query.DeviceId,
+            GPSPositioning: 'A',
             Date: { $lte: unixStartdate }
         },
         order: 'Date DESC'
