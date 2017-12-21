@@ -167,6 +167,107 @@ router.get('/GetAllGpsData', function(req, res) {
     })
 })
 
+router.get('/GetAllGpsDataNew', function(req, res) {
+    var objParam = req.query;
+    var objColumns = objParam.columns;
+    var objOrderBy = objParam.order;
+    var objSearch = objParam.search;
+    var Orderby = objColumns[parseInt(objOrderBy[0].column)].data + ' ' + objOrderBy[0].dir;
+    var search = "";
+
+    if (objSearch != '' && objSearch != null && objSearch != undefined) {
+        search = 'Where (tgps.DeviceId like "%' + objSearch + '%" or ';
+        search = search + 'tgps.Latitude like "%' + objSearch + '%" or ';
+        search = search + 'tgps.Longitude like "%' + objSearch + '%" or ';
+        search = search + 'tgps.GPSPositioning like "%' + objSearch + '%" or ';
+        search = search + 'tgps.Speed like "%' + objSearch + '%" or ';
+        search = search + 'tgps.Direction like "%' + objSearch + '%" or ';
+        search = search + 'tgps.Status like "%' + objSearch + '%" or ';
+        search = search + 'tgps.CreatedDate like "%' + objSearch + '%" or ';
+        search = search + 'tgps.Altitude like "%' + objSearch + '%" or ';
+        search = search + 'tgps.AD1 like "%' + objSearch + '%" or ';
+        search = search + 'tgps.AD2 like "%' + objSearch + '%" or ';
+        search = search + 'tgps.OdoMeter like "%' + objSearch + '%") ';
+    }
+
+    var DeviceId = objParam.DeviceId;
+    if (DeviceId != null && DeviceId != '' && DeviceId != 'All' && DeviceId != undefined) {
+        if (search != "") {
+            search += ' and tgps.DeviceId = ' + DeviceId;
+        } else {
+            search += ' where tgps.DeviceId = ' + DeviceId;
+        }
+    }
+    var StartDate = convertdateUTCformat(objParam.StartDate);
+    var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
+
+    var EndDate = convertdateUTCformat(objParam.EndDate);
+    var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
+    if (objParam.StartDate != '') {
+        if (search != "") {
+            search += ' and tgps.Date >= ' + unixStartdate;
+        } else {
+            search += ' where tgps.Date >= ' + unixStartdate;
+        }
+    }
+    if (objParam.EndDate != '') {
+        if (search != "") {
+            search += ' and tgps.Date <= ' + unixEndDate;
+        } else {
+            search += ' where tgps.Date <= ' + unixEndDate;
+        }
+    }
+
+    // if (search != "") {
+    //     search += ' and tu.idApp = ' + objParam.idApp;
+    // } else {
+    //     search += ' where tu.idApp = ' + objParam.idApp;
+    // }
+
+    if (search != "") {
+        search += " and ta.AppName = ' " + objParam.AppName + "'";
+    } else {
+        search += " where ta.AppName = '" + objParam.AppName + "'";
+    }
+
+    // var qry = "SELECT tgps.*, tv.iduser, tu.idApp FROM tblgpsdata as tgps left Join tblvehicle as tv on tgps.DeviceId = tv.deviceid left join tbluserinformation as tu on tv.idUser = tu.id " + search +
+    //     " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
+
+    var qry = "SELECT tgps.DeviceId, tgps.Date, tgps.Latitude, tgps.Longitude, tgps.Speed, tgps.Direction, tu.idApp, tgps.GPSPositioning, tgps.Speed, tgps.Direction, tgps.Status, " +
+        " tgps.IsRelayToStopTheCar, tgps.IsSirenSound, tgps.IsDoor, tgps.IsEngine, tgps.IsLockTheDoor, tgps.IsUnlockTheDoor, tgps.IsSOS, tgps.AD1, tgps.AD2, tgps.Altitude, tgps.OdoMeter " +
+        "FROM tblgpsdata as tgps left Join tblvehicle as tv on tgps.DeviceId = tv.deviceid" +
+        " left join tbluserinformation as tu on tv.idUser = tu.id " +
+        " inner join tblappinfo as ta  on ta.id = tu.idApp" +
+        search +
+        " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
+    console.log(qry)
+        // var Countqry = "SELECT count(tgps.id) as TotalRecord FROM tblgpsdata as tgps left Join tblvehicle as tv on tgps.DeviceId = tv.deviceid left join tbluserinformation as tu on tv.idUser = tu.id " + search;
+    var Countqry = "SELECT count(tgps.id) as TotalRecord " +
+        "FROM tblgpsdata as tgps left Join tblvehicle as tv on tgps.DeviceId = tv.deviceid" +
+        " left join tbluserinformation as tu on tv.idUser = tu.id " +
+        " inner join tblappinfo as ta  on ta.id = tu.idApp" +
+        search
+    connection.query(qry, function(err, response) {
+        if (response != undefined) {
+            connection.query(Countqry, function(err, lstCount, fields) {
+                var response1 = new Object();
+                response1.draw = objParam.draw;
+                response1.recordsTotal = lstCount[0].TotalRecord;
+                response1.recordsFiltered = lstCount[0].TotalRecord;
+                response1.data = response;
+                res.json(response1);
+            });
+        } else {
+            var response1 = new Object();
+            response1.draw = objParam.draw;
+            response1.recordsTotal = 0;
+            response1.recordsFiltered = 0;
+            response1.data = [];
+            res.json(response1);
+        }
+    })
+})
+
 //AlarmData
 router.get('/GetAllAlarmOld', function(req, res) {
     var objParam = req.query;
