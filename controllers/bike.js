@@ -125,7 +125,7 @@ router.get('/GetAllWorkingBikeWebApp', jsonParser, function(req, res) {
         "  (select tb.iduser,tb.deviceid,tb.id,tb.Name,tb.DeviceType,tb.CreatedDate,tvt.Type as 'VehicleType',tsd.id as'ShareId',tb.IsOnline from tblvehicle tb  " +
         "   LEFT join tblsharedevice tsd on tb.id=tsd.idVehicle  " +
         "   LEFT JOIN tblvehicletype tvt on tb.idType=tvt.id  " +
-        "   where (tb.iduser=1 or tsd.iduser=1) and tb.IsDelete = 0 " +
+        "   where (tb.iduser=" + req.query.idUser + " or tsd.idUser=" + req.query.idUser + ") and tb.IsDelete = 0 " +
         "  ) as t  " +
         "  left join   tblgpsdata as tgp2 on tgp2.DeviceId = t.deviceid  " +
         "  group by t.DeviceId  " +
