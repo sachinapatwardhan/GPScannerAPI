@@ -36,7 +36,7 @@ global.RecordNotFound = {
 
 var https = require('https');
 
-router.get('/SendOTP', function(req, res) {
+router.get('/SendOTP', function (req, res) {
     var data = JSON.stringify({
         api_key: 'a692ce5b',
         api_secret: '928903ee92ecd3e4',
@@ -63,12 +63,12 @@ router.get('/SendOTP', function(req, res) {
     req.end();
 
     var responseData = '';
-    req.on('response', function(res1) {
-        res1.on('data', function(chunk) {
+    req.on('response', function (res1) {
+        res1.on('data', function (chunk) {
             responseData += chunk;
         });
 
-        res1.on('end', function() {
+        res1.on('end', function () {
             // console.log(JSON.parse(responseData));
             res.json(JSON.parse(responseData));
         });
@@ -76,7 +76,7 @@ router.get('/SendOTP', function(req, res) {
 });
 
 
-router.get('/SendTestMail', function(req, res) {
+router.get('/SendTestMail', function (req, res) {
 
     var mail = {
         from: 'soham.patel@bugzstudio.com',
@@ -84,7 +84,7 @@ router.get('/SendTestMail', function(req, res) {
         subject: 'hello',
         text: 'hello world!'
     };
-    transporter.sendMail(mail, function(error, response) {
+    transporter.sendMail(mail, function (error, response) {
         if (error) {
             res.json(error);
         } else {
@@ -94,7 +94,7 @@ router.get('/SendTestMail', function(req, res) {
 })
 
 
-getToken = function(headers) {
+getToken = function (headers) {
     // console.log(headers.authorization);
     // console.log(JSON.stringify(headers));
     if (headers && headers.authorization) {
@@ -109,7 +109,7 @@ getToken = function(headers) {
     }
 };
 
-router.get('/EncodeData', function(req, res) {
+router.get('/EncodeData', function (req, res) {
     var Passwordaa = req.query.data;
     // console.log(Passwordaa)
     var EncodePass = jwt.encode(Passwordaa, "bugz");
@@ -119,7 +119,7 @@ router.get('/EncodeData', function(req, res) {
     res.send(EncodePass);
 });
 
-router.get('/DecodeData', function(req, res) {
+router.get('/DecodeData', function (req, res) {
     var Passwordaa = req.query.data;
     // var EncodePass = jwt.encode(Passwordaa, "bugz");
     // console.log(EncodePass)
@@ -130,7 +130,7 @@ router.get('/DecodeData', function(req, res) {
 
 app.use(express.static(__dirname + '/../MediaUploads'));
 
-router.get('/ReportExample', function(req, res) {
+router.get('/ReportExample', function (req, res) {
 
     // var objReport = {
     //     jasper: __dirname + '/../reports/Invoice.jasper'
@@ -171,7 +171,7 @@ function CheckUserAccessPermission(ObjParams, callback) {
                     username: objUser.username,
                     password: objUser.password
                 }
-            }).then(function(UserExist) {
+            }).then(function (UserExist) {
                 if (UserExist != null) {
 
                     var tablename = ObjParams.query.tablename;
@@ -183,7 +183,7 @@ function CheckUserAccessPermission(ObjParams, callback) {
                         where: {
                             Module: tablename
                         }
-                    }).then(function(objModule) {
+                    }).then(function (objModule) {
                         if (objModule != null) {
                             UserInRole.belongsTo(Role, {
                                 foreignKey: {
@@ -198,7 +198,7 @@ function CheckUserAccessPermission(ObjParams, callback) {
                                 include: [{
                                     model: Role
                                 }]
-                            }).then(function(strRole) {
+                            }).then(function (strRole) {
 
                                 function uploader(i) {
                                     if (i < strRole.length) {
@@ -208,7 +208,7 @@ function CheckUserAccessPermission(ObjParams, callback) {
                                                 idModule: objModule.id,
                                                 RoleName: strRole[i].tblrole.RoleName
                                             }
-                                        }).then(function(objUserPermission) {
+                                        }).then(function (objUserPermission) {
                                             if (objUserPermission != null) {
 
                                                 if (permission == "Added") {
@@ -282,11 +282,11 @@ function CreateAuditLog(Method, User, Message) {
     objAudit.createddate = new Date();
     objAudit.message = Message;
 
-    AuditLog.create(objAudit).then(function(responseAudit) {});
+    AuditLog.create(objAudit).then(function (responseAudit) { });
 }
 var rule1 = new schedule.RecurrenceRule();
 
-var DailyUserReport = schedule.scheduleJob('0 23 * * *', function() {
+var DailyUserReport = schedule.scheduleJob('0 23 * * *', function () {
     var conf = {};
     conf.name = "Sheet1";
     conf.cols = [{
@@ -300,7 +300,7 @@ var DailyUserReport = schedule.scheduleJob('0 23 * * *', function() {
         type: 'string'
     }];
 
-    connection.query("SELECT t2.email,count(t1.id) todaydevice,(select Count(*) from tblvehicle where iduser=t1.iduser and IsDelete=false) as totaldevice FROM tblvehicle t1 left join tbluserinformation t2 on t1.iduser = t2.id where date(t1.CreatedDate) = current_date() and t1.IsDelete=false group by t2.id;", function(err, response, fields) {
+    connection.query("SELECT t2.email,count(t1.id) todaydevice,(select Count(*) from tblvehicle where iduser=t1.iduser and IsDelete=false) as totaldevice FROM tblvehicle t1 left join tbluserinformation t2 on t1.iduser = t2.id where date(t1.CreatedDate) = current_date() and t1.IsDelete=false group by t2.id;", function (err, response, fields) {
         if (!err && response.length > 0) {
             conf.rows = [];
 
@@ -343,7 +343,7 @@ var DailyUserReport = schedule.scheduleJob('0 23 * * *', function() {
                         path: 'MediaUploads/UserReportFileUpload/DailyUserReport__' + TodayDate + '.xlsx', // stream this file
                     }]
                 };
-                transporter.sendMail(mail, function(error, response) {
+                transporter.sendMail(mail, function (error, response) {
 
                 });
             }
@@ -353,7 +353,7 @@ var DailyUserReport = schedule.scheduleJob('0 23 * * *', function() {
 });
 var rule2 = new schedule.RecurrenceRule();
 
-var MonthlyUserReport = schedule.scheduleJob('10 0 1 * *', function() {
+var MonthlyUserReport = schedule.scheduleJob('10 0 1 * *', function () {
 
     var conf = {};
     conf.name = "Sheet1";
@@ -368,7 +368,7 @@ var MonthlyUserReport = schedule.scheduleJob('10 0 1 * *', function() {
         type: 'string'
     }];
 
-    connection.query("SELECT t2.email,count(t1.id) ThisMonthDevice,(select Count(*) from tblvehicle where iduser=t1.iduser and IsDelete=false) as TotalDevice FROM tblvehicle t1 left join tbluserinformation t2 on t1.iduser = t2.id where MONTH(t1.CreatedDate) = MONTH(DATE_ADD(current_date(), INTERVAL 0 MONTH) - INTERVAL 1 DAY) and  YEAR(t1.CreatedDate) = YEAR(DATE_ADD(current_date(), INTERVAL 0 MONTH) - INTERVAL 1 DAY)  and t1.IsDelete=false group by t2.id;", function(err, response, fields) {
+    connection.query("SELECT t2.email,count(t1.id) ThisMonthDevice,(select Count(*) from tblvehicle where iduser=t1.iduser and IsDelete=false) as TotalDevice FROM tblvehicle t1 left join tbluserinformation t2 on t1.iduser = t2.id where MONTH(t1.CreatedDate) = MONTH(DATE_ADD(current_date(), INTERVAL 0 MONTH) - INTERVAL 1 DAY) and  YEAR(t1.CreatedDate) = YEAR(DATE_ADD(current_date(), INTERVAL 0 MONTH) - INTERVAL 1 DAY)  and t1.IsDelete=false group by t2.id;", function (err, response, fields) {
         if (!err && response.length > 0) {
             conf.rows = [];
 
@@ -414,7 +414,7 @@ var MonthlyUserReport = schedule.scheduleJob('10 0 1 * *', function() {
                         path: 'MediaUploads/UserReportFileUpload/MonthlyUserReport__' + Month + '_' + Year + '.xlsx', // stream this file
                     }]
                 };
-                transporter.sendMail(mail, function(error, response) {});
+                transporter.sendMail(mail, function (error, response) { });
 
             }
         }
@@ -434,7 +434,7 @@ function GetCurrentDate1() {
 }
 
 
-router.get('/GetMobileLanguageData', function(req, res) {
+router.get('/GetMobileLanguageData', function (req, res) {
     // var translations = {
     //     "en-GB": {
     //         //English Language
@@ -1807,7 +1807,7 @@ router.get('/GetMobileLanguageData', function(req, res) {
     //     res.json(translations);
     // })
 
-    jsonfile.readFile(file, function(err, obj) {
+    jsonfile.readFile(file, function (err, obj) {
         res.json(obj);
         // res.json(translations);
     })
@@ -1817,7 +1817,7 @@ router.get('/GetMobileLanguageData', function(req, res) {
 
 
 //Call 1st And 16th date of the month
-var IsActiveDeviceCheck = schedule.scheduleJob('1 0 0 1,16 * *', function() {
+var IsActiveDeviceCheck = schedule.scheduleJob('1 0 0 1,16 * *', function () {
     var days = 15; // Days you want to subtract
     var date = new Date();
     var Date1 = null;
@@ -1865,7 +1865,7 @@ var IsActiveDeviceCheck = schedule.scheduleJob('1 0 0 1,16 * *', function() {
         "where ActivationDate between '" + Date1 + "' and '" + Date2 + "' and IsActive = true";
 
     var lstDevice = [];
-    connection.query(query, function(err, response, fields) {
+    connection.query(query, function (err, response, fields) {
         if (!err && response.length > 0) {
             conf.rows = [];
             if (response.length > 0) {
@@ -1922,7 +1922,7 @@ var IsActiveDeviceCheck = schedule.scheduleJob('1 0 0 1,16 * *', function() {
                 ConsoleStream.end();
 
                 var EmailName = "Select Value from tblsetting where Name = 'EmailTo' ";
-                connection.query(EmailName, function(err, response, fields) {
+                connection.query(EmailName, function (err, response, fields) {
                     if (!err && response[0].Value != null && response[0].Value != '') {
                         var mail = {
                             from: response[0].Value,
@@ -1934,7 +1934,7 @@ var IsActiveDeviceCheck = schedule.scheduleJob('1 0 0 1,16 * *', function() {
                                 path: 'MediaUploads/UserReportFileUpload/GpsDeviceActive__' + Day + '_' + Month + '_' + Year + '.xlsx', // stream this file
                             }]
                         };
-                        transporter.sendMail(mail, function(error, response) {});
+                        transporter.sendMail(mail, function (error, response) { });
                     }
                     // else {
                     //     var mail = {
@@ -1960,7 +1960,7 @@ rule.hour = 0;
 rule.minute = 05;
 rule.second = 0;
 
-var ExpiryDateDeviceCheck = schedule.scheduleJob(rule, function() {
+var ExpiryDateDeviceCheck = schedule.scheduleJob(rule, function () {
     var date = new Date();
     var Date1 = convertdateformat(date.setMonth(date.getMonth() + 1), 4);
     //var Date2 = convertdateformat(new Date(), 2);
@@ -1973,15 +1973,15 @@ var ExpiryDateDeviceCheck = schedule.scheduleJob(rule, function() {
         "where Date(ExpiryDate) = '" + Date1 + "' and IsActive = true";
 
 
-    connection.query(query1, function(err, GpsExpirydevice, fields) {
+    connection.query(query1, function (err, GpsExpirydevice, fields) {
         if (!err && GpsExpirydevice.length > 0) {
             function SendExpiryNotification1(i) {
                 if (i < GpsExpirydevice.length) {
                     if (GpsExpirydevice[i].ExpiryDate != null) {
-                        connection.query("SELECT id,Name,iduser,deviceid from tblvehicle where deviceid=" + GpsExpirydevice[i].DeviceId + " and IsDelete=false", function(err, Bikerows, fields) {
+                        connection.query("SELECT id,Name,iduser,deviceid from tblvehicle where deviceid=" + GpsExpirydevice[i].DeviceId + " and IsDelete=false", function (err, Bikerows, fields) {
                             if (!err && Bikerows.length > 0) {
                                 var objVehicle = Bikerows[0];
-                                connection.query("SELECT * from tblsharedevice where idVehicle=" + objVehicle.id + " and IsSharedUserNotification=true and IsNotification=true", function(err, lstShareUser, fields) {
+                                connection.query("SELECT * from tblsharedevice where idVehicle=" + objVehicle.id + " and IsSharedUserNotification=true and IsNotification=true", function (err, lstShareUser, fields) {
                                     var lstAllUser = [objVehicle.iduser];
                                     var AllUser = objVehicle.iduser.toString();
                                     if (!err && lstShareUser.length > 0) {
@@ -1991,7 +1991,7 @@ var ExpiryDateDeviceCheck = schedule.scheduleJob(rule, function() {
                                         }
 
                                     }
-                                    connection.query("SELECT tu.id, tu.username, ta.AppName, ta.IOSCertificate, ta.IOSKey, ta.AndroidId, ta.AndroidSenderId FROM tbluserinformation as tu inner Join tblappinfo as ta ON ta.id = tu.idApp where tu.id=" + objVehicle.iduser, function(err, objAppInfo, fields) {
+                                    connection.query("SELECT tu.id, tu.username, ta.AppName, ta.IOSCertificate, ta.IOSKey, ta.AndroidId, ta.AndroidSenderId FROM tbluserinformation as tu inner Join tblappinfo as ta ON ta.id = tu.idApp where tu.id=" + objVehicle.iduser, function (err, objAppInfo, fields) {
 
                                         var PushNotificationdata = {
                                             title: 'Alert',
@@ -2033,15 +2033,15 @@ var ExpiryDateDeviceCheck = schedule.scheduleJob(rule, function() {
         "where Date(ExpiryDate) = '" + convertdateformat(new Date(new Date().getTime() + (15 * 24 * 60 * 60 * 1000)), 4) + "' and IsActive = true";
 
 
-    connection.query(query2, function(err, GpsExpirydevice, fields) {
+    connection.query(query2, function (err, GpsExpirydevice, fields) {
         if (!err && GpsExpirydevice.length > 0) {
             function SendExpiryNotification2(i) {
                 if (i < GpsExpirydevice.length) {
                     if (GpsExpirydevice[i].ExpiryDate != null) {
-                        connection.query("SELECT id,Name,iduser,deviceid from tblvehicle where deviceid=" + GpsExpirydevice[i].DeviceId + " and IsDelete=false", function(err, Bikerows, fields) {
+                        connection.query("SELECT id,Name,iduser,deviceid from tblvehicle where deviceid=" + GpsExpirydevice[i].DeviceId + " and IsDelete=false", function (err, Bikerows, fields) {
                             if (!err && Bikerows.length > 0) {
                                 var objVehicle = Bikerows[0];
-                                connection.query("SELECT * from tblsharedevice where idVehicle=" + objVehicle.id + " and IsSharedUserNotification=true and IsNotification=true", function(err, lstShareUser, fields) {
+                                connection.query("SELECT * from tblsharedevice where idVehicle=" + objVehicle.id + " and IsSharedUserNotification=true and IsNotification=true", function (err, lstShareUser, fields) {
                                     var lstAllUser = [objVehicle.iduser];
                                     var AllUser = objVehicle.iduser.toString();
                                     if (!err && lstShareUser.length > 0) {
@@ -2051,7 +2051,7 @@ var ExpiryDateDeviceCheck = schedule.scheduleJob(rule, function() {
                                         }
 
                                     }
-                                    connection.query("SELECT tu.id, tu.username, ta.AppName, ta.IOSCertificate, ta.IOSKey, ta.AndroidId, ta.AndroidSenderId FROM tbluserinformation as tu inner Join tblappinfo as ta ON ta.id = tu.idApp where tu.id=" + objVehicle.iduser, function(err, objAppInfo, fields) {
+                                    connection.query("SELECT tu.id, tu.username, ta.AppName, ta.IOSCertificate, ta.IOSKey, ta.AndroidId, ta.AndroidSenderId FROM tbluserinformation as tu inner Join tblappinfo as ta ON ta.id = tu.idApp where tu.id=" + objVehicle.iduser, function (err, objAppInfo, fields) {
 
                                         var PushNotificationdata = {
                                             title: 'Alert',
@@ -2093,15 +2093,15 @@ var ExpiryDateDeviceCheck = schedule.scheduleJob(rule, function() {
         "where Date(ExpiryDate) = '" + convertdateformat(new Date(new Date().getTime() + (2 * 24 * 60 * 60 * 1000)), 4) + "' and IsActive = true";
 
 
-    connection.query(query3, function(err, GpsExpirydevice, fields) {
+    connection.query(query3, function (err, GpsExpirydevice, fields) {
         if (!err && GpsExpirydevice.length > 0) {
             function SendExpiryNotification3(i) {
                 if (i < GpsExpirydevice.length) {
                     if (GpsExpirydevice[i].ExpiryDate != null) {
-                        connection.query("SELECT id,Name,iduser,deviceid from tblvehicle where deviceid=" + GpsExpirydevice[i].DeviceId + " and IsDelete=false", function(err, Bikerows, fields) {
+                        connection.query("SELECT id,Name,iduser,deviceid from tblvehicle where deviceid=" + GpsExpirydevice[i].DeviceId + " and IsDelete=false", function (err, Bikerows, fields) {
                             if (!err && Bikerows.length > 0) {
                                 var objVehicle = Bikerows[0];
-                                connection.query("SELECT * from tblsharedevice where idVehicle=" + objVehicle.id + " and IsSharedUserNotification=true and IsNotification=true", function(err, lstShareUser, fields) {
+                                connection.query("SELECT * from tblsharedevice where idVehicle=" + objVehicle.id + " and IsSharedUserNotification=true and IsNotification=true", function (err, lstShareUser, fields) {
                                     var lstAllUser = [objVehicle.iduser];
                                     var AllUser = objVehicle.iduser.toString();
                                     if (!err && lstShareUser.length > 0) {
@@ -2111,7 +2111,7 @@ var ExpiryDateDeviceCheck = schedule.scheduleJob(rule, function() {
                                         }
 
                                     }
-                                    connection.query("SELECT tu.id, tu.username, ta.AppName, ta.IOSCertificate, ta.IOSKey, ta.AndroidId, ta.AndroidSenderId FROM tbluserinformation as tu inner Join tblappinfo as ta ON ta.id = tu.idApp where tu.id=" + objVehicle.iduser, function(err, objAppInfo, fields) {
+                                    connection.query("SELECT tu.id, tu.username, ta.AppName, ta.IOSCertificate, ta.IOSKey, ta.AndroidId, ta.AndroidSenderId FROM tbluserinformation as tu inner Join tblappinfo as ta ON ta.id = tu.idApp where tu.id=" + objVehicle.iduser, function (err, objAppInfo, fields) {
 
                                         var PushNotificationdata = {
                                             title: 'Alert',
@@ -2153,15 +2153,15 @@ var ExpiryDateDeviceCheck = schedule.scheduleJob(rule, function() {
         "where Date(ExpiryDate) = '" + convertdateformat(new Date(), 4) + "' and IsActive = true";
 
 
-    connection.query(query4, function(err, GpsExpirydevice, fields) {
+    connection.query(query4, function (err, GpsExpirydevice, fields) {
         if (!err && GpsExpirydevice.length > 0) {
             function SendExpiryNotification4(i) {
                 if (i < GpsExpirydevice.length) {
                     if (GpsExpirydevice[i].ExpiryDate != null) {
-                        connection.query("SELECT id,Name,iduser,deviceid from tblvehicle where deviceid=" + GpsExpirydevice[i].DeviceId + " and IsDelete=false", function(err, Bikerows, fields) {
+                        connection.query("SELECT id,Name,iduser,deviceid from tblvehicle where deviceid=" + GpsExpirydevice[i].DeviceId + " and IsDelete=false", function (err, Bikerows, fields) {
                             if (!err && Bikerows.length > 0) {
                                 var objVehicle = Bikerows[0];
-                                connection.query("SELECT * from tblsharedevice where idVehicle=" + objVehicle.id + " and IsSharedUserNotification=true and IsNotification=true", function(err, lstShareUser, fields) {
+                                connection.query("SELECT * from tblsharedevice where idVehicle=" + objVehicle.id + " and IsSharedUserNotification=true and IsNotification=true", function (err, lstShareUser, fields) {
                                     var lstAllUser = [objVehicle.iduser];
                                     var AllUser = objVehicle.iduser.toString();
                                     if (!err && lstShareUser.length > 0) {
@@ -2171,7 +2171,7 @@ var ExpiryDateDeviceCheck = schedule.scheduleJob(rule, function() {
                                         }
 
                                     }
-                                    connection.query("SELECT tu.id, tu.username, ta.AppName, ta.IOSCertificate, ta.IOSKey, ta.AndroidId, ta.AndroidSenderId FROM tbluserinformation as tu inner Join tblappinfo as ta ON ta.id = tu.idApp where tu.id=" + objVehicle.iduser, function(err, objAppInfo, fields) {
+                                    connection.query("SELECT tu.id, tu.username, ta.AppName, ta.IOSCertificate, ta.IOSKey, ta.AndroidId, ta.AndroidSenderId FROM tbluserinformation as tu inner Join tblappinfo as ta ON ta.id = tu.idApp where tu.id=" + objVehicle.iduser, function (err, objAppInfo, fields) {
 
                                         var PushNotificationdata = {
                                             title: 'Alert',
@@ -2291,7 +2291,7 @@ function convertdateformat(date1, flg) {
 
 function SendPushNotification(data, UserId, objAppInfo) {
     // var deviceIds = [];
-    connection.query("SELECT PushNotificationId,Platform,MessageCount,UserType,udid from tblpushnotification where iduser in (" + UserId + ") group by PushNotificationId, Platform", function(err, response, fields) {
+    connection.query("SELECT PushNotificationId,Platform,MessageCount,UserType,udid from tblpushnotification where iduser in (" + UserId + ") group by PushNotificationId, Platform", function (err, response, fields) {
         if (!err && response.length > 0) {
             // PushNotification.findAll({ where: { iduser: UserId } }).then(function(response) {
             function SendNotification(i) {
@@ -2336,9 +2336,9 @@ function SendPushNotification(data, UserId, objAppInfo) {
                     var objPushNotificationSend = new PushNotifications(PushNotificationSettings);
                     if (deviceIds.length > 0) {
 
-                        objPushNotificationSend.send(deviceIds, objData, function(result) {
+                        objPushNotificationSend.send(deviceIds, objData, function (result) {
                             // console.log(result);
-                            connection.query("Update tblpushnotification set messagecount=" + messagecount + " where udid='" + response[i].udid + "' and UserType='" + response[i].UserType + "'", function(errupdate, updateresp, fields) {
+                            connection.query("Update tblpushnotification set messagecount=" + messagecount + " where udid='" + response[i].udid + "' and UserType='" + response[i].UserType + "'", function (errupdate, updateresp, fields) {
                                 console.log(errupdate)
                                 SendNotification(i + 1);
                             });
@@ -2371,43 +2371,49 @@ var ProductAttributeMapping = models.product_productattribute_mapping;
 var ProductAttribute = models.productattribute;
 var ProductAttributeValue = models.productattributevalue;
 
-function GetCharges(Country, callback) {
+function GetChargesGlobal(Country, ProductTypeId, callback) {
     var TotalAmount = 0;
-    // Country = "India";
-    // Country = "Malaysia";
     try {
-        GetExpiryProductByName(function(resProductId) {
+        GetExpiryProductByName(ProductTypeId, function (resProductId) {
             TotalAmount = 0;
             if (resProductId > 0) {
-                GetProductAttributes(resProductId, Country, function(resAllAttributes) {
+                GetProductAttributes(resProductId, Country, function (resAllAttributes) {
                     for (var i = 0; i < resAllAttributes.length; i++) {
-                        TotalAmount += resAllAttributes[i].PriceAdjustment;
+                        if (resAllAttributes[i].Name != 'Renew') {
+                            TotalAmount += resAllAttributes[i].PriceAdjustment;
+                        }
                     }
-                    return callback(TotalAmount);
+                    return callback({ "TotalAmount": TotalAmount, "ProductId": resProductId });
                 });
             } else {
-                return callback(TotalAmount);
+                return callback({ "TotalAmount": TotalAmount, "ProductId": 0 });
             }
         });
 
     } catch (err) {
-        return callback(TotalAmount);
+        return callback({ "TotalAmount": TotalAmount, "ProductId": 0 });
     }
 }
 
-function GetExpiryProductByName(callback) {
-    Product.findOne({
-        where: {
-            Name: "Expiry Product"
-        },
-        attributes: ['Id', 'Name'],
-    }).then(function(response) {
-        if (response != null) {
-            return callback(response.Id);
-        } else {
-            return callback(0);
-        }
-    })
+function GetExpiryProductByName(ProductTypeId, callback) {
+    try {
+        Product.findOne({
+            where: {
+                Name: "Expiry Product",
+                ProductTypeId: parseInt(ProductTypeId),
+                Deleted: false,
+            },
+            attributes: ['Id', 'Name'],
+        }).then(function (response) {
+            if (response != null) {
+                return callback(response.Id);
+            } else {
+                return callback(0);
+            }
+        })
+    } catch (ees) {
+        return callback(0);
+    }
 }
 
 function GetProductAttributes(idProduct, Country, callback) {
@@ -2442,7 +2448,7 @@ function GetProductAttributes(idProduct, Country, callback) {
                 attributes: ['Id', 'Name']
             }]
         }]
-    }).then(function(resAttributes) {
+    }).then(function (resAttributes) {
         var AllAttributeValue = [];
         for (var i = 0; i < resAttributes.length; i++) {
             var value = resAttributes[i];
@@ -2461,7 +2467,7 @@ function GetProductAttributes(idProduct, Country, callback) {
             }
         }
         return callback(AllAttributeValue);
-    }).catch(function(error) {
+    }).catch(function (error) {
         return callback([]);
     })
 }
@@ -2523,8 +2529,11 @@ function GetRandomWord() {
 }
 
 
-function CreateOrderServiceGlobal(Country, UserId, DeviceId, UserName, callback) {
-    GetCharges(Country, function(OrderTotal) {
+function CreateOrderServiceGlobal(Country, UserId, DeviceId, UserName, ProductTypeId, callback) {
+    GetChargesGlobal(Country, ProductTypeId, function (resOrderTotal) {
+        var OrderTotal = resOrderTotal.TotalAmount;
+        var ProductId = resOrderTotal.ProductId;
+
         var objOrder = new Object();
         objOrder.CustomerId = UserId;
         objOrder.CreatedOnUtc = new Date();
@@ -2539,7 +2548,7 @@ function CreateOrderServiceGlobal(Country, UserId, DeviceId, UserName, callback)
         objOrder.OrderNotes = DeviceId;
         objOrder.SettlementCur = "MYR / Rs";
         objOrder.OrderStatusId = 1;
-        objOrder.SubscriptionTransactionId = 0;
+        objOrder.SubscriptionTransactionId = ProductTypeId;
         objOrder.ShippingStatusId = 0;
         objOrder.PaymentMethodSystemName = "CASH";
         objOrder.CustomerTaxDisplayTypeId = 0;
@@ -2562,26 +2571,35 @@ function CreateOrderServiceGlobal(Country, UserId, DeviceId, UserName, callback)
         objOrder.PaymentMethodAdditionalFeeExclTax = OrderTotal;
         objOrder.ProcessingCharges = 0;
         objOrder.PaymentStatusId = null;
+        objOrder.Deleted = false;
         objOrder.ShippAddress1 = Country;
-        OrderService.create(objOrder).then(function(response) {
+        OrderService.create(objOrder).then(function (response) {
             var objOrderDetail = new Object();
             objOrderDetail.OrderId = response.id;
-            objOrderDetail.ProductName = "CASH SALE";
+            objOrderDetail.ProductId = ProductId;
+            objOrderDetail.ProductName = "Expiry Product";
             objOrderDetail.Quantity = 1;
             objOrderDetail.UnitPriceInclTax = OrderTotal;
             objOrderDetail.UnitPriceExclTax = OrderTotal;
             objOrderDetail.idOrderStatus = 1;
             objOrderDetail.PriceInclTax = OrderTotal;
             objOrderDetail.PriceExclTax = OrderTotal;
-            OrderServiceDetail.create(objOrderDetail).then(function(responseOrderDetail) {
+            OrderServiceDetail.create(objOrderDetail).then(function (responseOrderDetail) {
                 return callback({
                     success: true,
-                    message: "Order placed successfully..."
-                })
+                    message: "Order placed successfully...",
+                });
             });
         });
     });
 }
+
+
+
+CreateOrderServiceGlobal("India", 1, "2201", "XXXX", 1, function (ddd) {
+    console.log(ddd);
+});
+
 
 //============================Order Service======================================
 
