@@ -6,7 +6,8 @@ var SIM = models.tblsimdetails;
 //End of Tables
 
 router.get('/GetAllSIMInfo', function(req, res) {
-    var query = "SELECT ts.id,ts.SerialNum,ts.PhoneNum,CONVERT_TZ(ts.CreatedDate,'+00:00','" + CurrentOffset + "') as CreatedDate, tt.Name as TelName,tt.id as idTelCo from tblsimdetails as ts LEFT JOIN tbltelco as tt ON ts.idTelCo = tt.id ORDER BY CreatedDate DESC";
+
+    var query = "SELECT ts.id,ts.SerialNum,ts.PhoneNum,ts.idApp,CONVERT_TZ(ts.CreatedDate,'+00:00','" + CurrentOffset + "') as CreatedDate, tt.Name as TelName,tt.id as idTelCo from tblsimdetails as ts LEFT JOIN tbltelco as tt ON ts.idTelCo = tt.id  ORDER BY CreatedDate DESC";
     connection.query(query, function(err, response) {
         if (response != undefined) {
             res.json(response);
