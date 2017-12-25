@@ -10,7 +10,11 @@ module.exports = function(sequelize, DataTypes) {
     },
     ProductTypeId: {
       type: DataTypes.INTEGER(11),
-      allowNull: false
+      allowNull: false,
+      references: {
+        model: 'tblappinfo',
+        key: 'Id'
+      }
     },
     ParentGroupedProductId: {
       type: DataTypes.INTEGER(11),
