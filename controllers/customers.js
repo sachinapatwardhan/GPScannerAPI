@@ -2596,9 +2596,9 @@ function CreateOrderServiceGlobal(Country, UserId, DeviceId, UserName, ProductTy
 
 
 
-CreateOrderServiceGlobal("India", 1, "2201", "XXXX", 1, function (ddd) {
-    console.log(ddd);
-});
+// CreateOrderServiceGlobal("India", 1, "2201", "XXXX", 1, function (ddd) {
+//     console.log(ddd);
+// });
 
 
 //============================Order Service======================================

@@ -124,15 +124,15 @@ router.get('/GetAllOrderService', function (req, res) {
         }
     });
 
-    search['$and'] = [];
-    var objss = new Object();
-    objss['Deleted'] = {
-        $eq: false
-    };
-    search['$and'].push(objss);
+    // var objss = new Object();
+    // objss['Deleted'] = {
+    //     $eq: false
+    // };
+    // search['$and'].push(objss);
 
     if (objParam.StartDate != '' && objParam.StartDate != null && objParam.StartDate != undefined && objParam.EndDate != '' && objParam.EndDate != null && objParam.EndDate != undefined) {
 
+        search['$and'] = [];
 
         var StartDate = convertdateUTCformat(objParam.StartDate);
         var EndDate = convertdateUTCformat(objParam.EndDate, 2);
@@ -178,7 +178,7 @@ router.get('/GetAllOrderService', function (req, res) {
         search['$and'].push(obj);
     }
 
-    if(objParam.Type > 0) {
+    if (objParam.Type > 0) {
         if (search['$and'] == undefined) {
             search['$and'] = [];
         }
@@ -369,6 +369,7 @@ router.get('/RenewOrderService', function (req, res) {
                     OrderServiceDetail.create(objOrderDetail).then(function (responseOrderDetail) {
                         objOrderExists.updateAttributes({
                             Deleted: true,
+                            OrderStatusId: 3
                         }).then(function (resUpdateOrder) {
                             res.json({
                                 success: true,
