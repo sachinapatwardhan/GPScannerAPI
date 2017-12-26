@@ -218,6 +218,16 @@ router.get('/GetAllOrderService', function(req, res) {
         };
         search['$and'].push(obj);
     }
+    if (objParam.idApp != '' && objParam.idApp != undefined && objParam.idApp != null) {
+        if (search['$and'] == undefined) {
+            search['$and'] = [];
+        }
+        var obj = new Object();
+        obj['SubscriptionTransactionId'] = {
+            $eq: parseInt(objParam.idApp)
+        };
+        search['$and'].push(obj);
+    }
 
     var offset = (req.query.PageNo * 10) - 10;
     OrderService.findAndCountAll({
