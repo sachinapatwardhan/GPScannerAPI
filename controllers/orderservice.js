@@ -704,7 +704,7 @@ router.get('/ExportOrderService', function(req, res) {
 
     OrderService.findAll({
         where: search,
-        order: 'CreatedOnUtc asc',
+        order: 'CreatedOnUtc desc',
         include: [{
             model: OrderServiceStatus,
             attributes: ['id', 'OrderStatus'],
