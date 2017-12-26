@@ -691,9 +691,20 @@ router.get('/ExportOrderService', function(req, res) {
         search['$and'].push(obj);
     }
 
+    if (objParam.idApp != '' && objParam.idApp != undefined && objParam.idApp != null && objParam.idApp > 0) {
+        if (search['$and'] == undefined) {
+            search['$and'] = [];
+        }
+        var obj = new Object();
+        obj['SubscriptionTransactionId'] = {
+            $eq: parseInt(objParam.idApp)
+        };
+        search['$and'].push(obj);
+    }
+
     OrderService.findAll({
         where: search,
-        order:'CreatedOnUtc asc',
+        order: 'CreatedOnUtc asc',
         include: [{
             model: OrderServiceStatus,
             attributes: ['id', 'OrderStatus'],
@@ -716,10 +727,10 @@ router.get('/ExportOrderService', function(req, res) {
         var NewColumns = [{
             caption: 'No',
             type: 'string'
-        },  {
+        }, {
             caption: 'Order No',
             type: 'string'
-        },{
+        }, {
             caption: 'Type',
             type: 'string'
         }, {
