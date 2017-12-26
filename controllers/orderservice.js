@@ -304,83 +304,96 @@ router.post('/CreateOrderService', jsonParser, function (req, res) {
 router.get('/RenewOrderService', function (req, res) {
     var objOrderReq = req.query;
 
+    OrderService.hasOne(OrderServiceDetail, {
+        foreignKey: {
+            name: 'OrderId',
+            allowNull: false
+        }
+    });
+
     OrderService.findOne({
         where: {
             id: objOrderReq.id
-        }
+        }, include: [
+            {
+                model: OrderServiceDetail,
+                attributes: ['id', 'ProductId', 'ProductName', 'Quantity', 'UnitPriceInclTax'],
+                required: true
+            }
+        ]
     }).then(function (objOrderExists) {
+        
         if (objOrderExists != null) {
-            GetCharges(objOrderExists.ShippAddress1, objOrderExists.SubscriptionTransactionId, true, function (resOrderTotal) {
-                var OrderTotal = resOrderTotal.TotalAmount;
-                var ProductId = resOrderTotal.ProductId;
+            // var OrderTotal = resOrderTotal.TotalAmount;
+            // var ProductId = resOrderTotal.ProductId;
 
-                var objOrder = new Object();
-                objOrder.CustomerId = objOrderExists.CustomerId;
-                objOrder.CreatedOnUtc = new Date();
-                objOrder.ExpiryDate = AddDate(objOrder.CreatedOnUtc, 1, "Year");
-                objOrder.ExpiryDurationValue = 1;
-                objOrder.ExpiryDurationType = "Year";
-                objOrder.MerchantId = 0;
-                var PurchaseOrderNumber = new Date();
-                objOrder.PurchaseOrderNumber = "BILLNO" + GetRandomWord() + Date.parse(PurchaseOrderNumber);
-                objOrder.CustomerCurrencyCode = "MYR / Rs";
-                objOrder.OrderTotal = OrderTotal;
-                objOrder.OrderNotes = objOrderExists.OrderNotes;
-                objOrder.SettlementCur = "MYR / Rs";
-                objOrder.OrderStatusId = 1;
-                //Ptoduct type ID
-                objOrder.SubscriptionTransactionId = objOrderExists.SubscriptionTransactionId;
-                objOrder.ShippingStatusId = 0;
-                objOrder.PaymentMethodSystemName = "CASH";
-                objOrder.CustomerTaxDisplayTypeId = 0;
-                objOrder.OrderSubtotalInclTax = OrderTotal;
-                objOrder.OrderSubtotalExclTax = OrderTotal;
-                objOrder.OrderSubTotalDiscountInclTax = 0;
-                objOrder.OrderSubTotalDiscountExclTax = 0;
-                objOrder.OrderShippingInclTax = 0;
-                objOrder.OrderShippingExclTax = 0;
-                objOrder.TaxRates = 0;
-                objOrder.OrderTax = 0;
-                objOrder.OrderDiscount = 0;
-                objOrder.RefundedAmount = 0;
-                objOrder.RewardPointsWereAdded = 0;
-                objOrder.CustomerLanguageId = 0;
-                objOrder.AffiliateId = 0;
-                objOrder.AllowStoringCreditCardNumber = 0;
-                objOrder.CreatedBy = objOrderExists.CreatedBy;
-                objOrder.PaymentMethodAdditionalFeeInclTax = OrderTotal;
-                objOrder.PaymentMethodAdditionalFeeExclTax = OrderTotal;
-                objOrder.ProcessingCharges = 0;
-                objOrder.PaymentStatusId = null;
-                objOrder.ShippAddress1 = objOrderExists.ShippAddress1;
-                objOrder.Deleted = false;
+            var objOrder = new Object();
+            objOrder.CustomerId = objOrderExists.CustomerId;
+            objOrder.CreatedOnUtc = new Date();
+            objOrder.ExpiryDate = AddDate(objOrder.CreatedOnUtc, 1, "Year");
+            objOrder.ExpiryDurationValue = 1;
+            objOrder.ExpiryDurationType = "Year";
+            objOrder.MerchantId = 0;
+            var PurchaseOrderNumber = new Date();
+            objOrder.PurchaseOrderNumber = "BILLNO" + GetRandomWord() + Date.parse(PurchaseOrderNumber);
+            objOrder.CustomerCurrencyCode = "MYR / Rs";
+            objOrder.OrderTotal = objOrderExists.OrderTotal;
+            objOrder.OrderNotes = objOrderExists.OrderNotes;
+            objOrder.SettlementCur = "MYR / Rs";
+            objOrder.OrderStatusId = 1;
+            //Ptoduct type ID
+            objOrder.SubscriptionTransactionId = objOrderExists.SubscriptionTransactionId;
+            objOrder.ShippingStatusId = 0;
+            objOrder.PaymentMethodSystemName = "CASH";
+            objOrder.CustomerTaxDisplayTypeId = 0;
+            objOrder.OrderSubtotalInclTax = objOrderExists.OrderTotal;
+            objOrder.OrderSubtotalExclTax = objOrderExists.OrderTotal;
+            objOrder.OrderSubTotalDiscountInclTax = 0;
+            objOrder.OrderSubTotalDiscountExclTax = 0;
+            objOrder.OrderShippingInclTax = 0;
+            objOrder.OrderShippingExclTax = 0;
+            objOrder.TaxRates = 0;
+            objOrder.OrderTax = 0;
+            objOrder.OrderDiscount = 0;
+            objOrder.RefundedAmount = 0;
+            objOrder.RewardPointsWereAdded = 0;
+            objOrder.CustomerLanguageId = 0;
+            objOrder.AffiliateId = 0;
+            objOrder.AllowStoringCreditCardNumber = 0;
+            objOrder.CreatedBy = objOrderExists.CreatedBy;
+            objOrder.PaymentMethodAdditionalFeeInclTax = 0;
+            objOrder.PaymentMethodAdditionalFeeExclTax = 0;
+            objOrder.ProcessingCharges = 0;
+            objOrder.PaymentStatusId = null;
+            objOrder.ShippAddress1 = objOrderExists.ShippAddress1;
+            objOrder.Deleted = false;
 
-                OrderService.create(objOrder).then(function (response) {
-                    var objOrderDetail = new Object();
-                    objOrderDetail.OrderId = response.id;
-                    objOrderDetail.ProductId = ProductId;
-                    objOrderDetail.ProductName = "Expiry Product";
-                    objOrderDetail.Quantity = 1;
-                    objOrderDetail.UnitPriceInclTax = OrderTotal;
-                    objOrderDetail.UnitPriceExclTax = OrderTotal;
-                    objOrderDetail.idOrderStatus = 1;
-                    objOrderDetail.PriceInclTax = OrderTotal;
-                    objOrderDetail.PriceExclTax = OrderTotal;
-                    OrderServiceDetail.create(objOrderDetail).then(function (responseOrderDetail) {
-                        objOrderExists.updateAttributes({
-                            Deleted: true,
-                            OrderStatusId: 3
-                        }).then(function (resUpdateOrder) {
-                            res.json({
-                                success: true,
-                                message: "Order Renew successfully...",
-                                data: response,
-                                orderId: response.id,
-                            });
+            OrderService.create(objOrder).then(function (response) {
+                var objOrderDetail = new Object();
+                objOrderDetail.OrderId = response.id;
+                objOrderDetail.ProductId = objOrderExists.tblorderserviceitem.ProductId;
+                objOrderDetail.ProductName = "Renew Price";
+                objOrderDetail.Quantity = 1;
+                objOrderDetail.UnitPriceInclTax = objOrderExists.OrderTotal;
+                objOrderDetail.UnitPriceExclTax = objOrderExists.OrderTotal;
+                objOrderDetail.idOrderStatus = 1;
+                objOrderDetail.PriceInclTax = objOrderExists.OrderTotal;
+                objOrderDetail.PriceExclTax = objOrderExists.OrderTotal;
+                OrderServiceDetail.create(objOrderDetail).then(function (responseOrderDetail) {
+                    objOrderExists.updateAttributes({
+                        Deleted: true,
+                        OrderStatusId: 3
+                    }).then(function (resUpdateOrder) {
+                        res.json({
+                            success: true,
+                            message: "Order Renew successfully...",
+                            data: response,
+                            orderId: response.id,
                         });
                     });
                 });
             });
+
         } else {
             res.json({
                 success: false,
@@ -392,6 +405,7 @@ router.get('/RenewOrderService', function (req, res) {
 });
 
 router.get('/UpdateDevice', function (req, res) {
+    var OrderTotal = req.query.OrderTotal;
     OrderService.findOne({
         where: {
             id: req.query.id
@@ -399,11 +413,62 @@ router.get('/UpdateDevice', function (req, res) {
     }).then(function (resOrderFind) {
         if (resOrderFind != null) {
             resOrderFind.updateAttributes({
-                OrderNotes: req.query.DeviceId
+                OrderNotes: req.query.DeviceId,
+                OrderTotal: OrderTotal,
+                OrderSubtotalInclTax: OrderTotal,
+                OrderSubtotalExclTax: OrderTotal,
+            }).then(function (resUpdate) {
+                OrderServiceDetail.findOne({
+                    where: {
+                        OrderId: req.query.id
+                    }
+                }).then(function (resDetailCheck) {
+                    if (resDetailCheck != null) {
+                        resDetailCheck.updateAttributes({
+                            UnitPriceInclTax: OrderTotal,
+                            UnitPriceExclTax: OrderTotal,
+                            PriceInclTax: OrderTotal,
+                            PriceExclTax: OrderTotal,
+                        }).then(function (resUpdateDtl) {
+                            res.json({
+                                success: true,
+                                message: "Device Updated Successfully"
+                            });
+                        })
+                    } else {
+                        res.json({
+                            success: true,
+                            message: "Device Updated Successfully"
+                        });
+                    }
+                });
+
+            });
+        } else {
+            res.json({
+                success: false,
+                message: "Order Service Can not Found"
+            });
+        }
+    });
+})
+
+router.get('/UpdateOrderServiceDates', function (req, res) {
+    var CreatedOnUtc = req.query.CreatedOnUtc;
+    OrderService.findOne({
+        where: {
+            id: req.query.id
+        }
+    }).then(function (resOrderFind) {
+        if (resOrderFind != null) {
+            var ExpiryDate = AddDate(new Date(CreatedOnUtc), 1, "Year");
+            resOrderFind.updateAttributes({
+                CreatedOnUtc: new Date(CreatedOnUtc),
+                ExpiryDate: ExpiryDate,
             }).then(function (resUpdate) {
                 res.json({
                     success: true,
-                    message: "Device Updated Successfully"
+                    message: "Date Updated Successfully"
                 });
             });
         } else {
@@ -464,15 +529,7 @@ function GetCharges(Country, ProductTypeId, IsRenew, callback) {
             if (resProductId > 0) {
                 GetProductAttributes(resProductId, Country, function (resAllAttributes) {
                     for (var i = 0; i < resAllAttributes.length; i++) {
-                        if (IsRenew) {
-                            if (resAllAttributes[i].Name == 'Renew') {
-                                TotalAmount += resAllAttributes[i].PriceAdjustment;
-                            }
-                        } else {
-                            if (resAllAttributes[i].Name != 'Renew') {
-                                TotalAmount += resAllAttributes[i].PriceAdjustment;
-                            }
-                        }
+                        TotalAmount += resAllAttributes[i].PriceAdjustment;
                     }
                     return callback({ "TotalAmount": TotalAmount, "ProductId": resProductId });
                 });
@@ -488,10 +545,10 @@ function GetCharges(Country, ProductTypeId, IsRenew, callback) {
 
 function GetExpiryProductByName(ProductTypeId, callback) {
     try {
-        console.log(ProductTypeId)
         Product.findOne({
             where: {
-                Name: "Expiry Product",
+                // Name: "Expiry Product",
+                Name: "Renew Price",
                 ProductTypeId: parseInt(ProductTypeId),
                 Deleted: false,
             },
