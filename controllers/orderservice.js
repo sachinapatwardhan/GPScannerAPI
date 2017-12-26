@@ -744,7 +744,7 @@ router.get('/ExportOrderService', function(req, res) {
             type: 'string'
         }, {
             caption: 'Order Total',
-            type: 'string'
+            type: 'number'
         }, {
             caption: 'Device',
             type: 'string'
