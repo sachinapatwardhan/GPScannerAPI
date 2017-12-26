@@ -10,7 +10,7 @@ var ProductAttribute = models.productattribute;
 var ProductAttributeValue = models.productattributevalue;
 var AppInfo = models.tblappinfo;
 
-// 
+//
 // CreateOrderServiceGlobal("India", 1, "0000000000000", "IMMM", function(redds) {
 //     console.log(redds)
 // })
@@ -73,7 +73,7 @@ function GetRandomWord() {
 
 //======================================================================
 
-router.get('/GetAllOrderService', function (req, res) {
+router.get('/GetAllOrderService', function(req, res) {
     var objParam = req.query;
     var objColumns = objParam.columns;
     var objOrder = objParam.order;
@@ -90,8 +90,9 @@ router.get('/GetAllOrderService', function (req, res) {
                 var columnName = objColumns[i].data;
 
                 if (columnName != 'CreatedOnUtc' && columnName != 'ExpiryDate') {
-
-                    if (columnName == 'Email') {
+                    if (columnName == "AppName") {
+                        search['$or'].push(['tblappinfo.AppName like ?', "%" + objSearch + "%"]);
+                    } else if (columnName == 'Email') {
                         search['$or'].push(['tbluserinformation.email like ?', "%" + objSearch + "%"]);
                     } else if (columnName == 'UserName') {
                         search['$or'].push(['tbluserinformation.username like ?', "%" + objSearch + "%"]);
@@ -124,15 +125,19 @@ router.get('/GetAllOrderService', function (req, res) {
         }
     });
 
-    // var objss = new Object();
-    // objss['Deleted'] = {
-    //     $eq: false
-    // };
-    // search['$and'].push(objss);
+    OrderService.belongsTo(AppInfo, {
+        foreignKey: {
+            name: 'SubscriptionTransactionId',
+            allowNull: false
+        }
+    })
 
     if (objParam.StartDate != '' && objParam.StartDate != null && objParam.StartDate != undefined && objParam.EndDate != '' && objParam.EndDate != null && objParam.EndDate != undefined) {
 
-        search['$and'] = [];
+        // search['$and'] = [];
+        if (search['$or'] == undefined) {
+            search['$or'] = [];
+        }
 
         var StartDate = convertdateUTCformat(objParam.StartDate);
         var EndDate = convertdateUTCformat(objParam.EndDate, 2);
@@ -141,30 +146,55 @@ router.get('/GetAllOrderService', function (req, res) {
         obj['ExpiryDate'] = {
             $between: [StartDate, EndDate]
         };
-        search['$and'].push(obj);
+        search['$or'].push(obj);
+
+        var obj1 = new Object();
+        obj1['CreatedOnUtc'] = {
+            $between: [StartDate, EndDate]
+        };
+        search['$or'].push(obj1);
+
     } else if (objParam.StartDate != '' && objParam.StartDate != null && objParam.StartDate != undefined) {
 
-        if (search['$and'] == undefined) {
-            search['$and'] = [];
+        // if (search['$and'] == undefined) {
+        //     search['$and'] = [];
+        // }
+        if (search['$or'] == undefined) {
+            search['$or'] = [];
         }
+
         var StartDate = convertdateUTCformat(objParam.StartDate);
         var obj = new Object();
         obj['ExpiryDate'] = {
             $gte: StartDate
         };
-        search['$and'].push(obj);
-    } else if (objParam.EndDate != '' && objParam.EndDate != null && objParam.EndDate != undefined) {
-        if (search['$and'] == undefined) {
-            search['$and'] = [];
-        }
+        search['$or'].push(obj);
 
+        var obj1 = new Object();
+        obj1['CreatedOnUtc'] = {
+            $gte: StartDate
+        };
+        search['$or'].push(obj1);
+    } else if (objParam.EndDate != '' && objParam.EndDate != null && objParam.EndDate != undefined) {
+        // if (search['$and'] == undefined) {
+        //     search['$and'] = [];
+        // }
+        if (search['$or'] == undefined) {
+            search['$or'] = [];
+        }
         var EndDate = convertdateUTCformat(objParam.EndDate, 2);
 
         var obj = new Object();
         obj['ExpiryDate'] = {
             $lte: EndDate
         };
-        search['$and'].push(obj);
+        search['$or'].push(obj);
+
+        var obj1 = new Object();
+        obj1['CreatedOnUtc'] = {
+            $lte: EndDate
+        };
+        search['$or'].push(obj1);
     }
 
     if (objParam.Status > 0) {
@@ -207,9 +237,12 @@ router.get('/GetAllOrderService', function (req, res) {
             model: User,
             attributes: ['id', 'email', 'username', 'country', 'ProfileName'],
             required: true
+        }, {
+            model: AppInfo,
+            required: true,
+            attributes: ['id', 'AppName'],
         }]
-    }).then(function (response) {
-
+    }).then(function(response) {
         var response1 = new Object();
         response1.draw = objParam.draw;
         response1.LastPage = response.count;
@@ -217,7 +250,7 @@ router.get('/GetAllOrderService', function (req, res) {
         response1.recordsFiltered = response.count;
         response1.data = response.rows;
         res.json(response1);
-    }).catch(function (error) {
+    }).catch(function(error) {
         res.json({
             success: false,
             response: error
@@ -226,16 +259,16 @@ router.get('/GetAllOrderService', function (req, res) {
 
 })
 
-router.get('/GetOrderServiceStatus', function (req, res) {
-    OrderServiceStatus.findAll().then(function (resStatus) {
+router.get('/GetOrderServiceStatus', function(req, res) {
+    OrderServiceStatus.findAll().then(function(resStatus) {
         res.json(resStatus);
     });
 })
 
-router.post('/CreateOrderService', jsonParser, function (req, res) {
+router.post('/CreateOrderService', jsonParser, function(req, res) {
     var objOrderReq = req.body;
     //Country,UserId,DeviceId,UserName
-    GetCharges(objOrderReq.Country, objOrderReq.ProductTypeId, false, function (resOrderTotal) {
+    GetCharges(objOrderReq.Country, objOrderReq.ProductTypeId, false, function(resOrderTotal) {
         var OrderTotal = resOrderTotal.TotalAmount;
         var ProductId = resOrderTotal.ProductId;
 
@@ -278,7 +311,7 @@ router.post('/CreateOrderService', jsonParser, function (req, res) {
         objOrder.PaymentStatusId = null;
         objOrder.Deleted = false;
         objOrder.ShippAddress1 = objOrderReq.Country;
-        OrderService.create(objOrder).then(function (response) {
+        OrderService.create(objOrder).then(function(response) {
             var objOrderDetail = new Object();
             objOrderDetail.OrderId = response.id;
             objOrderDetail.ProductId = ProductId;
@@ -289,10 +322,10 @@ router.post('/CreateOrderService', jsonParser, function (req, res) {
             objOrderDetail.idOrderStatus = 1;
             objOrderDetail.PriceInclTax = OrderTotal;
             objOrderDetail.PriceExclTax = OrderTotal;
-            OrderServiceDetail.create(objOrderDetail).then(function (responseOrderDetail) {
+            OrderServiceDetail.create(objOrderDetail).then(function(responseOrderDetail) {
                 res.json({
                     success: true,
-                    message: "Order placed successfully...",
+                    message: "Order Service placed successfully...",
                     data: response,
                     orderId: response.id,
                 });
@@ -301,7 +334,7 @@ router.post('/CreateOrderService', jsonParser, function (req, res) {
     });
 });
 
-router.get('/RenewOrderService', function (req, res) {
+router.get('/RenewOrderService', function(req, res) {
     var objOrderReq = req.query;
 
     OrderService.hasOne(OrderServiceDetail, {
@@ -314,15 +347,14 @@ router.get('/RenewOrderService', function (req, res) {
     OrderService.findOne({
         where: {
             id: objOrderReq.id
-        }, include: [
-            {
-                model: OrderServiceDetail,
-                attributes: ['id', 'ProductId', 'ProductName', 'Quantity', 'UnitPriceInclTax'],
-                required: true
-            }
-        ]
-    }).then(function (objOrderExists) {
-        
+        },
+        include: [{
+            model: OrderServiceDetail,
+            attributes: ['id', 'ProductId', 'ProductName', 'Quantity', 'UnitPriceInclTax'],
+            required: true
+        }]
+    }).then(function(objOrderExists) {
+
         if (objOrderExists != null) {
             // var OrderTotal = resOrderTotal.TotalAmount;
             // var ProductId = resOrderTotal.ProductId;
@@ -368,7 +400,7 @@ router.get('/RenewOrderService', function (req, res) {
             objOrder.ShippAddress1 = objOrderExists.ShippAddress1;
             objOrder.Deleted = false;
 
-            OrderService.create(objOrder).then(function (response) {
+            OrderService.create(objOrder).then(function(response) {
                 var objOrderDetail = new Object();
                 objOrderDetail.OrderId = response.id;
                 objOrderDetail.ProductId = objOrderExists.tblorderserviceitem.ProductId;
@@ -379,14 +411,14 @@ router.get('/RenewOrderService', function (req, res) {
                 objOrderDetail.idOrderStatus = 1;
                 objOrderDetail.PriceInclTax = objOrderExists.OrderTotal;
                 objOrderDetail.PriceExclTax = objOrderExists.OrderTotal;
-                OrderServiceDetail.create(objOrderDetail).then(function (responseOrderDetail) {
+                OrderServiceDetail.create(objOrderDetail).then(function(responseOrderDetail) {
                     objOrderExists.updateAttributes({
                         Deleted: true,
                         OrderStatusId: 3
-                    }).then(function (resUpdateOrder) {
+                    }).then(function(resUpdateOrder) {
                         res.json({
                             success: true,
-                            message: "Order Renew successfully...",
+                            message: "Order Service Renew successfully...",
                             data: response,
                             orderId: response.id,
                         });
@@ -397,39 +429,39 @@ router.get('/RenewOrderService', function (req, res) {
         } else {
             res.json({
                 success: false,
-                message: "Order Not Found",
+                message: "Order Service Not Found",
                 data: []
             });
         }
     });
 });
 
-router.get('/UpdateDevice', function (req, res) {
+router.get('/UpdateDevice', function(req, res) {
     var OrderTotal = req.query.OrderTotal;
     OrderService.findOne({
         where: {
             id: req.query.id
         }
-    }).then(function (resOrderFind) {
+    }).then(function(resOrderFind) {
         if (resOrderFind != null) {
             resOrderFind.updateAttributes({
                 OrderNotes: req.query.DeviceId,
                 OrderTotal: OrderTotal,
                 OrderSubtotalInclTax: OrderTotal,
                 OrderSubtotalExclTax: OrderTotal,
-            }).then(function (resUpdate) {
+            }).then(function(resUpdate) {
                 OrderServiceDetail.findOne({
                     where: {
                         OrderId: req.query.id
                     }
-                }).then(function (resDetailCheck) {
+                }).then(function(resDetailCheck) {
                     if (resDetailCheck != null) {
                         resDetailCheck.updateAttributes({
                             UnitPriceInclTax: OrderTotal,
                             UnitPriceExclTax: OrderTotal,
                             PriceInclTax: OrderTotal,
                             PriceExclTax: OrderTotal,
-                        }).then(function (resUpdateDtl) {
+                        }).then(function(resUpdateDtl) {
                             res.json({
                                 success: true,
                                 message: "Device Updated Successfully"
@@ -453,22 +485,22 @@ router.get('/UpdateDevice', function (req, res) {
     });
 })
 
-router.get('/UpdateOrderServiceDates', function (req, res) {
+router.get('/UpdateOrderServiceDates', function(req, res) {
     var CreatedOnUtc = req.query.CreatedOnUtc;
     OrderService.findOne({
         where: {
             id: req.query.id
         }
-    }).then(function (resOrderFind) {
+    }).then(function(resOrderFind) {
         if (resOrderFind != null) {
             var ExpiryDate = AddDate(new Date(CreatedOnUtc), 1, "Year");
             resOrderFind.updateAttributes({
                 CreatedOnUtc: new Date(CreatedOnUtc),
                 ExpiryDate: ExpiryDate,
-            }).then(function (resUpdate) {
+            }).then(function(resUpdate) {
                 res.json({
                     success: true,
-                    message: "Date Updated Successfully"
+                    message: "Expiry Date Updated Successfully"
                 });
             });
         } else {
@@ -480,34 +512,34 @@ router.get('/UpdateOrderServiceDates', function (req, res) {
     });
 })
 
-router.get('/ChangeStatus', function (req, res) {
+router.get('/ChangeStatus', function(req, res) {
     OrderService.findOne({
         where: {
             id: req.query.id
         }
-    }).then(function (resOrderFind) {
+    }).then(function(resOrderFind) {
         if (resOrderFind != null) {
             resOrderFind.updateAttributes({
                 OrderStatusId: 2
-            }).then(function (resUpdate) {
+            }).then(function(resUpdate) {
                 OrderServiceDetail.findOne({
                     where: {
                         orderId: req.query.id,
                     }
-                }).then(function (resgetDTl) {
+                }).then(function(resgetDTl) {
                     if (resgetDTl != null) {
                         resgetDTl.updateAttributes({
                             idOrderStatus: 2
-                        }).then(function (resUpdatedtl) {
+                        }).then(function(resUpdatedtl) {
                             res.json({
                                 success: true,
-                                message: "Approved Successfully"
+                                message: "Order Service Approved Successfully"
                             });
                         });
                     } else {
                         res.json({
                             success: true,
-                            message: "Approved Successfully"
+                            message: "Order Service Approved Successfully"
                         });
                     }
                 });
@@ -521,25 +553,273 @@ router.get('/ChangeStatus', function (req, res) {
     });
 })
 
+router.get('/ExportOrderService', function(req, res) {
+    var conf = {};
+    conf.cols = [];
+
+    var objParam = req.query;
+    var objSearch = objParam.search;
+
+    var search = {};
+
+    if (objSearch != null && objSearch != '' && objSearch != undefined && objSearch != 'undefined') {
+        search['$or'] = [];
+        search['$or'].push(['tblappinfo.AppName like ?', "%" + objSearch + "%"]);
+        search['$or'].push(['tbluserinformation.email like ?', "%" + objSearch + "%"]);
+        search['$or'].push(['tbluserinformation.username like ?', "%" + objSearch + "%"]);
+        search['$or'].push(['OrderTotal like ?', "%" + objSearch + "%"]);
+        search['$or'].push(['OrderNotes like ?', "%" + objSearch + "%"]);
+        search['$or'].push(['ShippAddress1 like ?', "%" + objSearch + "%"]);
+        search['$or'].push(['tblorderservicestatus.OrderStatus like ?', "%" + objSearch + "%"]);
+    }
+
+    OrderService.hasOne(OrderServiceDetail, {
+        foreignKey: {
+            name: 'OrderId',
+            allowNull: false
+        }
+    });
+
+    OrderService.belongsTo(OrderServiceStatus, {
+        foreignKey: {
+            name: 'OrderStatusId',
+            allowNull: false
+        }
+    });
+
+    OrderService.belongsTo(User, {
+        foreignKey: {
+            name: 'CustomerId',
+            allowNull: false
+        }
+    });
+
+    OrderService.belongsTo(AppInfo, {
+        foreignKey: {
+            name: 'SubscriptionTransactionId',
+            allowNull: false
+        }
+    })
+
+    if (objParam.StartDate != '' && objParam.StartDate != null && objParam.StartDate != undefined && objParam.EndDate != '' && objParam.EndDate != null && objParam.EndDate != undefined) {
+        if (search['$or'] == undefined) {
+            search['$or'] = [];
+        }
+
+        var StartDate = convertdateUTCformat(objParam.StartDate);
+        var EndDate = convertdateUTCformat(objParam.EndDate, 2);
+
+        var obj = new Object();
+        obj['ExpiryDate'] = {
+            $between: [StartDate, EndDate]
+        };
+        search['$or'].push(obj);
+
+        var obj1 = new Object();
+        obj1['CreatedOnUtc'] = {
+            $between: [StartDate, EndDate]
+        };
+        search['$or'].push(obj1);
+
+    } else if (objParam.StartDate != '' && objParam.StartDate != null && objParam.StartDate != undefined) {
+
+        if (search['$or'] == undefined) {
+            search['$or'] = [];
+        }
+
+        var StartDate = convertdateUTCformat(objParam.StartDate);
+        var obj = new Object();
+        obj['ExpiryDate'] = {
+            $gte: StartDate
+        };
+        search['$or'].push(obj);
+
+        var obj1 = new Object();
+        obj1['CreatedOnUtc'] = {
+            $gte: StartDate
+        };
+        search['$or'].push(obj1);
+    } else if (objParam.EndDate != '' && objParam.EndDate != null && objParam.EndDate != undefined) {
+
+        if (search['$or'] == undefined) {
+            search['$or'] = [];
+        }
+        var EndDate = convertdateUTCformat(objParam.EndDate, 2);
+
+        var obj = new Object();
+        obj['ExpiryDate'] = {
+            $lte: EndDate
+        };
+        search['$or'].push(obj);
+
+        var obj1 = new Object();
+        obj1['CreatedOnUtc'] = {
+            $lte: EndDate
+        };
+        search['$or'].push(obj1);
+    }
+
+    if (objParam.Status > 0) {
+        if (search['$and'] == undefined) {
+            search['$and'] = [];
+        }
+        var obj = new Object();
+        obj['OrderStatusId'] = {
+            $eq: objParam.Status
+        };
+        search['$and'].push(obj);
+    }
+
+    if (objParam.Type > 0) {
+        if (search['$and'] == undefined) {
+            search['$and'] = [];
+        }
+        var obj = new Object();
+        obj['SubscriptionTransactionId'] = {
+            $eq: parseInt(objParam.Type)
+        };
+        search['$and'].push(obj);
+    }
+
+    OrderService.findAll({
+        where: search,
+        order:'CreatedOnUtc asc',
+        include: [{
+            model: OrderServiceStatus,
+            attributes: ['id', 'OrderStatus'],
+            required: true
+        }, {
+            model: OrderServiceDetail,
+            attributes: ['id', 'ProductName', 'Quantity', 'UnitPriceInclTax'],
+            required: true
+        }, {
+            model: User,
+            attributes: ['id', 'email', 'username', 'country', 'ProfileName'],
+            required: true
+        }, {
+            model: AppInfo,
+            required: true,
+            attributes: ['id', 'AppName'],
+        }]
+    }).then(function(response) {
+
+        var NewColumns = [{
+            caption: 'No',
+            type: 'string'
+        },  {
+            caption: 'Order No',
+            type: 'string'
+        },{
+            caption: 'Type',
+            type: 'string'
+        }, {
+            caption: 'Email',
+            type: 'string'
+        }, {
+            caption: 'Created Date',
+            type: 'string'
+        }, {
+            caption: 'Exipiry Date',
+            type: 'string'
+        }, {
+            caption: 'Order Total',
+            type: 'string'
+        }, {
+            caption: 'Device',
+            type: 'string'
+        }, {
+            caption: 'Country',
+            type: 'string'
+        }, {
+            caption: 'Status',
+            type: 'string'
+        }];
+
+        conf.cols = (NewColumns);
+        var row = [];
+
+        for (var i = 0; i < response.length; i++) {
+            var ObjData = response[i];
+            var srow = [];
+
+            var No = i + 1;
+            var Type = ObjData.tblappinfo.AppName;
+            var OrderNo = ObjData.PurchaseOrderNumber;
+            var Email = ObjData.tbluserinformation.email;
+            if (ObjData.CreatedOnUtc != '' && ObjData.CreatedOnUtc != null && ObjData.CreatedOnUtc != undefined) {
+                var CreatedOnUtc = moment(moment.utc(ObjData.CreatedOnUtc).toDate()).format("DD/MM/YYYY hh:mm A");
+            } else {
+                var CreatedOnUtc = '';
+            }
+            if (ObjData.ExpiryDate != '' && ObjData.ExpiryDate != null && ObjData.ExpiryDate != undefined) {
+                var ExpiryDate = moment(moment.utc(ObjData.ExpiryDate).toDate()).format("DD/MM/YYYY hh:mm A");
+            } else {
+                var ExpiryDate = '';
+            }
+            var OrderTotal = ObjData.OrderTotal;
+            var Device = ObjData.OrderNotes;
+            var Country = ObjData.ShippAddress1;
+            var Status = ObjData.tblorderservicestatus.OrderStatus;
+            srow.push(No.toString());
+            srow.push(OrderNo);
+            srow.push(Type);
+            srow.push(Email);
+            srow.push(CreatedOnUtc);
+            srow.push(ExpiryDate);
+            srow.push(OrderTotal.toString());
+            srow.push(Device);
+            srow.push(Country);
+            srow.push(Status);
+            row.push(srow);
+        };
+        conf.rows = [];
+        conf.rows = row;
+        var result = nodeExcel.execute(conf);
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats');
+        res.setHeader("Content-Disposition", "attachment; filename=" + "OrderService.xlsx");
+        res.end(result, 'binary');
+    });
+})
+
+function convertdateformatcutm(date1) {
+    var date = new Date(date1);
+    var firstdayMonth = date.getMonth() + 1;
+    var firstdayDay = date.getDate();
+    var firstdayYear = date.getFullYear();
+    var firstdayHours = date.getHours();
+    var firstdayMinutes = date.getMinutes();
+    var firstdaySeconds = date.getSeconds();
+    return ("0000" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("00" + firstdayDay.toString()).slice(-2) + " " + ("00" + firstdayHours.toString()).slice(-2) + ':' + ("00" + firstdayMinutes.toString()).slice(-2) + ':' + ("00" + firstdaySeconds.toString()).slice(-2);
+}
+
 function GetCharges(Country, ProductTypeId, IsRenew, callback) {
     var TotalAmount = 0;
     try {
-        GetExpiryProductByName(ProductTypeId, function (resProductId) {
+        GetExpiryProductByName(ProductTypeId, function(resProductId) {
             TotalAmount = 0;
             if (resProductId > 0) {
-                GetProductAttributes(resProductId, Country, function (resAllAttributes) {
+                GetProductAttributes(resProductId, Country, function(resAllAttributes) {
                     for (var i = 0; i < resAllAttributes.length; i++) {
                         TotalAmount += resAllAttributes[i].PriceAdjustment;
                     }
-                    return callback({ "TotalAmount": TotalAmount, "ProductId": resProductId });
+                    return callback({
+                        "TotalAmount": TotalAmount,
+                        "ProductId": resProductId
+                    });
                 });
             } else {
-                return callback({ "TotalAmount": TotalAmount, "ProductId": 0 });
+                return callback({
+                    "TotalAmount": TotalAmount,
+                    "ProductId": 0
+                });
             }
         });
 
     } catch (err) {
-        return callback({ "TotalAmount": TotalAmount, "ProductId": 0 });
+        return callback({
+            "TotalAmount": TotalAmount,
+            "ProductId": 0
+        });
     }
 }
 
@@ -553,7 +833,7 @@ function GetExpiryProductByName(ProductTypeId, callback) {
                 Deleted: false,
             },
             attributes: ['Id', 'Name'],
-        }).then(function (response) {
+        }).then(function(response) {
             if (response != null) {
                 return callback(response.Id);
             } else {
@@ -597,7 +877,7 @@ function GetProductAttributes(idProduct, Country, callback) {
                 attributes: ['Id', 'Name']
             }]
         }]
-    }).then(function (resAttributes) {
+    }).then(function(resAttributes) {
         var AllAttributeValue = [];
         for (var i = 0; i < resAttributes.length; i++) {
             var value = resAttributes[i];
@@ -616,7 +896,7 @@ function GetProductAttributes(idProduct, Country, callback) {
             }
         }
         return callback(AllAttributeValue);
-    }).catch(function (error) {
+    }).catch(function(error) {
         return callback([]);
     })
 }
@@ -627,7 +907,7 @@ rule.hour = 1;
 rule.minute = 0;
 rule.second = 0;
 
-var ExpireDataCheck = schedule.scheduleJob(rule, function () {
+var ExpireDataCheck = schedule.scheduleJob(rule, function() {
     // MerchantLock();
 });
 
