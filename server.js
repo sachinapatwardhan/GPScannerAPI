@@ -160,8 +160,30 @@ var smtpConfig = {
     }
 };
 global.transporter = nodemailer.createTransport(smtpTransport(smtpConfig));
+//-------------redis server-----------
+global.redis = require("redis");
+
+if (process.env.IsProduction == true || process.env.IsProduction == "true") {
+    global.client = redis.createClient({
+        host: process.env.RedisHost,
+        port: process.env.RedisPort,
+        password: process.env.RedisPassword
+    });
+} else {
+    global.client = redis.createClient({
+        host: process.env.RedisHost,
+        port: process.env.RedisPort
+    });
+}
+
+client.on("error", function(err) {
+    console.log("Error " + err);
+});
 
 
+
+// client.set(DeviceId, JSON.stringify(objConnection), function(err, replies) {});
+//----------------end redis server------------
 //============== Send SMS ======================//
 global.api_key = process.env.SMSAPIkey;
 global.api_secret = process.env.SMSapisecret;
@@ -360,8 +382,8 @@ app.use('/vehicletype', require('./controllers/vehicletype'));
 app.use('/mainsetting', require('./controllers/mainsetting'));
 app.use('/DeviceStock', require('./controllers/DeviceStock'));
 app.use('/serviceenhancement', require('./controllers/serviceenhancement'));
-
-//socket API End
+app.use('/advancefence', require('./controllers/advancefence'))
+    //socket API End
 
 // MAARK Install App
 app.use('/salesAgent', require('./controllers/salesAgent'));
