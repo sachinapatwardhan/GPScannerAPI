@@ -712,6 +712,8 @@ global.Command9955 = function(line, Callback) {
                     Date: unixDateStemp
                 }
 
+                client.set(DeviceId, JSON.stringify(objConnection), function(err, replies) {});
+
                 if (Position == 'A') {
                     io.sockets.emit('BikeRoute', JSON.stringify(objConnection));
                     io.sockets.emit(DeviceId + 'BikeRoute', JSON.stringify(objConnection));

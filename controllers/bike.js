@@ -91,50 +91,212 @@ router.get('/GetVehicleDetailById', function(req, res) {
     })
 })
 
-router.post('/GetAllWorkingBike', jsonParser, function(req, res) {
-    var query = "select t4.id,t4.Name,t4.deviceid,t4.IsOnline,t4.DeviceType,t4.IsACC,t4.IsEngine, t4.Latitude,t4.Longitude,t4.Datetime, t4.Date, t4.Speed, t4.Direction,t4.OdoMeter,t4.VehicleType " +
+// router.post('/GetAllWorkingBike', jsonParser, function(req, res) {
+//     var query = "select t4.id,t4.Name,t4.deviceid,t4.IsOnline,t4.DeviceType,t4.IsACC,t4.IsEngine, t4.Latitude,t4.Longitude,t4.Datetime, t4.Date, t4.Speed, t4.Direction,t4.OdoMeter,t4.VehicleType " +
+//         "from " +
+//         "(select t3.deviceid,t3.id,t3.iduser,t3.DeviceType,t3.VehicleType,t3.IsACC,tg.OdoMeter,tg.IsEngine, tg.Latitude,tg.Longitude,tg.Datetime, tg.Date, tg.Speed, tg.Direction,t3.Name,t3.IsOnline from  " +
+//         " (select t.iduser ,t.deviceid ,t.id,t.Name,t.DeviceType,t.VehicleType,t.IsACC,t.IsOnline,max(tgp2.id) as 'GPSID'  from  " +
+//         "  (select tb.iduser,tb.deviceid,tb.id,tb.Name,tb.DeviceType,tb.IsACC,tvt.Type as 'VehicleType',tb.IsOnline from tblvehicle tb " +
+//         "   LEFT join tblsharedevice tsd on tb.id=tsd.idVehicle " +
+//         "   LEFT JOIN tblvehicletype tvt on tb.idType=tvt.id " +
+//         "   where (tb.iduser=" + req.query.idUser + " or tsd.idUser=" + req.query.idUser + ")  and tb.IsDelete=0 " +
+//         "  ) as t " +
+//         "  inner join   tblgpsdata as tgp2 on tgp2.DeviceId = t.deviceid  " +
+//         "  group by t.DeviceId " +
+//         " ) as t3 inner join tblgpsdata tg on tg.id = t3.GPSID ) " +
+//         " as t4;";
+//     // connection.query("SELECT tb.id,tb.deviceid,tb.Name,tb.IsOnline, tb.DeviceType, tb.IsACC,tpg.IsEngine, tpg1.Latitude,tpg1.Longitude,tpg.Datetime, tpg.Date, tpg1.Speed, tpg1.Direction,tvt.Type as VehicleType FROM tblvehicle tb LEFT JOIN tblvehicletype tvt on tvt.id = tb.idType INNER JOIN tblgpsdata tpg ON tb.deviceid=tpg.DeviceId INNER JOIN (SELECT DeviceId,MAX(Date) Date FROM tblgpsdata GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId AND tpg.Date = b.Date INNER JOIN tblgpsdata tpg1 ON tb.deviceid=tpg1.DeviceId INNER JOIN (SELECT DeviceId,MAX(Date) Date FROM tblgpsdata where GPSPositioning='A' GROUP BY DeviceId) b1 ON tpg1.DeviceId = b1.DeviceId AND tpg1.Date = b1.Date LEFT JOIN tblsharedevice tsd on tb.id=tsd.idVehicle WHERE (tb.iduser=" + req.query.idUser + " or tsd.idUser=" + req.query.idUser + ") and IsDelete=false;", function(err, rows, fields) {
+//     connection.query(query, function(err, rows, fields) {
+//         if (!err) {
+//             res.json({ success: true, data: rows });
+//         } else {
+//             res.json({ success: false, data: [] });
+//         }
+//     })
+// })
+
+router.get('/GetAllWorkingBike', jsonParser, function(req, res) {
+    var query = "select t4.id,t4.iduser,t4.Name,t4.deviceid,t4.IsOnline,t4.DeviceType,t4.IsACC,t4.VehicleType " +
         "from " +
-        "(select t3.deviceid,t3.id,t3.iduser,t3.DeviceType,t3.VehicleType,t3.IsACC,tg.OdoMeter,tg.IsEngine, tg.Latitude,tg.Longitude,tg.Datetime, tg.Date, tg.Speed, tg.Direction,t3.Name,t3.IsOnline from  " +
-        " (select t.iduser ,t.deviceid ,t.id,t.Name,t.DeviceType,t.VehicleType,t.IsACC,t.IsOnline,max(tgp2.id) as 'GPSID'  from  " +
         "  (select tb.iduser,tb.deviceid,tb.id,tb.Name,tb.DeviceType,tb.IsACC,tvt.Type as 'VehicleType',tb.IsOnline from tblvehicle tb " +
         "   LEFT join tblsharedevice tsd on tb.id=tsd.idVehicle " +
         "   LEFT JOIN tblvehicletype tvt on tb.idType=tvt.id " +
-        "   where (tb.iduser=" + req.query.idUser + " or tsd.idUser=" + req.query.idUser + ")  and tb.IsDelete=0 " +
-        "  ) as t " +
-        "  inner join   tblgpsdata as tgp2 on tgp2.DeviceId = t.deviceid  " +
-        "  group by t.DeviceId " +
-        " ) as t3 inner join tblgpsdata tg on tg.id = t3.GPSID ) " +
-        " as t4;";
-    // connection.query("SELECT tb.id,tb.deviceid,tb.Name,tb.IsOnline, tb.DeviceType, tb.IsACC,tpg.IsEngine, tpg1.Latitude,tpg1.Longitude,tpg.Datetime, tpg.Date, tpg1.Speed, tpg1.Direction,tvt.Type as VehicleType FROM tblvehicle tb LEFT JOIN tblvehicletype tvt on tvt.id = tb.idType INNER JOIN tblgpsdata tpg ON tb.deviceid=tpg.DeviceId INNER JOIN (SELECT DeviceId,MAX(Date) Date FROM tblgpsdata GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId AND tpg.Date = b.Date INNER JOIN tblgpsdata tpg1 ON tb.deviceid=tpg1.DeviceId INNER JOIN (SELECT DeviceId,MAX(Date) Date FROM tblgpsdata where GPSPositioning='A' GROUP BY DeviceId) b1 ON tpg1.DeviceId = b1.DeviceId AND tpg1.Date = b1.Date LEFT JOIN tblsharedevice tsd on tb.id=tsd.idVehicle WHERE (tb.iduser=" + req.query.idUser + " or tsd.idUser=" + req.query.idUser + ") and IsDelete=false;", function(err, rows, fields) {
+        "   where (tb.iduser=" + req.query.idUser + " or tsd.iduser=" + req.query.idUser + ") and IsDelete = false " +
+        "  ) as t4 group by t4.deviceid;";
+    // connection.query("SELECT tb.id,tb.iduser,tb.Name,tb.deviceid,tb.IsOnline,tb.DeviceType,tpg1.IsEngine, tpg1.Latitude,tpg1.Longitude,tpg.Datetime, tpg.Date, tpg1.Speed, tpg1.Direction, tpg1.OdoMeter,tsd.id as ShareId,tvt.Type as VehicleType,(SELECT COUNT(*) FROM tblalarm WHERE IsRead=false and DeviceId = tb.deviceid) as NotificationCount, (SELECT COUNT(*) FROM tblserviceenhancementnotification WHERE IsRead=false and idvehicle = tb.id) as AlertCount FROM tblvehicle tb LEFT JOIN tblgpsdata tpg INNER JOIN (SELECT DeviceId,MAX(Date) Date FROM tblgpsdata GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId  AND tpg.Date = b.Date  ON tb.deviceid=tpg.DeviceId LEFT JOIN tblgpsdata tpg1 INNER JOIN (SELECT DeviceId,MAX(Date) Date FROM tblgpsdata where GPSPositioning='A' GROUP BY DeviceId) b1 ON tpg1.DeviceId = b1.DeviceId AND tpg1.Date = b1.Date  ON tb.deviceid=tpg1.DeviceId LEFT join tblsharedevice tsd on tb.id=tsd.idVehicle LEFT JOIN tblvehicletype tvt on tb.idType=tvt.id WHERE (tb.iduser=" + req.query.idUser + " or tsd.iduser=" + req.query.idUser + ") and IsDelete=false and tb.deviceid != '' group by tb.deviceid;", function(err, rows, fields) {
     connection.query(query, function(err, rows, fields) {
         if (!err) {
-            res.json({ success: true, data: rows });
+            var lstAllVehicle = [];
+
+            function getData(i) {
+
+                if (i < rows.length) {
+                    var obj = new Object();
+                    obj.id = rows[i].id;
+                    obj.iduser = rows[i].iduser;
+                    obj.Name = rows[i].Name;
+                    obj.deviceid = rows[i].deviceid;
+                    obj.IsOnline = rows[i].IsOnline;
+                    obj.DeviceType = rows[i].DeviceType;
+                    obj.ShareId = rows[i].ShareId;
+                    obj.VehicleType = rows[i].VehicleType;
+                    obj.NotificationCount = rows[i].NotificationCount;
+                    obj.AlertCount = rows[i].AlertCount;
+
+                    client.get(rows[i].deviceid, function(err, strgpsdata) {
+                        if (!err) {
+                            if (strgpsdata != null & strgpsdata != '' && strgpsdata != undefined) {
+                                var objgps = JSON.parse(strgpsdata);
+                                obj.IsEngine = objgps.IsEngine;
+                                obj.Latitude = objgps.Latitude;
+                                obj.Longitude = objgps.Longitude;
+                                obj.Datetime = objgps.Datetime;
+                                obj.Date = objgps.Date;
+                                obj.Speed = objgps.Speed;
+                                obj.Direction = objgps.Direction;
+                                obj.OdoMeter = objgps.OdoMeter;
+                                lstAllVehicle.push(obj);
+                                getData(i + 1);
+                            } else {
+                                // obj.IsEngine = null;
+                                // obj.Latitude = null;
+                                // obj.Longitude = null;
+                                // obj.Datetime = null;
+                                // obj.Date = null;
+                                // obj.Speed = null;
+                                // obj.Direction = null;
+                                // obj.OdoMeter = null;
+                                // lstAllVehicle.push(obj);
+                                getData(i + 1);
+                            }
+                        } else {
+                            // obj.IsEngine = null;
+                            // obj.Latitude = null;
+                            // obj.Longitude = null;
+                            // obj.Datetime = null;
+                            // obj.Date = null;
+                            // obj.Speed = null;
+                            // obj.Direction = null;
+                            // obj.OdoMeter = null;
+                            // lstAllVehicle.push(obj);
+                            getData(i + 1);
+                        }
+                    });
+
+                } else {
+                    res.json({ success: true, data: lstAllVehicle });
+                }
+            }
+            getData(0);
+
         } else {
             res.json({ success: false, data: [] });
         }
     })
 })
 
+// router.get('/GetAllWorkingBikeWebApp', jsonParser, function(req, res) {
+//     var query = "select t4.id,t4.iduser,t4.Name,t4.deviceid,t4.IsOnline,t4.DeviceType,t4.CreatedDate,t4.IsEngine, t4.Latitude,t4.Longitude,t4.Datetime, t4.Date, t4.Speed, t4.Direction,t4.OdoMeter,t4.ShareId,t4.VehicleType, " +
+//         "(select count(*) from tblalarm  a where a.DeviceId =t4.deviceid and IsRead=false) as 'NotificationCount' , " +
+//         "(SELECT COUNT(*) FROM tblserviceenhancementnotification WHERE IsRead=false and idvehicle = t4.id) as 'AlertCount' " +
+//         "from " +
+//         "(select t3.deviceid,t3.id,t3.iduser,t3.DeviceType,t3.ShareId,t3.VehicleType,t3.CreatedDate,tg.OdoMeter,tg.IsEngine, tg.Latitude,tg.Longitude,tg.Datetime, tg.Date, tg.Speed, tg.Direction,t3.Name,t3.IsOnline from  " +
+//         " (select t.iduser ,t.deviceid ,t.id,t.Name,t.DeviceType,t.VehicleType,t.CreatedDate,t.ShareId,t.IsOnline,max(tgp2.id) as 'GPSID'  from  " +
+//         "  (select tb.iduser,tb.deviceid,tb.id,tb.Name,tb.DeviceType,tb.CreatedDate,tvt.Type as 'VehicleType',tsd.id as'ShareId',tb.IsOnline from tblvehicle tb  " +
+//         "   LEFT join tblsharedevice tsd on tb.id=tsd.idVehicle  " +
+//         "   LEFT JOIN tblvehicletype tvt on tb.idType=tvt.id  " +
+//         "   where (tb.iduser=" + req.query.idUser + " or tsd.idUser=" + req.query.idUser + ") and tb.IsDelete = 0 " +
+//         "  ) as t  " +
+//         "  left join   tblgpsdata as tgp2 on tgp2.DeviceId = t.deviceid  " +
+//         "  group by t.DeviceId  " +
+//         " ) as t3 left join tblgpsdata tg on tg.id = t3.GPSID )  " +
+//         " as t4";
+//     // connection.query("SELECT tb.*,( select count(id) from tblalarm where IsRead=0 and DeviceId = tb.DeviceId) as NotificationCount, (SELECT COUNT(*) FROM tblserviceenhancementnotification WHERE IsRead=false and idvehicle = tb.id) as AlertCount,tpg1.IsEngine, tpg1.Latitude,tpg1.Longitude,tpg.Datetime,tpg.OdoMeter, tpg.Date, tpg1.Speed, tpg1.Direction,tsd.id as ShareId,tvt.Type as VehicleType FROM tblvehicle tb LEFT JOIN tblgpsdata tpg INNER JOIN (SELECT DeviceId,MAX(Date) Date FROM tblgpsdata GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId  AND tpg.Date = b.Date  ON tb.deviceid=tpg.DeviceId LEFT JOIN tblgpsdata tpg1 INNER JOIN (SELECT DeviceId,MAX(Date) Date FROM tblgpsdata where GPSPositioning='A' GROUP BY DeviceId) b1 ON tpg1.DeviceId = b1.DeviceId AND tpg1.Date = b1.Date  ON tb.deviceid=tpg1.DeviceId LEFT join tblsharedevice tsd on tb.id=tsd.idVehicle LEFT JOIN tblvehicletype tvt on tb.idType=tvt.id WHERE (tb.iduser=" + req.query.idUser + " or tsd.iduser=" + req.query.idUser + ") and IsDelete=false and tb.deviceid != '' group by tb.deviceid;", function(err, rows, fields) {
+//     connection.query(query, function(err, rows, fields) {
+//         if (!err) {
+//             res.json({ success: true, data: rows });
+//         } else {
+//             res.json({ success: false, data: [] });
+//         }
+//     })
+// })
+
 router.get('/GetAllWorkingBikeWebApp', jsonParser, function(req, res) {
-    var query = "select t4.id,t4.iduser,t4.Name,t4.deviceid,t4.IsOnline,t4.DeviceType,t4.CreatedDate,t4.IsEngine, t4.Latitude,t4.Longitude,t4.Datetime, t4.Date, t4.Speed, t4.Direction,t4.OdoMeter,t4.ShareId,t4.VehicleType, " +
-        "(select count(*) from tblalarm  a where a.DeviceId =t4.deviceid and IsRead=false) as 'NotificationCount' , " +
+    var query = "select t4.id,t4.iduser,t4.Name,t4.deviceid,t4.IsOnline,t4.DeviceType,t4.ShareId,t4.VehicleType,t4.CreatedDate, " +
+        "(select count(*) from tblalarm  a where a.DeviceId =t4.deviceid and IsRead=false) as 'NotificationCount' ," +
         "(SELECT COUNT(*) FROM tblserviceenhancementnotification WHERE IsRead=false and idvehicle = t4.id) as 'AlertCount' " +
         "from " +
-        "(select t3.deviceid,t3.id,t3.iduser,t3.DeviceType,t3.ShareId,t3.VehicleType,t3.CreatedDate,tg.OdoMeter,tg.IsEngine, tg.Latitude,tg.Longitude,tg.Datetime, tg.Date, tg.Speed, tg.Direction,t3.Name,t3.IsOnline from  " +
-        " (select t.iduser ,t.deviceid ,t.id,t.Name,t.DeviceType,t.VehicleType,t.CreatedDate,t.ShareId,t.IsOnline,max(tgp2.id) as 'GPSID'  from  " +
-        "  (select tb.iduser,tb.deviceid,tb.id,tb.Name,tb.DeviceType,tb.CreatedDate,tvt.Type as 'VehicleType',tsd.id as'ShareId',tb.IsOnline from tblvehicle tb  " +
-        "   LEFT join tblsharedevice tsd on tb.id=tsd.idVehicle  " +
-        "   LEFT JOIN tblvehicletype tvt on tb.idType=tvt.id  " +
-        "   where (tb.iduser=" + req.query.idUser + " or tsd.idUser=" + req.query.idUser + ") and tb.IsDelete = 0 " +
-        "  ) as t  " +
-        "  left join   tblgpsdata as tgp2 on tgp2.DeviceId = t.deviceid  " +
-        "  group by t.DeviceId  " +
-        " ) as t3 left join tblgpsdata tg on tg.id = t3.GPSID )  " +
-        " as t4";
-    // connection.query("SELECT tb.*,( select count(id) from tblalarm where IsRead=0 and DeviceId = tb.DeviceId) as NotificationCount, (SELECT COUNT(*) FROM tblserviceenhancementnotification WHERE IsRead=false and idvehicle = tb.id) as AlertCount,tpg1.IsEngine, tpg1.Latitude,tpg1.Longitude,tpg.Datetime,tpg.OdoMeter, tpg.Date, tpg1.Speed, tpg1.Direction,tsd.id as ShareId,tvt.Type as VehicleType FROM tblvehicle tb LEFT JOIN tblgpsdata tpg INNER JOIN (SELECT DeviceId,MAX(Date) Date FROM tblgpsdata GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId  AND tpg.Date = b.Date  ON tb.deviceid=tpg.DeviceId LEFT JOIN tblgpsdata tpg1 INNER JOIN (SELECT DeviceId,MAX(Date) Date FROM tblgpsdata where GPSPositioning='A' GROUP BY DeviceId) b1 ON tpg1.DeviceId = b1.DeviceId AND tpg1.Date = b1.Date  ON tb.deviceid=tpg1.DeviceId LEFT join tblsharedevice tsd on tb.id=tsd.idVehicle LEFT JOIN tblvehicletype tvt on tb.idType=tvt.id WHERE (tb.iduser=" + req.query.idUser + " or tsd.iduser=" + req.query.idUser + ") and IsDelete=false and tb.deviceid != '' group by tb.deviceid;", function(err, rows, fields) {
+        "  (select tb.iduser,tb.deviceid,tb.id,tb.Name,tb.DeviceType,tvt.Type as 'VehicleType',tb.CreatedDate,tsd.id as'ShareId',tb.IsOnline from tblvehicle tb " +
+        "   LEFT join tblsharedevice tsd on tb.id=tsd.idVehicle " +
+        "   LEFT JOIN tblvehicletype tvt on tb.idType=tvt.id " +
+        "   where (tb.iduser=" + req.query.idUser + " or tsd.iduser=" + req.query.idUser + ") and IsDelete = false " +
+        "  ) as t4 group by t4.deviceid;";
+    // connection.query("SELECT tb.id,tb.iduser,tb.Name,tb.deviceid,tb.IsOnline,tb.DeviceType,tpg1.IsEngine, tpg1.Latitude,tpg1.Longitude,tpg.Datetime, tpg.Date, tpg1.Speed, tpg1.Direction, tpg1.OdoMeter,tsd.id as ShareId,tvt.Type as VehicleType,(SELECT COUNT(*) FROM tblalarm WHERE IsRead=false and DeviceId = tb.deviceid) as NotificationCount, (SELECT COUNT(*) FROM tblserviceenhancementnotification WHERE IsRead=false and idvehicle = tb.id) as AlertCount FROM tblvehicle tb LEFT JOIN tblgpsdata tpg INNER JOIN (SELECT DeviceId,MAX(Date) Date FROM tblgpsdata GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId  AND tpg.Date = b.Date  ON tb.deviceid=tpg.DeviceId LEFT JOIN tblgpsdata tpg1 INNER JOIN (SELECT DeviceId,MAX(Date) Date FROM tblgpsdata where GPSPositioning='A' GROUP BY DeviceId) b1 ON tpg1.DeviceId = b1.DeviceId AND tpg1.Date = b1.Date  ON tb.deviceid=tpg1.DeviceId LEFT join tblsharedevice tsd on tb.id=tsd.idVehicle LEFT JOIN tblvehicletype tvt on tb.idType=tvt.id WHERE (tb.iduser=" + req.query.idUser + " or tsd.iduser=" + req.query.idUser + ") and IsDelete=false and tb.deviceid != '' group by tb.deviceid;", function(err, rows, fields) {
     connection.query(query, function(err, rows, fields) {
         if (!err) {
-            res.json({ success: true, data: rows });
+            var lstAllVehicle = [];
+
+            function getData(i) {
+
+                if (i < rows.length) {
+                    var obj = new Object();
+                    obj.id = rows[i].id;
+                    obj.iduser = rows[i].iduser;
+                    obj.Name = rows[i].Name;
+                    obj.deviceid = rows[i].deviceid;
+                    obj.IsOnline = rows[i].IsOnline;
+                    obj.DeviceType = rows[i].DeviceType;
+                    obj.ShareId = rows[i].ShareId;
+                    obj.VehicleType = rows[i].VehicleType;
+                    obj.NotificationCount = rows[i].NotificationCount;
+                    obj.AlertCount = rows[i].AlertCount;
+
+                    client.get(rows[i].deviceid, function(err, strgpsdata) {
+                        if (!err) {
+                            if (strgpsdata != null & strgpsdata != '' && strgpsdata != undefined) {
+                                var objgps = JSON.parse(strgpsdata);
+                                obj.IsEngine = objgps.IsEngine;
+                                obj.Latitude = objgps.Latitude;
+                                obj.Longitude = objgps.Longitude;
+                                obj.Datetime = objgps.Datetime;
+                                obj.Date = objgps.Date;
+                                obj.Speed = objgps.Speed;
+                                obj.Direction = objgps.Direction;
+                                obj.OdoMeter = objgps.OdoMeter;
+                                lstAllVehicle.push(obj);
+                                getData(i + 1);
+                            } else {
+                                obj.IsEngine = null;
+                                obj.Latitude = null;
+                                obj.Longitude = null;
+                                obj.Datetime = null;
+                                obj.Date = null;
+                                obj.Speed = null;
+                                obj.Direction = null;
+                                obj.OdoMeter = null;
+                                lstAllVehicle.push(obj);
+                                getData(i + 1);
+                            }
+                        } else {
+                            obj.IsEngine = null;
+                            obj.Latitude = null;
+                            obj.Longitude = null;
+                            obj.Datetime = null;
+                            obj.Date = null;
+                            obj.Speed = null;
+                            obj.Direction = null;
+                            obj.OdoMeter = null;
+                            lstAllVehicle.push(obj);
+                            getData(i + 1);
+                        }
+                    });
+
+                } else {
+                    res.json({ success: true, data: lstAllVehicle });
+                }
+            }
+            getData(0);
+
         } else {
             res.json({ success: false, data: [] });
         }
@@ -208,23 +370,48 @@ router.get('/DeleteBike', function(req, res) {
 });
 
 router.get('/GetVehicleCurrentLocation', function(req, res) {
-    var Startdate = new Date();
+    // var Startdate = new Date();
 
-    var convertDate = convertdateformatForUnix(Startdate);
-    var unixStartdate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
-    // var unixStartdate = Startdate.getTime() / 1000;
+    // var convertDate = convertdateformatForUnix(Startdate);
+    // var unixStartdate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
+    // // var unixStartdate = Startdate.getTime() / 1000;
 
-    //----------------call redix server data--------------------------
+
+
     client.get(req.query.DeviceId, function(err, strgpsdata) {
-        console.log("@@@....", err);
         if (!err) {
             if (strgpsdata != null && strgpsdata != '' && strgpsdata != undefined) {
                 res.json({ success: true, data: JSON.parse(strgpsdata) });
             } else {
+                GetdbCurrentLocation();
+            }
+        } else {
+            GetdbCurrentLocation();
+        }
+    });
+
+    function GetdbCurrentLocation() {
+        var Startdate = new Date();
+
+        var convertDate = convertdateformatForUnix(Startdate);
+        var unixStartdate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
+        // var unixStartdate = Startdate.getTime() / 1000;
+        GPSData.findOne({
+            where: {
+                DeviceId: req.query.DeviceId,
+                GPSPositioning: 'A',
+                Date: { $lte: unixStartdate }
+            },
+            order: 'Date DESC'
+        }).then(function(response) {
+            if (response != null) {
+                client.set(req.query.DeviceId, JSON.stringify(response), function(err, replies) {});
+                res.json({ success: true, data: response });
+            } else {
                 res.json(RecordNotFound);
             }
-        }
-    })
+        })
+    }
 
     //-----------------------------------------------------
 
@@ -488,8 +675,6 @@ function convertdateformatForUnix(date1) {
 
 }
 
-// router.post('/SaveVehicle', jsonParser, function(req, res) {
-//     objVehicle = req.body;
 router.get('/SaveVehicle', jsonParser, function(req, res) {
     objVehicle = req.query;
     objVehicle.IsDelete = false;
@@ -876,6 +1061,326 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
     }
 });
 
+// router.post('/SaveVehicle', jsonParser, function(req, res) {
+//     objVehicle = req.body;
+// router.get('/SaveVehicle', jsonParser, function(req, res) {
+//     objVehicle = req.query;
+//     objVehicle.IsDelete = false;
+//     objHeader = req.headers;
+//     var token = getToken(objHeader);
+//     var search = {};
+//     var ExpiryDate = null;
+//     var ActivationDate = null;
+//     var d = new Date();
+//     var year = d.getFullYear();
+//     var month = d.getMonth();
+//     var day = d.getDate();
+//     var c = new Date(year + 1, month, day)
+//     ExpiryDate = c;
+//     ActivationDate = d;
+//     search['$and'] = [];
+//     if (objVehicle.AppName != null && objVehicle.AppName != undefined && objVehicle.AppName != '') {
+//         var obj = new Object();
+//         obj['AppName'] = {
+//             $eq: objVehicle.AppName
+//         };
+//         search['$and'].push(obj);
+//     }
+
+//     if (objVehicle.IMEI != null && objVehicle.IMEI != undefined && objVehicle.IMEI != '') {
+//         var obj = new Object();
+//         obj['IMEI'] = {
+//             $eq: objVehicle.IMEI
+//         };
+//         search['$and'].push(obj);
+//     }
+
+//     if (token) {
+//         var decoded = jwt.decode(token, TokenKey);
+
+//         User.findOne({
+//             where: {
+//                 username: decoded.username,
+//                 password: decoded.password
+//             }
+//         }).then(function(UserExist) {
+//             if (UserExist != null) {
+//                 if (objVehicle.IMEI != '' && objVehicle.IMEI != null) {
+//                     GpsDevice.findOne({
+//                         where: search
+//                     }).then(function(objGpsDevice) {
+//                         if (objGpsDevice != null) {
+//                             if (objVehicle.id == 0) {
+//                                 objVehicle.IsOnline = false;
+//                                 // objVehicle.CreatedDate = GetCurrentDate();
+//                                 objVehicle.CreatedDate = new Date();
+//                                 objVehicle.DeviceType = objGpsDevice.Type;
+//                                 Vehicle.findOne({
+//                                     where: {
+//                                         deviceid: objVehicle.deviceid,
+//                                         IsDelete: true
+//                                     }
+//                                 }).then(function(objVehicleExist) {
+//                                     if (objVehicleExist) {
+//                                         objVehicle.id = objVehicleExist.id;
+//                                         Vehicle.update(objVehicle, {
+//                                             where: {
+//                                                 id: objVehicle.id
+//                                             }
+//                                         }).then(function(response) {
+//                                             if (response[0]) {
+//                                                 funAuditLog.CreateAuditLog('SaveVehicle(IMEI:' + objVehicle.IMEI + ')', UserExist.username, 'Create Vehicle');
+//                                                 GpsDevice.findOne({ where: { DeviceId: objVehicle.deviceid } }).then(function(GpsDataExist) {
+//                                                     if (GpsDataExist) {
+//                                                         funAuditLog.CreateAuditLog('SaveDate', UserExist.username, 'Save Vehicle Expiry & Activation Date');
+//                                                         GpsDataExist.updateAttributes({
+//                                                             IsActive: 1,
+//                                                             ExpiryDate: ExpiryDate,
+//                                                             ActivationDate: ActivationDate,
+//                                                         }).then(function(response1) {
+
+//                                                         })
+//                                                     }
+//                                                 })
+//                                                 res.json({
+//                                                     success: true,
+//                                                     message: "Vehicle created successfully...",
+//                                                     data: objVehicle
+//                                                 });
+//                                             } else {
+//                                                 res.json({
+//                                                     success: false,
+//                                                     message: "Vehicle is Not created...",
+//                                                     data: objVehicle
+//                                                 });
+//                                             }
+//                                         })
+//                                     } else {
+//                                         Vehicle.findOne({
+//                                             where: {
+//                                                 deviceid: objVehicle.deviceid,
+//                                                 IsDelete: false
+//                                             }
+//                                         }).then(function(objNewPetExist) {
+//                                             if (objNewPetExist) {
+//                                                 res.json({
+//                                                     success: false,
+//                                                     message: "Tracker No. is already assign to other Vehicle...",
+//                                                     data: null
+//                                                 });
+//                                             } else {
+//                                                 Vehicle.create(objVehicle).then(function(response) {
+//                                                     if (response) {
+//                                                         funAuditLog.CreateAuditLog('SaveVehicle(IMEI:' + objVehicle.IMEI + ')', UserExist.username, 'Create Vehicle');
+//                                                         GpsDevice.findOne({ where: { DeviceId: response.deviceid } }).then(function(GpsDataExist) {
+//                                                             if (GpsDataExist) {
+//                                                                 funAuditLog.CreateAuditLog('SaveDate', UserExist.username, 'Save Vehicle Expiry & Activation Date');
+
+//                                                                 // var ExpiryDate = null;
+//                                                                 // var ActivationDate = null;
+//                                                                 // var d = new Date();
+//                                                                 // var year = d.getFullYear();
+//                                                                 // var month = d.getMonth();
+//                                                                 // var day = d.getDate();
+//                                                                 // var c = new Date(year + 1, month, day)
+//                                                                 // ExpiryDate = c;
+//                                                                 // ActivationDate = d;
+//                                                                 GpsDataExist.updateAttributes({
+//                                                                     IsActive: 1,
+//                                                                     ExpiryDate: ExpiryDate,
+//                                                                     ActivationDate: ActivationDate,
+//                                                                 }).then(function(response1) {
+
+//                                                                 })
+//                                                             }
+//                                                         })
+//                                                         res.json({
+//                                                             success: true,
+//                                                             message: "Vehicle created successfully...",
+//                                                             data: response
+//                                                         });
+//                                                     } else {
+//                                                         res.json({
+//                                                             success: false,
+//                                                             message: "Tracker No. is already assign to other Vehicle...",
+//                                                             data: null
+//                                                         });
+//                                                     }
+//                                                 })
+//                                             }
+//                                         })
+//                                     }
+//                                 })
+//                             } else {
+//                                 Vehicle.findOne({
+//                                     where: {
+//                                         deviceid: objVehicle.deviceid
+//                                     }
+//                                 }).then(function(objVehicleExist) {
+//                                     if (objVehicleExist != null && objVehicleExist.id != objVehicle.id && objVehicleExist.IsDeleted == false) {
+//                                         res.json({
+//                                             success: false,
+//                                             message: "Tracker No. is already assign to other Vehicle...",
+//                                             data: objVehicleExist
+//                                         });
+//                                     } else {
+//                                         Vehicle.update(objVehicle, {
+//                                             where: {
+//                                                 id: objVehicle.id
+//                                             }
+//                                         }).then(function(response) {
+//                                             if (response[0]) {
+//                                                 funAuditLog.CreateAuditLog('SaveVehicle', UserExist.username, 'Update Vehicle');
+//                                                 res.json({
+//                                                     success: true,
+//                                                     message: "Vehicle updated successfully...",
+//                                                     data: objVehicle
+//                                                 });
+//                                             } else {
+//                                                 res.json({
+//                                                     success: false,
+//                                                     message: "Vehicle is Not updated...",
+//                                                     data: objVehicle
+//                                                 });
+//                                             }
+//                                         })
+//                                     }
+//                                 })
+//                             }
+//                         } else {
+//                             res.json({
+//                                 success: false,
+//                                 message: "Invalid Tracker No., Please insert valid Tracker No.",
+//                                 data: ""
+//                             });
+//                         }
+//                     })
+//                 } else {
+//                     GpsDevice.findOne({
+//                         where: { AppName: objVehicle.AppName, DeviceId: objVehicle.deviceid }
+//                     }).then(function(objGpsDevice) {
+//                         if (objGpsDevice != null) {
+//                             if (objVehicle.id == 0) {
+//                                 objVehicle.IsOnline = false;
+//                                 // objVehicle.CreatedDate = GetCurrentDate();
+//                                 objVehicle.CreatedDate = new Date();
+//                                 objVehicle.DeviceType = objGpsDevice.Type;
+//                                 Vehicle.findOne({
+//                                     where: {
+//                                         deviceid: objVehicle.deviceid,
+//                                         IsDelete: true
+//                                     }
+//                                 }).then(function(objVehicleExist) {
+//                                     if (objVehicleExist) {
+//                                         objVehicle.id = objVehicleExist.id;
+//                                         Vehicle.update(objVehicle, {
+//                                             where: {
+//                                                 id: objVehicle.id
+//                                             }
+//                                         }).then(function(response) {
+//                                             if (response[0]) {
+//                                                 funAuditLog.CreateAuditLog('SaveVehicle', UserExist.username, 'Create Vehicle');
+//                                                 res.json({
+//                                                     success: true,
+//                                                     message: "Vehicle created successfully...",
+//                                                     data: objVehicle
+//                                                 });
+//                                             } else {
+//                                                 res.json({
+//                                                     success: false,
+//                                                     message: "Vehicle is Not created...",
+//                                                     data: objVehicle
+//                                                 });
+//                                             }
+//                                         })
+//                                     } else {
+//                                         Vehicle.findOne({
+//                                             where: {
+//                                                 deviceid: objVehicle.deviceid,
+//                                                 IsDelete: false
+//                                             }
+//                                         }).then(function(objNewPetExist) {
+//                                             if (objNewPetExist) {
+//                                                 res.json({
+//                                                     success: false,
+//                                                     message: "Tracker No. is already assign to other Vehicle...",
+//                                                     data: null
+//                                                 });
+//                                             } else {
+//                                                 Vehicle.create(objVehicle).then(function(response) {
+//                                                     if (response) {
+//                                                         funAuditLog.CreateAuditLog('SaveVehicle', UserExist.username, 'Create Vehicle');
+//                                                         res.json({
+//                                                             success: true,
+//                                                             message: "Vehicle created successfully...",
+//                                                             data: response
+//                                                         });
+//                                                     } else {
+//                                                         res.json({
+//                                                             success: false,
+//                                                             message: "Tracker No. is already assign to other Vehicle...",
+//                                                             data: null
+//                                                         });
+//                                                     }
+//                                                 })
+//                                             }
+//                                         })
+//                                     }
+//                                 })
+//                             } else {
+//                                 Vehicle.findOne({
+//                                     where: {
+//                                         deviceid: objVehicle.deviceid
+//                                     }
+//                                 }).then(function(objVehicleExist) {
+//                                     if (objVehicleExist != null && objVehicleExist.id != objVehicle.id && objVehicleExist.IsDeleted == false) {
+//                                         res.json({
+//                                             success: false,
+//                                             message: "Tracker No. is already assign to other Vehicle...",
+//                                             data: objVehicleExist
+//                                         });
+//                                     } else {
+//                                         Vehicle.update(objVehicle, {
+//                                             where: {
+//                                                 id: objVehicle.id
+//                                             }
+//                                         }).then(function(response) {
+//                                             if (response[0]) {
+//                                                 funAuditLog.CreateAuditLog('SaveVehicle', UserExist.username, 'Update Vehicle');
+//                                                 res.json({
+//                                                     success: true,
+//                                                     message: "Vehicle updated successfully...",
+//                                                     data: objVehicle
+//                                                 });
+//                                             } else {
+//                                                 res.json({
+//                                                     success: false,
+//                                                     message: "Vehicle is Not updated...",
+//                                                     data: objVehicle
+//                                                 });
+//                                             }
+//                                         })
+//                                     }
+//                                 })
+//                             }
+//                         } else {
+//                             res.json({
+//                                 success: false,
+//                                 message: "Invalid Tracker No., Please insert valid Tracker No.",
+//                                 data: ""
+//                             });
+//                         }
+//                     })
+//                 }
+//             } else {
+//                 res.json(InvalidToken);
+//             }
+//         })
+//     } else {
+//         res.json(InvalidToken);
+//     }
+// });
+
 
 // router.get('/SaveVehicle', jsonParser, function(req, res) {
 //     objVehicle = req.query;
@@ -1166,7 +1671,7 @@ router.get('/GetAllExpireDevice', jsonParser, function(req, res) {
 
 })
 
-router.get('/GetAllWorkingBikeWebAppNew', jsonParser, function(req, res) {
+router.get('/GetAllWorkingBikeWebAppNew1', jsonParser, function(req, res) {
     var query = "select t4.id,t4.iduser,t4.Name,t4.deviceid,t4.IsOnline,t4.DeviceType,t4.IsEngine, t4.Latitude,t4.Longitude,t4.Datetime, t4.Date, t4.Speed, t4.Direction,t4.OdoMeter,t4.ShareId,t4.VehicleType, " +
         "(select count(*) from tblalarm  a where a.DeviceId =t4.deviceid and IsRead=false) as 'NotificationCount' ," +
         "(SELECT COUNT(*) FROM tblserviceenhancementnotification WHERE IsRead=false and idvehicle = t4.id) as 'AlertCount' " +
@@ -1186,6 +1691,89 @@ router.get('/GetAllWorkingBikeWebAppNew', jsonParser, function(req, res) {
     connection.query(query, function(err, rows, fields) {
         if (!err) {
             res.json({ success: true, data: rows });
+        } else {
+            res.json({ success: false, data: [] });
+        }
+    })
+})
+
+
+router.get('/GetAllWorkingBikeWebAppNew', function(req, res) {
+    var query = "select t4.id,t4.iduser,t4.Name,t4.deviceid,t4.IsOnline,t4.DeviceType,t4.ShareId,t4.VehicleType, " +
+        "(select count(*) from tblalarm  a where a.DeviceId =t4.deviceid and IsRead=false) as 'NotificationCount' ," +
+        "(SELECT COUNT(*) FROM tblserviceenhancementnotification WHERE IsRead=false and idvehicle = t4.id) as 'AlertCount' " +
+        "from " +
+        "  (select tb.iduser,tb.deviceid,tb.id,tb.Name,tb.DeviceType,tvt.Type as 'VehicleType',tsd.id as'ShareId',tb.IsOnline from tblvehicle tb " +
+        "   LEFT join tblsharedevice tsd on tb.id=tsd.idVehicle " +
+        "   LEFT JOIN tblvehicletype tvt on tb.idType=tvt.id " +
+        "   where (tb.iduser=" + req.query.idUser + " or tsd.iduser=" + req.query.idUser + ") and IsDelete = false " +
+        "  ) as t4 group by t4.deviceid;";
+    // connection.query("SELECT tb.id,tb.iduser,tb.Name,tb.deviceid,tb.IsOnline,tb.DeviceType,tpg1.IsEngine, tpg1.Latitude,tpg1.Longitude,tpg.Datetime, tpg.Date, tpg1.Speed, tpg1.Direction, tpg1.OdoMeter,tsd.id as ShareId,tvt.Type as VehicleType,(SELECT COUNT(*) FROM tblalarm WHERE IsRead=false and DeviceId = tb.deviceid) as NotificationCount, (SELECT COUNT(*) FROM tblserviceenhancementnotification WHERE IsRead=false and idvehicle = tb.id) as AlertCount FROM tblvehicle tb LEFT JOIN tblgpsdata tpg INNER JOIN (SELECT DeviceId,MAX(Date) Date FROM tblgpsdata GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId  AND tpg.Date = b.Date  ON tb.deviceid=tpg.DeviceId LEFT JOIN tblgpsdata tpg1 INNER JOIN (SELECT DeviceId,MAX(Date) Date FROM tblgpsdata where GPSPositioning='A' GROUP BY DeviceId) b1 ON tpg1.DeviceId = b1.DeviceId AND tpg1.Date = b1.Date  ON tb.deviceid=tpg1.DeviceId LEFT join tblsharedevice tsd on tb.id=tsd.idVehicle LEFT JOIN tblvehicletype tvt on tb.idType=tvt.id WHERE (tb.iduser=" + req.query.idUser + " or tsd.iduser=" + req.query.idUser + ") and IsDelete=false and tb.deviceid != '' group by tb.deviceid;", function(err, rows, fields) {
+    connection.query(query, function(err, rows, fields) {
+        if (!err) {
+            var lstAllVehicle = [];
+
+            function getData(i) {
+
+                if (i < rows.length) {
+                    var obj = new Object();
+                    obj.id = rows[i].id;
+                    obj.iduser = rows[i].iduser;
+                    obj.Name = rows[i].Name;
+                    obj.deviceid = rows[i].deviceid;
+                    obj.IsOnline = rows[i].IsOnline;
+                    obj.DeviceType = rows[i].DeviceType;
+                    obj.ShareId = rows[i].ShareId;
+                    obj.VehicleType = rows[i].VehicleType;
+                    obj.NotificationCount = rows[i].NotificationCount;
+                    obj.AlertCount = rows[i].AlertCount;
+
+                    client.get(rows[i].deviceid, function(err, strgpsdata) {
+                        if (!err) {
+                            if (strgpsdata != null & strgpsdata != '' && strgpsdata != undefined) {
+                                var objgps = JSON.parse(strgpsdata);
+                                obj.IsEngine = objgps.IsEngine;
+                                obj.Latitude = objgps.Latitude;
+                                obj.Longitude = objgps.Longitude;
+                                obj.Datetime = objgps.Datetime;
+                                obj.Date = objgps.Date;
+                                obj.Speed = objgps.Speed;
+                                obj.Direction = objgps.Direction;
+                                obj.OdoMeter = objgps.OdoMeter;
+                                lstAllVehicle.push(obj);
+                                getData(i + 1);
+                            } else {
+                                obj.IsEngine = null;
+                                obj.Latitude = null;
+                                obj.Longitude = null;
+                                obj.Datetime = null;
+                                obj.Date = null;
+                                obj.Speed = null;
+                                obj.Direction = null;
+                                obj.OdoMeter = null;
+                                lstAllVehicle.push(obj);
+                                getData(i + 1);
+                            }
+                        } else {
+                            obj.IsEngine = null;
+                            obj.Latitude = null;
+                            obj.Longitude = null;
+                            obj.Datetime = null;
+                            obj.Date = null;
+                            obj.Speed = null;
+                            obj.Direction = null;
+                            obj.OdoMeter = null;
+                            lstAllVehicle.push(obj);
+                            getData(i + 1);
+                        }
+                    });
+
+                } else {
+                    res.json({ success: true, data: lstAllVehicle });
+                }
+            }
+            getData(0);
+
         } else {
             res.json({ success: false, data: [] });
         }

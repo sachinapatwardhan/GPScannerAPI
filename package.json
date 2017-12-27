@@ -98,6 +98,7 @@
     "qs": "~4.0.0",
     "range-parser": "~1.0.3",
     "readable-stream": "~1.1.14",
+    "redis": "^2.8.0",
     "request": "~2.72.0",
     "retry-as-promised": "~2.0.1",
     "semver": "~5.1.0",

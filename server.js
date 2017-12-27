@@ -70,6 +70,24 @@ global.RoutePath = process.env.RoutePath;
 //Push Notification
 global.PushNotifications = require('node-pushnotifications');
 global.pdf = require('html-pdf');
+global.redis = require("redis");
+
+if (process.env.IsProduction == true || process.env.IsProduction == "true") {
+    global.client = redis.createClient({
+        host: process.env.RedisHost,
+        port: process.env.RedisPort,
+        password: process.env.RedisPassword
+    });
+} else {
+    global.client = redis.createClient({
+        host: process.env.RedisHost,
+        port: process.env.RedisPort
+    });
+}
+
+client.on("error", function(err) {
+    console.log("Error " + err);
+});
 
 
 if (global.IsProduction == false || global.IsProduction == "false") {
