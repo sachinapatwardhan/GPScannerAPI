@@ -2304,9 +2304,9 @@ function SendPushNotification(data, UserId, objAppInfo) {
                     //     if (lstSetting[0].Value == 1) {
                     var deviceIds = [];
                     deviceIds.push(response[i].PushNotificationId)
-                    //SendNotification(i + 1);
-                    // } else {
-                    // console.log(deviceIds)
+                        //SendNotification(i + 1);
+                        // } else {
+                        // console.log(deviceIds)
                     var objData = clone(data);
 
                     if (response[i].Platform == 'ios') {
@@ -2580,28 +2580,110 @@ function CreateOrderServiceGlobal(Country, UserId, DeviceId, UserName, ProductTy
         objOrder.PaymentStatusId = null;
         objOrder.Deleted = false;
         objOrder.ShippAddress1 = Country;
-        OrderService.create(objOrder).then(function(response) {
-            var objOrderDetail = new Object();
-            objOrderDetail.OrderId = response.id;
-            objOrderDetail.ProductId = ProductId;
-            objOrderDetail.ProductName = "Expiry Product";
-            objOrderDetail.Quantity = 1;
-            objOrderDetail.UnitPriceInclTax = OrderTotal;
-            objOrderDetail.UnitPriceExclTax = OrderTotal;
-            objOrderDetail.idOrderStatus = 1;
-            objOrderDetail.PriceInclTax = OrderTotal;
-            objOrderDetail.PriceExclTax = OrderTotal;
-            OrderServiceDetail.create(objOrderDetail).then(function(responseOrderDetail) {
-                return callback({
-                    success: true,
-                    message: "Order placed successfully...",
-                });
-            });
+
+        OrderService.belongsTo(OrderServiceStatus, {
+            foreignKey: {
+                name: 'OrderStatusId',
+                allowNull: false
+            }
         });
+
+        OrderService.findOne({
+            include: [{
+                model: OrderServiceStatus,
+                attributes: ['id', 'OrderStatus'],
+                where: { OrderStatus: 'Pending' },
+                required: true
+            }],
+            where: { OrderNotes: DeviceId },
+        }).then(function(OrderServiceExist) {
+            if (OrderServiceExist) {
+                return callback({
+                    success: false,
+                    message: "Order is already placed ...",
+                });
+            } else {
+                OrderService.create(objOrder).then(function(response) {
+                    var objOrderDetail = new Object();
+                    objOrderDetail.OrderId = response.id;
+                    objOrderDetail.ProductId = ProductId;
+                    objOrderDetail.ProductName = "Expiry Product";
+                    objOrderDetail.Quantity = 1;
+                    objOrderDetail.UnitPriceInclTax = OrderTotal;
+                    objOrderDetail.UnitPriceExclTax = OrderTotal;
+                    objOrderDetail.idOrderStatus = 1;
+                    objOrderDetail.PriceInclTax = OrderTotal;
+                    objOrderDetail.PriceExclTax = OrderTotal;
+                    OrderServiceDetail.create(objOrderDetail).then(function(responseOrderDetail) {
+                        return callback({
+                            success: true,
+                            message: "Order placed successfully...",
+                        });
+                    });
+                });
+            }
+        })
+
+
     });
 }
 
 
+function getVehicleLastLocation(callback) {
+
+    var Startdate = new Date();
+
+    var convertDate = convertdateformatForUnix(Startdate);
+    var unixStartdate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
+    var query = "select * from tblgpsdata a inner join (select max(Date) as maxdate,DeviceId from  tblgpsdata where Date<" + unixStartdate + " group by DeviceId) d on  a.DeviceId = d.DeviceId and a.Date =d.maxdate where a.GPSPositioning='A' group by a.DeviceId";
+    console.log("select * from tblgpsdata a inner join (select max(Date) as maxdate,DeviceId from  tblgpsdata where Date<" + unixStartdate + " group by DeviceId) d on  a.DeviceId = d.DeviceId and a.Date =d.maxdate where a.GPSPositioning='A' group by a.DeviceId");
+    connection.query(query, function(err, rows, fields) {
+        if (!err && rows) {
+            if (rows.length > 0) {
+                for (var i = 0; i < rows.length; i++) {
+                    client.set(rows[i].DeviceId, JSON.stringify(rows[i]), function(err, replies) {
+
+
+                    });
+                }
+                return callback({
+                    success: true,
+                    message: "Data save successfully...",
+                });
+            } else {
+                return callback({
+                    success: false,
+                    message: "Data could not save...",
+                });
+            }
+            // res.json(rows);
+        } else {
+            return callback({
+                success: false,
+                message: "Data could not save...",
+            });
+        }
+    })
+}
+
+router.get('/getVehicleLastLocation', function(req, res) {
+    getVehicleLastLocation(function(response) {
+        res.json(response);
+    })
+})
+
+function convertdateformatForUnix(date1) {
+    var date = new Date(date1);
+    var firstdayMonth = date.getMonth() + 1;
+    var firstdayDay = date.getDate();
+    var firstdayYear = date.getFullYear();
+    var firstdayHours = date.getHours();
+    var firstdayMinutes = date.getMinutes();
+    var firstdaySeconds = date.getSeconds();
+
+    return ("00" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("0000" + firstdayDay.toString()).slice(-2) + " " + ("00" + firstdayHours.toString()).slice(-2) + ':' + ("00" + firstdayMinutes.toString()).slice(-2) + ':' + ("00" + firstdaySeconds.toString()).slice(-2);
+
+}
 
 // CreateOrderServiceGlobal("India", 1, "2201", "XXXX", 1, function (ddd) {
 //     console.log(ddd);
