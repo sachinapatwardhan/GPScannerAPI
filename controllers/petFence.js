@@ -336,7 +336,7 @@ router.post('/SaveFence', jsonParser, function(req, res) {
     // }
 });
 
-router.post('/SaveFenceById', jsonParser, function(req, res) {
+router.post('/OldSaveFenceById', jsonParser, function(req, res) {
     objFence = req.body;
     Fence.findOrCreate({
         where: {
@@ -531,159 +531,32 @@ router.post('/SaveFenceById', jsonParser, function(req, res) {
         }
     })
 });
-
-
-
-router.post('/SaveFenceByIdNew', jsonParser, function(req, res) {
+router.post('/SaveFenceById', jsonParser, function(req, res) {
     objFence = req.body;
 
-    var Deviceidlist = objFence.selectedlist;
-    Fence.find({
-        where: {
-            id: objFence.idFence
-        },
-    }).then(function(resFence) {
-        if (resFence) {
-            // Fence.destroy({
-            //     where: {
-            //         name: resFence.name,
-            //         range: resFence.range,
-            //         lat: resFence.lat,
-            //         lng: resFence.lng,
-            //         fencedraw: resFence.fencedraw,
-            //     }
-            // }).then(function(fencedeleted) {
-
-            //     function uploader(m) {
-            //         if (Deviceidlist.length > m) {
-            //             objFence.deviceId = Deviceidlist[m];
-            //             Fence.create(objFence).then(function(resFence) {
-            //                 if ((resFence)) {
-            //                     var IsPetInFence = true;
-            //                     PetGPS.findOne({
-            //                         where: {
-            //                             DeviceId: objFence.deviceId
-            //                         },
-            //                         order: 'id DESC'
-            //                     }).then(function(response) {
-            //                         if (response != null) {
-
-            //                             var CheckPoints = {
-            //                                 latitude: parseFloat(response.Latitude),
-            //                                 longitude: parseFloat(response.Longitude)
-            //                             }
-
-            //                             if (objFence.fencedraw == "circle") {
-            //                                 var CircleCenterPoints = {
-            //                                     latitude: parseFloat(objFence.lat),
-            //                                     longitude: parseFloat(objFence.lng)
-            //                                 }
-            //                                 var CircleRadius = parseFloat(objFence.range);
-            //                                 IsPetInFence = geolib.isPointInCircle(CheckPoints, CircleCenterPoints, CircleRadius)
-            //                             } else if (objFence.fencedraw == "polygon" || objFence.fencedraw == "polyline") {
-            //                                 var lstpolygonDrawC = [];
-            //                                 var lstlatC = objFence.lat.split(',');
-            //                                 var lstlngC = objFence.lng.split(',');
-
-            //                                 for (var i = 0; i < lstlatC.length; i++) {
-            //                                     var objDraw = {
-            //                                         latitude: parseFloat(lstlatC[i]),
-            //                                         longitude: parseFloat(lstlngC[i])
-            //                                     }
-            //                                     lstpolygonDrawC.push(objDraw);
-            //                                 }
-            //                                 IsPetInFence = geolib.isPointInside(CheckPoints, lstpolygonDrawC)
-            //                             } else if (objFence.fencedraw == "rectangle") {
-            //                                 var lstpolygonDrawC = [];
-            //                                 var lstlatC = objFence.lat.split(',');
-            //                                 var lstlngC = objFence.lng.split(',');
-
-
-            //                                 var objDraw = {
-            //                                     latitude: parseFloat(lstlatC[0]),
-            //                                     longitude: parseFloat(lstlngC[0])
-            //                                 }
-            //                                 lstpolygonDrawC.push(objDraw);
-            //                                 var objDraw = {
-            //                                     latitude: parseFloat(lstlatC[0]),
-            //                                     longitude: parseFloat(lstlngC[1])
-            //                                 }
-            //                                 lstpolygonDrawC.push(objDraw);
-            //                                 var objDraw = {
-            //                                     latitude: parseFloat(lstlatC[1]),
-            //                                     longitude: parseFloat(lstlngC[1])
-            //                                 }
-            //                                 lstpolygonDrawC.push(objDraw);
-            //                                 var objDraw = {
-            //                                     latitude: parseFloat(lstlatC[1]),
-            //                                     longitude: parseFloat(lstlngC[0])
-            //                                 }
-            //                                 lstpolygonDrawC.push(objDraw);
-            //                                 var objDraw = {
-            //                                     latitude: parseFloat(lstlatC[0]),
-            //                                     longitude: parseFloat(lstlngC[0])
-            //                                 }
-            //                                 lstpolygonDrawC.push(objDraw);
-
-            //                                 IsPetInFence = geolib.isPointInside(CheckPoints, lstpolygonDrawC)
-            //                             };
-            //                         }
-            //                         // Bike.findOne({
-            //                         //     where: {
-            //                         //         deviceid: objFence.deviceId
-            //                         //     }
-            //                         // }).then(function(objPet) {
-
-            //                         objFence.IsInFence = IsPetInFence;
-            //                         Fence.update(objFence, {
-            //                             where: {
-            //                                 id: objFence.id
-            //                             }
-            //                         }).then(function(resUpdate) {
-            //                             // funAuditLog.CreateAuditLog('SaveFence', UserExist.username , 'Delete Pet Tracking');
-            //                             if (resUpdate) {
-            //                                 uploader(m + 1);
-            //                             } else {
-            //                                 res.json(resUpdate)
-            //                             }
-            //                             // res.json({
-            //                             //     success: true,
-            //                             //     message: "Fence created successfully...",
-            //                             //     data: resUpdate
-            //                             // });
-            //                         });
-            //                         // })
-
-            //                     })
-            //                 }
-            //             })
-            //         } else {
-            //             res.json({
-            //                 success: true,
-            //                 message: "Fence Updated successfully...",
-            //             });
-            //         }
-            //     }
-            //     uploader(0);
-
-            // })
-            Fence.update(objFence, {
-                where: {
-                    id: objFence.idFence
-                }
-            }).then(function(resFence) {
+    if (objFence.idFence == 0 || objFence.idFence == null || objFence.idFence == undefined) {
+        Fence.create(objFence).then(function(resFence) {
+            if (resFence) {
                 var IsPetInFence = true;
-                PetGPS.findOne({
-                    where: {
-                        DeviceId: objFence.deviceId
-                    },
-                    order: 'id DESC'
-                }).then(function(response) {
-                    if (response != null) {
+                // PetGPS.findOne({
+                //     where: {
+                //         DeviceId: objFence.deviceId
+                //     },
+                //     order: 'id DESC'
+                // }).then(function(response) {
+                //     if (response != null) {
+
+                //----------------call redix server data--------------------------
+                client.get(objFence.deviceId, function(err, strgpsdata) {
+                    if (!err && strgpsdata != null && strgpsdata != '' && strgpsdata != undefined) {
+                        var response = JSON.parse(strgpsdata);
+                        console.log("up########", response.DeviceId);
+                        //-----------------------------------------------------
                         var CheckPoints = {
                             latitude: parseFloat(response.Latitude),
                             longitude: parseFloat(response.Longitude)
                         }
+
                         if (objFence.fencedraw == "circle") {
                             var CircleCenterPoints = {
                                 latitude: parseFloat(objFence.lat),
@@ -739,7 +612,6 @@ router.post('/SaveFenceByIdNew', jsonParser, function(req, res) {
                             IsPetInFence = geolib.isPointInside(CheckPoints, lstpolygonDrawC)
                         };
                     }
-
                     // Bike.findOne({
                     //     where: {
                     //         deviceid: objFence.deviceId
@@ -748,469 +620,127 @@ router.post('/SaveFenceByIdNew', jsonParser, function(req, res) {
                     objFence.IsInFence = IsPetInFence;
                     Fence.update(objFence, {
                         where: {
-                            id: objFence.idFence
+                            id: resFence.id
                         }
                     }).then(function(resUpdate) {
+                        // funAuditLog.CreateAuditLog('SaveFence', UserExist.username , 'Delete Pet Tracking');
                         res.json({
                             success: true,
-                            message: "Fence updated successfully...",
+                            message: "Fence created successfully...",
                             data: resUpdate
                         });
                     });
                     // })
                 })
-            })
+            }
+        })
+    } else {
+        Fence.update(objFence, {
+            where: {
+                id: objFence.idFence
+            }
+        }).then(function(resFence) {
+            // var IsPetInFence = true;
+            // PetGPS.findOne({
+            //     where: {
+            //         DeviceId: objFence.deviceId
+            //     },
+            //     order: 'id DESC'
+            // }).then(function(response) {
+            //     if (response != null) {
 
-        } else {
-            objFence.selectedlist.push(objFence.deviceId);
-
-            function uploader(m) {
-                if (Deviceidlist.length > m) {
-                    objFence.deviceId = Deviceidlist[m];
-                    Fence.create(objFence).then(function(resFence) {
-                        if ((resFence)) {
-                            var IsPetInFence = true;
-                            PetGPS.findOne({
-                                where: {
-                                    DeviceId: objFence.deviceId
-                                },
-                                order: 'id DESC'
-                            }).then(function(response) {
-                                if (response != null) {
-
-                                    var CheckPoints = {
-                                        latitude: parseFloat(response.Latitude),
-                                        longitude: parseFloat(response.Longitude)
-                                    }
-
-                                    if (objFence.fencedraw == "circle") {
-                                        var CircleCenterPoints = {
-                                            latitude: parseFloat(objFence.lat),
-                                            longitude: parseFloat(objFence.lng)
-                                        }
-                                        var CircleRadius = parseFloat(objFence.range);
-                                        IsPetInFence = geolib.isPointInCircle(CheckPoints, CircleCenterPoints, CircleRadius)
-                                    } else if (objFence.fencedraw == "polygon" || objFence.fencedraw == "polyline") {
-                                        var lstpolygonDrawC = [];
-                                        var lstlatC = objFence.lat.split(',');
-                                        var lstlngC = objFence.lng.split(',');
-
-                                        for (var i = 0; i < lstlatC.length; i++) {
-                                            var objDraw = {
-                                                latitude: parseFloat(lstlatC[i]),
-                                                longitude: parseFloat(lstlngC[i])
-                                            }
-                                            lstpolygonDrawC.push(objDraw);
-                                        }
-                                        IsPetInFence = geolib.isPointInside(CheckPoints, lstpolygonDrawC)
-                                    } else if (objFence.fencedraw == "rectangle") {
-                                        var lstpolygonDrawC = [];
-                                        var lstlatC = objFence.lat.split(',');
-                                        var lstlngC = objFence.lng.split(',');
+            //----------------call redix server data--------------------------
+            client.get(objFence.deviceId, function(err, strgpsdata) {
+                if (!err && strgpsdata != null && strgpsdata != '' && strgpsdata != undefined) {
+                    var response = JSON.parse(strgpsdata);
+                    console.log("up########", response.DeviceId);
+                    //-----------------------------------------------------
 
 
-                                        var objDraw = {
-                                            latitude: parseFloat(lstlatC[0]),
-                                            longitude: parseFloat(lstlngC[0])
-                                        }
-                                        lstpolygonDrawC.push(objDraw);
-                                        var objDraw = {
-                                            latitude: parseFloat(lstlatC[0]),
-                                            longitude: parseFloat(lstlngC[1])
-                                        }
-                                        lstpolygonDrawC.push(objDraw);
-                                        var objDraw = {
-                                            latitude: parseFloat(lstlatC[1]),
-                                            longitude: parseFloat(lstlngC[1])
-                                        }
-                                        lstpolygonDrawC.push(objDraw);
-                                        var objDraw = {
-                                            latitude: parseFloat(lstlatC[1]),
-                                            longitude: parseFloat(lstlngC[0])
-                                        }
-                                        lstpolygonDrawC.push(objDraw);
-                                        var objDraw = {
-                                            latitude: parseFloat(lstlatC[0]),
-                                            longitude: parseFloat(lstlngC[0])
-                                        }
-                                        lstpolygonDrawC.push(objDraw);
-
-                                        IsPetInFence = geolib.isPointInside(CheckPoints, lstpolygonDrawC)
-                                    };
-                                }
-                                // Bike.findOne({
-                                //     where: {
-                                //         deviceid: objFence.deviceId
-                                //     }
-                                // }).then(function(objPet) {
-
-                                objFence.IsInFence = IsPetInFence;
-                                Fence.update(objFence, {
-                                    where: {
-                                        id: objFence.id
-                                    }
-                                }).then(function(resUpdate) {
-                                    // funAuditLog.CreateAuditLog('SaveFence', UserExist.username , 'Delete Pet Tracking');
-                                    if (resUpdate) {
-                                        uploader(m + 1);
-                                    } else {
-                                        res.json(resUpdate)
-                                    }
-                                    // res.json({
-                                    //     success: true,
-                                    //     message: "Fence created successfully...",
-                                    //     data: resUpdate
-                                    // });
-                                });
-                                // })
-
-                            })
+                    var CheckPoints = {
+                        latitude: parseFloat(response.Latitude),
+                        longitude: parseFloat(response.Longitude)
+                    }
+                    if (objFence.fencedraw == "circle") {
+                        var CircleCenterPoints = {
+                            latitude: parseFloat(objFence.lat),
+                            longitude: parseFloat(objFence.lng)
                         }
-                    })
-                } else {
+                        var CircleRadius = parseFloat(objFence.range);
+                        IsPetInFence = geolib.isPointInCircle(CheckPoints, CircleCenterPoints, CircleRadius)
+                    } else if (objFence.fencedraw == "polygon" || objFence.fencedraw == "polyline") {
+                        var lstpolygonDrawC = [];
+                        var lstlatC = objFence.lat.split(',');
+                        var lstlngC = objFence.lng.split(',');
+
+                        for (var i = 0; i < lstlatC.length; i++) {
+                            var objDraw = {
+                                latitude: parseFloat(lstlatC[i]),
+                                longitude: parseFloat(lstlngC[i])
+                            }
+                            lstpolygonDrawC.push(objDraw);
+                        }
+                        IsPetInFence = geolib.isPointInside(CheckPoints, lstpolygonDrawC)
+                    } else if (objFence.fencedraw == "rectangle") {
+                        var lstpolygonDrawC = [];
+                        var lstlatC = objFence.lat.split(',');
+                        var lstlngC = objFence.lng.split(',');
+
+
+                        var objDraw = {
+                            latitude: parseFloat(lstlatC[0]),
+                            longitude: parseFloat(lstlngC[0])
+                        }
+                        lstpolygonDrawC.push(objDraw);
+                        var objDraw = {
+                            latitude: parseFloat(lstlatC[0]),
+                            longitude: parseFloat(lstlngC[1])
+                        }
+                        lstpolygonDrawC.push(objDraw);
+                        var objDraw = {
+                            latitude: parseFloat(lstlatC[1]),
+                            longitude: parseFloat(lstlngC[1])
+                        }
+                        lstpolygonDrawC.push(objDraw);
+                        var objDraw = {
+                            latitude: parseFloat(lstlatC[1]),
+                            longitude: parseFloat(lstlngC[0])
+                        }
+                        lstpolygonDrawC.push(objDraw);
+                        var objDraw = {
+                            latitude: parseFloat(lstlatC[0]),
+                            longitude: parseFloat(lstlngC[0])
+                        }
+                        lstpolygonDrawC.push(objDraw);
+
+                        IsPetInFence = geolib.isPointInside(CheckPoints, lstpolygonDrawC)
+                    };
+                }
+
+                // Bike.findOne({
+                //     where: {
+                //         deviceid: objFence.deviceId
+                //     }
+                // }).then(function(objPet) {
+                objFence.IsInFence = IsPetInFence;
+                Fence.update(objFence, {
+                    where: {
+                        id: objFence.idFence
+                    }
+                }).then(function(resUpdate) {
                     res.json({
                         success: true,
-                        message: "Fence created successfully...",
+                        message: "Fence updated successfully...",
+                        data: resUpdate
                     });
-                }
-            }
-            uploader(0);
-        }
-    })
+                });
+                // })
+            })
+        })
+    }
 
-
-
-
-    // function uploader(m) {
-    //     console.log("i....", m);
-    //     if (Deviceidlist.length > m) {
-    //         objFence.deviceId = Deviceidlist[m];
-    //         console.log(objFence.deviceId)
-    //         Fence.findOrCreate({
-    //             where: {
-    //                 id: objFence.idFence
-    //             },
-    //             defaults: objFence
-    //         }).then(function(resFence) {
-    //             if ((resFence[1])) {
-    //                 var IsPetInFence = true;
-    //                 PetGPS.findOne({
-    //                     where: {
-    //                         DeviceId: objFence.deviceId
-    //                     },
-    //                     order: 'id DESC'
-    //                 }).then(function(response) {
-    //                     if (response != null) {
-
-    //                         var CheckPoints = {
-    //                             latitude: parseFloat(response.Latitude),
-    //                             longitude: parseFloat(response.Longitude)
-    //                         }
-
-    //                         if (objFence.fencedraw == "circle") {
-    //                             var CircleCenterPoints = {
-    //                                 latitude: parseFloat(objFence.lat),
-    //                                 longitude: parseFloat(objFence.lng)
-    //                             }
-    //                             var CircleRadius = parseFloat(objFence.range);
-    //                             IsPetInFence = geolib.isPointInCircle(CheckPoints, CircleCenterPoints, CircleRadius)
-    //                         } else if (objFence.fencedraw == "polygon" || objFence.fencedraw == "polyline") {
-    //                             var lstpolygonDrawC = [];
-    //                             var lstlatC = objFence.lat.split(',');
-    //                             var lstlngC = objFence.lng.split(',');
-
-    //                             for (var i = 0; i < lstlatC.length; i++) {
-    //                                 var objDraw = {
-    //                                     latitude: parseFloat(lstlatC[i]),
-    //                                     longitude: parseFloat(lstlngC[i])
-    //                                 }
-    //                                 lstpolygonDrawC.push(objDraw);
-    //                             }
-    //                             IsPetInFence = geolib.isPointInside(CheckPoints, lstpolygonDrawC)
-    //                         } else if (objFence.fencedraw == "rectangle") {
-    //                             var lstpolygonDrawC = [];
-    //                             var lstlatC = objFence.lat.split(',');
-    //                             var lstlngC = objFence.lng.split(',');
-
-
-    //                             var objDraw = {
-    //                                 latitude: parseFloat(lstlatC[0]),
-    //                                 longitude: parseFloat(lstlngC[0])
-    //                             }
-    //                             lstpolygonDrawC.push(objDraw);
-    //                             var objDraw = {
-    //                                 latitude: parseFloat(lstlatC[0]),
-    //                                 longitude: parseFloat(lstlngC[1])
-    //                             }
-    //                             lstpolygonDrawC.push(objDraw);
-    //                             var objDraw = {
-    //                                 latitude: parseFloat(lstlatC[1]),
-    //                                 longitude: parseFloat(lstlngC[1])
-    //                             }
-    //                             lstpolygonDrawC.push(objDraw);
-    //                             var objDraw = {
-    //                                 latitude: parseFloat(lstlatC[1]),
-    //                                 longitude: parseFloat(lstlngC[0])
-    //                             }
-    //                             lstpolygonDrawC.push(objDraw);
-    //                             var objDraw = {
-    //                                 latitude: parseFloat(lstlatC[0]),
-    //                                 longitude: parseFloat(lstlngC[0])
-    //                             }
-    //                             lstpolygonDrawC.push(objDraw);
-
-    //                             IsPetInFence = geolib.isPointInside(CheckPoints, lstpolygonDrawC)
-    //                         };
-    //                     }
-    //                     // Bike.findOne({
-    //                     //     where: {
-    //                     //         deviceid: objFence.deviceId
-    //                     //     }
-    //                     // }).then(function(objPet) {
-
-    //                     objFence.IsInFence = IsPetInFence;
-    //                     Fence.update(objFence, {
-    //                         where: {
-    //                             id: objFence.id
-    //                         }
-    //                     }).then(function(resUpdate) {
-    //                         // funAuditLog.CreateAuditLog('SaveFence', UserExist.username , 'Delete Pet Tracking');
-    //                         if (resUpdate) {
-    //                             uploader(m + 1);
-    //                         } else {
-    //                             res.json(resUpdate)
-    //                         }
-    //                         // res.json({
-    //                         //     success: true,
-    //                         //     message: "Fence created successfully...",
-    //                         //     data: resUpdate
-    //                         // });
-    //                     });
-    //                     // })
-    //                 })
-    //             } else {
-    //                 Fence.destroy({
-    //                     where: {
-    //                         name: objFence.name,
-    //                         range: objFence.range,
-    //                         lat: objFence.lat,
-    //                         lng: objFence.lng,
-    //                         fencedraw: objFence.fencedraw,
-    //                         deviceId: { $notIn: Deviceidlist }
-    //                     }
-    //                 }).then(function(fencedeleted) {
-    //                     Fence.create(objFence).then(function(resFence) {
-    //                         if ((resFence)) {
-    //                             var IsPetInFence = true;
-    //                             PetGPS.findOne({
-    //                                 where: {
-    //                                     DeviceId: objFence.deviceId
-    //                                 },
-    //                                 order: 'id DESC'
-    //                             }).then(function(response) {
-    //                                 if (response != null) {
-
-    //                                     var CheckPoints = {
-    //                                         latitude: parseFloat(response.Latitude),
-    //                                         longitude: parseFloat(response.Longitude)
-    //                                     }
-
-    //                                     if (objFence.fencedraw == "circle") {
-    //                                         var CircleCenterPoints = {
-    //                                             latitude: parseFloat(objFence.lat),
-    //                                             longitude: parseFloat(objFence.lng)
-    //                                         }
-    //                                         var CircleRadius = parseFloat(objFence.range);
-    //                                         IsPetInFence = geolib.isPointInCircle(CheckPoints, CircleCenterPoints, CircleRadius)
-    //                                     } else if (objFence.fencedraw == "polygon" || objFence.fencedraw == "polyline") {
-    //                                         var lstpolygonDrawC = [];
-    //                                         var lstlatC = objFence.lat.split(',');
-    //                                         var lstlngC = objFence.lng.split(',');
-
-    //                                         for (var i = 0; i < lstlatC.length; i++) {
-    //                                             var objDraw = {
-    //                                                 latitude: parseFloat(lstlatC[i]),
-    //                                                 longitude: parseFloat(lstlngC[i])
-    //                                             }
-    //                                             lstpolygonDrawC.push(objDraw);
-    //                                         }
-    //                                         IsPetInFence = geolib.isPointInside(CheckPoints, lstpolygonDrawC)
-    //                                     } else if (objFence.fencedraw == "rectangle") {
-    //                                         var lstpolygonDrawC = [];
-    //                                         var lstlatC = objFence.lat.split(',');
-    //                                         var lstlngC = objFence.lng.split(',');
-
-
-    //                                         var objDraw = {
-    //                                             latitude: parseFloat(lstlatC[0]),
-    //                                             longitude: parseFloat(lstlngC[0])
-    //                                         }
-    //                                         lstpolygonDrawC.push(objDraw);
-    //                                         var objDraw = {
-    //                                             latitude: parseFloat(lstlatC[0]),
-    //                                             longitude: parseFloat(lstlngC[1])
-    //                                         }
-    //                                         lstpolygonDrawC.push(objDraw);
-    //                                         var objDraw = {
-    //                                             latitude: parseFloat(lstlatC[1]),
-    //                                             longitude: parseFloat(lstlngC[1])
-    //                                         }
-    //                                         lstpolygonDrawC.push(objDraw);
-    //                                         var objDraw = {
-    //                                             latitude: parseFloat(lstlatC[1]),
-    //                                             longitude: parseFloat(lstlngC[0])
-    //                                         }
-    //                                         lstpolygonDrawC.push(objDraw);
-    //                                         var objDraw = {
-    //                                             latitude: parseFloat(lstlatC[0]),
-    //                                             longitude: parseFloat(lstlngC[0])
-    //                                         }
-    //                                         lstpolygonDrawC.push(objDraw);
-
-    //                                         IsPetInFence = geolib.isPointInside(CheckPoints, lstpolygonDrawC)
-    //                                     };
-    //                                 }
-    //                                 // Bike.findOne({
-    //                                 //     where: {
-    //                                 //         deviceid: objFence.deviceId
-    //                                 //     }
-    //                                 // }).then(function(objPet) {
-
-    //                                 objFence.IsInFence = IsPetInFence;
-    //                                 Fence.update(objFence, {
-    //                                     where: {
-    //                                         id: objFence.id
-    //                                     }
-    //                                 }).then(function(resUpdate) {
-    //                                     // funAuditLog.CreateAuditLog('SaveFence', UserExist.username , 'Delete Pet Tracking');
-    //                                     if (resUpdate) {
-    //                                         uploader(m + 1);
-    //                                     } else {
-    //                                         res.json(resUpdate)
-    //                                     }
-    //                                     // res.json({
-    //                                     //     success: true,
-    //                                     //     message: "Fence created successfully...",
-    //                                     //     data: resUpdate
-    //                                     // });
-    //                                 });
-    //                                 // })
-
-    //                             })
-    //                         }
-    //                     })
-
-
-    //                     // Fence.update(objFence, {
-    //                     //     where: {
-    //                     //         id: objFence.idFence
-    //                     //     }
-    //                     // }).then(function(resFence) {
-    //                     //     var IsPetInFence = true;
-    //                     //     PetGPS.findOne({
-    //                     //         where: {
-    //                     //             DeviceId: objFence.deviceId
-    //                     //         },
-    //                     //         order: 'id DESC'
-    //                     //     }).then(function(response) {
-    //                     //         if (response != null) {
-    //                     //             var CheckPoints = {
-    //                     //                 latitude: parseFloat(response.Latitude),
-    //                     //                 longitude: parseFloat(response.Longitude)
-    //                     //             }
-    //                     //             if (objFence.fencedraw == "circle") {
-    //                     //                 var CircleCenterPoints = {
-    //                     //                     latitude: parseFloat(objFence.lat),
-    //                     //                     longitude: parseFloat(objFence.lng)
-    //                     //                 }
-    //                     //                 var CircleRadius = parseFloat(objFence.range);
-    //                     //                 IsPetInFence = geolib.isPointInCircle(CheckPoints, CircleCenterPoints, CircleRadius)
-    //                     //             } else if (objFence.fencedraw == "polygon" || objFence.fencedraw == "polyline") {
-    //                     //                 var lstpolygonDrawC = [];
-    //                     //                 var lstlatC = objFence.lat.split(',');
-    //                     //                 var lstlngC = objFence.lng.split(',');
-
-    //                     //                 for (var i = 0; i < lstlatC.length; i++) {
-    //                     //                     var objDraw = {
-    //                     //                         latitude: parseFloat(lstlatC[i]),
-    //                     //                         longitude: parseFloat(lstlngC[i])
-    //                     //                     }
-    //                     //                     lstpolygonDrawC.push(objDraw);
-    //                     //                 }
-    //                     //                 IsPetInFence = geolib.isPointInside(CheckPoints, lstpolygonDrawC)
-    //                     //             } else if (objFence.fencedraw == "rectangle") {
-    //                     //                 var lstpolygonDrawC = [];
-    //                     //                 var lstlatC = objFence.lat.split(',');
-    //                     //                 var lstlngC = objFence.lng.split(',');
-
-
-    //                     //                 var objDraw = {
-    //                     //                     latitude: parseFloat(lstlatC[0]),
-    //                     //                     longitude: parseFloat(lstlngC[0])
-    //                     //                 }
-    //                     //                 lstpolygonDrawC.push(objDraw);
-    //                     //                 var objDraw = {
-    //                     //                     latitude: parseFloat(lstlatC[0]),
-    //                     //                     longitude: parseFloat(lstlngC[1])
-    //                     //                 }
-    //                     //                 lstpolygonDrawC.push(objDraw);
-    //                     //                 var objDraw = {
-    //                     //                     latitude: parseFloat(lstlatC[1]),
-    //                     //                     longitude: parseFloat(lstlngC[1])
-    //                     //                 }
-    //                     //                 lstpolygonDrawC.push(objDraw);
-    //                     //                 var objDraw = {
-    //                     //                     latitude: parseFloat(lstlatC[1]),
-    //                     //                     longitude: parseFloat(lstlngC[0])
-    //                     //                 }
-    //                     //                 lstpolygonDrawC.push(objDraw);
-    //                     //                 var objDraw = {
-    //                     //                     latitude: parseFloat(lstlatC[0]),
-    //                     //                     longitude: parseFloat(lstlngC[0])
-    //                     //                 }
-    //                     //                 lstpolygonDrawC.push(objDraw);
-
-    //                     //                 IsPetInFence = geolib.isPointInside(CheckPoints, lstpolygonDrawC)
-    //                     //             };
-    //                     //         }
-
-    //                     //         // Bike.findOne({
-    //                     //         //     where: {
-    //                     //         //         deviceid: objFence.deviceId
-    //                     //         //     }
-    //                     //         // }).then(function(objPet) {
-    //                     //         objFence.IsInFence = IsPetInFence;
-    //                     //         Fence.update(objFence, {
-    //                     //             where: {
-    //                     //                 id: objFence.idFence
-    //                     //             }
-    //                     //         }).then(function(resUpdate) {
-    //                     //             if (resUpdate) {
-    //                     //                 uploader(m + 1);
-    //                     //             } else {
-    //                     //                 res.json(resUpdate);
-    //                     //             }
-    //                     //             // res.json({
-    //                     //             //     success: true,
-    //                     //             //     message: "Fence updated successfully...",
-    //                     //             //     data: resUpdate
-    //                     //             // });
-    //                     //         });
-    //                     //         // })
-    //                     //     })
-    //                     // })
-    //                 })
-    //             }
-    //         })
-    //     } else {
-    //         res.json({
-    //             success: true,
-    //             message: "Fence created successfully...",
-    //         });
-    //     }
-    // }
-    // uploader(0)
 });
+
 
 router.post('/UpdateFenceNameById', jsonParser, function(req, res) {
     objFence = req.body;

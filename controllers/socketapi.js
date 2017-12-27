@@ -2290,14 +2290,22 @@ router.get('/SetArmSettings', function(req, res) {
             var unixStartdate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
             // var unixStartdate = Startdate.getTime() / 1000;
 
-            GPSData.findOne({
-                where: {
-                    DeviceId: DeviceId,
-                    Date: { $lte: unixStartdate }
-                },
-                order: 'Date DESC'
-            }).then(function(response) {
-                if (response != null) {
+            // GPSData.findOne({
+            //     where: {
+            //         DeviceId: DeviceId,
+            //         Date: { $lte: unixStartdate }
+            //     },
+            //     order: 'Date DESC'
+            // }).then(function(response) {
+            //     if (response != null) {
+
+            //----------------call redix server data--------------------------
+            client.get(DeviceId, function(err, response) {
+
+                if (!err && response != null && response != '' && response != undefined) {
+                    response = JSON.parse(response);
+                    //----------------End redix server data--------------------------
+
                     if (response.IsEngine == 1) {
                         obj.ArmStatus = 0;
                     } else {

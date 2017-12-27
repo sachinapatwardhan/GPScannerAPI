@@ -334,15 +334,24 @@ router.get('/GetVehicleCurrentLocation', function(req, res) {
     var convertDate = convertdateformatForUnix(Startdate);
     var unixStartdate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
 
-    GPSData.findOne({
-        where: {
-            DeviceId: req.query.DeviceId,
-            Date: { $lte: unixStartdate }
-        },
-        order: 'id DESC'
-    }).then(function(response) {
-        if (response != null) {
-            res.json({ success: true, data: response });
+    // GPSData.findOne({
+    //     where: {
+    //         DeviceId: req.query.DeviceId,
+    //         Date: { $lte: unixStartdate }
+    //     },
+    //     order: 'id DESC'
+    // }).then(function(response) {
+    // if (response != null) {
+    // res.json({ success: true, data: response });
+
+    //----------------call redix server data--------------------------
+    client.get(req.query.DeviceId, function(err, response) {
+
+        if (!err && response != null && response != '' && response != undefined) {
+            //----------------End redix server data--------------------------
+            res.json({ success: true, data: JSON.parse(response) });
+
+
         } else {
             res.json(RecordNotFound);
         }
@@ -572,6 +581,24 @@ function convertdateformatForUnix(date1) {
     return ("00" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("0000" + firstdayDay.toString()).slice(-2) + " " + ("00" + firstdayHours.toString()).slice(-2) + ':' + ("00" + firstdayMinutes.toString()).slice(-2) + ':' + ("00" + firstdaySeconds.toString()).slice(-2);
 
 }
+
+
+router.get('/GetAllVehicleDeviceId', function(req, res) {
+    var search = req.query.search;
+    var searchdevice = {};
+    if (search != null && search != '' & search != undefined) {
+        searchdevice['$and'] = [];
+        var obj = new Object();
+        obj['deviceid'] = {
+            $like: '%' + search + '%'
+        };
+        searchdevice['$and'].push(obj);
+    }
+    Vehicle.findAll({ where: searchdevice }).then(function(response) {
+        res.json(response)
+    })
+
+})
 
 
 module.exports = router

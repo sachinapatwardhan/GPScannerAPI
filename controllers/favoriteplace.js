@@ -51,14 +51,24 @@ router.post('/SaveFavoritePlace', jsonParser, function(req, res) {
         if (response[0]) {
             var IsInFavoritePlace = false;
             // console.log("-----------------------------------------------------------------------")
-            GPSData.findOne({
-                where: {
-                    DeviceId: objFavoritePlace.DeviceId
-                },
-                order: 'id DESC'
-            }).then(function(resGPS) {
-                // console.log("-----------------------------------------------------------------------")
-                if (resGPS != null) {
+
+            // GPSData.findOne({
+            //     where: {
+            //         DeviceId: objFavoritePlace.DeviceId
+            //     },
+            //     order: 'id DESC'
+            // }).then(function(resGPS) {
+            //     // console.log("-----------------------------------------------------------------------")
+            //     if (resGPS != null) {
+
+
+            //----------------call redix server data--------------------------
+            client.get(objFavoritePlace.DeviceId, function(err, strgpsdata) {
+                console.log("@@@@@@@@@@@@@@@", err)
+
+                if (!err && strgpsdata != null && strgpsdata != '' && strgpsdata != undefined) {
+                    var resGPS = JSON.parse(strgpsdata)
+                        //----------------End redix server data--------------------------
                     var CheckPoints = {
                         latitude: parseFloat(resGPS.Latitude),
                         longitude: parseFloat(resGPS.Longitude)
@@ -99,13 +109,21 @@ router.post('/SaveFavoritePlace', jsonParser, function(req, res) {
                 }
             }).then(function(response) {
                 var IsPetInFence = true;
-                PetGPS.findOne({
-                    where: {
-                        DeviceId: objFavoritePlace.deviceId
-                    },
-                    order: 'id DESC'
-                }).then(function(response) {
-                    if (response != null) {
+                // PetGPS.findOne({
+                //     where: {
+                //         DeviceId: objFavoritePlace.deviceId
+                //     },
+                //     order: 'id DESC'
+                // }).then(function(response) {
+                // if (response != null) {
+                //----------------call redix server data--------------------------
+                client.get(objFavoritePlace.deviceId, function(err, response) {
+
+                    if (!err && response != null && response != '' && response != undefined) {
+                        response = JSON.parse(response)
+                            //----------------End redix server data--------------------------
+
+
                         var CheckPoints = {
                                 latitude: parseFloat(response.Latitude),
                                 longitude: parseFloat(response.Longitude)

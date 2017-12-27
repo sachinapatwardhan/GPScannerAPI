@@ -154,20 +154,33 @@ router.get('/GetVehicleById', function(req, res) {
 })
 
 router.get('/GetVehicleCurrentLocation', function(req, res) {
-
-    GPSData.findOne({
-        where: {
-            DeviceId: req.query.DeviceId,
-            Datetime: { $lte: new Date() }
-        },
-        order: 'id DESC'
-    }).then(function(response) {
-        if (response != null) {
-            res.json({ success: true, data: response });
-        } else {
-            res.json(RecordNotFound);
+    //----------------call redix server data--------------------------
+    client.get(req.query.DeviceId, function(err, strgpsdata) {
+        if (!err) {
+            if (strgpsdata != null && strgpsdata != '' && strgpsdata != undefined) {
+                res.json({ success: true, data: JSON.parse(strgpsdata) });
+            } else {
+                res.json(RecordNotFound);
+            }
         }
     })
+
+    //-----------------------------------------------------
+
+
+    // GPSData.findOne({
+    //     where: {
+    //         DeviceId: req.query.DeviceId,
+    //         Datetime: { $lte: new Date() }
+    //     },
+    //     order: 'id DESC'
+    // }).then(function(response) {
+    //     if (response != null) {
+    //         res.json({ success: true, data: response });
+    //     } else {
+    //         res.json(RecordNotFound);
+    //     }
+    // })
 });
 
 module.exports = router
