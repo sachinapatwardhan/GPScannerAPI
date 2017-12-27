@@ -214,20 +214,34 @@ router.get('/GetVehicleCurrentLocation', function(req, res) {
     var unixStartdate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
     // var unixStartdate = Startdate.getTime() / 1000;
 
-    GPSData.findOne({
-        where: {
-            DeviceId: req.query.DeviceId,
-            GPSPositioning: 'A',
-            Date: { $lte: unixStartdate }
-        },
-        order: 'Date DESC'
-    }).then(function(response) {
-        if (response != null) {
-            res.json({ success: true, data: response });
-        } else {
-            res.json(RecordNotFound);
+    //----------------call redix server data--------------------------
+    client.get(req.query.DeviceId, function(err, strgpsdata) {
+        console.log("@@@....", err);
+        if (!err) {
+            if (strgpsdata != null && strgpsdata != '' && strgpsdata != undefined) {
+                res.json({ success: true, data: JSON.parse(strgpsdata) });
+            } else {
+                res.json(RecordNotFound);
+            }
         }
     })
+
+    //-----------------------------------------------------
+
+    // GPSData.findOne({
+    //     where: {
+    //         DeviceId: req.query.DeviceId,
+    //         GPSPositioning: 'A',
+    //         Date: { $lte: unixStartdate }
+    //     },
+    //     order: 'Date DESC'
+    // }).then(function(response) {
+    //     if (response != null) {
+    //         res.json({ success: true, data: response });
+    //     } else {
+    //         res.json(RecordNotFound);
+    //     }
+    // })
 });
 
 router.get('/GetVehicleCurrentLocationForSharedDevice', function(req, res) {
@@ -542,24 +556,36 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                             }
                                         }).then(function(response) {
                                             if (response[0]) {
+
                                                 funAuditLog.CreateAuditLog('SaveVehicle(IMEI:' + objVehicle.IMEI + ')', UserExist.username, 'Create Vehicle');
                                                 GpsDevice.findOne({ where: { DeviceId: objVehicle.deviceid } }).then(function(GpsDataExist) {
-                                                    if (GpsDataExist) {
-                                                        funAuditLog.CreateAuditLog('SaveDate', UserExist.username, 'Save Vehicle Expiry & Activation Date');
-                                                        GpsDataExist.updateAttributes({
-                                                            IsActive: 1,
-                                                            ExpiryDate: ExpiryDate,
-                                                            ActivationDate: ActivationDate,
-                                                        }).then(function(response1) {
+                                                        if (GpsDataExist) {
+                                                            funAuditLog.CreateAuditLog('SaveDate', UserExist.username, 'Save Vehicle Expiry & Activation Date');
+                                                            GpsDataExist.updateAttributes({
+                                                                IsActive: 1,
+                                                                ExpiryDate: ExpiryDate,
+                                                                ActivationDate: ActivationDate,
+                                                            }).then(function(response1) {
 
-                                                        })
-                                                    }
-                                                })
-                                                res.json({
-                                                    success: true,
-                                                    message: "Vehicle created successfully...",
-                                                    data: objVehicle
-                                                });
+                                                            })
+                                                        }
+                                                    })
+                                                    // if (objGpsDevice.AppName == 'Maark') {
+                                                CreateOrderServiceGlobal(UserExist.country, UserExist.id, objVehicle.deviceid, UserExist.username, UserExist.idApp, function(orderresponse) {
+                                                        res.json({
+                                                            success: true,
+                                                            message: "Vehicle created successfully...",
+                                                            data: objVehicle
+                                                        });
+                                                    })
+                                                    // } else {
+                                                    //     res.json({
+                                                    //         success: true,
+                                                    //         message: "Vehicle created successfully...",
+                                                    //         data: objVehicle
+                                                    //     });
+                                                    // }
+
                                             } else {
                                                 res.json({
                                                     success: false,
@@ -607,11 +633,22 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                                                 })
                                                             }
                                                         })
-                                                        res.json({
-                                                            success: true,
-                                                            message: "Vehicle created successfully...",
-                                                            data: response
-                                                        });
+
+                                                        // if (objGpsDevice.AppName == 'Maark') {
+                                                        CreateOrderServiceGlobal(UserExist.country, UserExist.id, objVehicle.deviceid, UserExist.username, UserExist.idApp, function(orderresponse) {
+                                                                res.json({
+                                                                    success: true,
+                                                                    message: "Vehicle created successfully...",
+                                                                    data: objVehicle
+                                                                });
+                                                            })
+                                                            // } else {
+                                                            //     res.json({
+                                                            //         success: true,
+                                                            //         message: "Vehicle created successfully...",
+                                                            //         data: objVehicle
+                                                            //     });
+                                                            // }
                                                     } else {
                                                         res.json({
                                                             success: false,
@@ -693,11 +730,33 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                         }).then(function(response) {
                                             if (response[0]) {
                                                 funAuditLog.CreateAuditLog('SaveVehicle', UserExist.username, 'Create Vehicle');
-                                                res.json({
-                                                    success: true,
-                                                    message: "Vehicle created successfully...",
-                                                    data: objVehicle
-                                                });
+                                                // console.log("***********")
+                                                // console.log("country...........", UserExist.country)
+                                                // console.log("id................", UserExist.id)
+                                                // console.log("username..........", UserExist.username)
+                                                // console.log("deviceid..........", objVehicle.deviceid)
+                                                // CreateOrderServiceGlobal(UserExist.country, UserExist.id, objVehicle.deviceid, UserExist.username, function(orderresponse) {
+                                                //     res.json({
+                                                //         success: true,
+                                                //         message: "Vehicle created successfully...",
+                                                //         data: objVehicle
+                                                //     });
+                                                // })
+                                                // if (objGpsDevice.AppName == 'Maark') {
+                                                CreateOrderServiceGlobal(UserExist.country, UserExist.id, objVehicle.deviceid, UserExist.username, UserExist.idApp, function(orderresponse) {
+                                                        res.json({
+                                                            success: true,
+                                                            message: "Vehicle created successfully...",
+                                                            data: objVehicle
+                                                        });
+                                                    })
+                                                    // } else {
+                                                    //     res.json({
+                                                    //         success: true,
+                                                    //         message: "Vehicle created successfully...",
+                                                    //         data: objVehicle
+                                                    //     });
+                                                    // }
                                             } else {
                                                 res.json({
                                                     success: false,
@@ -723,11 +782,34 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                                 Vehicle.create(objVehicle).then(function(response) {
                                                     if (response) {
                                                         funAuditLog.CreateAuditLog('SaveVehicle', UserExist.username, 'Create Vehicle');
-                                                        res.json({
-                                                            success: true,
-                                                            message: "Vehicle created successfully...",
-                                                            data: response
-                                                        });
+                                                        // console.log("***********")
+                                                        // console.log("country...........", UserExist.country)
+                                                        // console.log("id................", UserExist.id)
+                                                        // console.log("username..........", UserExist.username)
+                                                        // console.log("deviceid..........", objVehicle.deviceid)
+                                                        // CreateOrderServiceGlobal(UserExist.country, UserExist.id, objVehicle.deviceid, UserExist.username, function(orderresponse) {
+                                                        //     res.json({
+                                                        //         success: true,
+                                                        //         message: "Vehicle created successfully...",
+                                                        //         data: response
+                                                        //     });
+                                                        // })
+                                                        // if (objGpsDevice.AppName == 'Maark') {
+
+                                                        CreateOrderServiceGlobal(UserExist.country, UserExist.id, objVehicle.deviceid, UserExist.username, UserExist.idApp, function(orderresponse) {
+                                                                res.json({
+                                                                    success: true,
+                                                                    message: "Vehicle created successfully...",
+                                                                    data: objVehicle
+                                                                });
+                                                            })
+                                                            // } else {
+                                                            //     res.json({
+                                                            //         success: true,
+                                                            //         message: "Vehicle created successfully...",
+                                                            //         data: objVehicle
+                                                            //     });
+                                                            // }
                                                     } else {
                                                         res.json({
                                                             success: false,
