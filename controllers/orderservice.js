@@ -9,7 +9,8 @@ var ProductAttributeMapping = models.product_productattribute_mapping;
 var ProductAttribute = models.productattribute;
 var ProductAttributeValue = models.productattributevalue;
 var AppInfo = models.tblappinfo;
-
+var User = models.tbluserinformation;
+var GPSDevice = models.tblgpsdevice;
 //
 // CreateOrderServiceGlobal("India", 1, "0000000000000", "IMMM", function(redds) {
 //     console.log(redds)
@@ -931,5 +932,54 @@ rule.second = 0;
 var ExpireDataCheck = schedule.scheduleJob(rule, function() {
     // MerchantLock();
 });
+
+
+router.post('/SaveOrderService', jsonParser, function(req, res) {
+    objOrderservice = req.body;
+    objHeader = req.headers;
+    var token = getToken(objHeader);
+    if (token) {
+        var decoded = jwt.decode(token, TokenKey);
+        User.findOne({
+            where: {
+                username: decoded.username,
+                password: decoded.password
+            }
+        }).then(function(UserExist) {
+            if (UserExist != null) {
+                User.findOne({ where: { email: objOrderservice.UserName, idApp: objOrderservice.idApp } }).then(function(Userfound) {
+                    if (Userfound) {
+                        GPSDevice.findOne({ where: { DeviceId: objOrderservice.DeviceId, AppName: objOrderservice.AppName } }).then(function(DeviceExist) {
+                            if (DeviceExist) {
+                                CreateOrderServiceGlobal(Userfound.country, Userfound.id, DeviceExist.DeviceId, Userfound.username, Userfound.idApp, function(orderresponse) {
+                                    res.json({
+                                        success: true,
+                                        message: "Oder Service created successfully...",
+                                    });
+                                })
+                            } else {
+                                res.json({
+                                    success: false,
+                                    message: "Invalid Device Id.....",
+                                });
+                            }
+                        })
+                    } else {
+                        res.json({
+                            success: false,
+                            message: "Invalid User Name.....",
+                        });
+                    }
+                })
+
+            } else {
+                res.json(InvalidToken);
+            }
+        })
+    } else {
+        res.json(InvalidToken);
+    }
+})
+
 
 module.exports = router
