@@ -2380,6 +2380,7 @@ global.CreateOrderServiceGlobal = CreateOrderServiceGlobal;
 global.CreateDabitWalletTransactionGlobal = CreateDabitWalletTransactionGlobal;
 global.GetRandomWord = GetRandomWord;
 global.GetWalletChargesGlobal = GetWalletChargesGlobal;
+global.AddDate = AddDate;
 
 function GetChargesGlobal(Country, ProductTypeId, callback) {
     var TotalAmount = 0;
