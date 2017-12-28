@@ -14,7 +14,7 @@ var sequelize = new Sequelize(process.env.Mysqldatabase, process.env.Mysqluser, 
         min: 0,
         idle: 10000
     },
-    logging: false,
+    // logging: false,
     define: {
         timestamps: false,
     }
