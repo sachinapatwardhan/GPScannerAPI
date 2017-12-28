@@ -2526,7 +2526,7 @@ var uppercaseMinCount = 1;
 var numberMinCount = 1;
 var UPPERCASE_RE = /([A-Z])/g;
 var NUMBER_RE = /([\d])/g;
-var NON_REPEATING_CHAR_RE = /([\w\d\?\-])\1{2,}/g;
+var NON_REPEATING_CHAR_RE = /([\w\d\-])\1{2,}/g;
 
 function isStrongEnough(randomWord) {
     var uc = randomWord.match(UPPERCASE_RE);
