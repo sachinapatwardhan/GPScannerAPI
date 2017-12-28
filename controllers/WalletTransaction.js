@@ -3,6 +3,7 @@ var router = express.Router();
 var User = models.tbluserinformation;
 var WalletTransaction = models.tblwallettransaction;
 var Wallet = models.tblwallet;
+var AppInfo = models.tblappinfo;
 
 
 router.get('/GetAllWallettransaction', function (req, res) {
@@ -129,13 +130,24 @@ router.get('/ApproveTransaction', function (req, res) {
                 });
             } else {
                 resWalletTransaction.updateAttributes({
-                    IsPaymentSuccess: true,
+                    IsPaymentSuccess: 1,
                     ModifiedDate: new Date(),
                     ModifiedBy: username,
                 }).then(function (resUpdateTrans) {
-                    res.json({
-                        success: true,
-                        message: "Wallet Transaction Approved successfully."
+
+                    var ObjWallet = new Object();
+                    ObjWallet.id = 0;
+                    ObjWallet.idwalletTransaction = resWalletTransaction.id;
+                    ObjWallet.Amount = resWalletTransaction.Amount;
+                    ObjWallet.Type = resWalletTransaction.Type;
+                    ObjWallet.Remark = resWalletTransaction.Remark;
+                    ObjWallet.Createdby = username;
+                    ObjWallet.CreatedDate = new Date();
+                    Wallet.create(ObjWallet).then(function (resCreateWallet) {
+                        res.json({
+                            success: true,
+                            message: "Wallet Transaction Approved successfully."
+                        });
                     });
                 });
             }
@@ -147,7 +159,6 @@ router.get('/ApproveTransaction', function (req, res) {
         });
     }
 });
-
 
 
 router.get('/RenewTransaction', function (req, res) {
@@ -166,10 +177,14 @@ router.get('/RenewTransaction', function (req, res) {
                     message: "Transaction Not Found"
                 });
             } else {
-                GetWalletChargesGlobal(resWalletTransaction.Country, resWalletTransaction.idApp, function (resOrderTotal) {
-                    var Amount = resOrderTotal.TotalAmount;
-                    var Remark = resOrderTotal.Remark;
-                    RenewTransaction(Amount, Remark);
+                resWalletTransaction.updateAttributes({
+                    IsPaymentSuccess: 2
+                }).then(function (resUpdateTra) {
+                    GetWalletChargesGlobal(resWalletTransaction.Country, resWalletTransaction.idApp, function (resOrderTotal) {
+                        var Amount = resOrderTotal.TotalAmount;
+                        var Remark = resOrderTotal.Remark;
+                        RenewTransaction(Amount, Remark);
+                    });
                 });
             }
 
@@ -183,7 +198,7 @@ router.get('/RenewTransaction', function (req, res) {
                 ObjRenewWalletTransaction.OrderNumber = "WALTNO-" + GetRandomWord() + Date.parse(new Date());
                 ObjRenewWalletTransaction.Country = Country;
                 ObjRenewWalletTransaction.PaymentType = "Offline";
-                ObjRenewWalletTransaction.IsPaymentSuccess = false;
+                ObjRenewWalletTransaction.IsPaymentSuccess = 0;
                 ObjRenewWalletTransaction.CreatedDate = new Date();
                 ObjRenewWalletTransaction.CreatedBy = username;
                 ObjRenewWalletTransaction.ExpiryDate = AddDate(ObjRenewWalletTransaction.CreatedDate, 1, "Year");
@@ -204,6 +219,69 @@ router.get('/RenewTransaction', function (req, res) {
             message: "System Exception, try again later"
         });
     }
+});
+
+router.get('/GetAllWalletes', function (req, res) {
+
+    var objParam = req.query;
+    var objColumns = objParam.columns;
+    var objOrder = objParam.order;
+    var objSearch = objParam.search;
+
+    var Orderby = objColumns[parseInt(objOrder[0].column)].data + ' ' + objOrder[0].dir;
+    var search = {};
+
+    // if (objSearch != null && objSearch != '') {
+    //     search['$or'] = [];
+
+    //     for (var i = 0; i < objColumns.length; i++) {
+    //         if (objColumns[i].data != null && objColumns[i].data != '') {
+    //             var columnName = objColumns[i].data;
+    //             if (columnName != 'CreatedDate') {
+    //                 search['$or'].push([columnName + ' like ?', "%" + objSearch + "%"]);
+    //             }
+    //         };
+    //     };
+    // }
+
+    Wallet.belongsTo(WalletTransaction, {
+        foreignKey: {
+            name: 'idwalletTransaction',
+            allowNull: false
+        }
+    });
+
+    WalletTransaction.belongsTo(AppInfo, {
+        foreignKey: {
+            name: 'idApp',
+            allowNull: false
+        }
+    });
+
+    Wallet.findAndCountAll({
+        where: search,
+        order: Orderby,
+        offset: parseInt(objParam.start),
+        limit: parseInt(objParam.length),
+        include: [{
+            model: WalletTransaction,
+            attributes: ['OrderNumber', 'Country', 'idApp', 'PaymentType'],
+            include: [{
+                model: AppInfo,
+                attributes: ['Id', 'AppName']
+            }]
+        }]
+    }).then(function (response) {
+        console.log(response)
+        var responseWallet = new Object();
+        responseWallet.draw = objParam.draw;
+        responseWallet.recordsTotal = response.count;
+        responseWallet.recordsFiltered = response.count;
+        responseWallet.data = response.rows;
+        res.json(responseWallet);
+    }).catch(function (error) {
+        res.json(error);
+    })
 });
 
 module.exports = router

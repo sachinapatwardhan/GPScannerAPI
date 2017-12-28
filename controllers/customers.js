@@ -2377,6 +2377,7 @@ var WalletTransaction = models.tblwallettransaction;
 
 //============================Order Service======================================
 global.CreateOrderServiceGlobal = CreateOrderServiceGlobal;
+global.CreateDabitWalletTransactionGlobal = CreateDabitWalletTransactionGlobal;
 global.GetRandomWord = GetRandomWord;
 global.GetWalletChargesGlobal = GetWalletChargesGlobal;
 
@@ -2661,7 +2662,7 @@ function CreateDabitWalletTransactionGlobal(Country, DeviceId, UserName, Product
         ObjWalletTransaction.OrderNumber = "WALTNO-" + GetRandomWord() + Date.parse(new Date());
         ObjWalletTransaction.Country = Country;
         ObjWalletTransaction.PaymentType = "Offline";
-        ObjWalletTransaction.IsPaymentSuccess = false;
+        ObjWalletTransaction.IsPaymentSuccess = 0;
         ObjWalletTransaction.CreatedDate = new Date();
         ObjWalletTransaction.CreatedBy = UserName;
         ObjWalletTransaction.ExpiryDate = AddDate(ObjWalletTransaction.CreatedDate, 1, "Year");
