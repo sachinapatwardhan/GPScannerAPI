@@ -2519,8 +2519,8 @@ function AddDate(oldDate, offset, offsetType) {
     return newDate;
 }
 
-var maxLength = 1;
-var minLength = 1;
+var maxLength = 3;
+var minLength = 3;
 var uppercaseMinCount = 1;
 var numberMinCount = 1;
 var UPPERCASE_RE = /([A-Z])/g;
@@ -2541,7 +2541,7 @@ function GetRandomWord() {
     while (!isStrongEnough(randomWord)) {
         randomWord = generatePassword(randomLength, false, /[\w\d\?\-]/);
     }
-    return randomWord;
+    return randomWord.toUpperCase();
 }
 
 
@@ -2658,7 +2658,7 @@ function CreateDabitWalletTransactionGlobal(Country, DeviceId, UserName, Product
         ObjWalletTransaction.Amount = Amount;
         ObjWalletTransaction.Type = "Debit";
         ObjWalletTransaction.Remark = Remark;
-        ObjWalletTransaction.OrderNumber = "WALTNO" + GetRandomWord() + Date.parse(new Date());;
+        ObjWalletTransaction.OrderNumber = "WALTNO-" + GetRandomWord() + Date.parse(new Date());
         ObjWalletTransaction.PaymentType = "Offline";
         ObjWalletTransaction.IsPaymentSuccess = false;
         ObjWalletTransaction.CreatedDate = new Date();
