@@ -17,7 +17,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     Type: {
-      type: DataTypes.TEXT,
+      type: DataTypes.STRING,
       allowNull: true
     },
     Remark: {
@@ -51,6 +51,10 @@ module.exports = function(sequelize, DataTypes) {
     },
     ModifiedBy: {
       type: DataTypes.STRING,
+      allowNull: true
+    },
+    PaymentReceipt: {
+      type: DataTypes.TEXT,
       allowNull: true
     }
   }, {
