@@ -183,12 +183,12 @@ router.get('/RenewTransaction', function (req, res) {
                     GetWalletChargesGlobal(resWalletTransaction.Country, resWalletTransaction.idApp, function (resOrderTotal) {
                         var Amount = resOrderTotal.TotalAmount;
                         var Remark = resOrderTotal.Remark;
-                        RenewTransaction(Amount, Remark);
+                        RenewTransaction(resWalletTransaction.Country, Amount, Remark);
                     });
                 });
             }
 
-            function RenewTransaction(Amount, Remark) {
+            function RenewTransaction(Country, Amount, Remark) {
                 var ObjRenewWalletTransaction = new Object();
                 ObjRenewWalletTransaction.id = 0;
                 ObjRenewWalletTransaction.idApp = resWalletTransaction.idApp;
