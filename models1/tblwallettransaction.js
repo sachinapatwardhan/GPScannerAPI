@@ -28,14 +28,17 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING,
       allowNull: true
     },
+    Country: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
     PaymentType: {
       type: DataTypes.STRING,
       allowNull: true
     },
     IsPaymentSuccess: {
-      type: DataTypes.BOOLEAN,
-      allowNull: true,
-      defaultValue: '0'
+      type: DataTypes.INTEGER(11),
+      allowNull: true
     },
     CreatedDate: {
       type: DataTypes.DATE,
