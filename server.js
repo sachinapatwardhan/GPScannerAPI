@@ -403,6 +403,9 @@ app.use('/serviceenhancement', require('./controllers/serviceenhancement'));
 app.use('/advancefence', require('./controllers/advancefence'))
     //socket API End
 
+//Wallet Transaction
+app.use('/WalletTransaction', require('./controllers/WalletTransaction'))
+
 // MAARK Install App
 app.use('/salesAgent', require('./controllers/salesAgent'));
 app.use('/retailer', require('./controllers/retailer'));
