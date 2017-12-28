@@ -1781,9 +1781,13 @@ router.get('/SendCommandToDevice', function(req, res) {
             var objGPRSStopInterval = new Object();
             objGPRSStopInterval.DeviceId = objDevice[i];
             objGPRSStopInterval.TimeInterval = req.query.GPRSStopInterval;
-            SetGPRSIntervalStopCar(objGPRSStopInterval, function(data) {
-                uploader(i + 1);
-            })
+            SetGPRSIntervalStopCar(objGPRSStopInterval, function(data) {})
+
+            var objACC = new Object();
+            objACC.DeviceId = objDevice[i];
+            objACC.TimeInterval = req.query.ACC;
+            SetACCSetting(objACC, function(data) { uploader(i + 1); })
+
         } else {
             res.json({ success: true, message: 'Default value send to device successfully.' });
         }
