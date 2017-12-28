@@ -45,6 +45,10 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING,
       allowNull: true
     },
+    ExpiryDate: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
     ModifiedDate: {
       type: DataTypes.DATE,
       allowNull: true
