@@ -2397,37 +2397,37 @@ router.get('/PrintAllWoringHourForReportNew', function(req, res) {
             //     '<th style="text-align:left">Over Speed(Times)</th></tr>';
 
 
-            var table = '<div style="font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; font-size: 12px; padding:0 15px;">' +
+            var table = '<div style="font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; font-size: 10px; padding:0 15px;">' +
                 '<div style="padding:15px; border-bottom:1px solid #000;">' +
-                '<h1 style="text-transform: uppercase; text-align:center; font-weight: normal;">Working Hour Report</h1>' +
-                '<div style="text-align: right;"><strong>' + TodayDate + '</strong></div>' +
+                '<h1 style="text-transform: uppercase; text-align:center; font-weight: normal;font-size: 14px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">Working Hour Report</h1>' +
+                '<div style="text-align: right;font-size: 8px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;"><strong>' + TodayDate + '</strong></div>' +
                 '</div>' +
                 '<div>' +
                 '<table style="width:100%; margin:0; padding: 0;">' +
                 '<thead>' +
                 '<tr>' +
-                '<th style="padding: 10px 5px; border-bottom: 1px dotted #000; border-right: 1px dotted #000;">No</th>' +
-                '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Asset Name</th>' +
-                '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Driving Time</th>' +
-                '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Parking Time</th>' +
-                '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Total Time</th>' +
-                '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Total Mileage</th>' +
-                '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Average Speed(km/h)</th>' +
-                '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Highest Speed</th>' +
-                '<th style="border-bottom: 1px dotted #000;">Over Speed(Times)</th></tr>' +
+                '<th style="padding: 10px 5px;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-bottom: 1px dotted #000; border-right: 1px dotted #000;">No</th>' +
+                '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Asset Name</th>' +
+                '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Driving Time</th>' +
+                '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Parking Time</th>' +
+                '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Total Time</th>' +
+                '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Total Mileage</th>' +
+                '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Average Speed(km/h)</th>' +
+                '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Highest Speed</th>' +
+                '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">Over Speed(Times)</th></tr>' +
                 '</thead><tbody>';
 
             for (var i = 0; i < response1.length; i++) {
                 table += '<tr>' +
-                    '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + (i + 1) + '</td>' +
-                    '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">' + response1[i].Name + '</td>' +
-                    '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + response1[i].DrivingTime + '</td>' +
-                    '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + response1[i].Parkingtime + '</td>' +
-                    '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + response1[i].TotalTiming + '</td>' +
-                    '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + response1[i].TotalMileage + '</td>' +
-                    '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + response1[i].AverageSpeed + '</td>' +
-                    '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + response1[i].HighestSpeed + '</td>' +
-                    '<td style="border-bottom: 1px dotted #000;">' + response1[i].OverSpeed + '</td>' +
+                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + (i + 1) + '</td>' +
+                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + response1[i].Name + '</td>' +
+                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + response1[i].DrivingTime + '</td>' +
+                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + response1[i].Parkingtime + '</td>' +
+                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + response1[i].TotalTiming + '</td>' +
+                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + response1[i].TotalMileage + '</td>' +
+                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + response1[i].AverageSpeed + '</td>' +
+                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + response1[i].HighestSpeed + '</td>' +
+                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">' + response1[i].OverSpeed + '</td>' +
                     '</tr>';
 
             }
@@ -2440,13 +2440,13 @@ router.get('/PrintAllWoringHourForReportNew', function(req, res) {
             table += '</tbody><tfoot style="font-weight: bold;">' +
                 ' <tr>' +
                 ' <td style="padding: 8px 5px; border-bottom: 1px dotted #000; border-right: 1px dotted #000;" colspan="2">Total:</td>' +
-                '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + TotalAllDrivingTime + '</td>' +
-                '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + TotalAllParkingTime + '</td>' +
-                '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + TotalAllTime + '</td>' +
-                '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;"></td>' +
-                '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;"></td>' +
-                '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;"></td>' +
-                '<td style="border-bottom: 1px dotted #000;"></td>' +
+                '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + TotalAllDrivingTime + '</td>' +
+                '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + TotalAllParkingTime + '</td>' +
+                '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + TotalAllTime + '</td>' +
+                '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;"></td>' +
+                '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;"></td>' +
+                '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;"></td>' +
+                '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;"></td>' +
                 '</tr>' +
                 '</tfoot>';
             table += '</table>' +
@@ -4123,31 +4123,31 @@ router.get('/PrintDriverReportNew', function(req, res) {
 
 
 
-                var table = '<div style="font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; font-size: 12px; padding:0 15px;">' +
+                var table = '<div style="font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; font-size: 10px; padding:0 15px;">' +
                     '<div style="padding:15px; border-bottom:1px solid #000;">' +
-                    '<h1 style="text-transform: uppercase; text-align:center; font-weight: normal;">Driving Report</h1>' +
-                    '<div style="text-align: right;"><strong>' + TodayDate + '</strong></div>' +
+                    '<h1 style="text-transform: uppercase; text-align:center; font-weight: normal;font-size: 14px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">Driving Report</h1>' +
+                    '<div style="text-align: right;font-size: 8px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;"><strong>' + TodayDate + '</strong></div>' +
                     '</div>' +
                     '<div>' +
                     '<table style="width:100%; margin:0; padding: 0;">' +
                     '<thead>' +
                     '<tr>' +
-                    '<th style="padding: 10px 5px; border-bottom: 1px dotted #000; border-right: 1px dotted #000;">No</th>' +
-                    '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Assest Name</th>' +
-                    '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Start Time</th>' +
-                    '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">End Time</th>' +
-                    '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Driving Time</th>' +
-                    '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">60-90 Speed (km/h)</th>' +
-                    '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">90-130 Speed (km/h)</th>' +
-                    '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Over 130 Speed (km/h)</th>' +
-                    '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Max Speed</th>' +
-                    '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Avearge Speed</th>' +
-                    '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Over Speed(times)</th>' +
-                    '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Mileage</th>' +
-                    '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Start Longitude</th>' +
-                    '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Start Latitude</th>' +
-                    '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">End Longitude</th>' +
-                    '<th style="border-bottom: 1px dotted #000;">End Latitude</th></tr>' +
+                    '<th style="padding: 10px 5px;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-bottom: 1px dotted #000; border-right: 1px dotted #000;">No</th>' +
+                    '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Assest Name</th>' +
+                    '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Start Time</th>' +
+                    '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">End Time</th>' +
+                    '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Driving Time</th>' +
+                    '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">60-90 Speed (km/h)</th>' +
+                    '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">90-130 Speed (km/h)</th>' +
+                    '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Over 130 Speed (km/h)</th>' +
+                    '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Max Speed</th>' +
+                    '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Avearge Speed</th>' +
+                    '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Over Speed(times)</th>' +
+                    '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Mileage</th>' +
+                    '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Start Longitude</th>' +
+                    '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Start Latitude</th>' +
+                    '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">End Longitude</th>' +
+                    '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">End Latitude</th></tr>' +
                     '</thead><tbody>';
                 var lstGroup = u.map(groups, function(group) {
 
@@ -4419,22 +4419,22 @@ router.get('/PrintDriverReportNew', function(req, res) {
                             EndLatitude = Array[i].EndLatitude.toString();
                         }
                         table += '<tr>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + (i + 1) + '</td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">' + Name + '</td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + DrivingStartTime + '</td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + EndDrivingTime + '</td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + DrivingTime + '</td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + Speed6090 + '</td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + Speed90130 + '</td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + Over130 + '</td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + MaxSpeed + '</td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + avgSpeed + '</td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + OverSpeed + '</td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + StartSpeed + '</td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + StartLongitude + '</td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + StartLatitude + '</td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + EndLongitude + '</td>' +
-                            '<td style="border-bottom: 1px dotted #000;">' + EndLatitude + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + (i + 1) + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + Name + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + DrivingStartTime + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + EndDrivingTime + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + DrivingTime + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + Speed6090 + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + Speed90130 + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + Over130 + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + MaxSpeed + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + avgSpeed + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + OverSpeed + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + StartSpeed + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + StartLongitude + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + StartLatitude + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + EndLongitude + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">' + EndLatitude + '</td>' +
                             '</tr>';
 
                         GetDrivingData(i + 1);
@@ -4444,20 +4444,20 @@ router.get('/PrintDriverReportNew', function(req, res) {
                         table += '</tbody><tfoot style="font-weight: bold;">' +
                             ' <tr>' +
                             ' <td style="padding: 8px 5px; border-bottom: 1px dotted #000; border-right: 1px dotted #000;" colspan="2">Total:</td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;"> </td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;"></td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + TotalDrivingtime + '</td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;"></td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;"></td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;"></td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;"></td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;"></td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;"></td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;"></td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;"></td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;"></td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;"></td>' +
-                            '<td style="border-bottom: 1px dotted #000;"></td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;"> </td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;"></td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + TotalDrivingtime + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;"></td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;"></td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;"></td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;"></td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;"></td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;"></td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;"></td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;"></td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;"></td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;"></td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;"></td>' +
                             '</tr>' +
                             '</tfoot>';
                         table += '</table>' +

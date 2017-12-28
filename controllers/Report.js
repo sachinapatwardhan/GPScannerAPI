@@ -323,24 +323,25 @@ router.get('/PrintDetailTripReport', function(req, res) {
         //     '<th style="text-align:left">Longitude</th></tr>';
 
 
-        var table = '<div style="font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; font-size: 12px; padding:0 15px;">' +
+        var table = '<div style="font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; font-size: 10px; padding:0 15px;">' +
             '<div style="padding:15px; border-bottom:1px solid #000;">' +
-            '<h1 style="text-transform: uppercase; text-align:center; font-weight: normal;">Detailed Trip Report</h1>' +
-            '<div style="text-align: right;"><strong>' + TodayDate + '</strong></div>' +
+            '<h1 style="text-transform: uppercase; text-align:center; font-weight: normal;font-size: 14px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">Detailed Trip Report</h1>' +
+            '<div style="text-align: right;font-size: 8px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;"><strong>' + TodayDate + '</strong></div>' +
             '</div>' +
             '<div>' +
             '<table style="width:100%; margin:0; padding: 0;">' +
             '<thead>' +
             '<tr>' +
-            '<th style="padding: 10px 5px; border-bottom: 1px dotted #000; border-right: 1px dotted #000;">No</th>' +
-            '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Asset Name</th>' +
-            '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Time</th>' +
-            '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Asset Status</th>' +
-            '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Speed(km/h)</th>' +
-            '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Direction</th>' +
-            '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Latitude</th>' +
-            '<th style="border-bottom: 1px dotted #000;">Longitude</th></tr>' +
+            '<th style="padding: 10px 5px;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-bottom: 1px dotted #000; border-right: 1px dotted #000;">No</th>' +
+            '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Asset Name</th>' +
+            '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Time</th>' +
+            '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Asset Status</th>' +
+            '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Speed(km/h)</th>' +
+            '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Direction</th>' +
+            '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Latitude</th>' +
+            '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">Longitude</th></tr>' +
             '</thead><tbody>';
+
 
         for (var i = 0; i < response.length; i++) {
             var row = [];
@@ -422,14 +423,14 @@ router.get('/PrintDetailTripReport', function(req, res) {
                 // Address = "N/A";
                 // row.push(Name.toString(), TIme.toString(), /*DeviceStatus.toString(),*/ AssetStatus.toString(), Speed, Fuleper, Fulelett, Mileage, Temp, GPSSignal.toString(), Direction, Latitude, Longitude);
                 table += '<tr>' +
-                    '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + (i + 1) + '</td>' +
-                    '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">' + Name.toString() + '</td>' +
-                    '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + TIme.toString() + '</td>' +
-                    '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + AssetStatus.toString() + '</td>' +
-                    '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + Speed + '</td>' +
-                    '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + Direction + '</td>' +
-                    '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + Latitude + '</td>' +
-                    '<td style="border-bottom: 1px dotted #000;">' + Longitude + '</td>' +
+                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + (i + 1) + '</td>' +
+                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + Name.toString() + '</td>' +
+                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + TIme.toString() + '</td>' +
+                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + AssetStatus.toString() + '</td>' +
+                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + Speed + '</td>' +
+                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + Direction + '</td>' +
+                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + Latitude + '</td>' +
+                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">' + Longitude + '</td>' +
                     '</tr>';
                 // }
                 // GetData(i + 1);
@@ -488,14 +489,14 @@ router.get('/PrintDetailTripReport', function(req, res) {
                 }
                 // row.push(Name.toString(), TIme.toString(), /*DeviceStatus.toString(),*/ AssetStatus.toString(), Speed, /*Fuleper, Fulelett, Mileage, Temp, GPSSignal.toString(),*/ Direction, Latitude, Longitude);
                 table += '<tr>' +
-                    '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + (i + 1) + '</td>' +
-                    '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">' + Name.toString() + '</td>' +
-                    '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + TIme.toString() + '</td>' +
-                    '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + AssetStatus.toString() + '</td>' +
-                    '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + Speed + '</td>' +
-                    '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + Direction + '</td>' +
-                    '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + Latitude + '</td>' +
-                    '<td style="border-bottom: 1px dotted #000;">' + Longitude + '</td>' +
+                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + (i + 1) + '</td>' +
+                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + Name.toString() + '</td>' +
+                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + TIme.toString() + '</td>' +
+                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + AssetStatus.toString() + '</td>' +
+                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + Speed + '</td>' +
+                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + Direction + '</td>' +
+                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + Latitude + '</td>' +
+                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">' + Longitude + '</td>' +
                     '</tr>';
                 // GetData(i + 1);
             }
@@ -825,21 +826,21 @@ router.get('/PrintFenceReport', function(req, res) {
 
 
 
-        var table = '<div style="font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; font-size: 12px; padding:0 15px;">' +
+        var table = '<div style="font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; font-size: 10px; padding:0 15px;">' +
             '<div style="padding:15px; border-bottom:1px solid #000;">' +
-            '<h1 style="text-transform: uppercase; text-align:center; font-weight: normal;">Fence In And Out Report</h1>' +
-            '<div style="text-align: right;"><strong>' + TodayDate + '</strong></div>' +
+            '<h1 style="text-transform: uppercase; text-align:center; font-weight: normal;font-size: 14px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">Fence In And Out Report</h1>' +
+            '<div style="text-align: right;font-size: 8px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;"><strong>' + TodayDate + '</strong></div>' +
             '</div>' +
             '<div>' +
             '<table style="width:100%; margin:0; padding: 0;">' +
             '<thead>' +
             '<tr>' +
-            '<th style="padding: 10px 5px; border-bottom: 1px dotted #000; border-right: 1px dotted #000;">No</th>' +
-            '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Asset Name</th>' +
-            '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Fence Name</th>' +
-            '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Time</th>' +
-            '<th style="border-bottom: 1px dotted #000; >Fence Status</th></tr>' +
-            '<th style="border-bottom: 1px dotted #000;">Over Speed(Times)</th></tr>' +
+            '<th style="padding: 10px 5px;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-bottom: 1px dotted #000; border-right: 1px dotted #000;">No</th>' +
+            '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Asset Name</th>' +
+            '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Fence Name</th>' +
+            '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Time</th>' +
+            '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; >Fence Status</th></tr>' +
+            '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">Over Speed(Times)</th></tr>' +
             '</thead><tbody>';
 
         if (response != undefined) {
@@ -875,11 +876,11 @@ router.get('/PrintFenceReport', function(req, res) {
                         }
 
                         table += '<tr>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + (i + 1) + '</td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">' + Name.toString() + '</td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + FenceName.toString() + '</td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + TIme.toString() + '</td>' +
-                            '<td style="border-bottom: 1px dotted #000;  ">' + FenceStatus.toString() + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + (i + 1) + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + Name.toString() + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + FenceName.toString() + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + TIme.toString() + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">' + FenceStatus.toString() + '</td>' +
                             '</tr>';
                         // }
 
@@ -904,11 +905,11 @@ router.get('/PrintFenceReport', function(req, res) {
                             }
                         }
                         table += '<tr>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + (i + 1) + '</td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">' + Name.toString() + '</td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + FenceName.toString() + '</td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + TIme.toString() + '</td>' +
-                            '<td style="border-bottom: 1px dotted #000; ">' + FenceStatus.toString() + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + (i + 1) + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + Name.toString() + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + FenceName.toString() + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + TIme.toString() + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">' + FenceStatus.toString() + '</td>' +
                             '</tr>';
                         // Address = "N/A";
                         GetData(i + 1);
@@ -1513,22 +1514,22 @@ router.get('/PrintEngineReport', function(req, res) {
 
 
 
-            var table = '<div style="font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; font-size: 12px; padding:0 15px;">' +
+            var table = '<div style="font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; font-size: 10px; padding:0 15px;">' +
                 '<div style="padding:15px; border-bottom:1px solid #000;">' +
-                '<h1 style="text-transform: uppercase; text-align:center; font-weight: normal;">Engine On/Off Report</h1>' +
-                '<div style="text-align: right;"><strong>' + TodayDate + '</strong></div>' +
+                '<h1 style="text-transform: uppercase; text-align:center; font-weight: normal;font-size: 14px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">Engine On/Off Report</h1>' +
+                '<div style="text-align: right;font-size: 8px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;"><strong>' + TodayDate + '</strong></div>' +
                 '</div>' +
                 '<div>' +
                 '<table style="width:100%; margin:0; padding: 0;">' +
                 '<thead>' +
                 '<tr>' +
-                '<th style="padding: 10px 5px; border-bottom: 1px dotted #000; border-right: 1px dotted #000;">No</th>' +
-                '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Asset Name</th>' +
-                '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Engine Status</th>' +
-                '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Continuous Time</th>' +
-                '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Start Time</th>' +
-                '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">End Time</th>' +
-                '<th style="border-bottom: 1px dotted #000;">Mileage</th></tr>' +
+                '<th style="padding: 10px 5px;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-bottom: 1px dotted #000; border-right: 1px dotted #000;">No</th>' +
+                '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Asset Name</th>' +
+                '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Engine Status</th>' +
+                '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Continuous Time</th>' +
+                '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Start Time</th>' +
+                '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">End Time</th>' +
+                '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">Mileage</th></tr>' +
                 '</thead><tbody>';
 
             for (var i = 0; i < lstEngine.length; i++) {
@@ -1559,13 +1560,13 @@ router.get('/PrintEngineReport', function(req, res) {
                     EndTime = lstEngine[i].EndTime;
                 }
                 table += '<tr>' +
-                    '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + (i + 1) + '</td>' +
-                    '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + Name.toString() + '</td>' +
-                    '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + Status.toString() + '</td>' +
-                    '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + ContinueTime.toString() + '</td>' +
-                    '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + StartTime.toString() + '</td>' +
-                    '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + EndTime.toString() + '</td>' +
-                    '<td style="border-bottom: 1px dotted #000;">' + Mileage.toString() + '</td>' +
+                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + (i + 1) + '</td>' +
+                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + Name.toString() + '</td>' +
+                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + Status.toString() + '</td>' +
+                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + ContinueTime.toString() + '</td>' +
+                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + StartTime.toString() + '</td>' +
+                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + EndTime.toString() + '</td>' +
+                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">' + Mileage.toString() + '</td>' +
                     '</tr>';
             }
             table += '</tbody></table>' +
@@ -2022,25 +2023,25 @@ router.get('/PrintLastPositionDataByUserId', function(req, res) {
     //     '<th style="text-align:left">Direction</th></tr>';
 
 
-    var table = '<div style="font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; font-size: 12px; padding:0 15px;">' +
+    var table = '<div style="font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; font-size: 10px; padding:0 15px;">' +
         '<div style="padding:15px; border-bottom:1px solid #000;">' +
-        '<h1 style="text-transform: uppercase; text-align:center; font-weight: normal;">Last Position Report</h1>' +
-        '<div style="text-align: right;"><strong>' + TodayDate + '</strong></div>' +
+        '<h1 style="text-transform: uppercase; text-align:center; font-weight: normal;font-size: 14px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">Last Position Report</h1>' +
+        '<div style="text-align: right;font-size: 8px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;"><strong>' + TodayDate + '</strong></div>' +
         '</div>' +
         '<div>' +
         '<table style="width:100%; margin:0; padding: 0;">' +
         '<thead>' +
         '<tr>' +
-        '<th style="padding: 10px 5px; border-bottom: 1px dotted #000; border-right: 1px dotted #000;">No</th>' +
-        '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Asset Name</th>' +
-        '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Device Id</th>' +
-        '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Time</th>' +
-        '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Device Status</th>' +
-        '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Engine</th>' +
-        '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Speed</th>' +
-        '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Latitude</th>' +
-        '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Longitude</th>' +
-        '<th style="border-bottom: 1px dotted #000;">Direction</th></tr>' +
+        '<th style="padding: 10px 5px;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-bottom: 1px dotted #000; border-right: 1px dotted #000;">No</th>' +
+        '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Asset Name</th>' +
+        '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Device Id</th>' +
+        '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Time</th>' +
+        '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Device Status</th>' +
+        '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Engine</th>' +
+        '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Speed</th>' +
+        '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Latitude</th>' +
+        '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Longitude</th>' +
+        '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">Direction</th></tr>' +
         '</thead><tbody>';
 
     function ExportData(ListPostionData) {
@@ -2122,31 +2123,31 @@ router.get('/PrintLastPositionDataByUserId', function(req, res) {
                     if (res.length > 0) {
                         // var Address = res[0].formattedAddress;
                         table += '<tr>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + (i + 1) + '</td>' +
-                            ' <td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">' + AssestName + '</td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + DeviceId + '</td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + Time + '</td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + DeviceStatus + '</td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + Engine + '</td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + Speed + '</td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + Latitude + '</td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + Longitude + '</td>' +
-                            '<td style="border-bottom: 1px dotted #000;">' + Direction + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + (i + 1) + '</td>' +
+                            ' <td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + AssestName + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + DeviceId + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + Time + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + DeviceStatus + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + Engine + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + Speed + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + Latitude + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + Longitude + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">' + Direction + '</td>' +
                             '</tr>';
                         conf.rows.push([AssestName, DeviceId, Time, DeviceStatus, Engine, Speed, Latitude, Longitude, Direction]);
                     } else {
                         // var Address = "N/A";
                         table += '<tr>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + (i + 1) + '</td>' +
-                            ' <td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">' + AssestName + '</td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + DeviceId + '</td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + Time + '</td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + DeviceStatus + '</td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + Engine + '</td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + Speed + '</td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + Latitude + '</td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + Longitude + '</td>' +
-                            '<td style="border-bottom: 1px dotted #000;">' + Direction + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + (i + 1) + '</td>' +
+                            ' <td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + AssestName + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + DeviceId + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + Time + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + DeviceStatus + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + Engine + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + Speed + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + Latitude + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + Longitude + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">' + Direction + '</td>' +
                             '</tr>';
                     }
                     AddList(i + 1);
@@ -2224,16 +2225,16 @@ router.get('/PrintLastPositionDataByUserId', function(req, res) {
                     }
                     // var Address = "N/A";
                     table += '<tr>' +
-                        '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + (i + 1) + '</td>' +
-                        ' <td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">' + AssestName + '</td>' +
-                        '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + DeviceId + '</td>' +
-                        '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + Time + '</td>' +
-                        '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + DeviceStatus + '</td>' +
-                        '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + Engine + '</td>' +
-                        '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + Speed + '</td>' +
-                        '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + Latitude + '</td>' +
-                        '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + Longitude + '</td>' +
-                        '<td style="border-bottom: 1px dotted #000;">' + Direction + '</td>' +
+                        '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + (i + 1) + '</td>' +
+                        ' <td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + AssestName + '</td>' +
+                        '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + DeviceId + '</td>' +
+                        '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + Time + '</td>' +
+                        '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + DeviceStatus + '</td>' +
+                        '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + Engine + '</td>' +
+                        '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + Speed + '</td>' +
+                        '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + Latitude + '</td>' +
+                        '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + Longitude + '</td>' +
+                        '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">' + Direction + '</td>' +
                         '</tr>';
                     AddList(i + 1);
                 }
@@ -3206,21 +3207,21 @@ router.get('/PrintParkingReportNew', function(req, res) {
         //     '<th style="text-align:left">Parking Time</th>' +
         //     '<th style="text-align:left">Address</th></tr>';
 
-        var table = '<div style="font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; font-size: 12px; padding:0 15px;">' +
+        var table = '<div style="font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; font-size: 10px; padding:0 15px;">' +
             '<div style="padding:15px; border-bottom:1px solid #000;">' +
-            '<h1 style="text-transform: uppercase; text-align:center; font-weight: normal;">Parking Report</h1>' +
-            '<div style="text-align: right;"><strong>' + TodayDate + '</strong></div>' +
+            '<h1 style="text-transform: uppercase; text-align:center; font-weight: normal;font-size: 14px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">Parking Report</h1>' +
+            '<div style="text-align: right;font-size: 8px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;"><strong>' + TodayDate + '</strong></div>' +
             '</div>' +
             '<div>' +
             '<table style="width:100%; margin:0; padding: 0;">' +
             '<thead>' +
             '<tr>' +
-            '<th style="padding: 10px 5px; border-bottom: 1px dotted #000; border-right: 1px dotted #000;">No</th>' +
-            '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Asset Name</th>' +
-            '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Start Time</th>' +
-            '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">End Time</th>' +
-            '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Parking Time</th>' +
-            '<th style="border-bottom: 1px dotted #000;">Address</th></tr>' +
+            '<th style="padding: 10px 5px;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-bottom: 1px dotted #000; border-right: 1px dotted #000;">No</th>' +
+            '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Asset Name</th>' +
+            '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Start Time</th>' +
+            '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">End Time</th>' +
+            '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Parking Time</th>' +
+            '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">Address</th></tr>' +
             '</thead><tbody>';
 
         function GetData(i) {
@@ -3265,23 +3266,23 @@ router.get('/PrintParkingReportNew', function(req, res) {
                                 Address = res[0].formattedAddress;
                                 // row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address.toString());
                                 table += '<tr>' +
-                                    '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + (i + 1) + '</td>' +
-                                    '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">' + Name.toString() + '</td>' +
-                                    '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + StartTime + '</td>' +
-                                    '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + EndTime + '</td>' +
-                                    '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + ParkingTime.toString() + '</td>' +
-                                    '<td style="border-bottom: 1px dotted #000;">' + Address.toString() + '</td>' +
+                                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + (i + 1) + '</td>' +
+                                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + Name.toString() + '</td>' +
+                                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + StartTime + '</td>' +
+                                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + EndTime + '</td>' +
+                                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + ParkingTime.toString() + '</td>' +
+                                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">' + Address.toString() + '</td>' +
                                     '</tr>';
                                 // row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address.toString(), Latitude, Longitude);
                             } else {
                                 Address = "N/A";
                                 table += '<tr>' +
-                                    '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + (i + 1) + '</td>' +
-                                    '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">' + Name.toString() + '</td>' +
-                                    '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + StartTime + '</td>' +
-                                    '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + EndTime + '</td>' +
-                                    '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + ParkingTime.toString() + '</td>' +
-                                    '<td style="border-bottom: 1px dotted #000; ">' + Address.toString() + '</td>' +
+                                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + (i + 1) + '</td>' +
+                                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + Name.toString() + '</td>' +
+                                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + StartTime + '</td>' +
+                                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + EndTime + '</td>' +
+                                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + ParkingTime.toString() + '</td>' +
+                                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">' + Address.toString() + '</td>' +
                                     '</tr>';
                                 // row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address.toString());
                                 // row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address.toString(), Latitude, Longitude);
@@ -3289,12 +3290,12 @@ router.get('/PrintParkingReportNew', function(req, res) {
                         } else {
                             Address = "N/A";
                             table += '<tr>' +
-                                '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + (i + 1) + '</td>' +
-                                '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">' + Name.toString() + '</td>' +
-                                '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + StartTime + '</td>' +
-                                '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + EndTime + '</td>' +
-                                '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + ParkingTime.toString() + '</td>' +
-                                '<td style="border-bottom: 1px dotted #000; ">' + Address.toString() + '</td>' +
+                                '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + (i + 1) + '</td>' +
+                                '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + Name.toString() + '</td>' +
+                                '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + StartTime + '</td>' +
+                                '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + EndTime + '</td>' +
+                                '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + ParkingTime.toString() + '</td>' +
+                                '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">' + Address.toString() + '</td>' +
                                 '</tr>';
                             // row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address);
                             // row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address, Latitude, Longitude);
@@ -3327,12 +3328,12 @@ router.get('/PrintParkingReportNew', function(req, res) {
                         Longitude = Array[i].Longitude;
                     }
                     table += '<tr>' +
-                        '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + (i + 1) + '</td>' +
-                        '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">' + Name.toString() + '</td>' +
-                        '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + StartTime + '</td>' +
-                        '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + EndTime + '</td>' +
-                        '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + ParkingTime.toString() + '</td>' +
-                        '<td style="border-bottom: 1px dotted #000; ">' + Address.toString() + '</td>' +
+                        '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + (i + 1) + '</td>' +
+                        '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + Name.toString() + '</td>' +
+                        '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + StartTime + '</td>' +
+                        '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + EndTime + '</td>' +
+                        '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + ParkingTime.toString() + '</td>' +
+                        '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">' + Address.toString() + '</td>' +
                         '</tr>';
                     // row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address);
                     // row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address, Latitude, Longitude);
@@ -3345,10 +3346,10 @@ router.get('/PrintParkingReportNew', function(req, res) {
                 table += '  <tfoot style="font-weight: bold;">' +
                     ' <tr>' +
                     ' <td style="padding: 8px 5px; border-bottom: 1px dotted #000; border-right: 1px dotted #000;" colspan="2">Total:</td>' +
-                    ' <td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;"></td>' +
-                    ' <td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;"></td>' +
-                    ' <td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + TotalAllParkingTime + '</td>' +
-                    ' <td style="border-bottom: 1px dotted #000;"></td>' +
+                    ' <td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;"></td>' +
+                    ' <td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;"></td>' +
+                    ' <td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + TotalAllParkingTime + '</td>' +
+                    ' <td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;"></td>' +
                     '</tr>' +
                     '</tfoot>';
                 table += '</tbody></table>' +
@@ -5524,28 +5525,28 @@ router.get('/PrintDailyStatReportNew', function(req, res) {
 
 
 
-                var table = '<div style="font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; font-size: 12px; padding:0 15px;">' +
+                var table = '<div style="font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; font-size: 10px; padding:0 15px;">' +
                     '<div style="padding:15px; border-bottom:1px solid #000;">' +
-                    '<h1 style="text-transform: uppercase; text-align:center; font-weight: normal;">Daily Stat. Report</h1>' +
-                    '<div style="text-align: right;"><strong>' + TodayDate + '</strong></div>' +
+                    '<h1 style="text-transform: uppercase; text-align:center; font-weight: normal;font-size: 14px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">Daily Stat. Report</h1>' +
+                    '<div style="text-align: right;font-size: 8px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;"><strong>' + TodayDate + '</strong></div>' +
                     '</div>' +
                     '<div>' +
                     '<table style="width:100%; margin:0; padding: 0;">' +
                     '<thead>' +
                     '<tr>' +
-                    '<th style="padding: 10px 5px; border-bottom: 1px dotted #000; border-right: 1px dotted #000;">No</th>' +
-                    '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Asset Name</th>' +
-                    '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Date</th>' +
-                    '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Driving Time</th>' +
-                    '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Parking Time</th>' +
-                    '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Total Time</th>' +
-                    '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Invalid Location</th>' +
-                    '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Mileage(km)</th>' +
-                    '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Average Speed(km/h)</th>' +
-                    '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Max Speed(km/h)</th>' +
-                    '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Over Speed(times)</th>' +
-                    '<th style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">Notification Count</th>' +
-                    '<th style="border-bottom: 1px dotted #000;">Engine On Time</th></tr>' +
+                    '<th style="padding: 10px 5px;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-bottom: 1px dotted #000; border-right: 1px dotted #000;">No</th>' +
+                    '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Asset Name</th>' +
+                    '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Date</th>' +
+                    '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Driving Time</th>' +
+                    '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Parking Time</th>' +
+                    '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Total Time</th>' +
+                    '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Invalid Location</th>' +
+                    '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Mileage(km)</th>' +
+                    '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Average Speed(km/h)</th>' +
+                    '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Max Speed(km/h)</th>' +
+                    '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Over Speed(times)</th>' +
+                    '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Notification Count</th>' +
+                    '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">Engine On Time</th></tr>' +
                     '</thead><tbody>';
                 if (Array.length > 0) {
                     var data = u.sortBy(Array, function(num) { return new Date(num.Date) });
@@ -5645,19 +5646,19 @@ router.get('/PrintDailyStatReportNew', function(req, res) {
                         }
 
                         table += '<tr>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000; text-align: center;">' + (i + 1) + '</td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">' + Name + '</td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">' + Date + '</td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">' + DrivingTime + '</td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">' + ParkingTime + '</td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">' + TotalTime + '</td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">' + InvalidLocation + '</td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">' + Mileage + '</td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">' + AverageSpeed + '</td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">' + HighestSpeed + '</td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">' + OverSpeed + '</td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">' + AlarmNumber + '</td>' +
-                            '<td style="border-bottom: 1px dotted #000;">' + EnginOnTime + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + (i + 1) + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + Name + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + Date + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + DrivingTime + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + ParkingTime + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + TotalTime + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + InvalidLocation + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + Mileage + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + AverageSpeed + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + HighestSpeed + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + OverSpeed + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + AlarmNumber + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">' + EnginOnTime + '</td>' +
                             '</tr>';
                         // row.push(Name, Date, DrivingTime, ParkingTime, TotalTime, InvalidLocation, Mileage, AverageSpeed, HighestSpeed, OverSpeed, AlarmNumber, EnginOnTime /*, DoorOpenNumber, DoorOpenTime, ShockNumber, ShockTime, EngineOnNumber*/ );
                         GetData(i + 1);
@@ -5668,17 +5669,17 @@ router.get('/PrintDailyStatReportNew', function(req, res) {
                         table += '</tbody>  <tfoot style="font-weight: bold;">' +
                             ' <tr>' +
                             ' <td style="padding: 8px 5px; border-bottom: 1px dotted #000; border-right: 1px dotted #000;" colspan="2">Total:</td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;"></td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">' + TotalAllDrivingTime + '</td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">' + TotalAllParkingTime + '</td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">' + TotalAllTime + '</td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;"></td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;"></td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;"></td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;"></td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;"></td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;"></td>' +
-                            '<td style="border-bottom: 1px dotted #000; border-right: 1px dotted #000;">' + TotalAllEngineOnTime + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;"></td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + TotalAllDrivingTime + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + TotalAllParkingTime + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + TotalAllTime + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;"></td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;"></td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;"></td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;"></td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;"></td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;"></td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + TotalAllEngineOnTime + '</td>' +
                             '</tr>' +
                             '</tfoot>';
                         table += '</table>' +
