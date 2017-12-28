@@ -5,7 +5,7 @@ var WalletTransaction = models.tblwallettransaction;
 var Wallet = models.tblwallet;
 
 
-router.get('/GetAllWallettransaction', function(req, res) {
+router.get('/GetAllWallettransaction', function (req, res) {
     var objParam = req.query;
     var objColumns = objParam.columns;
     var objOrderBy = objParam.order;
@@ -47,9 +47,9 @@ router.get('/GetAllWallettransaction', function(req, res) {
 
     console.log(Countqry);
 
-    connection.query(qry, function(err, response) {
+    connection.query(qry, function (err, response) {
         if (response != undefined) {
-            connection.query(Countqry, function(err, lstCount, fields) {
+            connection.query(Countqry, function (err, lstCount, fields) {
                 var response1 = new Object();
                 response1.draw = objParam.draw;
                 response1.recordsTotal = lstCount[0].TotalRecord;
@@ -68,8 +68,8 @@ router.get('/GetAllWallettransaction', function(req, res) {
     })
 });
 
-console.log('71', GetRandomWord());
-router.post('/Savewallettransaction', jsonParser, function(req, res) {
+
+router.post('/Savewallettransaction', jsonParser, function (req, res) {
     var objWalletTransaction = req.body;
     objHeader = req.headers;
     var token = getToken(objHeader);
@@ -80,7 +80,7 @@ router.post('/Savewallettransaction', jsonParser, function(req, res) {
                 username: decoded.username,
                 password: decoded.password
             }
-        }).then(function(UserExist) {
+        }).then(function (UserExist) {
             if (UserExist != null) {
                 if (objWalletTransaction.id == 0) {
 
@@ -88,7 +88,7 @@ router.post('/Savewallettransaction', jsonParser, function(req, res) {
                     objWalletTransaction.OrderNumber = "WALTNO-" + GetRandomWord() + Date.parse(WalletTransactionOrderNumber);
                     objWalletTransaction.CreatedBy = decoded.username;
                     objWalletTransaction.CreatedDate = new Date();
-                    WalletTransaction.create(objWalletTransaction).then(function(response) {
+                    WalletTransaction.create(objWalletTransaction).then(function (response) {
                         if (response != null) {
                             res.json({
                                 success: true,
@@ -111,4 +111,99 @@ router.post('/Savewallettransaction', jsonParser, function(req, res) {
         res.json(InvalidToken);
     }
 });
+
+
+router.get('/ApproveTransaction', function (req, res) {
+    try {
+        var id = req.query.id;
+        var username = req.query.UserName;
+        WalletTransaction.findOne({
+            where: {
+                id: id
+            }
+        }).then(function (resWalletTransaction) {
+            if (resWalletTransaction == null) {
+                res.json({
+                    success: false,
+                    message: "Transaction Not Found"
+                });
+            } else {
+                resWalletTransaction.updateAttributes({
+                    IsPaymentSuccess: true,
+                    ModifiedDate: new Date(),
+                    ModifiedBy: username,
+                }).then(function (resUpdateTrans) {
+                    res.json({
+                        success: true,
+                        message: "Wallet Transaction Approved successfully."
+                    });
+                });
+            }
+        });
+    } catch (err) {
+        res.json({
+            success: false,
+            message: "System Exception, try again later"
+        });
+    }
+});
+
+
+
+router.get('/RenewTransaction', function (req, res) {
+    try {
+        var id = req.query.id;
+        var username = req.query.UserName;
+
+        WalletTransaction.findOne({
+            where: {
+                id: id
+            }
+        }).then(function (resWalletTransaction) {
+            if (resWalletTransaction == null) {
+                res.json({
+                    success: false,
+                    message: "Transaction Not Found"
+                });
+            } else {
+                GetWalletChargesGlobal(resWalletTransaction.Country, resWalletTransaction.idApp, function (resOrderTotal) {
+                    var Amount = resOrderTotal.TotalAmount;
+                    var Remark = resOrderTotal.Remark;
+                    RenewTransaction(Amount, Remark);
+                });
+            }
+
+            function RenewTransaction(Amount, Remark) {
+                var ObjRenewWalletTransaction = new Object();
+                ObjRenewWalletTransaction.id = 0;
+                ObjRenewWalletTransaction.idApp = resWalletTransaction.idApp;
+                ObjRenewWalletTransaction.Amount = Amount;
+                ObjRenewWalletTransaction.Type = "Debit";
+                ObjRenewWalletTransaction.Remark = Remark;
+                ObjRenewWalletTransaction.OrderNumber = "WALTNO-" + GetRandomWord() + Date.parse(new Date());
+                ObjRenewWalletTransaction.Country = Country;
+                ObjRenewWalletTransaction.PaymentType = "Offline";
+                ObjRenewWalletTransaction.IsPaymentSuccess = false;
+                ObjRenewWalletTransaction.CreatedDate = new Date();
+                ObjRenewWalletTransaction.CreatedBy = username;
+                ObjRenewWalletTransaction.ExpiryDate = AddDate(ObjRenewWalletTransaction.CreatedDate, 1, "Year");
+                ObjRenewWalletTransaction.ModifiedDate = null;
+                ObjRenewWalletTransaction.ModifiedBy = null;
+                ObjRenewWalletTransaction.PaymentReceipt = null;
+                WalletTransaction.create(ObjRenewWalletTransaction).then(function (responseTransaction) {
+                    return callback({
+                        success: true,
+                        message: "Wallet Transaction Renew successfully.",
+                    });
+                });
+            }
+        });
+    } catch (err) {
+        res.json({
+            success: false,
+            message: "System Exception, try again later"
+        });
+    }
+});
+
 module.exports = router

@@ -2378,7 +2378,7 @@ var WalletTransaction = models.tblwallettransaction;
 //============================Order Service======================================
 global.CreateOrderServiceGlobal = CreateOrderServiceGlobal;
 global.GetRandomWord = GetRandomWord;
-
+global.GetWalletChargesGlobal = GetWalletChargesGlobal;
 
 function GetChargesGlobal(Country, ProductTypeId, callback) {
     var TotalAmount = 0;
@@ -2659,6 +2659,7 @@ function CreateDabitWalletTransactionGlobal(Country, DeviceId, UserName, Product
         ObjWalletTransaction.Type = "Debit";
         ObjWalletTransaction.Remark = Remark;
         ObjWalletTransaction.OrderNumber = "WALTNO-" + GetRandomWord() + Date.parse(new Date());
+        ObjWalletTransaction.Country = Country;
         ObjWalletTransaction.PaymentType = "Offline";
         ObjWalletTransaction.IsPaymentSuccess = false;
         ObjWalletTransaction.CreatedDate = new Date();
@@ -2841,7 +2842,7 @@ function GetMarkTypeId(callback) {
     }
 }
 
-// CreateDabitWalletTransactionGlobal("Malaysia", "44444444444456", "XXX", 1, function (resFlg) {
+// CreateDabitWalletTransactionGlobal("India", "44444444444456", "XXX", 2, function (resFlg) {
 //     console.log("=================")
 //     console.log(resFlg)
 //     console.log("=================")
