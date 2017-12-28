@@ -10,7 +10,11 @@ module.exports = function(sequelize, DataTypes) {
     },
     idApp: {
       type: DataTypes.INTEGER(11),
-      allowNull: true
+      allowNull: true,
+      references: {
+        model: 'tblappinfo',
+        key: 'Id'
+      }
     },
     Amount: {
       type: DataTypes.DECIMAL,
