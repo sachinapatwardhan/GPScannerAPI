@@ -586,8 +586,17 @@ function convertdateformatForUnix(date1) {
 router.get('/GetAllVehicleDeviceId', function(req, res) {
     var search = req.query.search;
     var searchdevice = {};
+
+
+    searchdevice['$and'] = [];
+    var obj = new Object();
+    obj['IsDelete'] = {
+        $eq: 0
+    }
+    searchdevice['$and'].push(obj);
+
     if (search != null && search != '' & search != undefined) {
-        searchdevice['$and'] = [];
+        // searchdevice['$and'] = [];
         var obj = new Object();
         obj['deviceid'] = {
             $like: '%' + search + '%'
