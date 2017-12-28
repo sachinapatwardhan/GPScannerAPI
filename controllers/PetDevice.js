@@ -1068,7 +1068,8 @@ router.post('/uploadExcelDevice', function(req, res) {
                         function addDevice(i) {
                             if (i < lst.length) {
                                 var obj = new Object();
-                                obj.DeviceId = lst[i].IMEI.trim();
+                                obj.DeviceId = lst[i].IMEI.trim().slice(1);
+                                // obj.DeviceId = lst[i].IMEI.trim();
                                 obj.IMEI = lst[i].IMEI.trim();
                                 obj.CreatedDate = new Date();
                                 obj.Latitude = '22.54967667';
@@ -1162,7 +1163,7 @@ router.post('/uploadExcelDevice', function(req, res) {
                                     })
                                 } else {
                                     GPSDevice.findOrCreate({
-                                        where: { DeviceId: obj.DeviceId },
+                                        where: { IMEI: obj.IMEI },
                                         defaults: obj
                                     }).then(function(response) {
                                         if ((response[1])) {
