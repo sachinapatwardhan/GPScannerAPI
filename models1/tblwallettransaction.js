@@ -40,6 +40,10 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING,
       allowNull: true
     },
+    DeviceId: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
     IsPaymentSuccess: {
       type: DataTypes.INTEGER(11),
       allowNull: true
