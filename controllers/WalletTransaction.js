@@ -115,7 +115,7 @@ router.get('/GetAllWallettransaction', function (req, res) {
 
 
 
-    var qry = "Select twt.id,tai.Id,tai.AppName,Amount,Type,Remark,OrderNumber,CONVERT_TZ(twt.CreatedDate,'+00:00','" + CurrentOffset + "') as CreatedDate,CONVERT_TZ(twt.ExpiryDate,'+00:00','" + CurrentOffset + "') as ExpiryDate,twt.CreatedBy,twt.IsPaymentSuccess,twt.PaymentReceipt from tblwallettransaction twt" +
+    var qry = "Select twt.id,tai.Id,tai.AppName,Amount,Type,Remark,OrderNumber,CONVERT_TZ(twt.CreatedDate,'+00:00','" + CurrentOffset + "') as CreatedDate,CONVERT_TZ(twt.ExpiryDate,'+00:00','" + CurrentOffset + "') as ExpiryDate,twt.CreatedBy,twt.IsPaymentSuccess,twt.PaymentReceipt,Country from tblwallettransaction twt" +
         " inner join tblappinfo tai on twt.idApp = tai.id " + search +
         " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
 
