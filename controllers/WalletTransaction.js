@@ -727,6 +727,7 @@ router.get('/ExportWalletTransaction', function(req, res) {
         search['$or'].push(['tblwallettransaction.Type like ?', "%" + objSearch + "%"]);
         search['$or'].push(['tblwallettransaction.OrderNumber like ?', "%" + objSearch + "%"]);
         search['$or'].push(['tblwallettransaction.Country like ?', "%" + objSearch + "%"]);
+        search['$or'].push(['tblwallettransaction.DeviceId like ?', "%" + objSearch + "%"]);
         if (PStatusName.indexOf(objSearch.toLowerCase()) >= 0) {
             search['$or'].push(['tblwallettransaction.IsPaymentSuccess = 0']);
         }
@@ -837,6 +838,9 @@ router.get('/ExportWalletTransaction', function(req, res) {
             caption: 'Order No',
             type: 'string'
         }, {
+            caption: 'DeviceId',
+            type: 'string'
+        }, {
             caption: 'App Name',
             type: 'string'
         }, {
@@ -870,6 +874,10 @@ router.get('/ExportWalletTransaction', function(req, res) {
 
             var No = i + 1;
             var OrderNo = ObjData.OrderNumber;
+            var DeviceId = '';
+            if (ObjData.DeviceId != '' && ObjData.DeviceId != null && ObjData.CreatedDate != DeviceId) {
+                DeviceId = ObjData.DeviceId;
+            }
             var AppName = ObjData.tblappinfo.AppName;
             var OrderTotal = ObjData.Amount;
             var Type = ObjData.Type;
@@ -903,6 +911,7 @@ router.get('/ExportWalletTransaction', function(req, res) {
 
             srow.push(No.toString());
             srow.push(OrderNo.toString());
+            srow.push(DeviceId.toString());
             srow.push(AppName.toString());
             srow.push(OrderTotal);
             srow.push(Type.toString());
