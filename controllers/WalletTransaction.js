@@ -859,7 +859,7 @@ router.get('/ExportWalletTransaction', function(req, res) {
         }, {
             caption: 'Remark',
             type: 'string'
-        } {
+        }, {
             caption: 'Country',
             type: 'string'
         }, {
