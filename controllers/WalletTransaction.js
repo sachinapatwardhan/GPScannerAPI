@@ -893,7 +893,7 @@ router.get('/ExportWalletTransaction', function(req, res) {
             srow.push(CreatedBy.toString());
             srow.push(CreatedDate.toString());
             srow.push(ExpiryDate.toString());
-            srow.push(Remark.toString());
+            srow.push(Remark);
             srow.push(Status.toString());
             row.push(srow);
         };
