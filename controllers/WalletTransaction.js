@@ -59,25 +59,25 @@ router.get('/GetAllWallettransaction', function(req, res) {
         var StartDate = convertdateUTCformat(objParam.StartDate);
         var EndDate = convertdateUTCformat(objParam.EndDate, 2);
         if (search == "") {
-            search += "WHERE  twt.CreatedDate between '" + StartDate + "' and '" + EndDate + "' ";
+            search += "WHERE  twt.CreatedDate between '" + StartDate + "' and '" + EndDate + "' or twt.ExpiryDate between '" + StartDate + "' and '" + EndDate + "' ";
         } else {
-            search += " and twt.CreatedDate between '" + StartDate + "' and '" + EndDate + "' ";
+            search += " and twt.CreatedDate between '" + StartDate + "' and '" + EndDate + "' or twt.ExpiryDate between '" + StartDate + "' and '" + EndDate + "' ";
         }
     } else if (objParam.StartDate != '' && objParam.StartDate != null && objParam.StartDate != undefined) {
 
         var StartDate = convertdateUTCformat(objParam.StartDate);
         if (search == "") {
-            search += "where twt.CreatedDate >= '" + StartDate + "' ";
+            search += "where twt.CreatedDate >= '" + StartDate + "' or twt.ExpiryDate >= '" + StartDate + "' ";
         } else {
-            search += " and twt.CreatedDate >= '" + StartDate + "' ";
+            search += " and twt.CreatedDate >= '" + StartDate + "' or twt.ExpiryDate >= '" + StartDate + "' ";
         }
     } else if (objParam.EndDate != '' && objParam.EndDate != null && objParam.EndDate != undefined) {
 
         var EndDate = convertdateUTCformat(objParam.EndDate, 2);
         if (search == "") {
-            search += "where twt.CreatedDate <= '" + EndDate + "' ";
+            search += "where twt.CreatedDate <= '" + EndDate + "' or twt.ExpiryDate <= '" + EndDate + "' ";
         } else {
-            search += " and twt.CreatedDate <= '" + EndDate + "' ";
+            search += " and twt.CreatedDate <= '" + EndDate + "' or twt.ExpiryDate <= '" + EndDate + "' ";
         }
     }
 
