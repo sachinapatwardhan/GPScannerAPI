@@ -129,7 +129,7 @@ router.get('/GetAllWallettransaction', function(req, res) {
         " inner join tblappinfo tai on twt.idApp = tai.id " + search +
         " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
 
-    console.log('*****************', qry)
+    //console.log('*****************', qry)
 
     var Countqry = "SELECT count(twt.id) as TotalRecord " +
         "from tblwallettransaction twt " +
@@ -776,7 +776,6 @@ router.get('/ExportWalletTransaction', function(req, res) {
         search['$or'].push(obj1);
     }
 
-    console.log('Status', objParam.Status)
     if (objParam.Status >= 0) {
         if (search['$and'] == undefined) {
             search['$and'] = [];
@@ -819,7 +818,6 @@ router.get('/ExportWalletTransaction', function(req, res) {
         }
     });
 
-    console.log('Export')
     WalletTransaction.findAll({
         where: search,
         order: 'CreatedDate desc',
@@ -861,6 +859,9 @@ router.get('/ExportWalletTransaction', function(req, res) {
         }, {
             caption: 'Remark',
             type: 'string'
+        } {
+            caption: 'Country',
+            type: 'string'
         }, {
             caption: 'Status',
             type: 'string'
@@ -894,6 +895,7 @@ router.get('/ExportWalletTransaction', function(req, res) {
             } else {
                 ExpiryDate = '';
             }
+            var Country = ObjData.Country;
             var Remark = '';
             if (ObjData.ExpiryDate != '' && ObjData.ExpiryDate != null && ObjData.ExpiryDate != undefined) {
                 Remark = ObjData.Remark;
@@ -919,6 +921,7 @@ router.get('/ExportWalletTransaction', function(req, res) {
             srow.push(CreatedDate.toString());
             srow.push(ExpiryDate.toString());
             srow.push(Remark);
+            srow.push(Country);
             srow.push(Status.toString());
             row.push(srow);
         };
@@ -946,7 +949,6 @@ router.get('/GetAllDeviceID', function(req, res) {
         };
         search['$and'].push(obj);
     }
-    console.log('Gettalll')
     GpsDevice.findAll({
         attributes: ['id', 'DeviceId', 'IMEI'],
         where: search,
