@@ -442,10 +442,10 @@ router.get('/CheckRightsbyPage', function(req, res) {
                                             RoleName: {
                                                 $in: lstUserRole
                                             },
-                                            Show: true,
-                                            Added: true,
-                                            Modified: true,
-                                            Deleted: true,
+                                            // Show: true,
+                                            // Added: true,
+                                            // Modified: true,
+                                            // Deleted: true,
                                         }
                                     }).then(function(objUserPermission) {
                                         if (objUserPermission != null) {

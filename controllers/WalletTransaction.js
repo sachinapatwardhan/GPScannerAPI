@@ -167,6 +167,7 @@ router.post('/Savewallettransaction', jsonParser, function(req, res) {
                     objWalletTransaction.OrderNumber = "WALTNO-" + GetRandomWord() + Date.parse(WalletTransactionOrderNumber);
                     objWalletTransaction.CreatedBy = decoded.username;
                     objWalletTransaction.CreatedDate = new Date();
+                    objWalletTransaction.ExpiryDate = AddDate(objWalletTransaction.CreatedDate, 1, "Year");
                     WalletTransaction.create(objWalletTransaction).then(function(response) {
                         if (response != null) {
                             res.json({
