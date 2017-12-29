@@ -4,6 +4,7 @@ var User = models.tbluserinformation;
 var WalletTransaction = models.tblwallettransaction;
 var Wallet = models.tblwallet;
 var AppInfo = models.tblappinfo;
+var GpsDevice = models.tblgpsdevice;
 
 
 function convertdateUTCformat(date1, flg) {
@@ -21,7 +22,7 @@ function convertdateUTCformat(date1, flg) {
     }
 }
 
-router.get('/GetAllWallettransaction', function (req, res) {
+router.get('/GetAllWallettransaction', function(req, res) {
     var objParam = req.query;
     var objColumns = objParam.columns;
     var objOrderBy = objParam.order;
@@ -52,6 +53,7 @@ router.get('/GetAllWallettransaction', function (req, res) {
         search = search + 'twt.CreatedBy like "%' + objSearch + '%" or ';
         search = search + 'twt.Remark like "%' + objSearch + '%" or ';
         search = search + 'twt.Amount like "%' + objSearch + '%" or ';
+        search = search + 'twt.DeviceId like "%' + objSearch + '%" or ';
         search = search + 'twt.Type like "%' + objSearch + '%" ) ';
     }
 
@@ -89,6 +91,14 @@ router.get('/GetAllWallettransaction', function (req, res) {
         }
     }
 
+    if (objParam.Type != '' && objParam.Type != null && objParam.Type != undefined) {
+        if (search == "") {
+            search += "where twt.Type = '" + objParam.Type + "'";
+        } else {
+            search += " and twt.Type = '" + objParam.Type + "'";
+        }
+    }
+
     // if (objParam.Type > 0) {
     //     if (search == "") {
     //         search += 'where twt.idApp = ' + objParam.Type;
@@ -115,7 +125,7 @@ router.get('/GetAllWallettransaction', function (req, res) {
 
 
 
-    var qry = "Select twt.id,tai.Id,tai.AppName,Amount,Type,Remark,OrderNumber,CONVERT_TZ(twt.CreatedDate,'+00:00','" + CurrentOffset + "') as CreatedDate,CONVERT_TZ(twt.ExpiryDate,'+00:00','" + CurrentOffset + "') as ExpiryDate,twt.CreatedBy,twt.IsPaymentSuccess,twt.PaymentReceipt,Country from tblwallettransaction twt" +
+    var qry = "Select twt.id,tai.Id,tai.AppName,Amount,Type,Remark,OrderNumber,CONVERT_TZ(twt.CreatedDate,'+00:00','" + CurrentOffset + "') as CreatedDate,CONVERT_TZ(twt.ExpiryDate,'+00:00','" + CurrentOffset + "') as ExpiryDate,twt.CreatedBy,twt.IsPaymentSuccess,twt.PaymentReceipt,Country,twt.DeviceId from tblwallettransaction twt" +
         " inner join tblappinfo tai on twt.idApp = tai.id " + search +
         " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
 
@@ -126,9 +136,9 @@ router.get('/GetAllWallettransaction', function (req, res) {
         "inner join tblappinfo tai on twt.idApp = tai.id " + search
 
 
-    connection.query(qry, function (err, response) {
+    connection.query(qry, function(err, response) {
         if (response != undefined) {
-            connection.query(Countqry, function (err, lstCount, fields) {
+            connection.query(Countqry, function(err, lstCount, fields) {
                 var response1 = new Object();
                 response1.draw = objParam.draw;
                 response1.recordsTotal = lstCount[0].TotalRecord;
@@ -148,7 +158,7 @@ router.get('/GetAllWallettransaction', function (req, res) {
 });
 
 
-router.post('/Savewallettransaction', jsonParser, function (req, res) {
+router.post('/Savewallettransaction', jsonParser, function(req, res) {
     var objWalletTransaction = req.body;
     objHeader = req.headers;
     var token = getToken(objHeader);
@@ -159,7 +169,7 @@ router.post('/Savewallettransaction', jsonParser, function (req, res) {
                 username: decoded.username,
                 password: decoded.password
             }
-        }).then(function (UserExist) {
+        }).then(function(UserExist) {
             if (UserExist != null) {
                 if (objWalletTransaction.id == 0) {
 
@@ -168,7 +178,7 @@ router.post('/Savewallettransaction', jsonParser, function (req, res) {
                     objWalletTransaction.CreatedBy = decoded.username;
                     objWalletTransaction.CreatedDate = new Date();
                     objWalletTransaction.ExpiryDate = AddDate(objWalletTransaction.CreatedDate, 1, "Year");
-                    WalletTransaction.create(objWalletTransaction).then(function (response) {
+                    WalletTransaction.create(objWalletTransaction).then(function(response) {
                         if (response != null) {
                             res.json({
                                 success: true,
@@ -193,15 +203,15 @@ router.post('/Savewallettransaction', jsonParser, function (req, res) {
     }
 });
 
-router.post('/uploadImage', function (req, res) {
+router.post('/uploadImage', function(req, res) {
     var form = new formidable.IncomingForm();
 
     form.uploadDir = __dirname + '/../MediaUploads/WalletReceipt';
     var FileName = [];
     var lstUser = [];
 
-    form.parse(req, function (err, fields, files) { });
-    form.on('fileBegin', function (name, file) {
+    form.parse(req, function(err, fields, files) {});
+    form.on('fileBegin', function(name, file) {
         var ext = file.name.substring(file.name.indexOf('.'), file.name.length);
         var NewName = GetUserNameFromDate();
         if (ext.indexOf('?') > -1) {
@@ -214,25 +224,25 @@ router.post('/uploadImage', function (req, res) {
 
         //modify file path
     });
-    form.on('end', function () {
+    form.on('end', function() {
         var i = 0;
 
         function uploader(i) {
             if (i < FileName.length) {
                 var Id = parseInt(lstUser[i]);
-                WalletTransaction.findOne({ where: { Id: Id } }).then(function (response) {
+                WalletTransaction.findOne({ where: { Id: Id } }).then(function(response) {
                     if (response != null) {
 
 
                         if (response.PaymentReceipt != '' && response.PaymentReceipt != null) {
                             var oldFile = __dirname + '/../MediaUploads/WalletReceipt/' + response.FlagImageFileName;
-                            fs.exists(oldFile, function (exists) {
+                            fs.exists(oldFile, function(exists) {
                                 if (exists) {
                                     fs.unlink(oldFile);
                                 }
                             });
                         };
-                        response.updateAttributes({ PaymentReceipt: FileName[i] }).then(function (resUpdate) {
+                        response.updateAttributes({ PaymentReceipt: FileName[i] }).then(function(resUpdate) {
                             if ((i + 1) == FileName.length) {
                                 res.json({ success: true, message: "Images Uploaded Successfully...", data: FileName[i] });
                             } else {
@@ -268,7 +278,7 @@ function GetUserNameFromDate() {
 
 
 }
-router.get('/ApproveTransaction', function (req, res) {
+router.get('/ApproveTransaction', function(req, res) {
     try {
         var id = req.query.id;
         var username = req.query.UserName;
@@ -276,7 +286,7 @@ router.get('/ApproveTransaction', function (req, res) {
             where: {
                 id: id
             }
-        }).then(function (resWalletTransaction) {
+        }).then(function(resWalletTransaction) {
             if (resWalletTransaction == null) {
                 res.json({
                     success: false,
@@ -287,7 +297,7 @@ router.get('/ApproveTransaction', function (req, res) {
                     IsPaymentSuccess: 1,
                     ModifiedDate: new Date(),
                     ModifiedBy: username,
-                }).then(function (resUpdateTrans) {
+                }).then(function(resUpdateTrans) {
 
                     var ObjWallet = new Object();
                     ObjWallet.id = 0;
@@ -301,7 +311,7 @@ router.get('/ApproveTransaction', function (req, res) {
                     }
                     ObjWallet.Createdby = username;
                     ObjWallet.CreatedDate = new Date();
-                    Wallet.create(ObjWallet).then(function (resCreateWallet) {
+                    Wallet.create(ObjWallet).then(function(resCreateWallet) {
                         res.json({
                             success: true,
                             message: "Wallet Transaction Approved successfully."
@@ -319,7 +329,7 @@ router.get('/ApproveTransaction', function (req, res) {
 });
 
 
-router.get('/RenewTransaction', function (req, res) {
+router.get('/RenewTransaction', function(req, res) {
     try {
         var id = req.query.id;
         var username = req.query.UserName;
@@ -328,7 +338,7 @@ router.get('/RenewTransaction', function (req, res) {
             where: {
                 id: id
             }
-        }).then(function (resWalletTransaction) {
+        }).then(function(resWalletTransaction) {
             if (resWalletTransaction == null) {
                 res.json({
                     success: false,
@@ -337,8 +347,8 @@ router.get('/RenewTransaction', function (req, res) {
             } else {
                 resWalletTransaction.updateAttributes({
                     IsPaymentSuccess: 2
-                }).then(function (resUpdateTra) {
-                    GetWalletChargesGlobal(resWalletTransaction.Country, resWalletTransaction.idApp, function (resOrderTotal) {
+                }).then(function(resUpdateTra) {
+                    GetWalletChargesGlobal(resWalletTransaction.Country, resWalletTransaction.idApp, function(resOrderTotal) {
                         var Amount = resOrderTotal.TotalAmount;
                         var Remark = resOrderTotal.Remark;
                         RenewTransaction(resWalletTransaction.Country, Amount, Remark);
@@ -364,7 +374,7 @@ router.get('/RenewTransaction', function (req, res) {
                 ObjRenewWalletTransaction.ModifiedDate = null;
                 ObjRenewWalletTransaction.ModifiedBy = null;
                 ObjRenewWalletTransaction.PaymentReceipt = null;
-                WalletTransaction.create(ObjRenewWalletTransaction).then(function (responseTransaction) {
+                WalletTransaction.create(ObjRenewWalletTransaction).then(function(responseTransaction) {
                     res.json({
                         success: true,
                         message: "Wallet Transaction Renew successfully.",
@@ -380,7 +390,7 @@ router.get('/RenewTransaction', function (req, res) {
     }
 });
 
-router.get('/GetAllWalletes', function (req, res) {
+router.get('/GetAllWalletes', function(req, res) {
 
     var objParam = req.query;
     var objColumns = objParam.columns;
@@ -507,14 +517,14 @@ router.get('/GetAllWalletes', function (req, res) {
                 required: true,
             }]
         }]
-    }).then(function (response) {
+    }).then(function(response) {
         var responseWallet = new Object();
         responseWallet.draw = objParam.draw;
         responseWallet.recordsTotal = response.count;
         responseWallet.recordsFiltered = response.count;
         responseWallet.data = response.rows;
         res.json(responseWallet);
-    }).catch(function (error) {
+    }).catch(function(error) {
         res.json({
             success: false,
             response: error
@@ -522,7 +532,7 @@ router.get('/GetAllWalletes', function (req, res) {
     })
 });
 
-router.get('/ExportWallet', function (req, res) {
+router.get('/ExportWallet', function(req, res) {
     var conf = {};
     conf.cols = [];
 
@@ -632,7 +642,7 @@ router.get('/ExportWallet', function (req, res) {
                 required: true,
             }]
         }]
-    }).then(function (response) {
+    }).then(function(response) {
 
         var NewColumns = [{
             caption: 'No',
@@ -697,7 +707,7 @@ router.get('/ExportWallet', function (req, res) {
     });
 })
 
-router.get('/ExportWalletTransaction', function (req, res) {
+router.get('/ExportWalletTransaction', function(req, res) {
     var conf = {};
     conf.cols = [];
 
@@ -818,7 +828,7 @@ router.get('/ExportWalletTransaction', function (req, res) {
             required: true,
         }]
 
-    }).then(function (response) {
+    }).then(function(response) {
 
         var NewColumns = [{
             caption: 'No',
@@ -913,6 +923,29 @@ router.get('/ExportWalletTransaction', function (req, res) {
 
     });
 })
+
+router.get('/GetAllDeviceID', function(req, res) {
+    var search = {}
+    if (req.query.AppName != "Maark") {
+
+        if (search['$and'] == undefined) {
+            search['$and'] = [];
+        }
+        var obj = new Object();
+        obj['AppName'] = {
+            $eq: req.query.AppName
+        };
+        search['$and'].push(obj);
+    }
+    console.log('Gettalll')
+    GpsDevice.findAll({
+        attributes: ['id', 'DeviceId', 'IMEI'],
+        where: search,
+        order: 'ExpiryDate asc',
+    }).then(function(response) {
+        res.json(response);
+    })
+});
 
 function convertdateUTCformat(date1, flg) {
     var date = new Date(date1);
