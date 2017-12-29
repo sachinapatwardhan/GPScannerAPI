@@ -295,9 +295,9 @@ router.get('/ApproveTransaction', function (req, res) {
                     ObjWallet.Amount = resWalletTransaction.Amount;
                     ObjWallet.Type = resWalletTransaction.Type;
                     if (resWalletTransaction.Remark != null && resWalletTransaction.Remark != '' && resWalletTransaction.Remark != undefined) {
-                        ObjWallet.Remark = resWalletTransaction.Remark + "<br/>Reference Wallet Transaction : " + resWalletTransaction.OrderNumber;
+                        ObjWallet.Remark = resWalletTransaction.Remark + "<br/>Reference Wallet Transaction : " + resWalletTransaction.OrderNumber + "<br/>DeviceId : " + resWalletTransaction.DeviceId;
                     } else {
-                        ObjWallet.Remark = "Reference Wallet Transaction : " + resWalletTransaction.OrderNumber;;
+                        ObjWallet.Remark = "Reference Wallet Transaction : " + resWalletTransaction.OrderNumber + "<br/>DeviceId : " + resWalletTransaction.DeviceId;
                     }
                     ObjWallet.Createdby = username;
                     ObjWallet.CreatedDate = new Date();
@@ -356,6 +356,7 @@ router.get('/RenewTransaction', function (req, res) {
                 ObjRenewWalletTransaction.OrderNumber = "WALTNO-" + GetRandomWord() + Date.parse(new Date());
                 ObjRenewWalletTransaction.Country = Country;
                 ObjRenewWalletTransaction.PaymentType = "Offline";
+                ObjRenewWalletTransaction.DeviceId = resWalletTransaction.DeviceId;
                 ObjRenewWalletTransaction.IsPaymentSuccess = 0;
                 ObjRenewWalletTransaction.CreatedDate = new Date();
                 ObjRenewWalletTransaction.CreatedBy = username;
@@ -676,7 +677,7 @@ router.get('/ExportWallet', function (req, res) {
                 var CreatedDate = '';
             }
             var Country = ObjData.tblwallettransaction.Country;
-            var Remark = ObjData.Remark;
+            var Remark = ObjData.Remark.split("<br/>").join(" , ")
             srow.push(No.toString());
             srow.push(OrderNo);
             srow.push(AppName);
