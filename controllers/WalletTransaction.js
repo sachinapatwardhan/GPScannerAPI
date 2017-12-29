@@ -21,7 +21,7 @@ function convertdateUTCformat(date1, flg) {
     }
 }
 
-router.get('/GetAllWallettransaction', function (req, res) {
+router.get('/GetAllWallettransaction', function(req, res) {
     var objParam = req.query;
     var objColumns = objParam.columns;
     var objOrderBy = objParam.order;
@@ -51,6 +51,7 @@ router.get('/GetAllWallettransaction', function (req, res) {
         search = search + 'twt.OrderNumber like "%' + objSearch + '%" or ';
         search = search + 'twt.CreatedBy like "%' + objSearch + '%" or ';
         search = search + 'twt.Remark like "%' + objSearch + '%" or ';
+        search = search + 'twt.Amount like "%' + objSearch + '%" or ';
         search = search + 'twt.Type like "%' + objSearch + '%" ) ';
     }
 
@@ -114,7 +115,7 @@ router.get('/GetAllWallettransaction', function (req, res) {
 
 
 
-    var qry = "Select twt.id,tai.Id,tai.AppName,Amount,Type,Remark,OrderNumber,CONVERT_TZ(twt.CreatedDate,'+00:00','" + CurrentOffset + "') as CreatedDate,CONVERT_TZ(twt.ExpiryDate,'+00:00','" + CurrentOffset + "') as ExpiryDate,twt.CreatedBy,twt.IsPaymentSuccess from tblwallettransaction twt" +
+    var qry = "Select twt.id,tai.Id,tai.AppName,Amount,Type,Remark,OrderNumber,CONVERT_TZ(twt.CreatedDate,'+00:00','" + CurrentOffset + "') as CreatedDate,CONVERT_TZ(twt.ExpiryDate,'+00:00','" + CurrentOffset + "') as ExpiryDate,twt.CreatedBy,twt.IsPaymentSuccess,twt.PaymentReceipt from tblwallettransaction twt" +
         " inner join tblappinfo tai on twt.idApp = tai.id " + search +
         " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
 
@@ -125,9 +126,9 @@ router.get('/GetAllWallettransaction', function (req, res) {
         "inner join tblappinfo tai on twt.idApp = tai.id " + search
 
 
-    connection.query(qry, function (err, response) {
+    connection.query(qry, function(err, response) {
         if (response != undefined) {
-            connection.query(Countqry, function (err, lstCount, fields) {
+            connection.query(Countqry, function(err, lstCount, fields) {
                 var response1 = new Object();
                 response1.draw = objParam.draw;
                 response1.recordsTotal = lstCount[0].TotalRecord;
@@ -147,7 +148,7 @@ router.get('/GetAllWallettransaction', function (req, res) {
 });
 
 
-router.post('/Savewallettransaction', jsonParser, function (req, res) {
+router.post('/Savewallettransaction', jsonParser, function(req, res) {
     var objWalletTransaction = req.body;
     objHeader = req.headers;
     var token = getToken(objHeader);
@@ -158,7 +159,7 @@ router.post('/Savewallettransaction', jsonParser, function (req, res) {
                 username: decoded.username,
                 password: decoded.password
             }
-        }).then(function (UserExist) {
+        }).then(function(UserExist) {
             if (UserExist != null) {
                 if (objWalletTransaction.id == 0) {
 
@@ -166,7 +167,7 @@ router.post('/Savewallettransaction', jsonParser, function (req, res) {
                     objWalletTransaction.OrderNumber = "WALTNO-" + GetRandomWord() + Date.parse(WalletTransactionOrderNumber);
                     objWalletTransaction.CreatedBy = decoded.username;
                     objWalletTransaction.CreatedDate = new Date();
-                    WalletTransaction.create(objWalletTransaction).then(function (response) {
+                    WalletTransaction.create(objWalletTransaction).then(function(response) {
                         if (response != null) {
                             res.json({
                                 success: true,
@@ -191,15 +192,15 @@ router.post('/Savewallettransaction', jsonParser, function (req, res) {
     }
 });
 
-router.post('/uploadImage', function (req, res) {
+router.post('/uploadImage', function(req, res) {
     var form = new formidable.IncomingForm();
 
     form.uploadDir = __dirname + '/../MediaUploads/WalletReceipt';
     var FileName = [];
     var lstUser = [];
 
-    form.parse(req, function (err, fields, files) { });
-    form.on('fileBegin', function (name, file) {
+    form.parse(req, function(err, fields, files) {});
+    form.on('fileBegin', function(name, file) {
         var ext = file.name.substring(file.name.indexOf('.'), file.name.length);
         var NewName = GetUserNameFromDate();
         if (ext.indexOf('?') > -1) {
@@ -212,25 +213,25 @@ router.post('/uploadImage', function (req, res) {
 
         //modify file path
     });
-    form.on('end', function () {
+    form.on('end', function() {
         var i = 0;
 
         function uploader(i) {
             if (i < FileName.length) {
                 var Id = parseInt(lstUser[i]);
-                WalletTransaction.findOne({ where: { Id: Id } }).then(function (response) {
+                WalletTransaction.findOne({ where: { Id: Id } }).then(function(response) {
                     if (response != null) {
 
 
                         if (response.PaymentReceipt != '' && response.PaymentReceipt != null) {
                             var oldFile = __dirname + '/../MediaUploads/WalletReceipt/' + response.FlagImageFileName;
-                            fs.exists(oldFile, function (exists) {
+                            fs.exists(oldFile, function(exists) {
                                 if (exists) {
                                     fs.unlink(oldFile);
                                 }
                             });
                         };
-                        response.updateAttributes({ PaymentReceipt: FileName[i] }).then(function (resUpdate) {
+                        response.updateAttributes({ PaymentReceipt: FileName[i] }).then(function(resUpdate) {
                             if ((i + 1) == FileName.length) {
                                 res.json({ success: true, message: "Images Uploaded Successfully...", data: FileName[i] });
                             } else {
@@ -266,7 +267,7 @@ function GetUserNameFromDate() {
 
 
 }
-router.get('/ApproveTransaction', function (req, res) {
+router.get('/ApproveTransaction', function(req, res) {
     try {
         var id = req.query.id;
         var username = req.query.UserName;
@@ -274,7 +275,7 @@ router.get('/ApproveTransaction', function (req, res) {
             where: {
                 id: id
             }
-        }).then(function (resWalletTransaction) {
+        }).then(function(resWalletTransaction) {
             if (resWalletTransaction == null) {
                 res.json({
                     success: false,
@@ -285,7 +286,7 @@ router.get('/ApproveTransaction', function (req, res) {
                     IsPaymentSuccess: 1,
                     ModifiedDate: new Date(),
                     ModifiedBy: username,
-                }).then(function (resUpdateTrans) {
+                }).then(function(resUpdateTrans) {
 
                     var ObjWallet = new Object();
                     ObjWallet.id = 0;
@@ -295,7 +296,7 @@ router.get('/ApproveTransaction', function (req, res) {
                     ObjWallet.Remark = resWalletTransaction.Remark;
                     ObjWallet.Createdby = username;
                     ObjWallet.CreatedDate = new Date();
-                    Wallet.create(ObjWallet).then(function (resCreateWallet) {
+                    Wallet.create(ObjWallet).then(function(resCreateWallet) {
                         res.json({
                             success: true,
                             message: "Wallet Transaction Approved successfully."
@@ -313,7 +314,7 @@ router.get('/ApproveTransaction', function (req, res) {
 });
 
 
-router.get('/RenewTransaction', function (req, res) {
+router.get('/RenewTransaction', function(req, res) {
     try {
         var id = req.query.id;
         var username = req.query.UserName;
@@ -322,7 +323,7 @@ router.get('/RenewTransaction', function (req, res) {
             where: {
                 id: id
             }
-        }).then(function (resWalletTransaction) {
+        }).then(function(resWalletTransaction) {
             if (resWalletTransaction == null) {
                 res.json({
                     success: false,
@@ -331,8 +332,8 @@ router.get('/RenewTransaction', function (req, res) {
             } else {
                 resWalletTransaction.updateAttributes({
                     IsPaymentSuccess: 2
-                }).then(function (resUpdateTra) {
-                    GetWalletChargesGlobal(resWalletTransaction.Country, resWalletTransaction.idApp, function (resOrderTotal) {
+                }).then(function(resUpdateTra) {
+                    GetWalletChargesGlobal(resWalletTransaction.Country, resWalletTransaction.idApp, function(resOrderTotal) {
                         var Amount = resOrderTotal.TotalAmount;
                         var Remark = resOrderTotal.Remark;
                         RenewTransaction(resWalletTransaction.Country, Amount, Remark);
@@ -357,7 +358,7 @@ router.get('/RenewTransaction', function (req, res) {
                 ObjRenewWalletTransaction.ModifiedDate = null;
                 ObjRenewWalletTransaction.ModifiedBy = null;
                 ObjRenewWalletTransaction.PaymentReceipt = null;
-                WalletTransaction.create(ObjRenewWalletTransaction).then(function (responseTransaction) {
+                WalletTransaction.create(ObjRenewWalletTransaction).then(function(responseTransaction) {
                     res.json({
                         success: true,
                         message: "Wallet Transaction Renew successfully.",
@@ -373,7 +374,7 @@ router.get('/RenewTransaction', function (req, res) {
     }
 });
 
-router.get('/GetAllWalletes', function (req, res) {
+router.get('/GetAllWalletes', function(req, res) {
 
     var objParam = req.query;
     var objColumns = objParam.columns;
@@ -500,14 +501,14 @@ router.get('/GetAllWalletes', function (req, res) {
                 required: true,
             }]
         }]
-    }).then(function (response) {
+    }).then(function(response) {
         var responseWallet = new Object();
         responseWallet.draw = objParam.draw;
         responseWallet.recordsTotal = response.count;
         responseWallet.recordsFiltered = response.count;
         responseWallet.data = response.rows;
         res.json(responseWallet);
-    }).catch(function (error) {
+    }).catch(function(error) {
         res.json({
             success: false,
             response: error
@@ -515,7 +516,7 @@ router.get('/GetAllWalletes', function (req, res) {
     })
 });
 
-router.get('/ExportWallet', function (req, res) {
+router.get('/ExportWallet', function(req, res) {
     var conf = {};
     conf.cols = [];
 
@@ -625,7 +626,7 @@ router.get('/ExportWallet', function (req, res) {
                 required: true,
             }]
         }]
-    }).then(function (response) {
+    }).then(function(response) {
 
         var NewColumns = [{
             caption: 'No',
@@ -690,7 +691,7 @@ router.get('/ExportWallet', function (req, res) {
     });
 })
 
-router.get('/ExportWalletTransaction', function (req, res) {
+router.get('/ExportWalletTransaction', function(req, res) {
     var conf = {};
     conf.cols = [];
 
@@ -700,10 +701,26 @@ router.get('/ExportWalletTransaction', function (req, res) {
     var search = {};
 
     if (objSearch != null && objSearch != '' && objSearch != undefined && objSearch != 'undefined') {
+        var PStatusName = 'pending';
+        var AStatusName = 'approve';
+        var CStatusName = 'completed';
+
+
+
         search['$or'] = [];
         search['$or'].push(['tblwallettransaction.Type like ?', "%" + objSearch + "%"]);
         search['$or'].push(['tblwallettransaction.OrderNumber like ?', "%" + objSearch + "%"]);
         search['$or'].push(['tblwallettransaction.Country like ?', "%" + objSearch + "%"]);
+        if (PStatusName.indexOf(objSearch.toLowerCase()) >= 0) {
+            search['$or'].push(['tblwallettransaction.IsPaymentSuccess = 0']);
+        }
+        if (AStatusName.indexOf(objSearch.toLowerCase()) >= 0) {
+            search['$or'].push(['tblwallettransaction.IsPaymentSuccess = 1']);
+        }
+
+        if (CStatusName.indexOf(objSearch.toLowerCase()) >= 0) {
+            search['$or'].push(['tblwallettransaction.IsPaymentSuccess = 2']);
+        }
     }
 
 
@@ -754,8 +771,7 @@ router.get('/ExportWalletTransaction', function (req, res) {
         search['$and'].push(obj);
     }
 
-    //var searchapp = {};
-    console.log('idApp', objParam.idApp)
+    //var searchapp = {};   
     if (objParam.idApp != '' && objParam.idApp != undefined && objParam.idApp != null && objParam.idApp > 0) {
         if (search['$and'] == undefined) {
             search['$and'] = [];
@@ -767,6 +783,18 @@ router.get('/ExportWalletTransaction', function (req, res) {
         search['$and'].push(obj);
     }
 
+
+    if (objParam.idAppsearch != null && objParam.idAppsearch != '' && objParam.idAppsearch != undefined && objParam.idAppsearch > 0) {
+        if (search['$and'] == undefined) {
+            search['$and'] = [];
+        }
+        var obj = new Object();
+        obj['idApp'] = {
+            $eq: parseInt(objParam.idAppsearch)
+        };
+        search['$and'].push(obj);
+    }
+
     WalletTransaction.belongsTo(AppInfo, {
         foreignKey: {
             name: 'idApp',
@@ -774,6 +802,7 @@ router.get('/ExportWalletTransaction', function (req, res) {
         }
     });
 
+    console.log('Export')
     WalletTransaction.findAll({
         where: search,
         order: 'CreatedDate desc',
@@ -783,7 +812,7 @@ router.get('/ExportWalletTransaction', function (req, res) {
             required: true,
         }]
 
-    }).then(function (response) {
+    }).then(function(response) {
 
         var NewColumns = [{
             caption: 'No',
@@ -801,13 +830,19 @@ router.get('/ExportWalletTransaction', function (req, res) {
             caption: 'Type',
             type: 'string'
         }, {
+            caption: 'Created By',
+            type: 'string'
+        }, {
             caption: 'Created Date',
             type: 'string'
         }, {
-            caption: 'Country',
+            caption: 'Expiry Date',
             type: 'string'
         }, {
             caption: 'Remark',
+            type: 'string'
+        }, {
+            caption: 'Status',
             type: 'string'
         }];
 
@@ -822,29 +857,54 @@ router.get('/ExportWalletTransaction', function (req, res) {
             var AppName = ObjData.tblappinfo.AppName;
             var OrderTotal = ObjData.Amount;
             var Type = ObjData.Type;
+            var CreatedBy = ObjData.CreatedBy;
+            var CreatedDate = '';
             if (ObjData.CreatedDate != '' && ObjData.CreatedDate != null && ObjData.CreatedDate != undefined) {
-                var CreatedDate = moment(moment.utc(ObjData.CreatedDate).toDate()).format("DD/MM/YYYY hh:mm A");
+                CreatedDate = moment(moment.utc(ObjData.CreatedDate).toDate()).format("DD/MM/YYYY hh:mm A");
             } else {
-                var CreatedDate = '';
+                CreatedDate = '';
             }
-            var Country = ObjData.Country;
-            var Remark = ObjData.Remark;
+            var ExpiryDate = '';
+            if (ObjData.ExpiryDate != '' && ObjData.ExpiryDate != null && ObjData.ExpiryDate != undefined) {
+                ExpiryDate = moment(moment.utc(ObjData.ExpiryDate).toDate()).format("DD/MM/YYYY hh:mm A");
+            } else {
+                ExpiryDate = '';
+            }
+            var Remark = '';
+            if (ObjData.ExpiryDate != '' && ObjData.ExpiryDate != null && ObjData.ExpiryDate != undefined) {
+                Remark = ObjData.Remark;
+            } else {
+                Remark = '';
+            }
+            var Status = '';
+            if (ObjData.IsPaymentSuccess == 0) {
+                Status = 'Pending'
+            } else if (ObjData.IsPaymentSuccess == 1) {
+                Status = 'Approve'
+            } else if (ObjData.IsPaymentSuccess == 2) {
+                Status = 'Complete'
+            }
+
             srow.push(No.toString());
-            srow.push(OrderNo);
-            srow.push(AppName);
-            srow.push(OrderTotal.toString());
-            srow.push(Type);
-            srow.push(CreatedDate);
-            srow.push(Country);
-            srow.push(Remark);
+            srow.push(OrderNo.toString());
+            srow.push(AppName.toString());
+            srow.push(OrderTotal);
+            srow.push(Type.toString());
+            srow.push(CreatedBy.toString());
+            srow.push(CreatedDate.toString());
+            srow.push(ExpiryDate.toString());
+            srow.push(Remark.toString());
+            srow.push(Status.toString());
             row.push(srow);
         };
+
         conf.rows = [];
         conf.rows = row;
         var result = nodeExcel.execute(conf);
         res.setHeader('Content-Type', 'application/vnd.openxmlformats');
         res.setHeader("Content-Disposition", "attachment; filename=" + "WalletTransaction.xlsx");
         res.end(result, 'binary');
+
     });
 })
 
