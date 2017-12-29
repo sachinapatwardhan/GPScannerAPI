@@ -32,7 +32,22 @@ router.get('/GetAllWallettransaction', function (req, res) {
     var search = "";
 
     if (objSearch != '' && objSearch != null && objSearch != undefined) {
+        var PStatusName = 'pending';
+        var AStatusName = 'approve';
+        var CStatusName = 'completed';
+
         search = 'Where (tai.AppName like "%' + objSearch + '%" or ';
+        if (PStatusName.indexOf(objSearch.toLowerCase()) >= 0) {
+            search = search + 'twt.IsPaymentSuccess = 0 or ';
+        }
+        if (AStatusName.indexOf(objSearch.toLowerCase()) >= 0) {
+            search = search + 'twt.IsPaymentSuccess = 1 or ';
+        }
+
+        if (CStatusName.indexOf(objSearch.toLowerCase()) >= 0) {
+            search = search + 'twt.IsPaymentSuccess = 2 or ';
+        }
+
         search = search + 'twt.OrderNumber like "%' + objSearch + '%" or ';
         search = search + 'twt.CreatedBy like "%' + objSearch + '%" or ';
         search = search + 'twt.Remark like "%' + objSearch + '%" or ';
