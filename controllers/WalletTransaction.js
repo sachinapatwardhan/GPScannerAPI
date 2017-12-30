@@ -27,7 +27,7 @@ router.get('/GetAllWallettransaction', function (req, res) {
     var objColumns = objParam.columns;
     var objOrderBy = objParam.order;
     var objSearch = objParam.search;
-
+    
     var Orderby = objColumns[parseInt(objOrderBy[0].column)].data + ' ' + objOrderBy[0].dir;
 
     var search = "";
@@ -56,34 +56,35 @@ router.get('/GetAllWallettransaction', function (req, res) {
         search = search + 'twt.DeviceId like "%' + objSearch + '%" or ';
         search = search + 'twt.Type like "%' + objSearch + '%" ) ';
     }
-
+    console.log(search)
     if (objParam.StartDate != '' && objParam.StartDate != null && objParam.StartDate != undefined && objParam.EndDate != '' && objParam.EndDate != null && objParam.EndDate != undefined) {
         var StartDate = convertdateUTCformat(objParam.StartDate);
         var EndDate = convertdateUTCformat(objParam.EndDate, 2);
         if (search == "") {
-            search += "WHERE  twt.CreatedDate between '" + StartDate + "' and '" + EndDate + "' or twt.ExpiryDate between '" + StartDate + "' and '" + EndDate + "' ";
+            search += "WHERE  (twt.CreatedDate between '" + StartDate + "' and '" + EndDate + "' or twt.ExpiryDate between '" + StartDate + "' and '" + EndDate + "' )";
         } else {
-            search += " and twt.CreatedDate between '" + StartDate + "' and '" + EndDate + "' or twt.ExpiryDate between '" + StartDate + "' and '" + EndDate + "' ";
+            search += " and ( twt.CreatedDate between '" + StartDate + "' and '" + EndDate + "' or twt.ExpiryDate between '" + StartDate + "' and '" + EndDate + "' )";
         }
     } else if (objParam.StartDate != '' && objParam.StartDate != null && objParam.StartDate != undefined) {
 
         var StartDate = convertdateUTCformat(objParam.StartDate);
         if (search == "") {
-            search += "where twt.CreatedDate >= '" + StartDate + "' or twt.ExpiryDate >= '" + StartDate + "' ";
+            search += "where (twt.CreatedDate >= '" + StartDate + "' or twt.ExpiryDate >= '" + StartDate + "' )";
         } else {
-            search += " and twt.CreatedDate >= '" + StartDate + "' or twt.ExpiryDate >= '" + StartDate + "' ";
+            search += " and (twt.CreatedDate >= '" + StartDate + "' or twt.ExpiryDate >= '" + StartDate + "' )";
         }
     } else if (objParam.EndDate != '' && objParam.EndDate != null && objParam.EndDate != undefined) {
 
         var EndDate = convertdateUTCformat(objParam.EndDate, 2);
         if (search == "") {
-            search += "where twt.CreatedDate <= '" + EndDate + "' or twt.ExpiryDate <= '" + EndDate + "' ";
+            search += "where (twt.CreatedDate <= '" + EndDate + "' or twt.ExpiryDate <= '" + EndDate + "' )";
         } else {
-            search += " and twt.CreatedDate <= '" + EndDate + "' or twt.ExpiryDate <= '" + EndDate + "' ";
+            search += " and (twt.CreatedDate <= '" + EndDate + "' or twt.ExpiryDate <= '" + EndDate + "' )";
         }
     }
 
-    if (objParam.Status >= 0) {
+    if (objParam.Status >= 0) {        
+
         if (search == "") {
             search += 'where twt.IsPaymentSuccess = ' + objParam.Status;
         } else {
@@ -92,6 +93,7 @@ router.get('/GetAllWallettransaction', function (req, res) {
     }
 
     if (objParam.Type != '' && objParam.Type != null && objParam.Type != undefined) {
+
         if (search == "") {
             search += "where twt.Type = '" + objParam.Type + "'";
         } else {
@@ -121,15 +123,12 @@ router.get('/GetAllWallettransaction', function (req, res) {
         } else {
             search += ' and twt.idApp = ' + objParam.idAppsearch;
         }
-    }
-
-
+    }   
 
     var qry = "Select twt.id,tai.Id,tai.AppName,Amount,Type,Remark,OrderNumber,CONVERT_TZ(twt.CreatedDate,'+00:00','" + CurrentOffset + "') as CreatedDate,CONVERT_TZ(twt.ExpiryDate,'+00:00','" + CurrentOffset + "') as ExpiryDate,twt.CreatedBy,twt.IsPaymentSuccess,twt.PaymentReceipt,Country,twt.DeviceId from tblwallettransaction twt" +
         " inner join tblappinfo tai on twt.idApp = tai.id " + search +
         " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
-
-    //console.log('*****************', qry)
+    
 
     var Countqry = "SELECT count(twt.id) as TotalRecord " +
         "from tblwallettransaction twt " +
