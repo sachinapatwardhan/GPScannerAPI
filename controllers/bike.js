@@ -115,7 +115,7 @@ router.get('/GetVehicleDetailById', function(req, res) {
 //     })
 // })
 
-router.get('/GetAllWorkingBike', jsonParser, function(req, res) {
+router.post('/GetAllWorkingBike', jsonParser, function(req, res) {
     var query = "select t4.id,t4.iduser,t4.Name,t4.deviceid,t4.IsOnline,t4.DeviceType,t4.IsACC,t4.VehicleType " +
         "from " +
         "  (select tb.iduser,tb.deviceid,tb.id,tb.Name,tb.DeviceType,tb.IsACC,tvt.Type as 'VehicleType',tb.IsOnline from tblvehicle tb " +
