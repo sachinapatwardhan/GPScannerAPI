@@ -5688,6 +5688,7 @@ router.get('/PrintDailyStatReportNew', function(req, res) {
                         var html = table;
                         var options = {
                             format: 'A4',
+                            orientation: "landscape",
                             footer: {
                                 height: '35px',
                                 contents: { default: '<hr/><span style="color: #444;text-align:right">{{page}}</span>' },
