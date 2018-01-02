@@ -1021,7 +1021,8 @@ router.get('/forgotpassword', function(req, res) {
                                     var mail = {
                                         from: objSystemEmail.DefaultEmailFrom,
                                         to: objUser.email, // + ', ' + objSystemEmail.NotificationEmailTo,
-                                        cc: objSetting.Value,
+                                        bcc: objSetting.Value,
+                                        // bcc: 'soham.patel1@bugzstudio.com',
                                         subject: req.query.AppName + " " + objEmailTemplate.EmailSubject,
                                         html: body
                                     };
@@ -1118,7 +1119,8 @@ router.get('/forgotpasswordNew', function(req, res) {
                                     var mail = {
                                         from: objSystemEmail.DefaultEmailFrom,
                                         to: response.email, // + ', ' + objSystemEmail.NotificationEmailTo,
-                                        cc: objSetting.Value,
+                                        bcc: objSetting.Value,
+                                        // bcc: 'soham.patel1@bugzstudio.com',
                                         subject: req.query.AppName + " " + objEmailTemplate.EmailSubject,
                                         html: body
                                     };
@@ -1163,7 +1165,6 @@ router.get('/forgotpasswordNew', function(req, res) {
                 if (response1) {
                     SystemEmail.findOne().then(function(objSystemEmail) {
                         var NewPassword = customPassword();
-                        console.log(NewPassword);
                         var EncryptNewpassword = jwt.encode(NewPassword, "bugz");
                         response1.updateAttributes({ password: EncryptNewpassword }).then(function(response) {
                             if (response != null) {
@@ -1184,7 +1185,8 @@ router.get('/forgotpasswordNew', function(req, res) {
                                             var mail = {
                                                 from: objSystemEmail.DefaultEmailFrom,
                                                 to: response1.email, // + ', ' + objSystemEmail.NotificationEmailTo,
-                                                cc: objSetting.Value,
+                                                bcc: objSetting.Value,
+                                                // bcc: 'soham.patel@bugzstudio.com',
                                                 subject: req.query.AppName + " " + objEmailTemplate.EmailSubject,
                                                 html: body
                                             };
@@ -1274,7 +1276,8 @@ router.get('/forgotpasswordfromOwnerCustomer', function(req, res) {
                                         var mail = {
                                             from: objSystemEmail.DefaultEmailFrom,
                                             to: objUser.email,
-                                            cc: objSetting.Value,
+                                            bcc: objSetting.Value,
+                                            // bcc: 'soham.patel1@bugzstudio.com',
                                             subject: req.query.AppName + " " + objEmailTemplate.EmailSubject,
                                             html: body
                                         };
@@ -1949,7 +1952,8 @@ router.get('/MobileForgotPasswordNew', function(req, res) {
                                     var mail = {
                                         from: objSystemEmail.DefaultEmailFrom,
                                         to: objUser.email, // + ', ' + objSystemEmail.NotificationEmailTo,
-                                        cc: objSetting.Value,
+                                        bcc: objSetting.Value,
+                                        // bcc: 'soham.patel1@bugzstudio.com',
                                         subject: req.query.AppName + " " + objEmailTemplate.EmailSubject,
                                         html: body
                                     };
