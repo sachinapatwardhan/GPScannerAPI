@@ -2895,6 +2895,12 @@ function getVehicleLastLocation(callback) {
     })
 }
 
+router.get('/getVehicleLastLocation', function(req, res) {
+    req.setTimeout(3600000);
+    getVehicleLastLocation(function(response) {
+        res.json(response);
+    })
+})
 
 function convertdateformatForUnix(date1) {
     var date = new Date(date1);
