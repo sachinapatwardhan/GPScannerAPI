@@ -11,3 +11,6 @@ CREATE TABLE `tbladvancefence` (
   `CreatedDate` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+INSERT INTO `tbldefaultvalue` (Type, Value) VALUES ('ACC','99');
