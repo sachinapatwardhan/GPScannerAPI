@@ -461,6 +461,8 @@ app.use('/WalletTransaction', require('./controllers/WalletTransaction'))
 // MAARK Install App
 app.use('/salesAgent', require('./controllers/salesAgent'));
 app.use('/retailer', require('./controllers/retailer'));
+app.use('/admin', require('./controllers/admin'));
+app.use('/auditlog', require('./controllers/auditlog'));
 
 // MAARK Install App End
 
