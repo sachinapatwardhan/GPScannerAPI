@@ -11,6 +11,8 @@ var ProductAttributeValue = models.productattributevalue;
 var AppInfo = models.tblappinfo;
 var User = models.tbluserinformation;
 var GPSDevice = models.tblgpsdevice;
+var WalletTransaction = models.tblwallettransaction;
+
 //
 // CreateOrderServiceGlobal("India", 1, "0000000000000", "IMMM", function(redds) {
 //     console.log(redds)
@@ -993,5 +995,95 @@ router.post('/SaveOrderService', jsonParser, function (req, res) {
     }
 })
 
+
+//========================Expire Order Service and Wallet Transaction==============================================
+
+var rule = new schedule.RecurrenceRule();
+rule.hour = 20;
+rule.minute = 0;
+rule.second = 0;
+var Isschedule = schedule.scheduleJob(rule, function () {
+    console.log("Call Every Day '8 PM' O'clock")
+    ExpireOrderService();
+    ExpireWalletTransaction();
+});
+
+function ExpireOrderService() {
+    try {
+        OrderService.findAll({
+            where: {
+                ExpiryDate: {
+                    $lt: new Date()
+                }
+            }
+        }).then(function (resOrderService) {
+            if (resOrderService.length > 0) {
+                function Expire(i) {
+                    if (i < resOrderService.length) {
+                        try {
+                            var objOrderServc = resOrderService[i];
+                            objOrderServc.updateAttributes({
+                                OrderStatusId: 5
+                            }).then(function (resUpdateOrderService) {
+                                OrderServiceDetail.findOne({
+                                    where: {
+                                        OrderId: objOrderServc.id
+                                    }
+                                }).then(function (resfindDetail) {
+                                    if (resfindDetail != null) {
+                                        resfindDetail.updateAttributes({
+                                            idOrderStatus: 5
+                                        }).then(function (resupdateDetail) {
+                                            Expire(i + 1);
+                                        });
+                                    } else {
+                                        Expire(i + 1);
+                                    }
+                                });
+                            });
+                        } catch (errs) {
+                            Expire(i + 1);
+                        }
+                    } else {
+                        console.log("Successfully Expire Order Service");
+                    }
+                }
+                Expire(0);
+            }
+        });
+    } catch (err) { }
+}
+
+function ExpireWalletTransaction() {
+    try {
+        WalletTransaction.findAll({
+            where: {
+                ExpiryDate: {
+                    $lt: new Date()
+                }
+            }
+        }).then(function (resWalletTransaction) {
+            if (resWalletTransaction.length > 0) {
+                function Expiretran(j) {
+                    if (j < resWalletTransaction.length) {
+                        try {
+                            var objWalletTran = resWalletTransaction[j];
+                            objWalletTran.updateAttributes({
+                                IsPaymentSuccess: 3
+                            }).then(function (resUpdateWallet) {
+                                Expiretran(j + 1);
+                            });
+                        } catch (errs) {
+                            Expiretran(j + 1);
+                        }
+                    } else {
+                        console.log("Successfully Expire Wallet Transactions");
+                    }
+                }
+                Expiretran(0);
+            }
+        });
+    } catch (err) { }
+}
 
 module.exports = router
