@@ -49,31 +49,6 @@ function AddDate(oldDate, offset, offsetType) {
     return newDate;
 }
 
-var maxLength = 1;
-var minLength = 1;
-var uppercaseMinCount = 1;
-var numberMinCount = 1;
-var UPPERCASE_RE = /([A-Z])/g;
-var NUMBER_RE = /([\d])/g;
-var NON_REPEATING_CHAR_RE = /([\w\d\?\-])\1{2,}/g;
-
-function isStrongEnough(randomWord) {
-    var uc = randomWord.match(UPPERCASE_RE);
-    var n = randomWord.match(NUMBER_RE);
-    var nr = randomWord.match(NON_REPEATING_CHAR_RE);
-    return randomWord.length >= minLength && !nr && uc && uc.length >= uppercaseMinCount;
-}
-
-function GetRandomWord() {
-
-    var randomWord = "";
-    var randomLength = Math.floor(Math.random() * (maxLength - minLength)) + minLength;
-    while (!isStrongEnough(randomWord)) {
-        randomWord = generatePassword(randomLength, false, /[\w\d\?\-]/);
-    }
-    return randomWord;
-}
-
 //======================================================================
 
 router.get('/GetAllOrderService', function (req, res) {
