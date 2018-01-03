@@ -408,6 +408,192 @@
         }
     });
 
+    router.post('/assignDeviceByExcelNew', function(req, res) {
+        var form = new formidable.IncomingForm();
+        var appName;
+        var createdBy;
+        var fileName;
+
+        form.uploadDir = __dirname + '/../MediaUploads/FileUpload';
+
+        form.parse(req, function(err, fields, files) {
+            appName = fields.appName;
+            createdBy = fields.createdBy;
+        });
+
+        form.on('fileBegin', function(name, file) {
+            file.path = form.uploadDir + '/' + file.name;
+            fileName = file.path.toString();
+        });
+
+        form.on('end', function() {
+            var err = new Error();
+            err.name = 'BugzApiError';
+
+            var workbook = XLSX.readFile(fileName, { type: 'binary' });
+            var sheet1 = workbook.SheetNames[0];
+            var worksheet = workbook.Sheets[sheet1];
+
+            // Excel file in protected mode
+            if (!worksheet) {
+                res.json({
+                    success: false,
+                    message: 'Unable to import. Excel file is in protected mode.'
+                });
+                return;
+            }
+
+            // Excel file does not follow template format
+            var IMEI = worksheet.A1.v;
+            var assignToUsername = worksheet.B1.v;
+            if (IMEI !== 'IMEI' || assignToUsername !== 'Assign To Username') {
+                res.json({
+                    success: false,
+                    message: 'Unable to import. Excel file does not follow template format.'
+                });
+                return;
+            }
+
+            // Excel file does not contain data
+            var rows = XLSX.utils.sheet_to_json(worksheet);
+            if (!rows.length) {
+                res.json({
+                    success: false,
+                    message: 'Unable to import. Excel file does not contain any data.'
+                });
+                return;
+            }
+
+            // Array to store which assign failed
+            var whichFailed = [];
+
+            function assignDevice(o) {
+                return DeviceAgentRetailer.findOne({
+                        where: {
+                            deviceId: o.deviceId
+                        }
+                    })
+                    .then(function(rDeviceAgentRetailer) {
+                        if (rDeviceAgentRetailer) {
+                            err.message = 'Device is already assigned.';
+                            throw err;
+                        }
+                        return GpsDevice.findOne({
+                            where: {
+                                DeviceId: o.deviceId,
+                                AppName: appName
+                            }
+                        });
+                    })
+                    .then(function(rGpsDevice) {
+                        if (!rGpsDevice) {
+                            err.message = 'GPS device not found.';
+                            throw err;
+                        }
+
+                        User.belongsTo(AppInfo, {
+                            foreignKey: {
+                                name: 'idApp',
+                                allowNull: true
+                            }
+                        });
+                        User.hasMany(UserRole, {
+                            foreignKey: {
+                                name: 'userId',
+                                allowNull: false
+                            }
+                        });
+                        UserRole.belongsTo(Role, {
+                            foreignKey: {
+                                name: 'roleId',
+                                allowNull: false
+                            }
+                        });
+
+
+                        return User.findOne({
+                                where: { username: o.username },
+                                include: [{
+                                    model: AppInfo,
+                                    where: { AppName: { $eq: appName } },
+                                }, {
+                                    model: UserRole,
+                                    include: [{
+                                        model: Role,
+                                        where: {
+                                            RoleName: 'Sales Agent'
+                                        }
+                                    }]
+                                }]
+                            })
+                            .then(function(rUser) {
+                                if (!rUser) {
+                                    err.message = 'User not found.';
+                                    throw err;
+                                }
+
+                                return [rGpsDevice, rUser];
+                            });
+                    })
+                    .spread(function(rGpsDevice, rUser) {
+                        return DeviceAgentRetailer.create({
+                            agentId: rUser.id,
+                            deviceId: rGpsDevice.DeviceId,
+                            createdDatetime: new Date()
+                        });
+                    })
+                    .catch(function(err) {
+                        if (err.name === 'BugzApiError') {
+                            whichFailed.push({
+                                deviceId: o.deviceId,
+                                agentUsername: o.username,
+                                message: err.message
+                            });
+                        } else {
+                            console.error('[' + moment().format('DD/MM/YYYY hh:mm:ss a') + '] ' + (err.stack || err.message));
+                        }
+                    });
+            }
+
+            // Array of promises
+            var promises = [];
+            for (var i = 0; i < rows.length; ++i) {
+                var r = rows[i];
+                var o = {};
+
+                o.deviceId = r['IMEI'].trim().substring(1);
+                o.username = r['Assign To Username'].trim();
+
+                promises.push(assignDevice(o));
+            }
+
+            Bluebird.all(promises)
+                .then(function() {
+                    var reply = {
+                        success: true,
+                        message: 'Device(s) assigned.'
+                    };
+
+                    if (whichFailed.length) {
+                        reply.message = 'Device(s) assigned but some failed.';
+                    }
+                    if (whichFailed.length === rows.length) {
+                        reply.success = false;
+                        reply.message = 'Failed to assign any devices.';
+                    }
+
+                    res.json(reply);
+                })
+                .catch(function(err) {
+                    res.json({
+                        success: false,
+                        message: 'Unable to assign device(s). Please try again later.'
+                    });
+                    console.error('[' + moment().format('DD/MM/YYYY hh:mm:ss a') + '] ' + (err.stack || err.message));
+                });
+        });
+    });
+
     router.post('/assignDeviceByExcel', function(req, res) {
         var form = new formidable.IncomingForm();
         var appName;
