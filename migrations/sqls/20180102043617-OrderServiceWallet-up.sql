@@ -47,6 +47,8 @@ INSERT INTO `tblorderservicestatus` (`OrderStatus`) VALUES ('Pending');
 INSERT INTO `tblorderservicestatus` (`OrderStatus`) VALUES ('Approved');
 INSERT INTO `tblorderservicestatus` (`OrderStatus`) VALUES ('Completed');
 
+alter table `tblsimdetails` ADD COLUMN `idApp` INT(11) NULL AFTER `idTelCo`;
+
 
 CREATE TABLE `tblorderservice` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
