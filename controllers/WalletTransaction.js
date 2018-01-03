@@ -699,6 +699,17 @@ router.get('/ExportWallet', function(req, res) {
         searchapp['$and'].push(obj);
     }
 
+    if (objParam.Country != '' && objParam.Country != undefined && objParam.Country != null) {
+        if (searchapp['$and'] == undefined) {
+            searchapp['$and'] = [];
+        }
+        var obj = new Object();
+        obj['Country'] = {
+            $eq: objParam.Country
+        };
+        searchapp['$and'].push(obj);
+    }
+
     Wallet.findAll({
         where: search,
         order: 'CreatedDate desc',
@@ -882,6 +893,17 @@ router.get('/ExportWalletTransaction', function(req, res) {
         search['$and'].push(obj);
     }
 
+    if (objParam.Country != null && objParam.Country != '' && objParam.Country != undefined) {
+        if (search['$and'] == undefined) {
+            search['$and'] = [];
+        }
+        var obj = new Object();
+        obj['Country'] = {
+            $eq: (objParam.Country)
+        };
+        search['$and'].push(obj);
+    }
+
     WalletTransaction.belongsTo(AppInfo, {
         foreignKey: {
             name: 'idApp',
@@ -980,6 +1002,10 @@ router.get('/ExportWalletTransaction', function(req, res) {
                 Status = 'Approve'
             } else if (ObjData.IsPaymentSuccess == 2) {
                 Status = 'Complete'
+            } else if (ObjData.IsPaymentSuccess == 3) {
+                Status = 'Void'
+            } else {
+                Status = 'Expired'
             }
 
             srow.push(No.toString());
