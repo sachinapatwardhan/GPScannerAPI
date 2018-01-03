@@ -74,7 +74,7 @@ function GetRandomWord() {
 
 //======================================================================
 
-router.get('/GetAllOrderService', function(req, res) {
+router.get('/GetAllOrderService', function (req, res) {
     var objParam = req.query;
     var objColumns = objParam.columns;
     var objOrder = objParam.order;
@@ -229,6 +229,17 @@ router.get('/GetAllOrderService', function(req, res) {
         };
         search['$and'].push(obj);
     }
+    if (objParam.Country != '' && objParam.Country != null && objParam.Country != undefined && objParam.Country != 0) {
+        if (search['$and'] == undefined) {
+            search['$and'] = [];
+        }
+        var obj = new Object();
+        obj['ShippAddress1'] = {
+            $eq: objParam.Country
+        };
+        search['$and'].push(obj);
+    }
+
 
     var offset = (req.query.PageNo * 10) - 10;
     OrderService.findAndCountAll({
@@ -253,7 +264,7 @@ router.get('/GetAllOrderService', function(req, res) {
             required: true,
             attributes: ['id', 'AppName'],
         }]
-    }).then(function(response) {
+    }).then(function (response) {
         var response1 = new Object();
         response1.draw = objParam.draw;
         response1.LastPage = response.count;
@@ -261,7 +272,7 @@ router.get('/GetAllOrderService', function(req, res) {
         response1.recordsFiltered = response.count;
         response1.data = response.rows;
         res.json(response1);
-    }).catch(function(error) {
+    }).catch(function (error) {
         res.json({
             success: false,
             response: error
@@ -270,16 +281,16 @@ router.get('/GetAllOrderService', function(req, res) {
 
 })
 
-router.get('/GetOrderServiceStatus', function(req, res) {
-    OrderServiceStatus.findAll().then(function(resStatus) {
+router.get('/GetOrderServiceStatus', function (req, res) {
+    OrderServiceStatus.findAll().then(function (resStatus) {
         res.json(resStatus);
     });
 })
 
-router.post('/CreateOrderService', jsonParser, function(req, res) {
+router.post('/CreateOrderService', jsonParser, function (req, res) {
     var objOrderReq = req.body;
     //Country,UserId,DeviceId,UserName
-    GetCharges(objOrderReq.Country, objOrderReq.ProductTypeId, false, function(resOrderTotal) {
+    GetCharges(objOrderReq.Country, objOrderReq.ProductTypeId, false, function (resOrderTotal) {
         var OrderTotal = resOrderTotal.TotalAmount;
         var ProductId = resOrderTotal.ProductId;
 
@@ -322,7 +333,7 @@ router.post('/CreateOrderService', jsonParser, function(req, res) {
         objOrder.PaymentStatusId = null;
         objOrder.Deleted = false;
         objOrder.ShippAddress1 = objOrderReq.Country;
-        OrderService.create(objOrder).then(function(response) {
+        OrderService.create(objOrder).then(function (response) {
             var objOrderDetail = new Object();
             objOrderDetail.OrderId = response.id;
             objOrderDetail.ProductId = ProductId;
@@ -333,7 +344,7 @@ router.post('/CreateOrderService', jsonParser, function(req, res) {
             objOrderDetail.idOrderStatus = 1;
             objOrderDetail.PriceInclTax = OrderTotal;
             objOrderDetail.PriceExclTax = OrderTotal;
-            OrderServiceDetail.create(objOrderDetail).then(function(responseOrderDetail) {
+            OrderServiceDetail.create(objOrderDetail).then(function (responseOrderDetail) {
                 res.json({
                     success: true,
                     message: "Order Service placed successfully...",
@@ -345,7 +356,7 @@ router.post('/CreateOrderService', jsonParser, function(req, res) {
     });
 });
 
-router.get('/RenewOrderService', function(req, res) {
+router.get('/RenewOrderService', function (req, res) {
     var objOrderReq = req.query;
 
     OrderService.hasOne(OrderServiceDetail, {
@@ -364,7 +375,7 @@ router.get('/RenewOrderService', function(req, res) {
             attributes: ['id', 'ProductId', 'ProductName', 'Quantity', 'UnitPriceInclTax'],
             required: true
         }]
-    }).then(function(objOrderExists) {
+    }).then(function (objOrderExists) {
 
         if (objOrderExists != null) {
             // var OrderTotal = resOrderTotal.TotalAmount;
@@ -411,7 +422,7 @@ router.get('/RenewOrderService', function(req, res) {
             objOrder.ShippAddress1 = objOrderExists.ShippAddress1;
             objOrder.Deleted = false;
 
-            OrderService.create(objOrder).then(function(response) {
+            OrderService.create(objOrder).then(function (response) {
                 var objOrderDetail = new Object();
                 objOrderDetail.OrderId = response.id;
                 objOrderDetail.ProductId = objOrderExists.tblorderserviceitem.ProductId;
@@ -422,11 +433,11 @@ router.get('/RenewOrderService', function(req, res) {
                 objOrderDetail.idOrderStatus = 1;
                 objOrderDetail.PriceInclTax = objOrderExists.OrderTotal;
                 objOrderDetail.PriceExclTax = objOrderExists.OrderTotal;
-                OrderServiceDetail.create(objOrderDetail).then(function(responseOrderDetail) {
+                OrderServiceDetail.create(objOrderDetail).then(function (responseOrderDetail) {
                     objOrderExists.updateAttributes({
                         Deleted: true,
                         OrderStatusId: 3
-                    }).then(function(resUpdateOrder) {
+                    }).then(function (resUpdateOrder) {
                         res.json({
                             success: true,
                             message: "Order Service Renew successfully...",
@@ -447,32 +458,32 @@ router.get('/RenewOrderService', function(req, res) {
     });
 });
 
-router.get('/UpdateDevice', function(req, res) {
+router.get('/UpdateDevice', function (req, res) {
     var OrderTotal = req.query.OrderTotal;
     OrderService.findOne({
         where: {
             id: req.query.id
         }
-    }).then(function(resOrderFind) {
+    }).then(function (resOrderFind) {
         if (resOrderFind != null) {
             resOrderFind.updateAttributes({
                 OrderNotes: req.query.DeviceId,
                 OrderTotal: OrderTotal,
                 OrderSubtotalInclTax: OrderTotal,
                 OrderSubtotalExclTax: OrderTotal,
-            }).then(function(resUpdate) {
+            }).then(function (resUpdate) {
                 OrderServiceDetail.findOne({
                     where: {
                         OrderId: req.query.id
                     }
-                }).then(function(resDetailCheck) {
+                }).then(function (resDetailCheck) {
                     if (resDetailCheck != null) {
                         resDetailCheck.updateAttributes({
                             UnitPriceInclTax: OrderTotal,
                             UnitPriceExclTax: OrderTotal,
                             PriceInclTax: OrderTotal,
                             PriceExclTax: OrderTotal,
-                        }).then(function(resUpdateDtl) {
+                        }).then(function (resUpdateDtl) {
                             res.json({
                                 success: true,
                                 message: "Device Updated Successfully"
@@ -496,19 +507,19 @@ router.get('/UpdateDevice', function(req, res) {
     });
 })
 
-router.get('/UpdateOrderServiceDates', function(req, res) {
+router.get('/UpdateOrderServiceDates', function (req, res) {
     var CreatedOnUtc = req.query.CreatedOnUtc;
     OrderService.findOne({
         where: {
             id: req.query.id
         }
-    }).then(function(resOrderFind) {
+    }).then(function (resOrderFind) {
         if (resOrderFind != null) {
             var ExpiryDate = AddDate(new Date(CreatedOnUtc), 1, "Year");
             resOrderFind.updateAttributes({
                 CreatedOnUtc: new Date(CreatedOnUtc),
                 ExpiryDate: ExpiryDate,
-            }).then(function(resUpdate) {
+            }).then(function (resUpdate) {
                 res.json({
                     success: true,
                     message: "Expiry Date Updated Successfully"
@@ -523,25 +534,25 @@ router.get('/UpdateOrderServiceDates', function(req, res) {
     });
 })
 
-router.get('/ChangeStatus', function(req, res) {
+router.get('/ChangeStatus', function (req, res) {
     OrderService.findOne({
         where: {
             id: req.query.id
         }
-    }).then(function(resOrderFind) {
+    }).then(function (resOrderFind) {
         if (resOrderFind != null) {
             resOrderFind.updateAttributes({
-                OrderStatusId: 2
-            }).then(function(resUpdate) {
+                OrderStatusId: req.query.status
+            }).then(function (resUpdate) {
                 OrderServiceDetail.findOne({
                     where: {
                         orderId: req.query.id,
                     }
-                }).then(function(resgetDTl) {
+                }).then(function (resgetDTl) {
                     if (resgetDTl != null) {
                         resgetDTl.updateAttributes({
-                            idOrderStatus: 2
-                        }).then(function(resUpdatedtl) {
+                            idOrderStatus: req.query.status
+                        }).then(function (resUpdatedtl) {
                             res.json({
                                 success: true,
                                 message: "Order Service Approved Successfully"
@@ -564,7 +575,7 @@ router.get('/ChangeStatus', function(req, res) {
     });
 })
 
-router.get('/ExportOrderService', function(req, res) {
+router.get('/ExportOrderService', function (req, res) {
     var conf = {};
     conf.cols = [];
 
@@ -703,6 +714,18 @@ router.get('/ExportOrderService', function(req, res) {
         search['$and'].push(obj);
     }
 
+
+    if (objParam.Country != '' && objParam.Country != null && objParam.Country != undefined && objParam.Country != 0) {
+        if (search['$and'] == undefined) {
+            search['$and'] = [];
+        }
+        var obj = new Object();
+        obj['ShippAddress1'] = {
+            $eq: objParam.Country
+        };
+        search['$and'].push(obj);
+    }
+
     OrderService.findAll({
         where: search,
         order: 'CreatedOnUtc desc',
@@ -723,7 +746,7 @@ router.get('/ExportOrderService', function(req, res) {
             required: true,
             attributes: ['id', 'AppName'],
         }]
-    }).then(function(response) {
+    }).then(function (response) {
 
         var NewColumns = [{
             caption: 'No',
@@ -817,10 +840,10 @@ function convertdateformatcutm(date1) {
 function GetCharges(Country, ProductTypeId, IsRenew, callback) {
     var TotalAmount = 0;
     try {
-        GetExpiryProductByName(ProductTypeId, function(resProductId) {
+        GetExpiryProductByName(ProductTypeId, function (resProductId) {
             TotalAmount = 0;
             if (resProductId > 0) {
-                GetProductAttributes(resProductId, Country, function(resAllAttributes) {
+                GetProductAttributes(resProductId, Country, function (resAllAttributes) {
                     for (var i = 0; i < resAllAttributes.length; i++) {
                         TotalAmount += resAllAttributes[i].PriceAdjustment;
                     }
@@ -855,7 +878,7 @@ function GetExpiryProductByName(ProductTypeId, callback) {
                 Deleted: false,
             },
             attributes: ['Id', 'Name'],
-        }).then(function(response) {
+        }).then(function (response) {
             if (response != null) {
                 return callback(response.Id);
             } else {
@@ -899,7 +922,7 @@ function GetProductAttributes(idProduct, Country, callback) {
                 attributes: ['Id', 'Name']
             }]
         }]
-    }).then(function(resAttributes) {
+    }).then(function (resAttributes) {
         var AllAttributeValue = [];
         for (var i = 0; i < resAttributes.length; i++) {
             var value = resAttributes[i];
@@ -918,23 +941,12 @@ function GetProductAttributes(idProduct, Country, callback) {
             }
         }
         return callback(AllAttributeValue);
-    }).catch(function(error) {
+    }).catch(function (error) {
         return callback([]);
     })
 }
 
-//======================================================================
-var rule = new schedule.RecurrenceRule();
-rule.hour = 1;
-rule.minute = 0;
-rule.second = 0;
-
-var ExpireDataCheck = schedule.scheduleJob(rule, function() {
-    // MerchantLock();
-});
-
-
-router.post('/SaveOrderService', jsonParser, function(req, res) {
+router.post('/SaveOrderService', jsonParser, function (req, res) {
     objOrderservice = req.body;
     objHeader = req.headers;
     var token = getToken(objHeader);
@@ -945,13 +957,13 @@ router.post('/SaveOrderService', jsonParser, function(req, res) {
                 username: decoded.username,
                 password: decoded.password
             }
-        }).then(function(UserExist) {
+        }).then(function (UserExist) {
             if (UserExist != null) {
-                User.findOne({ where: { email: objOrderservice.UserName, idApp: objOrderservice.idApp } }).then(function(Userfound) {
+                User.findOne({ where: { email: objOrderservice.UserName, idApp: objOrderservice.idApp } }).then(function (Userfound) {
                     if (Userfound) {
-                        GPSDevice.findOne({ where: { DeviceId: objOrderservice.DeviceId, AppName: objOrderservice.AppName } }).then(function(DeviceExist) {
+                        GPSDevice.findOne({ where: { DeviceId: objOrderservice.DeviceId, AppName: objOrderservice.AppName } }).then(function (DeviceExist) {
                             if (DeviceExist) {
-                                CreateOrderServiceGlobal(Userfound.country, Userfound.id, DeviceExist.DeviceId, Userfound.username, Userfound.idApp, function(orderresponse) {
+                                CreateOrderServiceGlobal(Userfound.country, Userfound.id, DeviceExist.DeviceId, Userfound.username, Userfound.idApp, function (orderresponse) {
                                     res.json({
                                         success: true,
                                         message: "Oder Service created successfully...",
