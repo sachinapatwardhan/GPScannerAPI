@@ -198,13 +198,14 @@
                         }).then(function(rDeviceAgentRetailer) {
                             User.findOne({ where: rDeviceAgentRetailer.agentId }).then(function(UserExist) {
 
-                                // console.log(UserExist.country, "===", rDeviceAgentRetailer.deviceId, "===", UserExist.username, "===", UserExist.idApp)
-                                CreateDabitWalletTransactionGlobal(UserExist.country, rDeviceAgentRetailer.deviceId, UserExist.username, UserExist.idApp, function(resFlg) {
-                                    res.json({
-                                        success: true,
-                                        message: 'Device activated!',
-                                        data: rDeviceAgentRetailer
-                                    });
+                                CreateOrderServiceGlobal(UserExist.country, UserExist.id, rDeviceAgentRetailer.deviceId, UserExist.username, UserExist.idApp, function(orderresponse) {
+                                    CreateDabitWalletTransactionGlobal(UserExist.country, rDeviceAgentRetailer.deviceId, UserExist.username, UserExist.idApp, function(resFlg) {
+                                        res.json({
+                                            success: true,
+                                            message: 'Device activated!',
+                                            data: rDeviceAgentRetailer
+                                        });
+                                    })
                                 })
                             })
                         })

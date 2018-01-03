@@ -756,20 +756,20 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                                         }
                                                     })
                                                     // if (objGpsDevice.AppName == 'Maark') {
-                                                CreateOrderServiceGlobal(UserExist.country, UserExist.id, objVehicle.deviceid, UserExist.username, UserExist.idApp, function(orderresponse) {
-                                                        res.json({
-                                                            success: true,
-                                                            message: "Vehicle created successfully...",
-                                                            data: objVehicle
-                                                        });
-                                                    })
-                                                    // } else {
-                                                    //     res.json({
-                                                    //         success: true,
-                                                    //         message: "Vehicle created successfully...",
-                                                    //         data: objVehicle
-                                                    //     });
-                                                    // }
+                                                    // CreateOrderServiceGlobal(UserExist.country, UserExist.id, objVehicle.deviceid, UserExist.username, UserExist.idApp, function(orderresponse) {
+                                                res.json({
+                                                    success: true,
+                                                    message: "Vehicle created successfully...",
+                                                    data: objVehicle
+                                                });
+                                                // })
+                                                // } else {
+                                                //     res.json({
+                                                //         success: true,
+                                                //         message: "Vehicle created successfully...",
+                                                //         data: objVehicle
+                                                //     });
+                                                // }
 
                                             } else {
                                                 res.json({
@@ -820,20 +820,20 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                                         })
 
                                                         // if (objGpsDevice.AppName == 'Maark') {
-                                                        CreateOrderServiceGlobal(UserExist.country, UserExist.id, objVehicle.deviceid, UserExist.username, UserExist.idApp, function(orderresponse) {
-                                                                res.json({
-                                                                    success: true,
-                                                                    message: "Vehicle created successfully...",
-                                                                    data: objVehicle
-                                                                });
-                                                            })
-                                                            // } else {
-                                                            //     res.json({
-                                                            //         success: true,
-                                                            //         message: "Vehicle created successfully...",
-                                                            //         data: objVehicle
-                                                            //     });
-                                                            // }
+                                                        // CreateOrderServiceGlobal(UserExist.country, UserExist.id, objVehicle.deviceid, UserExist.username, UserExist.idApp, function(orderresponse) {
+                                                        res.json({
+                                                            success: true,
+                                                            message: "Vehicle created successfully...",
+                                                            data: objVehicle
+                                                        });
+                                                        // })
+                                                        // } else {
+                                                        //     res.json({
+                                                        //         success: true,
+                                                        //         message: "Vehicle created successfully...",
+                                                        //         data: objVehicle
+                                                        //     });
+                                                        // }
                                                     } else {
                                                         res.json({
                                                             success: false,
@@ -928,20 +928,20 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                                 //     });
                                                 // })
                                                 // if (objGpsDevice.AppName == 'Maark') {
-                                                CreateOrderServiceGlobal(UserExist.country, UserExist.id, objVehicle.deviceid, UserExist.username, UserExist.idApp, function(orderresponse) {
-                                                        res.json({
-                                                            success: true,
-                                                            message: "Vehicle created successfully...",
-                                                            data: objVehicle
-                                                        });
-                                                    })
-                                                    // } else {
-                                                    //     res.json({
-                                                    //         success: true,
-                                                    //         message: "Vehicle created successfully...",
-                                                    //         data: objVehicle
-                                                    //     });
-                                                    // }
+                                                // CreateOrderServiceGlobal(UserExist.country, UserExist.id, objVehicle.deviceid, UserExist.username, UserExist.idApp, function(orderresponse) {
+                                                res.json({
+                                                    success: true,
+                                                    message: "Vehicle created successfully...",
+                                                    data: objVehicle
+                                                });
+                                                // })
+                                                // } else {
+                                                //     res.json({
+                                                //         success: true,
+                                                //         message: "Vehicle created successfully...",
+                                                //         data: objVehicle
+                                                //     });
+                                                // }
                                             } else {
                                                 res.json({
                                                     success: false,
@@ -981,20 +981,20 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                                         // })
                                                         // if (objGpsDevice.AppName == 'Maark') {
 
-                                                        CreateOrderServiceGlobal(UserExist.country, UserExist.id, objVehicle.deviceid, UserExist.username, UserExist.idApp, function(orderresponse) {
-                                                                res.json({
-                                                                    success: true,
-                                                                    message: "Vehicle created successfully...",
-                                                                    data: objVehicle
-                                                                });
-                                                            })
-                                                            // } else {
-                                                            //     res.json({
-                                                            //         success: true,
-                                                            //         message: "Vehicle created successfully...",
-                                                            //         data: objVehicle
-                                                            //     });
-                                                            // }
+                                                        // CreateOrderServiceGlobal(UserExist.country, UserExist.id, objVehicle.deviceid, UserExist.username, UserExist.idApp, function(orderresponse) {
+                                                        res.json({
+                                                            success: true,
+                                                            message: "Vehicle created successfully...",
+                                                            data: objVehicle
+                                                        });
+                                                        // })
+                                                        // } else {
+                                                        //     res.json({
+                                                        //         success: true,
+                                                        //         message: "Vehicle created successfully...",
+                                                        //         data: objVehicle
+                                                        //     });
+                                                        // }
                                                     } else {
                                                         res.json({
                                                             success: false,
