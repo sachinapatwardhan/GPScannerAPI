@@ -818,6 +818,17 @@ router.get('/GetAllPetbyCountry', function(req, res) {
     }
 })
 
+router.get('/DeleteDeviceById', function(req, res) {
+    GPSDevice.destroy({ where: { id: req.query.id } }).then(function(response) {
+        if (response) {
+            funAuditLog.CreateAuditLog('DeleteGPSDevice', 'Admin', 'Delete GPS Device');
+            res.json({ success: true, message: "GPS Device deleted successfully...", data: response });
+        } else {
+            res.json({ success: false, message: "Requested Record not Exist....", data: response });
+        }
+    })
+});
+
 router.post('/SaveGPSDevice', jsonParser, function(req, res) {
     objGPSDevice = req.body;
     if (objGPSDevice.idSalesAgent == 0) {
@@ -1096,7 +1107,7 @@ router.post('/uploadExcelDevice', function(req, res) {
                                         if (ExistSim != null) {
                                             obj.idSim = ExistSim.id;
                                             GPSDevice.findOrCreate({
-                                                where: { DeviceId: obj.DeviceId },
+                                                where: { IMEI: obj.IMEI },
                                                 defaults: obj
                                             }).then(function(response) {
                                                 if ((response[1])) {
@@ -1126,7 +1137,7 @@ router.post('/uploadExcelDevice', function(req, res) {
                                                 if ((resSerial[1])) {
                                                     obj.idSim = resSerial[0].dataValues.id;
                                                     GPSDevice.findOrCreate({
-                                                        where: { DeviceId: obj.DeviceId },
+                                                        where: { IMEI: obj.IMEI },
                                                         defaults: obj
                                                     }).then(function(response) {
                                                         if ((response[1])) {
@@ -1142,7 +1153,7 @@ router.post('/uploadExcelDevice', function(req, res) {
                                                     SimService.update(oSimobjbj, { where: { id: resSerial[0].id } }).then(function(resUpdateSim) {
                                                         obj.idSim = resSerial[0].id;
                                                         GPSDevice.findOrCreate({
-                                                            where: { DeviceId: obj.DeviceId },
+                                                            where: { IMEI: obj.IMEI },
                                                             defaults: obj
                                                         }).then(function(response) {
                                                             if ((response[1])) {
