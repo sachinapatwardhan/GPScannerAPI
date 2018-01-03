@@ -4,10 +4,11 @@ var geolib = require("geolib");
 //Tables
 var PushNotification = models.tblpushnotification;
 var User = models.tbluserinformation;
+var PWANotifications = models.tblpwa_notification_subscription;
 
 //End of Tables
 
-router.post('/Subscribe', jsonParser, function(req, res) {
+router.post('/Subscribe', jsonParser, function (req, res) {
     objPushNotification = req.body;
     console.log(objPushNotification)
     if (objPushNotification.AppVersion == undefined) {
@@ -18,7 +19,7 @@ router.post('/Subscribe', jsonParser, function(req, res) {
             udid: objPushNotification.udid,
             UserType: objPushNotification.UserType
         }
-    }).then(function(PushnotificationExist) {
+    }).then(function (PushnotificationExist) {
         if (PushnotificationExist != null) {
             if (objPushNotification.Country) {
 
@@ -28,7 +29,7 @@ router.post('/Subscribe', jsonParser, function(req, res) {
                     iduser: objPushNotification.iduser,
                     MessageCount: 0,
                     AppVersion: objPushNotification.AppVersion
-                }).then(function(resUpdate) {
+                }).then(function (resUpdate) {
                     res.json({
                         success: true,
                         message: "User Subscribe successfully...",
@@ -36,7 +37,7 @@ router.post('/Subscribe', jsonParser, function(req, res) {
                     });
                 });
             } else {
-                PushnotificationExist.updateAttributes({ PushNotificationId: objPushNotification.PushNotificationId, iduser: objPushNotification.iduser, MessageCount: 0, AppVersion: objPushNotification.AppVersion }).then(function(resUpdate) {
+                PushnotificationExist.updateAttributes({ PushNotificationId: objPushNotification.PushNotificationId, iduser: objPushNotification.iduser, MessageCount: 0, AppVersion: objPushNotification.AppVersion }).then(function (resUpdate) {
                     res.json({
                         success: true,
                         message: "User Subscribe successfully...",
@@ -46,7 +47,7 @@ router.post('/Subscribe', jsonParser, function(req, res) {
 
             }
         } else {
-            PushNotification.create(objPushNotification).then(function(response) {
+            PushNotification.create(objPushNotification).then(function (response) {
                 res.json({
                     success: true,
                     message: "User Subscribe successfully...",
@@ -57,7 +58,7 @@ router.post('/Subscribe', jsonParser, function(req, res) {
     })
 })
 
-router.get('/CheckSubscribe', function(req, res) {
+router.get('/CheckSubscribe', function (req, res) {
     // objPushNotification = req.body;
 
     var search = {};
@@ -88,7 +89,7 @@ router.get('/CheckSubscribe', function(req, res) {
         //     UserType: req.query.UserType
         // }
         where: search
-    }).then(function(obj) {
+    }).then(function (obj) {
         if (obj != null) {
             res.json({
                 success: false,
@@ -106,7 +107,7 @@ router.get('/CheckSubscribe', function(req, res) {
     })
 })
 
-router.get('/UpdateUserIdByUdId', function(req, res) {
+router.get('/UpdateUserIdByUdId', function (req, res) {
     objHeader = req.headers;
     var token = getToken(objHeader);
     if (token) {
@@ -118,7 +119,7 @@ router.get('/UpdateUserIdByUdId', function(req, res) {
                 password: decoded.password
             }
             // where: search
-        }).then(function(UserExist) {
+        }).then(function (UserExist) {
             if (UserExist != null) {
                 if (req.query.UserType != null && req.query.UserType != undefined && req.query.UserType != '') {
                     PushNotification.findOne({
@@ -127,9 +128,9 @@ router.get('/UpdateUserIdByUdId', function(req, res) {
                             UserType: req.query.UserType,
                         }
                         // where: searchPushNotification
-                    }).then(function(response) {
+                    }).then(function (response) {
                         if (response) {
-                            response.updateAttributes({ iduser: req.query.UserId, Country: req.query.Country, MessageCount: 0 }).then(function(resUpdate) {
+                            response.updateAttributes({ iduser: req.query.UserId, Country: req.query.Country, MessageCount: 0 }).then(function (resUpdate) {
                                 res.json({
                                     success: true,
                                     message: "User Push notification data updated successfully...",
@@ -147,9 +148,9 @@ router.get('/UpdateUserIdByUdId', function(req, res) {
                             udid: req.query.udid,
                         }
                         // where: searchPushNotification
-                    }).then(function(response) {
+                    }).then(function (response) {
                         if (response) {
-                            response.updateAttributes({ iduser: req.query.UserId, Country: req.query.Country, MessageCount: 0 }).then(function(resUpdate) {
+                            response.updateAttributes({ iduser: req.query.UserId, Country: req.query.Country, MessageCount: 0 }).then(function (resUpdate) {
                                 res.json({
                                     success: true,
                                     message: "User Push notification data updated successfully...",
@@ -171,9 +172,9 @@ router.get('/UpdateUserIdByUdId', function(req, res) {
     }
 });
 
-router.get('/UpdatePushnotificationCounter', function(req, res) {
+router.get('/UpdatePushnotificationCounter', function (req, res) {
     console.log(req.query)
-    connection.query("Update tblpushnotification set messagecount=0 where udid='" + req.query.udid + "' and UserType='" + req.query.UserType + "'", function(errupdate, updateresp, fields) {
+    connection.query("Update tblpushnotification set messagecount=0 where udid='" + req.query.udid + "' and UserType='" + req.query.UserType + "'", function (errupdate, updateresp, fields) {
         res.json({
             success: true,
             message: "User Push notification data updated successfully...",
@@ -210,7 +211,7 @@ function GetCurrentDate() {
     return ("0000" + year.toString()).slice(-4) + "-" + ("00" + month.toString()).slice(-2) + "-" + ("00" + day.toString()).slice(-2) + " " + ("00" + hour.toString()).slice(-2) + ":" + ("00" + min.toString()).slice(-2) + ":" + ("00" + sec.toString()).slice(-2);
 }
 
-router.post('/SendPushNotification', jsonParser, function(req, res) {
+router.post('/SendPushNotification', jsonParser, function (req, res) {
 
     objPushNotification = req.body;
     var data = {
@@ -230,18 +231,18 @@ router.post('/SendPushNotification', jsonParser, function(req, res) {
     obj.headers = req.headers;
     obj.query = req.query;
 
-    funAccessPermission.CheckUserAccessPermission(obj, function(responseAccessPermission) {
+    funAccessPermission.CheckUserAccessPermission(obj, function (responseAccessPermission) {
         var AccessPermission = responseAccessPermission.success;
         if (AccessPermission) {
 
-            PushNotification.findAll({ distinct: 'PushNotificationId' }).then(function(response) {
+            PushNotification.findAll({ distinct: 'PushNotificationId' }).then(function (response) {
                 // console.log(response)
 
-                var groups = u.groupBy(response, function(o) {
+                var groups = u.groupBy(response, function (o) {
                     return o.PushNotificationId;
                 });
 
-                var lstGroupData = u.map(groups, function(group, PushNotificationId) {
+                var lstGroupData = u.map(groups, function (group, PushNotificationId) {
                     return {
                         PushNotificationId: PushNotificationId,
                         Platform: group[0].Platform,
@@ -260,9 +261,9 @@ router.post('/SendPushNotification', jsonParser, function(req, res) {
                         if (i < lstGroupData.length) {
                             var deviceIds = [];
                             deviceIds.push(lstGroupData[i].PushNotificationId)
-                                //SendNotification(i + 1);
-                                // } else {
-                                // console.log(deviceIds)
+                            //SendNotification(i + 1);
+                            // } else {
+                            // console.log(deviceIds)
                             var objData = clone(data);
                             if (lstGroupData[i].Platform == 'ios') {
                                 objData.title = data.message;
@@ -278,7 +279,7 @@ router.post('/SendPushNotification', jsonParser, function(req, res) {
                             var objPushNotificationSend = new PushNotifications(PushNotificationSettings);
                             if (deviceIds.length > 0) {
 
-                                objPushNotificationSend.send(deviceIds, objData, function(result) {
+                                objPushNotificationSend.send(deviceIds, objData, function (result) {
                                     // console.log(result);
                                     SendNotification(i + 1);
                                 });
@@ -298,7 +299,7 @@ router.post('/SendPushNotification', jsonParser, function(req, res) {
                             }
 
                             var query = "INSERT INTO tblfacebookpostdata (title,message,datetime,flag,Type,SendBy,Country) VALUES ('" + data.title + "','" + data.message + "','" + currentDatetime + "', 1,'Custom','" + UserName + "','" + objPushNotification.Country + "');";
-                            connection.query(query, function(err, rows, fields) {
+                            connection.query(query, function (err, rows, fields) {
                                 res.json({
                                     success: true,
                                     message: "Push Notification send Successfully.",
@@ -318,5 +319,56 @@ router.post('/SendPushNotification', jsonParser, function(req, res) {
         }
     });
 })
+
+//=====PWA Push Notification===============================
+
+router.post('/PWAsubscribePushNotification', jsonParser, function (req, res) {
+    try {
+        var objdata = req.body;
+        if (objdata.newSub != null && objdata.newSub != undefined && objdata.newSub != '') {
+            if (objdata.newSub.endpoint != null && objdata.newSub.endpoint != undefined && objdata.newSub.endpoint != '') {
+                var objInsert = new Object();
+                objInsert.id = 0;
+                objInsert.iduser = parseInt(objdata.iduser);
+                objInsert.endpoint = objdata.newSub.endpoint;
+                objInsert.auth = objdata.newSub.keys.auth;
+                objInsert.p256dh = objdata.newSub.keys.p256dh;
+                // Module.findOrCreate({ where: { Module: objModule.Module }, defaults: objModule }).then(function(response) {
+                PWANotifications.findOrCreate({ where: { iduser: objInsert.iduser, endpoint: objInsert.endpoint }, defaults: objInsert }).then(function (resCreate) {
+                    res.json(true);
+                });
+            } else {
+                res.json(false);
+            }
+        } else {
+            res.json(false);
+        }
+    } catch (errr) {
+        res.json(false);
+    }
+});
+
+router.post('/PWAUnsubscribePushNotification', jsonParser, function (req, res) {
+    try {
+        var objdata = req.body;
+        if (objdata.endpoint != null && objdata.endpoint != undefined && objdata.endpoint != '' && objdata.iduser != null && objdata.iduser != undefined && objdata.iduser != '') {
+            PWANotifications.destroy({
+                where: {
+                    iduser: parseInt(objdata.iduser),
+                    endpoint: objdata.endpoint,
+                }
+            }).then(function (resDelete) {
+                res.json(true);
+            });
+        } else {
+            res.json(false);
+        }
+    } catch (errr) {
+        res.json(false);
+    }
+});
+
+
+//=====End PWA Push Notification===============================
 
 module.exports = router
