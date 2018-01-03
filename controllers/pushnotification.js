@@ -369,6 +369,35 @@ router.post('/PWAUnsubscribePushNotification', jsonParser, function (req, res) {
 });
 
 
+router.get('/UpdateUserIdForPWA', function (req, res) {
+    try {
+        var objdata = req.query;
+        if (objdata.endpoint != null && objdata.endpoint != undefined && objdata.endpoint != '' && objdata.iduser != null && objdata.iduser != undefined && objdata.iduser != '') {
+            PWANotifications.findOne({
+                where: {
+                    endpoint: objdata.endpoint,
+                }
+            }).then(function (resFind) {
+                if(resFind==null){
+                    res.json(false);
+                }else{
+                    resFind.updateAttributes({
+                        iduser: parseInt(objdata.iduser)
+                    }).then(function(resUpdate){
+                        res.json(true);
+                    })
+                }
+            });
+        } else {
+            res.json(false);
+        }
+    } catch (errr) {
+        res.json(false);
+    }
+});
+
+
+
 //=====End PWA Push Notification===============================
 
 module.exports = router
