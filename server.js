@@ -67,6 +67,46 @@ global.connection = mysql.createConnection({
 });
 global.RoutePath = process.env.RoutePath;
 
+
+//======= PWA Notification ============================
+
+global.webpush = require('web-push');
+
+// VAPID keys should only be generated only once.
+// const vapidKeys = webpush.generateVAPIDKeys();
+
+var publicKey = 'BJrKld9z228boWHCioR7tH8VwOFR0fhW7FbMZLITDP2D0sINJKmgOg6Q0tcodIte8QxnsUuznDTrt243R_v7xKM';
+var privateKey = 'euncHO_gN9pgTCmNIWMlfCYZx7j-KBYQpcICPlOhflA';
+
+webpush.setVapidDetails('mailto:soham.patel@bugzstudio.com', publicKey, privateKey);
+
+//Demo
+// var notificationds = models.tblpwa_notification_subscription;
+// notificationds.findOne({
+//     order: 'id desc'
+// }).then(function (objd) {
+//     var objdata = objd;
+//     if (objdata != null) {
+//         const pushSubscription = {
+//             endpoint: objdata.endpoint,
+//             keys: {
+//                 auth: objdata.auth,
+//                 p256dh: objdata.p256dh
+//             }
+//         };
+//         webpush.sendNotification(pushSubscription, JSON.stringify({ title: "Heloo Title ", content: "This is my Second Subscription method so we can check the testiing" })).then(function (ress) {
+//             console.log("========================================================888888888888")
+//             console.log(ress)
+//             console.log("========================================================888888888888")
+//         }).catch(function (err) {
+//             // console.log(err);
+//         });
+//     }
+// });
+//======= End PWA Notification ============================
+
+
+
 //Push Notification
 global.PushNotifications = require('node-pushnotifications');
 global.pdf = require('html-pdf');
