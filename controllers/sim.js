@@ -308,6 +308,10 @@ router.get('/Export', function(req, res) {
         {
             caption: 'CreatedDate',
             type: 'string'
+        },
+        {
+            caption: 'App Name',
+            type: 'string'
         }
 
     ];
@@ -316,7 +320,8 @@ router.get('/Export', function(req, res) {
     //         ['CreatedDate', 'DESC'],
     //     ]
     // }).then(function(response) {
-    var query = "SELECT ts.id,ts.SerialNum,ts.PhoneNum,CONVERT_TZ(ts.CreatedDate,'+00:00','" + req.query.CurrentOffset + "') as CreatedDate, tt.Name as TelName from tblsimdetails as ts LEFT JOIN tbltelco as tt ON ts.idTelCo = tt.id ORDER BY CreatedDate DESC";
+    var query = "  SELECT ts.id,ts.SerialNum,ts.PhoneNum,ts.idApp,tai.AppName,CONVERT_TZ(ts.CreatedDate,'+00:00','" + CurrentOffset + "') as CreatedDate, tt.Name as TelName,tt.id as idTelCo from tblsimdetails as ts LEFT JOIN tbltelco as tt ON ts.idTelCo = tt.id LEFT JOIN tblappinfo tai on ts.idApp = tai.Id  ORDER BY CreatedDate DESC"
+        // var query = "SELECT ts.id,ts.SerialNum,ts.PhoneNum,CONVERT_TZ(ts.CreatedDate,'+00:00','" + req.query.CurrentOffset + "') as CreatedDate, tt.Name as TelName from tblsimdetails as ts LEFT JOIN tbltelco as tt ON ts.idTelCo = tt.id ORDER BY CreatedDate DESC";
     connection.query(query, function(err, response) {
         conf.rows = [];
         if (response.length > 0) {
@@ -327,6 +332,7 @@ router.get('/Export', function(req, res) {
                     var PhoneNumber = '';
                     var CreatedDate = '';
                     var TelName = '';
+                    var AppName = '';
                     if (response[i].SerialNum != null && response[i].SerialNum != undefined && response[i].SerialNum != '') {
                         SerialNumber = response[i].SerialNum.toString();
                     } else {
@@ -349,7 +355,12 @@ router.get('/Export', function(req, res) {
                     } else {
                         CreatedDate = "";
                     }
-                    row.push(SerialNumber, PhoneNumber, TelName, CreatedDate);
+                    if (response[i].AppName != null && response[i].AppName != undefined && response[i].AppName != '') {
+                        AppName = response[i].AppName;
+                    } else {
+                        AppName = "";
+                    }
+                    row.push(SerialNumber, PhoneNumber, TelName, CreatedDate, AppName);
 
                     conf.rows.push(row);
 
