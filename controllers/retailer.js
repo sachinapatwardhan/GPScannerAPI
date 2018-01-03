@@ -13,6 +13,7 @@
     var Vehicle = models.tblvehicle;
     var User = models.tbluserinformation;
     var SIM = models.tblsimdetails;
+    var AppInfo = models.tblappinfo;
     //////////
 
     router.get('/getPagedClientsByRetailerId', function(req, res) {
@@ -199,12 +200,22 @@
                             User.findOne({ where: rDeviceAgentRetailer.agentId }).then(function(UserExist) {
 
                                 CreateOrderServiceGlobal(UserExist.country, UserExist.id, rDeviceAgentRetailer.deviceId, UserExist.username, UserExist.idApp, function(orderresponse) {
-                                    CreateDabitWalletTransactionGlobal(UserExist.country, rDeviceAgentRetailer.deviceId, UserExist.username, UserExist.idApp, function(resFlg) {
-                                        res.json({
-                                            success: true,
-                                            message: 'Device activated!',
-                                            data: rDeviceAgentRetailer
-                                        });
+                                    AppInfo.findOne({ where: { id: UserExist.idApp } }).then(function(AppinfoExist) {
+                                        if (AppinfoExist.AppName == 'Maark') {
+                                            res.json({
+                                                success: true,
+                                                message: 'Device activated!',
+                                                data: rDeviceAgentRetailer
+                                            });
+                                        } else {
+                                            CreateDabitWalletTransactionGlobal(UserExist.country, rDeviceAgentRetailer.deviceId, UserExist.username, UserExist.idApp, function(resFlg) {
+                                                res.json({
+                                                    success: true,
+                                                    message: 'Device activated!',
+                                                    data: rDeviceAgentRetailer
+                                                });
+                                            })
+                                        }
                                     })
                                 })
                             })
