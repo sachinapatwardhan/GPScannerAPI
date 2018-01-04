@@ -126,8 +126,8 @@ router.get('/SendPushTest', function (req, res) {
                 Type: 'Alarm'
             }
         };
-        // SendPWAPushNotification(PushNotificationdata, UserId);
-        SendPushNotification(PushNotificationdata, UserId, objAppInfo[0]);
+        SendPWAPushNotification(PushNotificationdata, UserId);
+        // SendPushNotification(PushNotificationdata, UserId, objAppInfo[0]);
         res.send("Done");
     })
 })
@@ -2765,7 +2765,7 @@ global.SetACCSetting = function (objdata, Callback) {
 router.get('/SetHeartBeatInterval', function (req, res) {
     req.setTimeout(3600000);
     //GetLookAtMeDP3110a0f
-    //Test Device 075034699503  
+    //Test Device 075034699503
     //404018580420800457925119326b320d0a
     var obj = new Object();
     obj.DeviceId = req.query.DeviceId;
@@ -2846,7 +2846,7 @@ global.SetHeartBeatInterval = function (objdata, Callback) {
 router.get('/ClearDataLogger', function (req, res) {
     req.setTimeout(3600000);
     //GetLookAtMeDP3110a0f
-    //Test Device 075034699503  
+    //Test Device 075034699503
     //404018580420800457925119326b320d0a
     var DeviceId = req.query.DeviceId;
     var Data = "40400011" + DeviceId + "5503";
@@ -2909,7 +2909,7 @@ router.get('/ClearDataLogger', function (req, res) {
 router.get('/GetFirmWareVersion', function (req, res) {
     req.setTimeout(3600000);
     //GetLookAtMeDP3110a0f
-    //Test Device 075034699503  
+    //Test Device 075034699503
     //404018580420800457925119326b320d0a
     var DeviceId = req.query.DeviceId;
     var Data = "40400011" + DeviceId + "9001";
@@ -2979,7 +2979,7 @@ router.get('/GetFirmWareVersion', function (req, res) {
 router.get('/ReadGPRSTimeInterval', function (req, res) {
     req.setTimeout(3600000);
     //GetLookAtMeDP3110a0f
-    //Test Device 075034699503  
+    //Test Device 075034699503
     //404018580420800457925119326b320d0a
     var DeviceId = req.query.DeviceId;
     var Data = "40400011" + DeviceId + "9002";
@@ -3219,7 +3219,7 @@ router.get('/ReadVINCode', function (req, res) {
 router.get('/ReadRFIDTags', function (req, res) {
     req.setTimeout(3600000);
     //GetLookAtMeDP3110a0f
-    //Test Device 075034699503  
+    //Test Device 075034699503
     //404018580420800457925119326b320d0a
     var DeviceId = req.query.DeviceId;
     var Data = "40400011" + DeviceId + "4170";

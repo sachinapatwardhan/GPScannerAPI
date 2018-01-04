@@ -78,10 +78,15 @@ global.webpush = require('web-push');
 var publicKey = 'BJrKld9z228boWHCioR7tH8VwOFR0fhW7FbMZLITDP2D0sINJKmgOg6Q0tcodIte8QxnsUuznDTrt243R_v7xKM';
 var privateKey = 'euncHO_gN9pgTCmNIWMlfCYZx7j-KBYQpcICPlOhflA';
 
-webpush.setVapidDetails('mailto:soham.patel@bugzstudio.com', publicKey, privateKey);
+//uat
+// var publicKey = 'BGt6D-TEeBzzYnS1NoihDiCvUBB9C9m4SQ2hhg_cQxZAlQ8Rdu_kEBin-AK0fLfqyzjO94N5GoGTZof4VpGs_A0';
+// var privateKey = 'DI28lzUnWeU8kWKqdi8ZlRJ-XBKvsCZWP-VjeRN3dIE';
+
+webpush.setGCMAPIKey("AIzaSyA7VgouhJNzv8Lw8jHXBDcBnx9zhYIjCBc");
+webpush.setVapidDetails('mailto:atul@bugzstudio.com', publicKey, privateKey);
 
 //Demo
-// var notificationds = models.tblpwa_notification_subscription;
+var notificationds = models.tblpwa_notification_subscription;
 // notificationds.findOne({
 //     order: 'id desc'
 // }).then(function (objd) {
@@ -94,15 +99,18 @@ webpush.setVapidDetails('mailto:soham.patel@bugzstudio.com', publicKey, privateK
 //                 p256dh: objdata.p256dh
 //             }
 //         };
+//         console.log(pushSubscription)
 //         webpush.sendNotification(pushSubscription, JSON.stringify({ title: "Heloo Title ", content: "This is my Second Subscription method so we can check the testiing" })).then(function (ress) {
 //             console.log("========================================================888888888888")
 //             console.log(ress)
 //             console.log("========================================================888888888888")
 //         }).catch(function (err) {
-//             // console.log(err);
+//             console.log(err);
 //         });
 //     }
 // });
+
+
 //======= End PWA Notification ============================
 
 
@@ -530,4 +538,3 @@ app.use('/mobileV1/socketapi', require('./mobile_controllers/socketapi'))
 app.use('/mobileV1/user', require('./mobile_controllers/user'))
 app.use('/mobileV1/vehicles', require('./mobile_controllers/vehicles'))
 app.use('/mobileV1/vehicletype', require('./mobile_controllers/vehicletype'))
-

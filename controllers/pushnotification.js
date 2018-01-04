@@ -326,14 +326,13 @@ router.post('/PWAsubscribePushNotification', jsonParser, function (req, res) {
     try {
         var objdata = req.body;
         if (objdata.newSub != null && objdata.newSub != undefined && objdata.newSub != '') {
-            if (objdata.newSub.endpoint != null && objdata.newSub.endpoint != undefined && objdata.newSub.endpoint != '') {
+            if (objdata.newSub.endpoint != null && objdata.newSub.endpoint != undefined && objdata.newSub.endpoint != ''  && objdata.iduser != null && objdata.iduser != undefined && objdata.iduser != '') {
                 var objInsert = new Object();
                 objInsert.id = 0;
                 objInsert.iduser = parseInt(objdata.iduser);
                 objInsert.endpoint = objdata.newSub.endpoint;
                 objInsert.auth = objdata.newSub.keys.auth;
                 objInsert.p256dh = objdata.newSub.keys.p256dh;
-                // Module.findOrCreate({ where: { Module: objModule.Module }, defaults: objModule }).then(function(response) {
                 PWANotifications.findOrCreate({ where: { iduser: objInsert.iduser, endpoint: objInsert.endpoint }, defaults: objInsert }).then(function (resCreate) {
                     res.json(true);
                 });
