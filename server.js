@@ -75,15 +75,16 @@ global.webpush = require('web-push');
 // VAPID keys should only be generated only once.
 // const vapidKeys = webpush.generateVAPIDKeys();
 
-var publicKey = 'BJrKld9z228boWHCioR7tH8VwOFR0fhW7FbMZLITDP2D0sINJKmgOg6Q0tcodIte8QxnsUuznDTrt243R_v7xKM';
-var privateKey = 'euncHO_gN9pgTCmNIWMlfCYZx7j-KBYQpcICPlOhflA';
+//local
+// var publicKey = 'BJrKld9z228boWHCioR7tH8VwOFR0fhW7FbMZLITDP2D0sINJKmgOg6Q0tcodIte8QxnsUuznDTrt243R_v7xKM';
+// var privateKey = 'euncHO_gN9pgTCmNIWMlfCYZx7j-KBYQpcICPlOhflA';
 
 //uat
-// var publicKey = 'BGt6D-TEeBzzYnS1NoihDiCvUBB9C9m4SQ2hhg_cQxZAlQ8Rdu_kEBin-AK0fLfqyzjO94N5GoGTZof4VpGs_A0';
-// var privateKey = 'DI28lzUnWeU8kWKqdi8ZlRJ-XBKvsCZWP-VjeRN3dIE';
+var publicKey = 'BGt6D-TEeBzzYnS1NoihDiCvUBB9C9m4SQ2hhg_cQxZAlQ8Rdu_kEBin-AK0fLfqyzjO94N5GoGTZof4VpGs_A0';
+var privateKey = 'DI28lzUnWeU8kWKqdi8ZlRJ-XBKvsCZWP-VjeRN3dIE';
 
-webpush.setGCMAPIKey("AIzaSyA7VgouhJNzv8Lw8jHXBDcBnx9zhYIjCBc");
-webpush.setVapidDetails('mailto:atul@bugzstudio.com', publicKey, privateKey);
+webpush.setGCMAPIKey("AIzaSyBA2iHOVEC3eg8CwGtneLsb3gJxXVfgfB0");
+webpush.setVapidDetails('mailto:soham.patel@bugzstudio.com', publicKey, privateKey);
 
 //Demo
 var notificationds = models.tblpwa_notification_subscription;
