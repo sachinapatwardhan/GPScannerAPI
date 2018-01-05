@@ -427,12 +427,36 @@
                                                     id: VehicleExist.id
                                                 }
                                             }).then(function(vehicleCreated) {
-                                                funAuditLog.CreateAuditLog('Create Vehicle Type', userexits.username, 'Save Vehicle Type');
+                                                if (vehicleCreated) {
+                                                    funAuditLog.CreateAuditLog('Create Vehicle through device Activation', userexits.username, 'Save Vehicle  through device Activation');
+                                                    GPSDevice.findOne({ where: { DeviceId: objVehicle.deviceid } }).then(function(GPSDevicefound) {
+                                                        if (GPSDevicefound) {
+                                                            GPSDevicefound.updateAttributes({ idSim: req.body.idSim }).then(function(GPSDeviceupdated) {
+                                                                if (GPSDeviceupdated) {
+                                                                    funAuditLog.CreateAuditLog('update idSim GPSDevice ', userexits.username, 'update idSim GPSDevice throgth through  Device activation ');
+                                                                }
+                                                            })
+                                                        }
+                                                    })
+
+                                                }
                                             })
                                         }
                                     } else {
                                         Vehicle.create(objVehicle).then(function(vehicleCreated) {
-                                            funAuditLog.CreateAuditLog('Create Vehicle Type', userexits.username, 'Save Vehicle Type');
+                                            if (objVehicle) {
+                                                funAuditLog.CreateAuditLog('Create Vehicle Type', userexits.username, 'Save Vehicle Type');
+                                                GPSDevice.findOne({ where: { DeviceId: objVehicle.deviceid } }).then(function(GPSDevicefound) {
+                                                    if (GPSDevicefound) {
+                                                        GPSDevicefound.updateAttributes({ idSim: req.body.idSim }).then(function(GPSDeviceupdated) {
+                                                            if (GPSDeviceupdated) {
+                                                                funAuditLog.CreateAuditLog('update idSim GPSDevice ', userexits.username, 'update idSim GPSDevice throgth through  Device activation ');
+                                                            }
+                                                        })
+                                                    }
+                                                })
+
+                                            }
                                         })
                                     }
 
