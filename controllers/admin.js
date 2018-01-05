@@ -82,6 +82,64 @@
             });
     });
 
+    router.get('/getAutocompleteSalesAgentNew', function(req, res) {
+        console.log(req.query.idApp)
+        User.hasMany(UserRole, {
+            foreignKey: {
+                name: 'userId',
+                allowNull: false
+            }
+        });
+        UserRole.belongsTo(Role, {
+            foreignKey: {
+                name: 'roleId',
+                allowNull: false
+            }
+        });
+
+        User.findAll({
+                where: {
+                    idApp: req.query.idApp,
+                    username: {
+                        $like: '%' + req.query.username + '%'
+                    }
+                },
+                include: [{
+                    model: UserRole,
+                    attributes: [],
+                    include: [{
+                        model: Role,
+                        attributes: [],
+                        where: {
+                            RoleName: 'Sales Agent'
+                        }
+                    }]
+                }],
+                limit: 20,
+                attributes: ['id', 'username']
+            })
+            .then(function(rSalesAgents) {
+                var reply = {
+                    success: true,
+                    message: 'Record(s) found.',
+                    data: rSalesAgents
+                };
+
+                if (!rSalesAgents.length) {
+                    reply.message = 'No record(s) found.'
+                }
+
+                res.json(reply);
+            })
+            .catch(function(err) {
+                res.json({
+                    success: false,
+                    message: 'Record(s) not found.'
+                });
+                console.error('[' + moment().format('DD/MM/YYYY hh:mm:ss a') + '] ' + (err.stack || err.message));
+            });
+    });
+
     // deviceId, toAgentId
     router.post('/transferStock', jsonParser, function(req, res) {
         var err = new Error();
@@ -129,6 +187,7 @@
             });
     });
     router.get('/getAllGpsDevicesNew', function(req, res) {
+        console.log(req.query)
         var orderBy = [];
         orderBy.push([
             req.query.columns[req.query.order[0].column].data + ' ' + req.query.order[0].dir
@@ -145,6 +204,11 @@
             search = search + 'ts.SerialNum like "%' + req.query.search.value + '%" or ';
             search = search + 'ts.PhoneNum like "%' + req.query.search.value + '%" or ';
             search = search + 'tel.Name like "%' + req.query.search.value + '%") ';
+        }
+        if (search != '') {
+            search = search + " and tgd.AppName='" + req.query.AppName + "'";
+        } else {
+            search = search + " Where tgd.AppName='" + req.query.AppName + "'";
         }
 
         if (req.query.agentId != null && req.query.agentId != '' && req.query.agentId != undefined) {
@@ -168,6 +232,7 @@
             ' LEFT JOIN tbldeviceagentretailer tdr on tdr.deviceId = tgd.DeviceId' + search;
 
         connection.query(query, function(err, response) {
+            console.log(err)
             if (response != undefined) {
                 connection.query(Countqry, function(err, lstCount, fields) {
                     var response1 = new Object();
@@ -297,6 +362,7 @@
     router.post('/assignDevice', jsonParser, function(req, res) {
         var err = new Error();
         err.name = 'BugzApiError';
+        console.log(req.body)
 
         if (req.body.assign) {
             DeviceAgentRetailer.findOne({
@@ -318,6 +384,7 @@
                     });
                 })
                 .then(function(rGpsDevice) {
+                    console.log(rGpsDevice)
                     if (!rGpsDevice) {
                         err.message = 'GPS device not found.';
                         throw err;
