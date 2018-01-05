@@ -443,7 +443,11 @@
                             User.findOne({ where: rDeviceAgentRetailer.agentId }).then(function(UserExist) {
                                 GPSDevice.findOne({ where: { DeviceId: rDeviceAgentRetailer.deviceId } }).then(function(GPSDeviceExist) {
                                     Country.findOne({ where: { id: GPSDeviceExist.CountryId } }).then(function(countryExist) {
-                                        CreateOrderServiceGlobal(countryExist.Country, UserExist.id, rDeviceAgentRetailer.deviceId, UserExist.username, UserExist.idApp, function(orderresponse) {
+                                        var DeviceCountry = null;
+                                        if (countryExist) {
+                                            DeviceCountry = countryExist.Country;
+                                        }
+                                        CreateOrderServiceGlobal(DeviceCountry, objVehicle.iduser, rDeviceAgentRetailer.deviceId, UserExist.username, UserExist.idApp, function(orderresponse) {
                                             AppInfo.findOne({ where: { id: UserExist.idApp } }).then(function(AppinfoExist) {
                                                 if (AppinfoExist.AppName == 'Maark') {
                                                     res.json({
@@ -452,7 +456,7 @@
                                                         data: rDeviceAgentRetailer
                                                     });
                                                 } else {
-                                                    CreateDabitWalletTransactionGlobal(countryExist.Country, rDeviceAgentRetailer.deviceId, UserExist.username, UserExist.idApp, function(resFlg) {
+                                                    CreateDabitWalletTransactionGlobal(DeviceCountry, rDeviceAgentRetailer.deviceId, UserExist.username, UserExist.idApp, function(resFlg) {
                                                         res.json({
                                                             success: true,
                                                             message: 'Device activated!',
