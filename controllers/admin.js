@@ -147,14 +147,14 @@
             search = search + 'tel.Name like "%' + req.query.search.value + '%") ';
         }
 
-        // if (req.query.agentId != null && req.query.agentId != '' && req.query.agentId != undefined) {
-        if (search != '') {
-            search = search + ' and tgd.DeviceId not in (select deviceId from tbldeviceagentretailer)';
-        } else {
-            search = search + ' where tgd.DeviceId not in (select deviceId from tbldeviceagentretailer)';
+        if (req.query.agentId != null && req.query.agentId != '' && req.query.agentId != undefined) {
+            if (search != '') {
+                search = search + ' and tgd.DeviceId not in (select deviceId from tbldeviceagentretailer where retailerId is not null)';
+            } else {
+                search = search + ' where tgd.DeviceId not in (select deviceId from tbldeviceagentretailer where retailerId is not null)';
+            }
+            // search = search + '  tgd.DeviceId not in (select deviceId from tbldeviceagentretailer)'
         }
-        // search = search + '  tgd.DeviceId not in (select deviceId from tbldeviceagentretailer)'
-        // }
 
         var query = 'select tgd.DeviceId,tgd.Type,tgd.IMEI,tgd.Version,tgd.CreatedDate,tgd.CreatedBy,tgd.AppName,tgd.ExpiryDate,ts.SerialNum,ts.PhoneNum,tel.Name,tdr.id,tdr.agentId' +
             ' from tblgpsdevice tgd LEFT JOIN tblsimdetails ts on tgd.idSim = ts.id' +
