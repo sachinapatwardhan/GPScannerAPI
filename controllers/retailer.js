@@ -15,7 +15,7 @@
     var SIM = models.tblsimdetails;
     var AppInfo = models.tblappinfo;
     var GPSDevice = models.tblgpsdevice;
-    var Country = models.tblcountrycode;
+    var Country = models.tblcountrymgmt;
     var AgentRetailer = models.tblagentretailer
     var UserInRole = models.tbluserinrole;
     var Role = models.tblrole;
@@ -443,7 +443,7 @@
                             User.findOne({ where: rDeviceAgentRetailer.agentId }).then(function(UserExist) {
                                 GPSDevice.findOne({ where: { DeviceId: rDeviceAgentRetailer.deviceId } }).then(function(GPSDeviceExist) {
                                     Country.findOne({ where: { id: GPSDeviceExist.CountryId } }).then(function(countryExist) {
-                                        CreateOrderServiceGlobal(countryExist.CountryName, UserExist.id, rDeviceAgentRetailer.deviceId, UserExist.username, UserExist.idApp, function(orderresponse) {
+                                        CreateOrderServiceGlobal(countryExist.Country, UserExist.id, rDeviceAgentRetailer.deviceId, UserExist.username, UserExist.idApp, function(orderresponse) {
                                             AppInfo.findOne({ where: { id: UserExist.idApp } }).then(function(AppinfoExist) {
                                                 if (AppinfoExist.AppName == 'Maark') {
                                                     res.json({
@@ -452,7 +452,7 @@
                                                         data: rDeviceAgentRetailer
                                                     });
                                                 } else {
-                                                    CreateDabitWalletTransactionGlobal(countryExist.CountryName, rDeviceAgentRetailer.deviceId, UserExist.username, UserExist.idApp, function(resFlg) {
+                                                    CreateDabitWalletTransactionGlobal(countryExist.Country, rDeviceAgentRetailer.deviceId, UserExist.username, UserExist.idApp, function(resFlg) {
                                                         res.json({
                                                             success: true,
                                                             message: 'Device activated!',
