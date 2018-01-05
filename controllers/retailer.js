@@ -17,12 +17,25 @@
     var GPSDevice = models.tblgpsdevice;
     var Country = models.tblcountrycode;
     var AgentRetailer = models.tblagentretailer
-
+    var UserInRole = models.tbluserinrole;
+    var Role = models.tblrole;
     //////////
 
     router.get('/getAutocompleteEmail', function(req, res) {
         var now = moment();
+        User.hasMany(UserInRole, {
+            foreignKey: {
+                name: 'userId',
+                allowNull: false
+            }
+        });
 
+        UserInRole.belongsTo(Role, {
+            foreignKey: {
+                name: 'roleId',
+                allowNull: false
+            }
+        });
         User.findAll({
                 where: {
                     email: {
@@ -30,6 +43,13 @@
                     },
                     idApp: { $eq: req.query.idApp }
                 },
+                include: [{
+                    model: UserInRole,
+                    include: [{
+                        model: Role,
+                        where: { RoleName: 'User' }
+                    }]
+                }],
                 limit: 20
             })
             .then(function(ruser) {
