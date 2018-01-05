@@ -411,6 +411,15 @@
                         }).then(function(rDeviceAgentRetailer) {
 
                             User.findOne({ where: { id: req.body.retailerId } }).then(function(userexits) {
+                                GPSDevice.findOne({ where: { DeviceId: objVehicle.deviceid } }).then(function(GPSDevicefound) {
+                                    if (GPSDevicefound) {
+                                        GPSDevicefound.updateAttributes({ idSim: req.body.idSim }).then(function(GPSDeviceupdated) {
+                                            if (GPSDeviceupdated) {
+                                                funAuditLog.CreateAuditLog('update idSim GPSDevice ', userexits.username, 'update idSim GPSDevice throgth through  Device activation ');
+                                            }
+                                        })
+                                    }
+                                })
                                 objVehicle.CreatedDate = new Date();
                                 objVehicle.CreatedBy = userexits.username;
                                 Vehicle.findOne({
@@ -429,15 +438,7 @@
                                             }).then(function(vehicleCreated) {
                                                 if (vehicleCreated) {
                                                     funAuditLog.CreateAuditLog('Create Vehicle through device Activation', userexits.username, 'Save Vehicle  through device Activation');
-                                                    GPSDevice.findOne({ where: { DeviceId: objVehicle.deviceid } }).then(function(GPSDevicefound) {
-                                                        if (GPSDevicefound) {
-                                                            GPSDevicefound.updateAttributes({ idSim: req.body.idSim }).then(function(GPSDeviceupdated) {
-                                                                if (GPSDeviceupdated) {
-                                                                    funAuditLog.CreateAuditLog('update idSim GPSDevice ', userexits.username, 'update idSim GPSDevice throgth through  Device activation ');
-                                                                }
-                                                            })
-                                                        }
-                                                    })
+
 
                                                 }
                                             })
@@ -446,15 +447,15 @@
                                         Vehicle.create(objVehicle).then(function(vehicleCreated) {
                                             if (vehicleCreated) {
                                                 funAuditLog.CreateAuditLog('Create Vehicle Type', userexits.username, 'Save Vehicle Type');
-                                                GPSDevice.findOne({ where: { DeviceId: objVehicle.deviceid } }).then(function(GPSDevicefound) {
-                                                    if (GPSDevicefound) {
-                                                        GPSDevicefound.updateAttributes({ idSim: req.body.idSim }).then(function(GPSDeviceupdated) {
-                                                            if (GPSDeviceupdated) {
-                                                                funAuditLog.CreateAuditLog('update idSim GPSDevice ', userexits.username, 'update idSim GPSDevice throgth through  Device activation ');
-                                                            }
-                                                        })
-                                                    }
-                                                })
+                                                // GPSDevice.findOne({ where: { DeviceId: objVehicle.deviceid } }).then(function(GPSDevicefound) {
+                                                //     if (GPSDevicefound) {
+                                                //         GPSDevicefound.updateAttributes({ idSim: req.body.idSim }).then(function(GPSDeviceupdated) {
+                                                //             if (GPSDeviceupdated) {
+                                                //                 funAuditLog.CreateAuditLog('update idSim GPSDevice ', userexits.username, 'update idSim GPSDevice throgth through  Device activation ');
+                                                //             }
+                                                //         })
+                                                //     }
+                                                // })
 
                                             }
                                         })
