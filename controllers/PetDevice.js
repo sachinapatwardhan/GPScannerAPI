@@ -199,6 +199,7 @@ router.get('/GetAllGPSDevice', function(req, res) {
         search = search + 'tblgpsdevice.CreatedBy like "%' + objSearch + '%" or ';
         search = search + 'tblsimdetails.SerialNum like "%' + objSearch + '%" or ';
         search = search + 'tblsimdetails.PhoneNum like "%' + objSearch + '%" or ';
+        search = search + 'tblcountrymgmt.Country like "%' + objSearch + '%" or ';
         search = search + 'tblgpsdevice.AppName like "%' + objSearch + '%") ';
     };
     if (objParam.UserId != null && objParam.UserId != undefined && objParam.UserId != '') {
@@ -217,13 +218,14 @@ router.get('/GetAllGPSDevice', function(req, res) {
         }
     }
 
-    var query = " select tblgpsdevice.*, " +
+    var query = " select tblgpsdevice.*, tblcountrymgmt.Country, " +
         " CONVERT_TZ(tblgpsdevice.CreatedDate,'+00:00','" + CurrentOffset + "') as CreatedDate," +
         " CONVERT_TZ(tblgpsdevice.ExpiryDate,'+00:00','" + CurrentOffset + "') as ExpiryDate," +
         " tbltelco.Name, tbluserinformation.username, tbluserinformation.idApp,tblsimdetails.SerialNum,tblsimdetails.PhoneNum" +
         " from tblgpsdevice " +
         " Left Join tbluserinformation on tblgpsdevice.idSalesAgent=tbluserinformation.id " +
         " Left Join tblsimdetails on tblsimdetails.id = tblgpsdevice.idSim" +
+        " Left Join tblcountrymgmt on tblcountrymgmt.id = tblgpsdevice.CountryId" +
         " Left Join tbltelco on tblsimdetails.idTelCo = tbltelco.id " + search +
         " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
 
@@ -231,6 +233,7 @@ router.get('/GetAllGPSDevice', function(req, res) {
         " from tblgpsdevice " +
         " Left Join tbluserinformation on  tblgpsdevice.idSalesAgent=tbluserinformation.id " +
         " Left Join tblsimdetails on tblsimdetails.id = tblgpsdevice.idSim" +
+        " Left Join tblcountrymgmt on tblcountrymgmt.id = tblgpsdevice.CountryId" +
         " Left Join tbltelco on tblsimdetails.idTelCo = tbltelco.id " + search;
     // " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
     connection.query(query, function(err, response) {
