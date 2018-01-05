@@ -83,7 +83,7 @@
     });
 
     router.get('/getAutocompleteSalesAgentNew', function(req, res) {
-        console.log(req.query.idApp)
+        // console.log(req.query.idApp)
         User.hasMany(UserRole, {
             foreignKey: {
                 name: 'userId',
@@ -187,7 +187,7 @@
             });
     });
     router.get('/getAllGpsDevicesNew', function(req, res) {
-        console.log(req.query)
+        // console.log(req.query)
         var orderBy = [];
         orderBy.push([
             req.query.columns[req.query.order[0].column].data + ' ' + req.query.order[0].dir
@@ -232,7 +232,7 @@
             ' LEFT JOIN tbldeviceagentretailer tdr on tdr.deviceId = tgd.DeviceId' + search;
 
         connection.query(query, function(err, response) {
-            console.log(err)
+            // console.log(err)
             if (response != undefined) {
                 connection.query(Countqry, function(err, lstCount, fields) {
                     var response1 = new Object();
@@ -362,7 +362,7 @@
     router.post('/assignDevice', jsonParser, function(req, res) {
         var err = new Error();
         err.name = 'BugzApiError';
-        console.log(req.body)
+        // console.log(req.body)
 
         if (req.body.assign) {
             DeviceAgentRetailer.findOne({
