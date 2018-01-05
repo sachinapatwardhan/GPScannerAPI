@@ -444,7 +444,7 @@
                                         }
                                     } else {
                                         Vehicle.create(objVehicle).then(function(vehicleCreated) {
-                                            if (objVehicle) {
+                                            if (vehicleCreated) {
                                                 funAuditLog.CreateAuditLog('Create Vehicle Type', userexits.username, 'Save Vehicle Type');
                                                 GPSDevice.findOne({ where: { DeviceId: objVehicle.deviceid } }).then(function(GPSDevicefound) {
                                                     if (GPSDevicefound) {
