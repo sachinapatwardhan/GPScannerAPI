@@ -109,12 +109,17 @@ router.get('/GetAllOrderService', function (req, res) {
             allowNull: false
         }
     })
-
+    
     if (objParam.StartDate != '' && objParam.StartDate != null && objParam.StartDate != undefined && objParam.EndDate != '' && objParam.EndDate != null && objParam.EndDate != undefined) {
 
         // search['$and'] = [];
-        if (search['$or'] == undefined) {
-            search['$or'] = [];
+        if (search['$and'] == undefined) {
+            search['$and'] = [];
+        }
+
+        var InnerSearch = {};
+        if (InnerSearch['$or'] == undefined) {
+            InnerSearch['$or'] = [];
         }
 
         var StartDate = convertdateUTCformat(objParam.StartDate);
@@ -124,21 +129,25 @@ router.get('/GetAllOrderService', function (req, res) {
         obj['ExpiryDate'] = {
             $between: [StartDate, EndDate]
         };
-        search['$or'].push(obj);
+        InnerSearch['$or'].push(obj);
 
         var obj1 = new Object();
         obj1['CreatedOnUtc'] = {
             $between: [StartDate, EndDate]
         };
-        search['$or'].push(obj1);
+        InnerSearch['$or'].push(obj1);
+
+        search['$and'].push(InnerSearch);
 
     } else if (objParam.StartDate != '' && objParam.StartDate != null && objParam.StartDate != undefined) {
 
-        // if (search['$and'] == undefined) {
-        //     search['$and'] = [];
-        // }
-        if (search['$or'] == undefined) {
-            search['$or'] = [];
+        if (search['$and'] == undefined) {
+            search['$and'] = [];
+        }
+
+        var InnerSearch = {};
+        if (InnerSearch['$or'] == undefined) {
+            InnerSearch['$or'] = [];
         }
 
         var StartDate = convertdateUTCformat(objParam.StartDate);
@@ -146,33 +155,43 @@ router.get('/GetAllOrderService', function (req, res) {
         obj['ExpiryDate'] = {
             $gte: StartDate
         };
-        search['$or'].push(obj);
+        InnerSearch['$or'].push(obj);
 
         var obj1 = new Object();
         obj1['CreatedOnUtc'] = {
             $gte: StartDate
         };
-        search['$or'].push(obj1);
+        InnerSearch['$or'].push(obj1);
+
+        search['$and'].push(InnerSearch);
+        
     } else if (objParam.EndDate != '' && objParam.EndDate != null && objParam.EndDate != undefined) {
-        // if (search['$and'] == undefined) {
-        //     search['$and'] = [];
-        // }
-        if (search['$or'] == undefined) {
-            search['$or'] = [];
+
+        if (search['$and'] == undefined) {
+            search['$and'] = [];
         }
+
+        var InnerSearch = {};
+        if (InnerSearch['$or'] == undefined) {
+            InnerSearch['$or'] = [];
+        }
+
         var EndDate = convertdateUTCformat(objParam.EndDate, 2);
 
         var obj = new Object();
         obj['ExpiryDate'] = {
             $lte: EndDate
         };
-        search['$or'].push(obj);
+        InnerSearch['$or'].push(obj);
 
         var obj1 = new Object();
         obj1['CreatedOnUtc'] = {
             $lte: EndDate
         };
-        search['$or'].push(obj1);
+        InnerSearch['$or'].push(obj1);
+
+        search['$and'].push(InnerSearch);
+        
     }
 
     if (objParam.Status > 0) {
@@ -219,6 +238,7 @@ router.get('/GetAllOrderService', function (req, res) {
 
 
     var offset = (req.query.PageNo * 10) - 10;
+    
     OrderService.findAndCountAll({
         where: search,
         order: Orderby,
@@ -601,62 +621,88 @@ router.get('/ExportOrderService', function (req, res) {
     })
 
     if (objParam.StartDate != '' && objParam.StartDate != null && objParam.StartDate != undefined && objParam.EndDate != '' && objParam.EndDate != null && objParam.EndDate != undefined) {
-        if (search['$or'] == undefined) {
-            search['$or'] = [];
-        }
-
-        var StartDate = convertdateUTCformat(objParam.StartDate);
-        var EndDate = convertdateUTCformat(objParam.EndDate, 2);
-
-        var obj = new Object();
-        obj['ExpiryDate'] = {
-            $between: [StartDate, EndDate]
-        };
-        search['$or'].push(obj);
-
-        var obj1 = new Object();
-        obj1['CreatedOnUtc'] = {
-            $between: [StartDate, EndDate]
-        };
-        search['$or'].push(obj1);
-
-    } else if (objParam.StartDate != '' && objParam.StartDate != null && objParam.StartDate != undefined) {
-
-        if (search['$or'] == undefined) {
-            search['$or'] = [];
-        }
-
-        var StartDate = convertdateUTCformat(objParam.StartDate);
-        var obj = new Object();
-        obj['ExpiryDate'] = {
-            $gte: StartDate
-        };
-        search['$or'].push(obj);
-
-        var obj1 = new Object();
-        obj1['CreatedOnUtc'] = {
-            $gte: StartDate
-        };
-        search['$or'].push(obj1);
-    } else if (objParam.EndDate != '' && objParam.EndDate != null && objParam.EndDate != undefined) {
-
-        if (search['$or'] == undefined) {
-            search['$or'] = [];
-        }
-        var EndDate = convertdateUTCformat(objParam.EndDate, 2);
-
-        var obj = new Object();
-        obj['ExpiryDate'] = {
-            $lte: EndDate
-        };
-        search['$or'].push(obj);
-
-        var obj1 = new Object();
-        obj1['CreatedOnUtc'] = {
-            $lte: EndDate
-        };
-        search['$or'].push(obj1);
-    }
+        
+                // search['$and'] = [];
+                if (search['$and'] == undefined) {
+                    search['$and'] = [];
+                }
+        
+                var InnerSearch = {};
+                if (InnerSearch['$or'] == undefined) {
+                    InnerSearch['$or'] = [];
+                }
+        
+                var StartDate = convertdateUTCformat(objParam.StartDate);
+                var EndDate = convertdateUTCformat(objParam.EndDate, 2);
+        
+                var obj = new Object();
+                obj['ExpiryDate'] = {
+                    $between: [StartDate, EndDate]
+                };
+                InnerSearch['$or'].push(obj);
+        
+                var obj1 = new Object();
+                obj1['CreatedOnUtc'] = {
+                    $between: [StartDate, EndDate]
+                };
+                InnerSearch['$or'].push(obj1);
+        
+                search['$and'].push(InnerSearch);
+        
+            } else if (objParam.StartDate != '' && objParam.StartDate != null && objParam.StartDate != undefined) {
+        
+                if (search['$and'] == undefined) {
+                    search['$and'] = [];
+                }
+        
+                var InnerSearch = {};
+                if (InnerSearch['$or'] == undefined) {
+                    InnerSearch['$or'] = [];
+                }
+        
+                var StartDate = convertdateUTCformat(objParam.StartDate);
+                var obj = new Object();
+                obj['ExpiryDate'] = {
+                    $gte: StartDate
+                };
+                InnerSearch['$or'].push(obj);
+        
+                var obj1 = new Object();
+                obj1['CreatedOnUtc'] = {
+                    $gte: StartDate
+                };
+                InnerSearch['$or'].push(obj1);
+        
+                search['$and'].push(InnerSearch);
+                
+            } else if (objParam.EndDate != '' && objParam.EndDate != null && objParam.EndDate != undefined) {
+        
+                if (search['$and'] == undefined) {
+                    search['$and'] = [];
+                }
+        
+                var InnerSearch = {};
+                if (InnerSearch['$or'] == undefined) {
+                    InnerSearch['$or'] = [];
+                }
+        
+                var EndDate = convertdateUTCformat(objParam.EndDate, 2);
+        
+                var obj = new Object();
+                obj['ExpiryDate'] = {
+                    $lte: EndDate
+                };
+                InnerSearch['$or'].push(obj);
+        
+                var obj1 = new Object();
+                obj1['CreatedOnUtc'] = {
+                    $lte: EndDate
+                };
+                InnerSearch['$or'].push(obj1);
+        
+                search['$and'].push(InnerSearch);
+                
+            }
 
     if (objParam.Status > 0) {
         if (search['$and'] == undefined) {
