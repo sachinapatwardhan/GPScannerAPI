@@ -14,7 +14,78 @@
     var User = models.tbluserinformation;
     var SIM = models.tblsimdetails;
     var AppInfo = models.tblappinfo;
+    var GPSDevice = models.tblgpsdevice;
+    var Country = models.tblcountrycode;
+    var AgentRetailer = models.tblagentretailer
+
     //////////
+
+    router.get('/getAutocompleteEmail', function(req, res) {
+        var now = moment();
+
+        User.findAll({
+                where: {
+                    email: {
+                        $like: '%' + req.query.email + '%'
+                    },
+                    idApp: { $eq: req.query.idApp }
+                },
+                limit: 20
+            })
+            .then(function(ruser) {
+                if (ruser.length) {
+                    res.json({
+                        success: true,
+                        message: 'Record(s) found.',
+                        data: ruser
+                    });
+                } else {
+                    res.json({
+                        success: false,
+                        message: 'No record(s) found.'
+                    });
+                }
+            })
+            .catch(function(err) {
+                res.json({
+                    success: false,
+                    message: 'Record(s) not found.'
+                });
+            });
+    });
+
+    router.get('/findsimnumber', function(req, res) {
+        GPSDevice.findOne({ where: { DeviceId: req.query.DeviceId } }).then(function(GPSDeviceExist) {
+            if (GPSDeviceExist) {
+                if (GPSDeviceExist.idSim != null && GPSDeviceExist.idSim != '' && GPSDeviceExist.idSim != undefined) {
+                    SIM.findOne({ where: { id: GPSDeviceExist.idSim } }).then(function(response) {
+                        res.json(response);
+                    })
+                } else {
+                    res.json({ success: false, message: 'Sim not found..' })
+                }
+            } else {
+                res.json({ success: false, message: 'Gps device not found..' })
+            }
+        })
+    })
+
+    router.get('/getAutocompleteActivateSerialNums', function(req, res) {
+        var search = '';
+        if (req.query.SerialNum != null && req.query.SerialNum != undefined && req.query.SerialNum != '') {
+            search = " and SerialNum like '%" + req.query.SerialNum + "%'"
+        }
+        // if (req.query.idApp != null && req.query.idApp != undefined && req.query.idApp != '') {
+
+        //     search += " and idApp=" + req.query.idApp;
+
+        // }
+        var query = "select * from tblsimdetails where SerialNum not in (select simSerial from tbldeviceagentretailer where simSerial is not null) " + search;
+        connection.query(query, function(err, response) {
+            res.json({ success: true, data: response });
+        })
+    })
+
 
     router.get('/getPagedClientsByRetailerId', function(req, res) {
         DeviceAgentRetailer.belongsTo(Vehicle, {
@@ -84,41 +155,162 @@
             });
     });
 
+    // router.get('/getAutocompleteActivateDeviceIds', function(req, res) {
+    //     var now = moment();
+
+    //     DeviceAgentRetailer.findAll({
+    //             where: {
+    //                 deviceId: {
+    //                     $like: '%' + req.query.deviceId + '%'
+    //                 },
+    //                 $or: [
+    //                     { activatedDatetime: { $eq: null } },
+    //                     { expiryDatetime: { $lt: now } }
+    //                 ]
+    //             },
+    //             limit: 20
+    //         })
+    //         .then(function(rGpsDevices) {
+    //             if (rGpsDevices.length) {
+    //                 res.json({
+    //                     success: true,
+    //                     message: 'Record(s) found.',
+    //                     data: rGpsDevices
+    //                 });
+    //             } else {
+    //                 res.json({
+    //                     success: false,
+    //                     message: 'No record(s) found.'
+    //                 });
+    //             }
+    //         })
+    //         .catch(function(err) {
+    //             res.json({
+    //                 success: false,
+    //                 message: 'Record(s) not found.'
+    //             });
+    //         });
+    // });
+
     router.get('/getAutocompleteActivateDeviceIds', function(req, res) {
         var now = moment();
+        DeviceAgentRetailer.belongsTo(GPSDevice, {
+            foreignKey: {
+                name: 'deviceId',
+                allowNull: false
+            },
+            targetKey: 'DeviceId',
+        });
 
-        DeviceAgentRetailer.findAll({
+        GPSDevice.belongsTo(AppInfo, {
+            foreignKey: {
+                name: 'AppName',
+                allowNull: false
+            }
+        });
+
+
+        if (req.query.retailerId != 0) {
+            AgentRetailer.findOne({
                 where: {
-                    deviceId: {
-                        $like: '%' + req.query.deviceId + '%'
-                    },
-                    $or: [
-                        { activatedDatetime: { $eq: null } },
-                        { expiryDatetime: { $lt: now } }
-                    ]
-                },
-                limit: 20
-            })
-            .then(function(rGpsDevices) {
-                if (rGpsDevices.length) {
-                    res.json({
-                        success: true,
-                        message: 'Record(s) found.',
-                        data: rGpsDevices
-                    });
+                    retailerId: req.query.retailerId
+                }
+            }).then(function(objAgent) {
+                if (objAgent != null) {
+                    DeviceAgentRetailer.findAll({
+                            where: {
+                                deviceId: {
+                                    $like: '%' + req.query.deviceId + '%'
+                                },
+                                agentId: objAgent.agentId,
+                                $or: [
+                                    { activatedDatetime: { $eq: null } },
+                                    { expiryDatetime: { $lt: now } }
+                                ]
+                            },
+                            // include: [{
+                            //     model: GPSDevice,
+                            //     include: [{
+                            //         model: AppInfo,
+                            //         where: { id: { $eq: req.query.idApp } }
+                            //     }],
+                            // }],
+                            limit: 20
+                        })
+                        .then(function(rGpsDevices) {
+                            if (rGpsDevices.length) {
+                                res.json({
+                                    success: true,
+                                    message: 'Record(s) found.',
+                                    data: rGpsDevices
+                                });
+                            } else {
+                                res.json({
+                                    success: false,
+                                    message: 'No record(s) found.'
+                                });
+                            }
+                        })
+                        .catch(function(err) {
+                            res.json({
+                                success: false,
+                                message: 'Record(s) not found.'
+                            });
+                        });
                 } else {
                     res.json({
                         success: false,
                         message: 'No record(s) found.'
                     });
                 }
-            })
-            .catch(function(err) {
+            }).catch(function(err) {
                 res.json({
                     success: false,
                     message: 'Record(s) not found.'
                 });
             });
+        } else {
+
+            DeviceAgentRetailer.findAll({
+                    where: {
+                        deviceId: {
+                            $like: '%' + req.query.deviceId + '%'
+                        },
+                        $or: [
+                            { activatedDatetime: { $eq: null } },
+                            { expiryDatetime: { $lt: now } }
+                        ]
+                    },
+                    // include: [{
+                    //     model: GPSDevice,
+                    //     include: [{
+                    //         model: AppInfo,
+                    //         where: { id: { $eq: req.query.idApp } }
+                    //     }],
+                    // }],
+                    limit: 20
+                })
+                .then(function(rGpsDevices) {
+                    if (rGpsDevices.length) {
+                        res.json({
+                            success: true,
+                            message: 'Record(s) found.',
+                            data: rGpsDevices
+                        });
+                    } else {
+                        res.json({
+                            success: false,
+                            message: 'No record(s) found.'
+                        });
+                    }
+                })
+                .catch(function(err) {
+                    res.json({
+                        success: false,
+                        message: 'Record(s) not found.'
+                    });
+                });
+        }
     });
 
     router.get('/getAutocompleteReconfigureDeviceIds', function(req, res) {
@@ -161,7 +353,7 @@
     });
 
     router.post('/activateDevice', jsonParser, function(req, res) {
-        console.log(req.body)
+        var objVehicle = req.body.objvehicle;
         DeviceAgentRetailer.findOne({
                 where: {
                     $or: {
@@ -197,27 +389,63 @@
                                 lastModifiedDatetime: moment()
                             });
                         }).then(function(rDeviceAgentRetailer) {
-                            User.findOne({ where: rDeviceAgentRetailer.agentId }).then(function(UserExist) {
 
-                                CreateOrderServiceGlobal(UserExist.country, UserExist.id, rDeviceAgentRetailer.deviceId, UserExist.username, UserExist.idApp, function(orderresponse) {
-                                    AppInfo.findOne({ where: { id: UserExist.idApp } }).then(function(AppinfoExist) {
-                                        if (AppinfoExist.AppName == 'Maark') {
-                                            res.json({
-                                                success: true,
-                                                message: 'Device activated!',
-                                                data: rDeviceAgentRetailer
-                                            });
-                                        } else {
-                                            CreateDabitWalletTransactionGlobal(UserExist.country, rDeviceAgentRetailer.deviceId, UserExist.username, UserExist.idApp, function(resFlg) {
-                                                res.json({
-                                                    success: true,
-                                                    message: 'Device activated!',
-                                                    data: rDeviceAgentRetailer
-                                                });
+                            User.findOne({ where: { id: req.body.retailerId } }).then(function(userexits) {
+                                objVehicle.CreatedDate = new Date();
+                                objVehicle.CreatedBy = userexits.username;
+                                Vehicle.findOne({
+                                    where: {
+                                        deviceid: objVehicle.deviceid,
+                                    }
+                                }).then(function(VehicleExist) {
+
+                                    if (VehicleExist) {
+                                        if (VehicleExist.IsDelete == true) {
+                                            objVehicle.IsDelete = false;
+                                            Vehicle.update(objVehicle, {
+                                                where: {
+                                                    id: VehicleExist.id
+                                                }
+                                            }).then(function(vehicleCreated) {
+                                                funAuditLog.CreateAuditLog('Create Vehicle Type', userexits.username, 'Save Vehicle Type');
                                             })
                                         }
-                                    })
+                                    } else {
+                                        Vehicle.create(objVehicle).then(function(vehicleCreated) {
+                                            funAuditLog.CreateAuditLog('Create Vehicle Type', userexits.username, 'Save Vehicle Type');
+                                        })
+                                    }
+
                                 })
+                            })
+
+
+                            User.findOne({ where: rDeviceAgentRetailer.agentId }).then(function(UserExist) {
+                                GPSDevice.findOne({ where: { DeviceId: rDeviceAgentRetailer.deviceId } }).then(function(GPSDeviceExist) {
+                                    Country.findOne({ where: { id: GPSDeviceExist.CountryId } }).then(function(countryExist) {
+                                        CreateOrderServiceGlobal(countryExist.CountryName, UserExist.id, rDeviceAgentRetailer.deviceId, UserExist.username, UserExist.idApp, function(orderresponse) {
+                                            AppInfo.findOne({ where: { id: UserExist.idApp } }).then(function(AppinfoExist) {
+                                                if (AppinfoExist.AppName == 'Maark') {
+                                                    res.json({
+                                                        success: true,
+                                                        message: 'Device activated!',
+                                                        data: rDeviceAgentRetailer
+                                                    });
+                                                } else {
+                                                    CreateDabitWalletTransactionGlobal(countryExist.CountryName, rDeviceAgentRetailer.deviceId, UserExist.username, UserExist.idApp, function(resFlg) {
+                                                        res.json({
+                                                            success: true,
+                                                            message: 'Device activated!',
+                                                            data: rDeviceAgentRetailer
+                                                        });
+                                                    })
+                                                }
+                                            })
+                                        })
+                                    })
+
+                                })
+
                             })
                         })
                         .catch(function(err) {
