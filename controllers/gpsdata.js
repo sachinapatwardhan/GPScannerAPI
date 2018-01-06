@@ -176,7 +176,7 @@ router.get('/GetAllGpsDataNew', function(req, res) {
     var search = "";
 
     if (objSearch != '' && objSearch != null && objSearch != undefined) {
-        search = 'Where (tgps.DeviceId like "%' + objSearch + '%" or ';
+        search = ' Where (tgps.DeviceId like "%' + objSearch + '%" or ';
         search = search + 'tgps.Latitude like "%' + objSearch + '%" or ';
         search = search + 'tgps.Longitude like "%' + objSearch + '%" or ';
         search = search + 'tgps.GPSPositioning like "%' + objSearch + '%" or ';
@@ -225,7 +225,7 @@ router.get('/GetAllGpsDataNew', function(req, res) {
     // }
 
     if (search != "") {
-        search += " and ta.AppName = ' " + objParam.AppName + "'";
+        search += " and ta.AppName =  '" + objParam.AppName + "'";
     } else {
         search += " where ta.AppName = '" + objParam.AppName + "'";
     }
@@ -237,16 +237,15 @@ router.get('/GetAllGpsDataNew', function(req, res) {
         " tgps.IsRelayToStopTheCar, tgps.IsSirenSound, tgps.IsDoor, tgps.IsEngine, tgps.IsLockTheDoor, tgps.IsUnlockTheDoor, tgps.IsSOS, tgps.AD1, tgps.AD2, tgps.Altitude, tgps.OdoMeter " +
         "FROM tblgpsdata as tgps left Join tblvehicle as tv on tgps.DeviceId = tv.deviceid" +
         " left join tbluserinformation as tu on tv.idUser = tu.id " +
-        " inner join tblappinfo as ta  on ta.id = tu.idApp" +
+        " inner join tblappinfo as ta  on ta.Id = tu.idApp" +
         search +
         " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
-    console.log(qry)
-        // var Countqry = "SELECT count(tgps.id) as TotalRecord FROM tblgpsdata as tgps left Join tblvehicle as tv on tgps.DeviceId = tv.deviceid left join tbluserinformation as tu on tv.idUser = tu.id " + search;
+    // var Countqry = "SELECT count(tgps.id) as TotalRecord FROM tblgpsdata as tgps left Join tblvehicle as tv on tgps.DeviceId = tv.deviceid left join tbluserinformation as tu on tv.idUser = tu.id " + search;
     var Countqry = "SELECT count(tgps.id) as TotalRecord " +
         "FROM tblgpsdata as tgps left Join tblvehicle as tv on tgps.DeviceId = tv.deviceid" +
         " left join tbluserinformation as tu on tv.idUser = tu.id " +
-        " inner join tblappinfo as ta  on ta.id = tu.idApp" +
-        search
+        " inner join tblappinfo as ta  on ta.Id = tu.idApp" +
+        search;
     connection.query(qry, function(err, response) {
         if (response != undefined) {
             connection.query(Countqry, function(err, lstCount, fields) {
