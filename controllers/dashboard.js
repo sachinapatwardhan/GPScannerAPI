@@ -30,13 +30,19 @@ Date.prototype.addDays = function(days) {
     return this;
 };
 router.get('/GetAllWorkingBike', jsonParser, function(req, res) {
+    var search = '';
+    var search1 = '';
+    if (req.query.idApp != null && req.query.idApp != undefined && req.query.idApp != '' && req.query.idApp != 'All') {
+        search = " and idApp=" + req.query.idApp;
+        search1 = " where  ta.id=" + req.query.idApp;
+    }
     var query = "select ve.*,tgd.AppName,tgd.DeviceId from " +
         "(SELECT tb.id,tb.deviceid,tb.Name,tb.IsOnline, tpg.IsEngine, tpg.Latitude,tpg.Longitude,tpg.Datetime, tpg.Date, tpg.Speed,tpg.Direction, tu.idApp " +
         "FROM tblvehicle tb Left Join tbluserinformation as tu on tb.iduser = tu.id Left JOIN tblgpsdata tpg " +
         "INNER JOIN (SELECT DeviceId,MAX(Date) Date FROM tblgpsdata GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId  AND tpg.Date = b.Date ON tb.deviceid=tpg.DeviceId " +
-        "WHERE IsDelete=false and idApp=" + req.query.idApp + " group by tb.DeviceId ) as ve " +
+        "WHERE IsDelete=false " + search + " group by tb.DeviceId ) as ve " +
         "RIGHT  join tblgpsdevice tgd on ve.deviceid = tgd.DeviceId " +
-        "left join tblappinfo ta on ta.AppName = tgd.AppName where  ta.id=" + req.query.idApp;
+        "left join tblappinfo ta on ta.AppName = tgd.AppName " + search1;
     //  var query ="SELECT tb.id,tb.deviceid,tb.Name,tb.IsOnline, tpg.IsEngine, tpg.Latitude,tpg.Longitude,tpg.Datetime, tpg.Date, tpg.Speed,tpg.Direction, tu.idApp FROM tblvehicle tb Left Join tbluserinformation as tu on tb.iduser = tu.id Left JOIN tblgpsdata tpg INNER JOIN (SELECT DeviceId,MAX(Date) Date FROM tblgpsdata GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId  AND tpg.Date = b.Date ON tb.deviceid=tpg.DeviceId WHERE IsDelete=false and idApp=" + req.query.idApp + " group by tb.DeviceId"
     connection.query(query, function(err, rows, fields) {
         if (!err) {
@@ -65,6 +71,15 @@ router.get('/GetTotalCustomerByCountry', function(req, res) {
             allowNull: false
         }
     });
+    var search = {}
+    if (req.query.idApp != '' && req.query.idApp != null && req.query.idApp != undefined && req.query.idApp != 'All') {
+        search['$and'] = [];
+        var obj = new Object();
+        obj['idApp'] = {
+            $eq: req.query.idApp
+        };
+        search['$and'].push(obj);
+    }
     Vehicle.findAll({
         attributes: [
             'deviceid', 'Name'
@@ -81,9 +96,7 @@ router.get('/GetTotalCustomerByCountry', function(req, res) {
                 [models.Sequelize.literal('COUNT(DISTINCT(iduser))'), 'Total'],
                 'country', 'Type', 'idApp'
             ],
-            where: {
-                idApp: req.query.idApp
-            }
+            where: search,
         }],
         group: ['country', 'Type'],
         order: 'country',
@@ -173,10 +186,18 @@ router.get('/GetGraphData', function(req, res) {
     // } else {
     //     flg = false;
     // }
-
+    var search = {}
+    if (req.query.idApp != '' && req.query.idApp != null && req.query.idApp != undefined && req.query.idApp != 'All') {
+        search['$and'] = [];
+        var obj = new Object();
+        obj['idApp'] = {
+            $eq: req.query.idApp
+        };
+        search['$and'].push(obj);
+    }
     User.findAll({
         // where: { country: CountryName },
-        where: { idApp: req.query.idApp },
+        where: search,
         attributes: [
             'country', [models.sequelize.fn('count', 'id'), 'Total'],
             [models.sequelize.fn('day', models.sequelize.col('createddate')), 'day'],
@@ -228,7 +249,17 @@ router.get('/GetDashboardData', function(req, res) {
 
     // var flg = true;
     var lstDashboard = {};
-    User.count({ where: { idApp: req.query.idApp } }).then(function(TotalUser) {
+    var search = {}
+    if (req.query.idApp != '' && req.query.idApp != null && req.query.idApp != undefined && req.query.idApp != 'All') {
+        search['$and'] = [];
+        var obj = new Object();
+        obj['idApp'] = {
+            $eq: req.query.idApp
+        };
+        search['$and'].push(obj);
+    }
+
+    User.count({ where: search }).then(function(TotalUser) {
         lstDashboard['TotalUser'] = TotalUser;
         res.json(lstDashboard);
     })
@@ -247,7 +278,15 @@ router.get('/GetTotalCustomer', function(req, res) {
     // }
     // var search1 = {};
     // var IsCountryAll = false;
-
+    var search = {}
+    if (req.query.idApp != '' && req.query.idApp != null && req.query.idApp != undefined && req.query.idApp != 'All') {
+        search['$and'] = [];
+        var obj = new Object();
+        obj['idApp'] = {
+            $eq: req.query.idApp
+        };
+        search['$and'].push(obj);
+    }
     Vehicle.belongsTo(User, {
         foreignKey: {
             name: 'iduser',
@@ -267,7 +306,7 @@ router.get('/GetTotalCustomer', function(req, res) {
         include: [{
             model: User,
             attributes: ['id', 'idApp', 'username'],
-            where: { idApp: req.query.idApp }
+            where: search
         }]
     }).then(function(response) {
         res.json(response);
@@ -448,7 +487,15 @@ router.get('/GetGraphCustomer', function(req, res) {
     // }
 
     // search['$and'].push(obj);
-
+    var search = {}
+    if (req.query.idApp != '' && req.query.idApp != null && req.query.idApp != undefined && req.query.idApp != 'All') {
+        search['$and'] = [];
+        var obj = new Object();
+        obj['idApp'] = {
+            $eq: req.query.idApp
+        };
+        search['$and'].push(obj);
+    }
     User.hasMany(Vehicle, {
         foreignKey: {
             name: 'iduser',
@@ -466,7 +513,7 @@ router.get('/GetGraphCustomer', function(req, res) {
                 },
             },
         }],
-        where: [{ idApp: req.query.idApp }],
+        where: search,
         attributes: [
             'country', [models.sequelize.fn('day', models.sequelize.col('tbluserinformation.createddate')), 'day'],
             [models.sequelize.fn('month', models.sequelize.col('tbluserinformation.createddate')), 'month'],
