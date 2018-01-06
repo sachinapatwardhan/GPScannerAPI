@@ -140,9 +140,9 @@ function clone(obj) {
     return copy;
 }
 
-global.SendPushNotification = function (data, UserId, objAppInfo) {
+global.SendPushNotification = function(data, UserId, objAppInfo) {
     // var deviceIds = [];
-    connection.query("SELECT PushNotificationId,Platform,MessageCount,UserType,udid from tblpushnotification where iduser in (" + UserId + ") group by PushNotificationId, Platform", function (err, response, fields) {
+    connection.query("SELECT PushNotificationId,Platform,MessageCount,UserType,udid from tblpushnotification where iduser in (" + UserId + ") group by PushNotificationId, Platform", function(err, response, fields) {
         if (!err && response.length > 0) {
             // PushNotification.findAll({ where: { iduser: UserId } }).then(function(response) {
             function SendNotification(i) {
@@ -156,8 +156,8 @@ global.SendPushNotification = function (data, UserId, objAppInfo) {
                         //     if (lstSetting[0].Value == 1) {
                         var deviceIds = [];
                         deviceIds.push(response[i].PushNotificationId)
-                        //SendNotification(i + 1);
-                        // } else {
+                            //SendNotification(i + 1);
+                            // } else {
                         console.log(deviceIds)
                         var objData = clone(data);
 
@@ -188,9 +188,9 @@ global.SendPushNotification = function (data, UserId, objAppInfo) {
                         var objPushNotificationSend = new PushNotifications(PushNotificationSettings);
                         if (deviceIds.length > 0) {
 
-                            objPushNotificationSend.send(deviceIds, objData, function (result) {
+                            objPushNotificationSend.send(deviceIds, objData, function(result) {
                                 // console.log(result);
-                                connection.query("Update tblpushnotification set messagecount=" + messagecount + " where udid='" + response[i].udid + "' and UserType='" + response[i].UserType + "'", function (errupdate, updateresp, fields) {
+                                connection.query("Update tblpushnotification set messagecount=" + messagecount + " where udid='" + response[i].udid + "' and UserType='" + response[i].UserType + "'", function(errupdate, updateresp, fields) {
                                     console.log(errupdate)
                                     SendNotification(i + 1);
                                 });
@@ -222,7 +222,7 @@ global.SendPushNotification = function (data, UserId, objAppInfo) {
 function SendPWAPushNotification(data, UserId) {
     try {
         if (UserId.length > 0 && data.title != undefined && data.title != null && data.title != '') {
-            connection.query("SELECT * from tblpwa_notification_subscription where iduser in (" + UserId + ")", function (errors, lstPWASubscribers, fields) {
+            connection.query("SELECT * from tblpwa_notification_subscription where iduser in (" + UserId + ")", function(errors, lstPWASubscribers, fields) {
                 if (!errors && lstPWASubscribers.length > 0) {
                     var title = data.title;
                     var message = data.message;
@@ -242,12 +242,12 @@ function SendPWAPushNotification(data, UserId) {
                                         p256dh: p256dh
                                     }
                                 };
-                                webpush.sendNotification(pushSubscription, JSON.stringify({ title: title, content: message })).then(function (resPWA) {
+                                webpush.sendNotification(pushSubscription, JSON.stringify({ title: title, content: message })).then(function(resPWA) {
                                     SendOneByOne(p + 1);
                                     // console.log("========================================================")
                                     // console.log(resPWA)
                                     // console.log("========================================================")
-                                }).catch(function (err) {
+                                }).catch(function(err) {
                                     // console.log(err);
                                     SendOneByOne(p + 1);
                                 });
@@ -260,7 +260,7 @@ function SendPWAPushNotification(data, UserId) {
                 }
             });
         }
-    } catch (er) { }
+    } catch (er) {}
 }
 
 
@@ -760,9 +760,8 @@ global.Command9955 = function(line, Callback) {
                     Date: unixDateStemp
                 }
 
-                client.set(DeviceId, JSON.stringify(objConnection), function(err, replies) {});
-
                 if (Position == 'A') {
+                    client.set(DeviceId, JSON.stringify(objConnection), function(err, replies) {});
                     io.sockets.emit('BikeRoute', JSON.stringify(objConnection));
                     io.sockets.emit(DeviceId + 'BikeRoute', JSON.stringify(objConnection));
                 }

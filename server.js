@@ -134,7 +134,7 @@ if (process.env.IsProduction == true || process.env.IsProduction == "true") {
     });
 }
 
-client.on("error", function (err) {
+client.on("error", function(err) {
     console.log("Error " + err);
 });
 
@@ -243,7 +243,7 @@ if (process.env.IsProduction == true || process.env.IsProduction == "true") {
     });
 }
 
-client.on("error", function (err) {
+client.on("error", function(err) {
     console.log("Error " + err);
 });
 
@@ -254,12 +254,12 @@ client.on("error", function (err) {
 //============== Send SMS ======================//
 global.api_key = process.env.SMSAPIkey;
 global.api_secret = process.env.SMSapisecret;
-global.sendSMS = function (obj, callback) {
+global.sendSMS = function(obj, callback) {
     // var SMSbody = obj.body.replace(/ /g, "%20");
     request.get({
         url: 'https://rest.nexmo.com/sms/json?api_key=' + api_key + '&api_secret=' + api_secret + '&text=' + obj.body + '&to=' + obj.To + '&from=Gipsina'
-        // url: 'http://sms.bugzstudio.com/websmsapi/ISendSMS.aspx?username=' + SMSUserName + '&password=' + SMSPassword + '&message=' + SMSbody + '&mobile=' + obj.To + '&sender=gintell&type=1'
-    }, function (error, response, body) {
+            // url: 'http://sms.bugzstudio.com/websmsapi/ISendSMS.aspx?username=' + SMSUserName + '&password=' + SMSPassword + '&message=' + SMSbody + '&mobile=' + obj.To + '&sender=gintell&type=1'
+    }, function(error, response, body) {
         // console.log(error)
         // console.log("################################")
         // console.log(response)
@@ -313,19 +313,19 @@ global.sendSMS = function (obj, callback) {
     });
 }
 
-app.get('/SendTestSMS', function (req, res) {
+app.get('/SendTestSMS', function(req, res) {
     console.log("Calll")
     var obj = new Object();
     obj.To = '919727850580';
     obj.body = 'This SMS is for Test.';
-    global.sendSMS(obj, function (response) {
+    global.sendSMS(obj, function(response) {
         res.send(response);
     })
 });
 
 // var models = require("./models1");
 app.use(passport.initialize());
-app.use(function (req, res, next) {
+app.use(function(req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept,Authorization, Access-Control-Allow-Headers");
@@ -339,72 +339,97 @@ var http = require('http').Server(app);
 // var io = require('socket.io')(http),
 global.io = require('socket.io')(http);
 
-app.get('/', function (req, res) {
+app.get('/', function(req, res) {
     res.sendFile(__dirname + '/index.html');
 });
 
-app.get('/loaderio-eecfb734fd04534c9d0a45668de1f60e', function (req, res) {
+app.get('/loaderio-eecfb734fd04534c9d0a45668de1f60e', function(req, res) {
     res.send('loaderio-eecfb734fd04534c9d0a45668de1f60e');
 });
 
-app.get('/loaderio-77f8cf2fe818b42b0353bbe2a21da573', function (req, res) {
+app.get('/loaderio-77f8cf2fe818b42b0353bbe2a21da573', function(req, res) {
     res.send('loaderio-77f8cf2fe818b42b0353bbe2a21da573');
 });
 
 app.use(express.static(__dirname + '/'));
 
-http.listen(process.env.APIPort, function () {
+http.listen(process.env.APIPort, function() {
     console.log('listening on *:' + process.env.APIPort);
 });
 
-io.sockets.on('connection', function (socket) {
+io.sockets.on('connection', function(socket) {
     // console.log('connection...');
-    socket.on('emit_from_client', function (data) {
+    socket.on('emit_from_client', function(data) {
         // console.log('socket.io server received : ' + data);
         io.sockets.emit('emit_from_server', data);
     });
 
     //GPS Data
-    socket.on('Command9955', function (data) {
+    socket.on('Command9955', function(data) {
         // console.log('socket.io server received 9955 : ' + data);
-        Command9955(data, function (res) {
+        Command9955(data, function(res) {
 
         })
     });
 
     //Alarm Data
-    socket.on('Command9999', function (data) {
+    socket.on('Command9999', function(data) {
         // console.log('socket.io server received 9999 : ' + data);
-        Command9999(data, function (res) {
+        Command9999(data, function(res) {
 
         })
     });
 
     //Heart Beat Data
-    socket.on('Command5001', function (data) {
+    socket.on('Command5001', function(data) {
         // console.log('socket.io server received 5001 : ' + data);
-        Command5001(data, function (res) {
+        Command5001(data, function(res) {
 
         })
     });
 
     //CAN-BUS Data
-    socket.on('Command9901', function (data) {
+    socket.on('Command9901', function(data) {
         // console.log('socket.io server received 9901 : ' + data);
-        Command9901(data, function (res) {
+        Command9901(data, function(res) {
 
         })
     });
 
     //Driving Behavior Data
-    socket.on('Command9902', function (data) {
+    socket.on('Command9902', function(data) {
         // console.log('socket.io server received 9902 : ' + data);
-        Command9902(data, function (res) {
+        Command9902(data, function(res) {
 
         })
     });
 });
 
+//Maark Mobile API
+app.use('/mobileV1/customer', require('./mobile_controllers/customers'))
+app.use('/mobileV1/advancefence', require('./mobile_controllers/advancefence'))
+app.use('/mobileV1/appinfo', require('./mobile_controllers/appinfo'))
+app.use('/mobileV1/appversion', require('./mobile_controllers/appversion'))
+app.use('/mobileV1/bike', require('./mobile_controllers/bike'))
+app.use('/mobileV1/country', require('./mobile_controllers/country'))
+app.use('/mobileV1/customers', require('./mobile_controllers/customers'))
+app.use('/mobileV1/favoriteplace', require('./mobile_controllers/favoriteplace'))
+app.use('/mobileV1/gpsdata', require('./mobile_controllers/gpsdata'))
+app.use('/mobileV1/language', require('./mobile_controllers/language'))
+app.use('/mobileV1/MapData', require('./mobile_controllers/MapData'))
+app.use('/mobileV1/petAlarm', require('./mobile_controllers/petAlarm'))
+app.use('/mobileV1/petFence', require('./mobile_controllers/petFence'))
+app.use('/mobileV1/pushnotification', require('./mobile_controllers/pushnotification'))
+app.use('/mobileV1/Report', require('./mobile_controllers/Report'))
+app.use('/mobileV1/serviceenhancement', require('./mobile_controllers/serviceenhancement'))
+app.use('/mobileV1/settings', require('./mobile_controllers/settings'))
+app.use('/mobileV1/sharedevice', require('./mobile_controllers/sharedevice'))
+app.use('/mobileV1/socketapi', require('./mobile_controllers/socketapi'))
+app.use('/mobileV1/user', require('./mobile_controllers/user'))
+app.use('/mobileV1/vehicles', require('./mobile_controllers/vehicles'))
+app.use('/mobileV1/vehicletype', require('./mobile_controllers/vehicletype'))
+
+// Main API
 app.use('/customer', require('./controllers/customers'))
 app.use('/dashboard', require('./controllers/dashboard'))
 app.use('/account', require('./controllers/account'))
@@ -416,8 +441,8 @@ app.use('/pettracking', require('./controllers/petTracking'))
 
 app.use('/petalarm', require('./controllers/petAlarm'))
 app.use('/favoriteplace', require('./controllers/favoriteplace'))
-//app.use('/petFeedback', require('./controllers/petFeedback'))
-//app.use('/petshop', require('./controllers/petShop'))
+    //app.use('/petFeedback', require('./controllers/petFeedback'))
+    //app.use('/petshop', require('./controllers/petShop'))
 
 app.use('/carrier', require('./controllers/carrier'))
 
@@ -470,14 +495,14 @@ app.use('/productAttributeValue', require('./controllers/productAttributeValue')
 app.use('/productAttributeCombination', require('./controllers/productAttributeCombination'))
 app.use('/productPictureMapping', require('./controllers/productPictureMapping'))
 app.use('/orderservice', require('./controllers/orderservice'))
-// app.use('/advancefence', require('./controllers/advancefence'))
-//End of Setting
+    // app.use('/advancefence', require('./controllers/advancefence'))
+    //End of Setting
 
 
 
 //Bike
 app.use('/bike', require('./controllers/bike'))
-// End of Bike
+    // End of Bike
 
 app.use('/dynamicpage', require('./controllers/dynamicpage'))
 
@@ -502,7 +527,7 @@ app.use('/mainsetting', require('./controllers/mainsetting'));
 app.use('/DeviceStock', require('./controllers/DeviceStock'));
 app.use('/serviceenhancement', require('./controllers/serviceenhancement'));
 app.use('/advancefence', require('./controllers/advancefence'))
-//socket API End
+    //socket API End
 
 //Wallet Transaction
 app.use('/WalletTransaction', require('./controllers/WalletTransaction'))
@@ -514,28 +539,3 @@ app.use('/admin', require('./controllers/admin'));
 app.use('/auditlog', require('./controllers/auditlog'));
 
 // MAARK Install App End
-
-
-//Maark Mobile API
-app.use('/mobileV1/customer', require('./mobile_controllers/customers'))
-app.use('/mobileV1/advancefence', require('./mobile_controllers/advancefence'))
-app.use('/mobileV1/appinfo', require('./mobile_controllers/appinfo'))
-app.use('/mobileV1/appversion', require('./mobile_controllers/appversion'))
-app.use('/mobileV1/bike', require('./mobile_controllers/bike'))
-app.use('/mobileV1/country', require('./mobile_controllers/country'))
-app.use('/mobileV1/customers', require('./mobile_controllers/customers'))
-app.use('/mobileV1/favoriteplace', require('./mobile_controllers/favoriteplace'))
-app.use('/mobileV1/gpsdata', require('./mobile_controllers/gpsdata'))
-app.use('/mobileV1/language', require('./mobile_controllers/language'))
-app.use('/mobileV1/MapData', require('./mobile_controllers/MapData'))
-app.use('/mobileV1/petAlarm', require('./mobile_controllers/petAlarm'))
-app.use('/mobileV1/petFence', require('./mobile_controllers/petFence'))
-app.use('/mobileV1/pushnotification', require('./mobile_controllers/pushnotification'))
-app.use('/mobileV1/Report', require('./mobile_controllers/Report'))
-app.use('/mobileV1/serviceenhancement', require('./mobile_controllers/serviceenhancement'))
-app.use('/mobileV1/settings', require('./mobile_controllers/settings'))
-app.use('/mobileV1/sharedevice', require('./mobile_controllers/sharedevice'))
-app.use('/mobileV1/socketapi', require('./mobile_controllers/socketapi'))
-app.use('/mobileV1/user', require('./mobile_controllers/user'))
-app.use('/mobileV1/vehicles', require('./mobile_controllers/vehicles'))
-app.use('/mobileV1/vehicletype', require('./mobile_controllers/vehicletype'))
