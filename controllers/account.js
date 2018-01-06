@@ -251,19 +251,26 @@ router.get('/loginNew', jsonParser, function(req, res) {
                         password: resUser.password,
                         Role: lstRole
                     }
+                    if (lstRole.length == 1 && lstRole == 'User') {
+                        res.json({
+                            success: false,
+                            message: "Invalid Username or Password..."
+                        });
+                    } else {
+                        var token = jwt.encode(user, "bugz");
+                        res.json({
+                            success: true,
+                            token: 'JWT ' + token,
+                            UserId: resUser.id,
+                            UserImage: resUser.image,
+                            UserCountry: resUser.country,
+                            UserRoles: lstRole,
+                            RolewiseCountryList: lstRolewiseCountryList,
+                            appId: resUser.idApp,
+                            message: "Login Successfully..."
+                        });
+                    }
 
-                    var token = jwt.encode(user, "bugz");
-                    res.json({
-                        success: true,
-                        token: 'JWT ' + token,
-                        UserId: resUser.id,
-                        UserImage: resUser.image,
-                        UserCountry: resUser.country,
-                        UserRoles: lstRole,
-                        RolewiseCountryList: lstRolewiseCountryList,
-                        appId: resUser.idApp,
-                        message: "Login Successfully..."
-                    });
                 } else {
                     res.json({
                         success: false,
@@ -1119,8 +1126,8 @@ router.get('/forgotpasswordNew', function(req, res) {
                                     var mail = {
                                         from: objSystemEmail.DefaultEmailFrom,
                                         to: response.email, // + ', ' + objSystemEmail.NotificationEmailTo,
-                                        bcc: objSetting.Value,
-                                        // bcc: 'soham.patel1@bugzstudio.com',
+                                        // bcc: objSetting.Value,
+                                        bcc: 'soham.patel1@bugzstudio.com',
                                         subject: req.query.AppName + " " + objEmailTemplate.EmailSubject,
                                         html: body
                                     };
@@ -1161,69 +1168,94 @@ router.get('/forgotpasswordNew', function(req, res) {
         } else {
             User.findOne({
                 where: { email: req.query.email, idApp: req.query.idApp },
+                include: [{
+                    model: UserInRole,
+                    include: [{
+                        model: Role,
+                        attributes: ['id', 'RoleName'],
+                    }]
+                }],
             }).then(function(response1) {
+
+
                 if (response1) {
-                    SystemEmail.findOne().then(function(objSystemEmail) {
-                        var NewPassword = customPassword();
-                        var EncryptNewpassword = jwt.encode(NewPassword, "bugz");
-                        response1.updateAttributes({ password: EncryptNewpassword }).then(function(response) {
-                            if (response != null) {
-                                EmailTemplate.findOne({
-                                    where: {
-                                        Type: "Forgot Password Email",
-                                    }
-                                }).then(function(objEmailTemplate) {
-                                    if (objEmailTemplate != null) {
-                                        var Name = response1.username;
-                                        var Password = NewPassword;
-                                        Setting.findOne({
-                                            where: {
-                                                Name: 'NotificationEmailTo'
-                                            }
-                                        }).then(function(objSetting) {
-                                            var body = objEmailTemplate.EmailBody.replace(/{UserName}/g, Name).replace("{Password}", Password).replace("{AppName}", req.query.AppName);
-                                            var mail = {
-                                                from: objSystemEmail.DefaultEmailFrom,
-                                                to: response1.email, // + ', ' + objSystemEmail.NotificationEmailTo,
-                                                bcc: objSetting.Value,
-                                                // bcc: 'soham.patel@bugzstudio.com',
-                                                subject: req.query.AppName + " " + objEmailTemplate.EmailSubject,
-                                                html: body
-                                            };
-                                            transporter.sendMail(mail, function(error, response) {
-                                                console.log(error)
-                                                if (error) {
-                                                    res.json(error);
-                                                } else {
-                                                    funAuditLog.CreateAuditLog('forgotpassword', response1.email, 'forgot User Password');
-                                                    res.json({
-                                                        success: true,
-                                                        message: "Password sent to your email successfully...",
-                                                        data: response
-                                                    });
+
+                    var lstRole = [];
+                    for (var i = 0; i < response1.tbluserinroles.length; i++) {
+                        var objRole = response1.tbluserinroles[i].tblrole.RoleName;
+                        lstRole.push(objRole);
+                    }
+                    console.log(lstRole)
+                    if (lstRole.length == 1 && lstRole == 'User') {
+                        res.json({
+                            success: false,
+                            message: "This system Email not found..."
+                        });
+                    } else {
+                        SystemEmail.findOne().then(function(objSystemEmail) {
+                            var NewPassword = customPassword();
+                            var EncryptNewpassword = jwt.encode(NewPassword, "bugz");
+                            response1.updateAttributes({ password: EncryptNewpassword }).then(function(response) {
+                                if (response != null) {
+                                    EmailTemplate.findOne({
+                                        where: {
+                                            Type: "Forgot Password Email",
+                                        }
+                                    }).then(function(objEmailTemplate) {
+                                        if (objEmailTemplate != null) {
+                                            var Name = response1.username;
+                                            var Password = NewPassword;
+                                            Setting.findOne({
+                                                where: {
+                                                    Name: 'NotificationEmailTo'
                                                 }
-                                            });
-                                        })
-                                    } else {
-                                        res.json({
-                                            success: false,
-                                            message: "This Email template not found..."
-                                        })
-                                    }
-                                });
-                            } else {
+                                            }).then(function(objSetting) {
+                                                var body = objEmailTemplate.EmailBody.replace(/{UserName}/g, Name).replace("{Password}", Password).replace("{AppName}", req.query.AppName);
+                                                var mail = {
+                                                    from: objSystemEmail.DefaultEmailFrom,
+                                                    to: response1.email, // + ', ' + objSystemEmail.NotificationEmailTo,
+                                                    bcc: objSetting.Value,
+                                                    // bcc: 'soham.patel@bugzstudio.com',
+                                                    subject: req.query.AppName + " " + objEmailTemplate.EmailSubject,
+                                                    html: body
+                                                };
+                                                transporter.sendMail(mail, function(error, response) {
+                                                    console.log(error)
+                                                    if (error) {
+                                                        res.json(error);
+                                                    } else {
+                                                        funAuditLog.CreateAuditLog('forgotpassword', response1.email, 'forgot User Password');
+                                                        res.json({
+                                                            success: true,
+                                                            message: "Password sent to your email successfully...",
+                                                            data: response
+                                                        });
+                                                    }
+                                                });
+                                            })
+                                        } else {
+                                            res.json({
+                                                success: false,
+                                                message: "This Email template not found..."
+                                            })
+                                        }
+                                    });
+                                } else {
+                                    res.json({
+                                        success: false,
+                                        message: "This system Email not found..."
+                                    });
+                                }
+                            }).catch(function(error) {
                                 res.json({
                                     success: false,
-                                    message: "This system Email not found..."
+                                    message: error.errors[0].message + "..."
                                 });
-                            }
-                        }).catch(function(error) {
-                            res.json({
-                                success: false,
-                                message: error.errors[0].message + "..."
-                            });
+                            })
                         })
-                    })
+                    }
+
+
                 } else {
                     res.json({
                         success: false,
