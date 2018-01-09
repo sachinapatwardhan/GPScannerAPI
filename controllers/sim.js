@@ -52,7 +52,7 @@ router.get('/GetAllSIMInfoNew', function(req, res) {
         " LEFT JOIN tbltelco as tt ON ts.idTelCo = tt.id " +
         " LEFT JOIN tblappinfo tai on ts.idApp = tai.Id  " + search +
         " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
-    console.log(query)
+    // console.log(query)
     var countquery = "SELECT count(*) as TotalRecord " +
         " from tblsimdetails as ts " +
         " LEFT JOIN tbltelco as tt ON ts.idTelCo = tt.id " +
