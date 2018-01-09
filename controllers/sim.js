@@ -52,7 +52,6 @@ router.get('/GetAllSIMInfoNew', function(req, res) {
         " LEFT JOIN tbltelco as tt ON ts.idTelCo = tt.id " +
         " LEFT JOIN tblappinfo tai on ts.idApp = tai.Id  " + search +
         " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
-    // console.log(query)
     var countquery = "SELECT count(*) as TotalRecord " +
         " from tblsimdetails as ts " +
         " LEFT JOIN tbltelco as tt ON ts.idTelCo = tt.id " +
@@ -250,6 +249,7 @@ router.post('/uploadExcelDevice', function(req, res) {
 
     form.parse(req, function(err, fields, files) {
         idTelCo = fields.idTelCo;
+        idApp = fields.idApp;
     });
 
     form.on('fileBegin', function(name, file) {
@@ -283,6 +283,9 @@ router.post('/uploadExcelDevice', function(req, res) {
 
                                 if (idTelCo != null && idTelCo != 'null') {
                                     obj.idTelCo = idTelCo;
+                                }
+                                if (idApp != null && idApp != 'null') {
+                                    obj.idApp = idApp;
                                 }
                                 obj.CreatedDate = new Date();
 
