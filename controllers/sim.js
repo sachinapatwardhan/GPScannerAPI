@@ -3,6 +3,8 @@ var express = require('express'),
 //Tables
 var User = models.tbluserinformation;
 var SIM = models.tblsimdetails;
+var AppInfo = models.tblappinfo;
+var TelCo = models.tbltelco;
 //End of Tables
 
 router.get('/GetAllSIMInfo', function(req, res) {
@@ -27,6 +29,55 @@ router.get('/GetAllSIMInfo', function(req, res) {
     //     res.json(error);
     // })
 });
+
+
+router.get('/GetAllSIMInfoNew', function(req, res) {
+    var objParam = req.query;
+    var objColumns = objParam.columns;
+    var objOrder = objParam.order;
+    var objSearch = objParam.search;
+    var Orderby = objColumns[parseInt(objOrder[0].column)].data + ' ' + objOrder[0].dir;
+    var search = '';
+
+    if (objSearch != null && objSearch != '') {
+        search = ' Where (ts.SerialNum like "%' + objSearch + '%" or ';
+        search = search + 'ts.PhoneNum like "%' + objSearch + '%" or ';
+        search = search + 'tai.AppName like "%' + objSearch + '%" or ';
+        search = search + 'ts.CreatedDate like "%' + objSearch + '%" or ';
+        search = search + 'tt.Name like "%' + objSearch + '%") ';
+    };
+
+    var query = "SELECT ts.id,ts.SerialNum,ts.PhoneNum,ts.idApp,tai.AppName,CONVERT_TZ(ts.CreatedDate,'+00:00','" + CurrentOffset + "') as CreatedDate, tt.Name as TelName,tt.id as idTelCo " +
+        " from tblsimdetails as ts " +
+        " LEFT JOIN tbltelco as tt ON ts.idTelCo = tt.id " +
+        " LEFT JOIN tblappinfo tai on ts.idApp = tai.Id  " + search +
+        " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
+    console.log(query)
+    var countquery = "SELECT count(*) as TotalRecord " +
+        " from tblsimdetails as ts " +
+        " LEFT JOIN tbltelco as tt ON ts.idTelCo = tt.id " +
+        " LEFT JOIN tblappinfo tai on ts.idApp = tai.Id  " + search;
+    connection.query(query, function(err, response) {
+        if (response != undefined) {
+            connection.query(countquery, function(err, lstCount, fields) {
+                var response1 = new Object();
+                response1.draw = objParam.draw;
+                response1.recordsTotal = lstCount[0].TotalRecord;
+                response1.recordsFiltered = lstCount[0].TotalRecord;
+                response1.data = response;
+                res.json(response1);
+            });
+        } else {
+            console.log(err);
+            var response1 = new Object();
+            response1.draw = objParam.draw;
+            response1.recordsTotal = 0;
+            response1.recordsFiltered = 0;
+            response1.data = [];
+            res.json(response1);
+        }
+    })
+})
 
 router.post('/SaveSIMInfo', jsonParser, function(req, res) {
     objSIMInfo = req.body;
