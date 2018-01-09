@@ -13,7 +13,7 @@ DROP INDEX `FK_tblorderservice_aspnet_Users_idx` ;
 INSERT INTO `tblemailtemplate` (`Type`,`EmailSubject`,`EmailBody`,`EmailFrom`) VALUES ('Account Remove','Account Delete','','pmt@bugzstudio.com');
 
 
-DELIMITER $$
+DELIMITER |
 CREATE PROCEDURE `ManageDeleteData_SP`(IN DeviceId LONGTEXT, IN UserId VARCHAR(100))
 BEGIN
 
@@ -51,12 +51,12 @@ INSERT INTO maarkarchives.tbluserinformation (`email`, `username`, `password`, `
  (Select Id From `tblgpsdeletecash` Where idUser = UserId AND Status = 'Pending' AND RequestType = 'AccountDelete') AS `IdDeleteCash`
  FROM `tbluserinformation` WHERE `tbluserinformation`.`id` = UserId;
 
-END$$
+END |
 DELIMITER ;
 
 
 
-DELIMITER $$
+DELIMITER |
 CREATE PROCEDURE `ManageDeleteGPSData_SP`(IN DeviceId VARCHAR(100))
 BEGIN
 
@@ -66,11 +66,11 @@ SELECT `Datetime`, `Latitude`, `Longitude`, `GPSPositioning`, `Speed`, `Directio
  `IsUnlockTheDoor`, `IsSOS`, `IsWiringForAntiTamper`, `IsDoor`, `IsEngine`, `IsOriginalSirenTriggeringStatus`, `tblgpsdata`.`CreatedDate` AS `CreatedDate`, `HDOP`, `Altitude`, `AD1`, `AD2`, `OdoMeter`, `Date`, `tblgpsdeletecash`.`Id` AS `IdDeleteCash`
 FROM `tblgpsdata` INNER JOIN `tblgpsdeletecash` ON `tblgpsdeletecash`.`DeviceId` = `tblgpsdata`.`DeviceId` WHERE `tblgpsdata`.`DeviceId` = DeviceId;
 
-END$$
+END |
 DELIMITER ;
 
 
-DELIMITER $$
+DELIMITER |
 CREATE PROCEDURE `ManageDeleteQRY_SP`(IN DeviceId VARCHAR(100),IN DBName VARCHAR(100))
 BEGIN
 SET @s = CONCAT('INSERT INTO `', DBName ,'`.`tblfence` (`name`, `deviceId`, `range`, `status`, `lat`, `lng`, `fencedraw`, `IsInFence`, `IsFenceOnline`, `IdAdvanceFence`, `IdDeleteCash`)
@@ -81,6 +81,6 @@ SET @s = CONCAT('INSERT INTO `', DBName ,'`.`tblfence` (`name`, `deviceId`, `ran
 
 DEALLOCATE prepare stmt;
 
-END$$
+END |
 DELIMITER ;
 
