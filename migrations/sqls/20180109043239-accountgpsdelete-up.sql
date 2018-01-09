@@ -10,10 +10,7 @@ ALTER TABLE `tblorderservice`
 DROP INDEX `FK_tblorderservice_aspnet_Users_idx` ;
 
 
-
-INSERT INTO `tblemailtemplate` (`Type`,`EmailSubject`,`EmailBody`,`EmailFrom`) VALUES ('Other Email','Device Remove','','pmt@bugzstudio.com');
 INSERT INTO `tblemailtemplate` (`Type`,`EmailSubject`,`EmailBody`,`EmailFrom`) VALUES ('Account Remove','Account Delete','','pmt@bugzstudio.com');
-INSERT INTO `tblemailtemplate` (`Type`,`EmailSubject`,`EmailBody`,`EmailFrom`) VALUES ('Invitation Email','Sharing Invitation','','pmt@bugzstudio.com');
 
 
 DELIMITER $$
