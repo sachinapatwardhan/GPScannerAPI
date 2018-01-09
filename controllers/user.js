@@ -191,6 +191,69 @@ router.get('/GetAllDynamicUser', function(req, res) {
     })
 })
 
+
+router.get('/GetAllDynamicUserNew', function(req, res) {
+
+    var objParam = req.query;
+    var objColumns = objParam.columns;
+    var objOrder = objParam.order;
+    var objSearch = objParam.search;
+
+    var Orderby = objColumns[parseInt(objOrder[0].column)].data + ' ' + objOrder[0].dir;
+    var search = '';
+
+    if (objSearch != null && objSearch != '') {
+        search = ' Where (tbluserinformation.username like "%' + objSearch + '%" or ';
+        search = search + 'tbluserinformation.email  like "%' + objSearch + '%" or ';
+        search = search + 'tbluserinformation.phone  like "%' + objSearch + '%" or ';
+        search = search + 'tbluserinformation.country  like "%' + objSearch + '%" or ';
+        search = search + 'tblappinfo.AppName  like "%' + objSearch + '%" or ';
+        search = search + 'tblrole.RoleName  like "%' + objSearch + '%" or ';
+        search = search + 'tbluserinformation.IsMobileVerify like "%' + objSearch + '%") ';
+    }
+    if (objParam.appId != null && objParam.appId != '' && objParam.appId != undefined) {
+        if (search == '') {
+            search = " where tbluserinformation.idApp=" + objParam.appId;
+        } else {
+            search = " and tbluserinformation.idApp=" + objParam.appId;
+        }
+    }
+    var query = "select tblappinfo.AppName,GROUP_CONCAT(tblrole.RoleName) as Role ,tbluserinformation.* from tbluserinformation " +
+        "left join tbluserinrole on tbluserinformation.id = tbluserinrole.userId " +
+        "left join tblrole on tbluserinrole.roleId  = tblrole.id " +
+        "left join tblappinfo on tblappinfo.id = tbluserinformation.idApp " + search +
+        "group by tbluserinformation.id " +
+        " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
+    // console.log(query)
+    var countquery = "select tbluserinformation.id from tbluserinformation " +
+        "left join tbluserinrole on tbluserinformation.id = tbluserinrole.userId " +
+        "left join tblrole on tbluserinrole.roleId  = tblrole.id " +
+        "left join tblappinfo on tblappinfo.id = tbluserinformation.idApp " + search +
+        "group by tbluserinformation.id ";
+    connection.query(query, function(err, response) {
+        if (response != undefined) {
+            connection.query(countquery, function(err, lstCount, fields) {
+                // console.log("************", lstCount.length)
+                var response1 = new Object();
+                response1.draw = objParam.draw;
+                response1.recordsTotal = lstCount.length;
+                response1.recordsFiltered = lstCount.length;
+                response1.data = response;
+                res.json(response1);
+            });
+        } else {
+            console.log(err);
+            var response1 = new Object();
+            response1.draw = objParam.draw;
+            response1.recordsTotal = 0;
+            response1.recordsFiltered = 0;
+            response1.data = [];
+            res.json(response1);
+        }
+    })
+
+})
+
 router.get('/GetAllDynamicUserOld', function(req, res) {
 
     var objParam = req.query;
