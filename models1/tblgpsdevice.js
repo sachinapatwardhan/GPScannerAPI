@@ -54,16 +54,12 @@ module.exports = function(sequelize, DataTypes) {
     },
     idSalesAgent: {
       type: DataTypes.INTEGER(11),
-      allowNull: true,
-      references: {
-        model: 'tbluserinformation',
-        key: 'id'
-      }
+      allowNull: true
     },
     IsActive: {
       type: DataTypes.INTEGER(2),
       allowNull: true,
-      defaultValue: '0'
+      defaultValue: "0"
     },
     ExpiryDate: {
       type: DataTypes.DATE,

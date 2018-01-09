@@ -35,6 +35,10 @@ module.exports = function(sequelize, DataTypes) {
     ModifiedDate: {
       type: DataTypes.DATE,
       allowNull: true
+    },
+    RequestType: {
+      type: DataTypes.STRING,
+      allowNull: true
     }
   }, {
     tableName: 'tblgpsdeletecash'

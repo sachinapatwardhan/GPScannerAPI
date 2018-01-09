@@ -10,11 +10,7 @@ module.exports = function(sequelize, DataTypes) {
     },
     CustomerId: {
       type: DataTypes.INTEGER(11),
-      allowNull: true,
-      references: {
-        model: 'tbluserinformation',
-        key: 'id'
-      }
+      allowNull: true
     },
     CustomerPO: {
       type: DataTypes.STRING,
@@ -181,7 +177,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     AllowStoringCreditCardNumber: {
-      type: DataTypes.BOOLEAN,
+      type: DataTypes.INTEGER(1),
       allowNull: true
     },
     CardType: {
@@ -265,7 +261,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     Deleted: {
-      type: DataTypes.BOOLEAN,
+      type: DataTypes.INTEGER(1),
       allowNull: true
     },
     Terms: {

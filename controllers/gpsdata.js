@@ -5013,8 +5013,17 @@ router.get('/DeleteGPSdatabyVehicleId', function(req, res) {
                                             obj.Status = 'Pending';
                                             obj.CreatedDate = new Date();
                                             obj.CreatedBy = UserExist.username;
-                                            GpsDeleteCash.create(obj).then(function(CashCreate) {
-                                                if (CashCreate) {
+                                            obj.RequestType = "GPSDataDelete";
+                                            GpsDeleteCash.findOrCreate({
+                                                where: {
+                                                    idVehicle: obj.idVehicle,
+                                                    idUser: obj.idUser,
+                                                    Status: obj.Status,
+                                                    RequestType: obj.RequestType,
+                                                },
+                                                defaults: obj
+                                            }).then(function(CashCreate) {
+                                                if (CashCreate[1]) {
                                                     funAuditLog.CreateAuditLog('Create GpsDeleteCash data', decoded.username, 'Save GpsDeleteCash data');
                                                     res.json({
                                                         success: true,
@@ -5026,9 +5035,7 @@ router.get('/DeleteGPSdatabyVehicleId', function(req, res) {
                                                         message: "Vehicle not Deleted Successfully",
                                                     })
                                                 }
-
                                             })
-
                                         } else {
                                             res.json({
                                                 success: false,
