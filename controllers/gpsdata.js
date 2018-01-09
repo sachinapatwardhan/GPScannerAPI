@@ -5076,6 +5076,72 @@ router.get('/DeleteGPSdatabyVehicleId', function(req, res) {
 
 })
 
+router.get('/DeleteAccount', function(req, res) {
+    objHeader = req.headers;
+    var token = getToken(objHeader);
+
+    var obj = {};
+    obj.headers = req.headers;
+    obj.query = req.query;
+    if (token) {
+        var decoded = jwt.decode(token, TokenKey);
+        var search = {};
+        search['$and'] = [];
+
+        var obj = new Object();
+        obj['username'] = {
+            $eq: decoded.username
+        };
+        search['$and'].push(obj);
+
+        var obj = new Object();
+        obj['password'] = {
+            $eq: decoded.password
+        };
+        search['$and'].push(obj);
+
+        User.findOne({
+            where: search
+        }).then(function(UserExist) {
+            if (UserExist != null) {
+                var Encryptpassword = jwt.encode(req.query.password, "bugz");
+                if (decoded.password == Encryptpassword) {
+                    var obj = new Object();
+                    obj.idUser = UserExist.id;
+                    obj.Status = 'Pending';
+                    obj.CreatedDate = new Date();
+                    obj.CreatedBy = UserExist.username;
+                    obj.RequestType = "AccountDelete";
+                    GpsDeleteCash.create(obj).then(function(CashCreate) {
+                        if (CashCreate) {
+                            funAuditLog.CreateAuditLog('Create GpsDeleteCash data', decoded.username, 'Save GpsDeleteCash data');
+                            res.json({
+                                success: true,
+                                message: "Account Deleted Successfully",
+                            })
+                        } else {
+                            res.json({
+                                success: false,
+                                message: "Account not Deleted Successfully",
+                            })
+                        }
+
+                    })
+                } else {
+                    res.json({
+                        success: false,
+                        message: "your password is wrong..",
+                    });
+                }
+            } else {
+                res.json(InvalidToken);
+            }
+        })
+    } else {
+        res.json(InvalidToken);
+    }
+})
+
 
 module.exports = router;
 //End of Tables;
