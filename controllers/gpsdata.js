@@ -5107,7 +5107,7 @@ router.get('/DeleteAccount', function(req, res) {
                 var Encryptpassword = jwt.encode(req.query.password, "bugz");
                 if (decoded.password == Encryptpassword) {
                     var obj = new Object();
-                    obj.idUser = UserExist.id;
+                    obj.idUser = req.query.idUser;
                     obj.Status = 'Pending';
                     obj.CreatedDate = new Date();
                     obj.CreatedBy = UserExist.username;
