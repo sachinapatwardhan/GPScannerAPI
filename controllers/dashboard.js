@@ -29,24 +29,186 @@ Date.prototype.addDays = function(days) {
     this.setDate(this.getDate() + parseInt(days));
     return this;
 };
-router.get('/GetAllWorkingBike', jsonParser, function(req, res) {
+// router.get('/GetAllWorkingBike', jsonParser, function(req, res) {
+//     var search = '';
+//     var search1 = '';
+//     if (req.query.idApp != null && req.query.idApp != undefined && req.query.idApp != '' && req.query.idApp != 'All') {
+//         search = " and idApp=" + req.query.idApp;
+//         search1 = " where  ta.id=" + req.query.idApp;
+//     }
+//     var query = "select ve.*,tgd.AppName,tgd.DeviceId from " +
+//         "(SELECT tb.id,tb.deviceid,tb.Name,tb.IsOnline, tpg.IsEngine, tpg.Latitude,tpg.Longitude,tpg.Datetime, tpg.Date, tpg.Speed,tpg.Direction, tu.idApp " +
+//         "FROM tblvehicle tb Left Join tbluserinformation as tu on tb.iduser = tu.id Left JOIN tblgpsdata tpg " +
+//         "INNER JOIN (SELECT DeviceId,MAX(Date) Date FROM tblgpsdata GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId  AND tpg.Date = b.Date ON tb.deviceid=tpg.DeviceId " +
+//         "WHERE IsDelete=false " + search + " group by tb.DeviceId ) as ve " +
+//         "RIGHT  join tblgpsdevice tgd on ve.deviceid = tgd.DeviceId " +
+//         "left join tblappinfo ta on ta.AppName = tgd.AppName " + search1;
+//     //  var query ="SELECT tb.id,tb.deviceid,tb.Name,tb.IsOnline, tpg.IsEngine, tpg.Latitude,tpg.Longitude,tpg.Datetime, tpg.Date, tpg.Speed,tpg.Direction, tu.idApp FROM tblvehicle tb Left Join tbluserinformation as tu on tb.iduser = tu.id Left JOIN tblgpsdata tpg INNER JOIN (SELECT DeviceId,MAX(Date) Date FROM tblgpsdata GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId  AND tpg.Date = b.Date ON tb.deviceid=tpg.DeviceId WHERE IsDelete=false and idApp=" + req.query.idApp + " group by tb.DeviceId"
+//     connection.query(query, function(err, rows, fields) {
+//         if (!err) {
+//             res.json({ success: true, data: rows });
+//         } else {
+//             res.json({ success: false, data: [] });
+//         }
+//     })
+
+// })
+
+router.get('/GetAllWorkingBike', function(req, res) {
     var search = '';
     var search1 = '';
     if (req.query.idApp != null && req.query.idApp != undefined && req.query.idApp != '' && req.query.idApp != 'All') {
-        search = " and idApp=" + req.query.idApp;
+        // search = " and idApp=" + req.query.idApp;
         search1 = " where  ta.id=" + req.query.idApp;
     }
     var query = "select ve.*,tgd.AppName,tgd.DeviceId from " +
-        "(SELECT tb.id,tb.deviceid,tb.Name,tb.IsOnline, tpg.IsEngine, tpg.Latitude,tpg.Longitude,tpg.Datetime, tpg.Date, tpg.Speed,tpg.Direction, tu.idApp " +
-        "FROM tblvehicle tb Left Join tbluserinformation as tu on tb.iduser = tu.id Left JOIN tblgpsdata tpg " +
-        "INNER JOIN (SELECT DeviceId,MAX(Date) Date FROM tblgpsdata GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId  AND tpg.Date = b.Date ON tb.deviceid=tpg.DeviceId " +
-        "WHERE IsDelete=false " + search + " group by tb.DeviceId ) as ve " +
-        "RIGHT  join tblgpsdevice tgd on ve.deviceid = tgd.DeviceId " +
+        "(SELECT tb.id,tb.deviceid,tb.Name,tb.IsOnline " +
+        "FROM tblvehicle tb  " +
+        "WHERE IsDelete=false " +
+        ") as ve " +
+        "RIGHT  join tblgpsdevice tgd on ve.deviceid = tgd.DeviceId  " +
         "left join tblappinfo ta on ta.AppName = tgd.AppName " + search1;
     //  var query ="SELECT tb.id,tb.deviceid,tb.Name,tb.IsOnline, tpg.IsEngine, tpg.Latitude,tpg.Longitude,tpg.Datetime, tpg.Date, tpg.Speed,tpg.Direction, tu.idApp FROM tblvehicle tb Left Join tbluserinformation as tu on tb.iduser = tu.id Left JOIN tblgpsdata tpg INNER JOIN (SELECT DeviceId,MAX(Date) Date FROM tblgpsdata GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId  AND tpg.Date = b.Date ON tb.deviceid=tpg.DeviceId WHERE IsDelete=false and idApp=" + req.query.idApp + " group by tb.DeviceId"
     connection.query(query, function(err, rows, fields) {
         if (!err) {
-            res.json({ success: true, data: rows });
+            // res.json({ success: true, data: rows });
+
+            var lstAllVehicle = [];
+
+            function getData(i) {
+
+                if (i < rows.length) {
+                    var obj = new Object();
+                    obj.id = rows[i].id;
+                    obj.Name = rows[i].Name;
+                    obj.deviceid = rows[i].DeviceId;
+                    obj.IsOnline = rows[i].IsOnline;
+                    obj.AppName = rows[i].AppName;
+
+                    client.get(rows[i].deviceid, function(err, strgpsdata) {
+                        if (!err) {
+                            if (strgpsdata != null & strgpsdata != '' && strgpsdata != undefined) {
+                                var objgps = JSON.parse(strgpsdata);
+                                obj.IsEngine = objgps.IsEngine;
+                                obj.Latitude = objgps.Latitude;
+                                obj.Longitude = objgps.Longitude;
+                                obj.Datetime = objgps.Datetime;
+                                obj.Date = objgps.Date;
+                                obj.Speed = objgps.Speed;
+                                obj.Direction = objgps.Direction;
+                                obj.OdoMeter = objgps.OdoMeter;
+                                lstAllVehicle.push(obj);
+                                getData(i + 1);
+                            } else {
+                                obj.IsEngine = null;
+                                obj.Latitude = null;
+                                obj.Longitude = null;
+                                obj.Datetime = null;
+                                obj.Date = null;
+                                obj.Speed = null;
+                                obj.Direction = null;
+                                obj.OdoMeter = null;
+                                lstAllVehicle.push(obj);
+                                getData(i + 1);
+                            }
+                        } else {
+                            obj.IsEngine = null;
+                            obj.Latitude = null;
+                            obj.Longitude = null;
+                            obj.Datetime = null;
+                            obj.Date = null;
+                            obj.Speed = null;
+                            obj.Direction = null;
+                            obj.OdoMeter = null;
+                            lstAllVehicle.push(obj);
+                            getData(i + 1);
+                        }
+                    });
+
+                } else {
+                    res.json({ success: true, data: lstAllVehicle });
+                }
+            }
+            getData(0);
+        } else {
+            res.json({ success: false, data: [] });
+        }
+    })
+
+})
+
+router.get('/GetAllWorkingBikeNew', function(req, res) {
+    var search = '';
+    var search1 = '';
+    if (req.query.AppName != null && req.query.AppName != undefined && req.query.AppName != '' && req.query.AppName != 'All') {
+        // search = " and idApp=" + req.query.idApp;
+        search1 = " where  tgd.AppName=" + req.query.AppName;
+    }
+    var query = "select tb.id,tb.Name,tb.IsOnline,tgd.AppName,tgd.DeviceId as deviceid " +
+        "from tblgpsdevice tgd " +
+        "left join tblvehicle tb on tb.deviceid=tgd.DeviceId and tb.IsDelete=false " + search1;
+    //  var query ="SELECT tb.id,tb.deviceid,tb.Name,tb.IsOnline, tpg.IsEngine, tpg.Latitude,tpg.Longitude,tpg.Datetime, tpg.Date, tpg.Speed,tpg.Direction, tu.idApp FROM tblvehicle tb Left Join tbluserinformation as tu on tb.iduser = tu.id Left JOIN tblgpsdata tpg INNER JOIN (SELECT DeviceId,MAX(Date) Date FROM tblgpsdata GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId  AND tpg.Date = b.Date ON tb.deviceid=tpg.DeviceId WHERE IsDelete=false and idApp=" + req.query.idApp + " group by tb.DeviceId"
+    connection.query(query, function(err, rows, fields) {
+        if (!err) {
+            // res.json({ success: true, data: rows });
+
+            var lstAllVehicle = [];
+
+            function getData(i) {
+
+                if (i < rows.length) {
+                    var obj = new Object();
+                    obj.id = rows[i].id;
+                    obj.Name = rows[i].Name;
+                    obj.deviceid = rows[i].deviceid;
+                    obj.IsOnline = rows[i].IsOnline;
+                    obj.AppName = rows[i].AppName;
+
+                    client.get(rows[i].deviceid, function(err, strgpsdata) {
+                        if (!err) {
+                            if (strgpsdata != null & strgpsdata != '' && strgpsdata != undefined) {
+                                var objgps = JSON.parse(strgpsdata);
+                                obj.IsEngine = objgps.IsEngine;
+                                obj.Latitude = objgps.Latitude;
+                                obj.Longitude = objgps.Longitude;
+                                obj.Datetime = objgps.Datetime;
+                                obj.Date = objgps.Date;
+                                obj.Speed = objgps.Speed;
+                                obj.Direction = objgps.Direction;
+                                obj.OdoMeter = objgps.OdoMeter;
+                                lstAllVehicle.push(obj);
+                                getData(i + 1);
+                            } else {
+                                obj.IsEngine = null;
+                                obj.Latitude = null;
+                                obj.Longitude = null;
+                                obj.Datetime = null;
+                                obj.Date = null;
+                                obj.Speed = null;
+                                obj.Direction = null;
+                                obj.OdoMeter = null;
+                                lstAllVehicle.push(obj);
+                                getData(i + 1);
+                            }
+                        } else {
+                            obj.IsEngine = null;
+                            obj.Latitude = null;
+                            obj.Longitude = null;
+                            obj.Datetime = null;
+                            obj.Date = null;
+                            obj.Speed = null;
+                            obj.Direction = null;
+                            obj.OdoMeter = null;
+                            lstAllVehicle.push(obj);
+                            getData(i + 1);
+                        }
+                    });
+
+                } else {
+                    res.json({ success: true, data: lstAllVehicle });
+                }
+            }
+            getData(0);
         } else {
             res.json({ success: false, data: [] });
         }
