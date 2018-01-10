@@ -111,7 +111,7 @@ router.get('/DeleteFenceById', function(req, res) {
                     data: response
                 });
             } else {
-                res.json({ success: false, message: 'Advance rence not Removed.' });
+                res.json({ success: false, message: 'Advance fence not Removed.' });
             }
         })
 
