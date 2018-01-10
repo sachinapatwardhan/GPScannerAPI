@@ -203,6 +203,7 @@
             search = search + 'tgd.Version like "%' + req.query.search.value + '%" or ';
             search = search + 'ts.SerialNum like "%' + req.query.search.value + '%" or ';
             search = search + 'ts.PhoneNum like "%' + req.query.search.value + '%" or ';
+            search = search + 'tcm.Country like "%' + req.query.search.value + '%" or ';
             search = search + 'tel.Name like "%' + req.query.search.value + '%") ';
         }
         if (search != '') {
@@ -220,15 +221,17 @@
             // search = search + '  tgd.DeviceId not in (select deviceId from tbldeviceagentretailer)'
         }
 
-        var query = 'select tgd.DeviceId,tgd.Type,tgd.IMEI,tgd.Version,tgd.CreatedDate,tgd.CreatedBy,tgd.AppName,tgd.ExpiryDate,ts.SerialNum,ts.PhoneNum,tel.Name,tdr.id,tdr.agentId' +
+        var query = 'select tgd.DeviceId,tgd.Type,tgd.IMEI,tgd.Version,tgd.CreatedDate,tgd.CreatedBy,tgd.AppName,tgd.ExpiryDate,ts.SerialNum,ts.PhoneNum,tel.Name,tdr.id,tdr.agentId,tcm.Country' +
             ' from tblgpsdevice tgd LEFT JOIN tblsimdetails ts on tgd.idSim = ts.id' +
             ' LEFT JOIN tbltelco tel on ts.idTelCo = tel.id' +
+            ' LEFT JOIN tblcountrymgmt tcm on tgd.CountryId = tcm.id' +
             ' LEFT JOIN tbldeviceagentretailer tdr on tdr.deviceId = tgd.DeviceId' + search +
             ' order by ' + orderBy + ' limit ' + parseInt(req.query.length) + ' offset ' + parseInt(req.query.start);
-        // console.log(query)
+        console.log(query)
         var Countqry = ' select count(tgd.id)  as TotalRecord ' +
             ' from tblgpsdevice tgd LEFT JOIN tblsimdetails ts on tgd.idSim = ts.id' +
             ' LEFT JOIN tbltelco tel on ts.idTelCo = tel.id' +
+            ' LEFT JOIN tblcountrymgmt tcm on tgd.CountryId = tcm.id' +
             ' LEFT JOIN tbldeviceagentretailer tdr on tdr.deviceId = tgd.DeviceId' + search;
 
         connection.query(query, function(err, response) {
