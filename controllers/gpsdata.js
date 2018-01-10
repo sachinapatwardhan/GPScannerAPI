@@ -510,6 +510,9 @@ router.get('/ExportAllGpsData', function(req, res) {
         }, {
             caption: 'OdoMeter',
             type: 'string'
+        }, {
+            caption: 'Date',
+            type: 'string'
         }
     ];
 
@@ -580,6 +583,7 @@ router.get('/ExportAllGpsData', function(req, res) {
         var AD1 = '';
         var AD2 = '';
         var OdoMeter = '';
+        var Date = '';
         GetGpsData(0);
 
         function GetGpsData(i) {
@@ -590,7 +594,7 @@ router.get('/ExportAllGpsData', function(req, res) {
                 }
 
                 if (response[i].Datetime != null && response[i].Datetime != '' && response[i].Datetime != undefined) {
-                    Datetime = convertdateformat(response[i].Datetime, 2);
+                    Datetime = convertdateformat(response[i].Datetime, "Excel Export");
                 }
 
                 if (response[i].Latitude != null && response[i].Latitude != '' && response[i].Latitude != undefined) {
@@ -653,7 +657,10 @@ router.get('/ExportAllGpsData', function(req, res) {
                 if (response[i].OdoMeter != null && response[i].OdoMeter != '' && response[i].OdoMeter != undefined) {
                     OdoMeter = response[i].OdoMeter;
                 }
-                row.push(DeviceId, Datetime, Latitude, Longitude, GPSPositioning, Speed, Direction, Status, IsRelayToStopTheCar, IsSirenSound, IsLockTheDoor, IsUnlockTheDoor, IsSOS, IsDoor, IsEngine, CreatedDate, Altitude, AD1, AD2, OdoMeter);
+                if (response[i].Date != null && response[i].Date != '' && response[i].Date != undefined) {
+                    Date = response[i].Date;
+                }
+                row.push(DeviceId, Datetime, Latitude, Longitude, GPSPositioning, Speed, Direction, Status, IsRelayToStopTheCar, IsSirenSound, IsLockTheDoor, IsUnlockTheDoor, IsSOS, IsDoor, IsEngine, CreatedDate, Altitude, AD1, AD2, OdoMeter, Date);
                 conf.rows.push(row);
                 GetGpsData(i + 1);
             } else {

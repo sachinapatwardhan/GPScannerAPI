@@ -47,7 +47,7 @@ router.get('/GetCurrentCountry', function(req, res) {
                     from: 'soham.patel@bugzstudio.com',
                     to: 'soham.patel@bugzstudio.com',
                     subject: 'Maark Get Current Country API error',
-                    text: body
+                    text: body + "; IP Address = " + req.connection.remoteAddress
                 };
                 transporter.sendMail(mail, function(error, response) {
 
