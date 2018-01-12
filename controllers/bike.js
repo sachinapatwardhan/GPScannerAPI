@@ -437,7 +437,12 @@ router.get('/GetVehicleCurrentLocationForSharedDevice', function(req, res) {
     var convertDate = convertdateformatForUnix(Startdate);
     var unixStartdate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
     // var unixStartdate = Startdate.getTime() / 1000;
-    var query = "Select tv.Name, tv.IsOnline, tv.iduser, tv.IsShared, tgps.* FROM tblgpsdata as tgps LEFT JOIN tblvehicle as tv ON tgps.DeviceId = tv.deviceid where tgps.DeviceId = " + jwt.decode(req.query.DeviceId, "bugz") + " AND tgps.Date <= '" + unixStartdate + "' ORDER BY Date DESC limit 1";
+    var url = jwt.decode(req.query.DeviceId, "bugz");
+    url = url.split(',');
+    var DeviceId = url[0];
+    var ShareCode = url[1];
+    var query = "Select tv.Name, tv.IsOnline, tv.iduser, tv.IsShared, tgps.* FROM tblgpsdata as tgps LEFT JOIN tblvehicle as tv ON tgps.DeviceId = tv.deviceid where tgps.DeviceId = " + DeviceId + " AND tv.ShareCode ='" + ShareCode + "' AND tgps.Date <= '" + unixStartdate + "' ORDER BY Date DESC limit 1";
+    console.log("Select tv.Name, tv.IsOnline, tv.iduser, tv.IsShared, tgps.* FROM tblgpsdata as tgps LEFT JOIN tblvehicle as tv ON tgps.DeviceId = tv.deviceid where tgps.DeviceId = " + DeviceId + " AND tv.ShareCode ='" + ShareCode + "' AND tgps.Date <= '" + unixStartdate + "' ORDER BY Date DESC limit 1")
     connection.query(query, function(err, rows, fields) {
         if (!err) {
             res.json({ success: true, data: rows[0] });
@@ -1579,7 +1584,11 @@ router.get('/UpdateVehicleType', jsonParser, function(req, res) {
 })
 
 router.get('/UpdateVehicleShare', jsonParser, function(req, res) {
-    connection.query("Update tblvehicle set IsShared=" + req.query.IsShared + " where deviceid='" + req.query.DeviceId + "'", function(err, rows, fields) {
+    var updateAttribute = '';
+    if (req.query.IsShared == false || req.query.IsShared == 'false' || req.query.IsShared == 0) {
+        var updateAttribute = " , ShareCode ='" + Math.floor(100000 + Math.random() * 900000) + "'";
+    }
+    connection.query("Update tblvehicle set IsShared=" + req.query.IsShared + " " + updateAttribute + " where deviceid='" + req.query.DeviceId + "'", function(err, rows, fields) {
         if (!err) {
             res.json({ success: true, message: 'Vehicle No. Save Successfully.' });
 
@@ -1628,6 +1637,7 @@ router.get('/UpdatePUCDate', jsonParser, function(req, res) {
     })
 
 })
+
 
 
 router.get('/GetAllExpireDevice', jsonParser, function(req, res) {
