@@ -627,6 +627,44 @@ router.get('/GetUserByName', function(req, res) {
     })
 })
 
+router.get('/GetUserByEmail', function(req, res) {
+
+    User.hasMany(UserInRole, {
+        foreignKey: {
+            name: 'userId',
+            allowNull: false
+        }
+    });
+
+    UserInRole.belongsTo(Role, {
+        foreignKey: {
+            name: 'roleId',
+            allowNull: false
+        }
+    });
+
+    User.findAll({
+        where: {
+            email: {
+                $like: '%' + req.query.email + '%'
+            },
+            idApp: req.query.appId,
+        },
+        include: [{
+            model: UserInRole,
+            include: [
+                Role
+            ]
+        }],
+        order: 'username',
+        limit: 10
+    }).then(function(response) {
+        res.json(response);
+    }).catch(function(error) {
+        res.json(error);
+    })
+})
+
 router.get('/GetUserById', function(req, res) {
     User.findOne({
         where: {
