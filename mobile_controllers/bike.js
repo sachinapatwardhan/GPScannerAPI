@@ -874,7 +874,11 @@ router.get('/UpdatePUCDate', jsonParser, function(req, res) {
 
 //----------------(Mobileapp & webApp):-(Share vehcile)--------------------
 router.get('/UpdateVehicleShare', jsonParser, function(req, res) {
-    connection.query("Update tblvehicle set IsShared=" + req.query.IsShared + " where deviceid='" + req.query.DeviceId + "'", function(err, rows, fields) {
+    var updateAttribute = '';
+    if (req.query.IsShared == false || req.query.IsShared == 'false' || req.query.IsShared == 0) {
+        var updateAttribute = " , ShareCode ='" + Math.floor(100000 + Math.random() * 900000) + "'";
+    }
+    connection.query("Update tblvehicle set IsShared=" + req.query.IsShared + " " + updateAttribute + " where deviceid='" + req.query.DeviceId + "'", function(err, rows, fields) {
         if (!err) {
             res.json({ success: true, message: 'Vehicle No. Save Successfully.' });
 
