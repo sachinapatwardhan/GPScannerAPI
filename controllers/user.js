@@ -656,7 +656,7 @@ router.get('/GetUserByEmail', function(req, res) {
                 Role
             ]
         }],
-        order: 'username',
+        order: 'email',
         limit: 10
     }).then(function(response) {
         res.json(response);
