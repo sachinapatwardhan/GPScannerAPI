@@ -446,526 +446,234 @@ router.get('/GetAllGpsDevice', function(req, res) {
     })
 });
 
+
 router.get('/ExportAllGpsData', function(req, res) {
     var conf = {};
     conf.name = "Sheet1";
     conf.cols = [{
-            caption: 'DeviceId',
-            type: 'string'
-        }, {
-            caption: 'Datetime',
-            type: 'string'
-        }, {
-            caption: 'Latitude',
-            type: 'string'
-        }, {
-            caption: 'Longitude',
-            type: 'string'
-        }, {
-            caption: 'GPSPositioning',
-            type: 'string'
-        }, {
-            caption: 'Speed',
-            type: 'string'
-        }, {
-            caption: 'Direction',
-            type: 'string'
-        }, {
-            caption: 'Status',
-            type: 'string'
-        }, {
-            caption: 'IsRelayToStopTheCar',
-            type: 'string'
-        }, {
-            caption: 'IsSirenSound',
-            type: 'string'
-        }, {
-            caption: 'IsLockTheDoor',
-            type: 'string'
-        }, {
-            caption: 'IsUnlockTheDoor',
-            type: 'string'
-        }, {
-            caption: 'IsSOS',
-            type: 'string'
-        }, {
-            caption: 'IsDoor',
-            type: 'string'
-        }, {
-            caption: 'IsEngine',
-            type: 'string'
-        }, {
-            caption: 'CreatedDate',
-            type: 'string'
-        }, {
-            caption: 'Altitude',
-            type: 'string'
-        }, {
-            caption: 'AD1',
-            type: 'string'
-        },
-        {
-            caption: 'AD2',
-            type: 'string'
-        }, {
-            caption: 'OdoMeter',
-            type: 'string'
-        }
-    ];
-
-    caption: 'DeviceId',
+        caption: 'DeviceId',
         type: 'string'
-}, {
-    caption: 'Datetime',
-    type: 'string'
-}, {
-    caption: 'Latitude',
-    type: 'string'
-}, {
-    caption: 'Longitude',
-    type: 'string'
-}, {
-    caption: 'Positioning',
-    type: 'string'
-}, {
-    caption: 'Speed',
-    type: 'string'
-}, {
-    caption: 'Direction',
-    type: 'string'
-}, {
-    caption: 'IsEngine',
-    type: 'string'
-}, {
-    caption: 'Voltage',
-    type: 'string'
-}, {
-    caption: 'OdoMeter',
-    type: 'string'
-}, {
-    caption: 'AD1',
-    type: 'string'
-}, {
-    caption: 'AD2',
-    type: 'string'
-}, {
-    caption: 'Altitude',
-    type: 'string'
-}, {
-    caption: 'Status',
-    type: 'string'
-}, {
-    caption: 'IsRelayToStopTheCar',
-    type: 'string'
-}, {
-    caption: 'IsSirenSound',
-    type: 'string'
-}, {
-    caption: 'IsLockTheDoor',
-    type: 'string'
-}, {
-    caption: 'IsUnlockTheDoor',
-    type: 'string'
-}, {
-    caption: 'IsSOS',
-    type: 'string'
-}, {
-    caption: 'IsDoor',
-    type: 'string'
-}, {
-    caption: 'CreatedDate',
-    type: 'string'
-}, ];
+    }, {
+        caption: 'Datetime',
+        type: 'string'
+    }, {
+        caption: 'Latitude',
+        type: 'string'
+    }, {
+        caption: 'Longitude',
+        type: 'string'
+    }, {
+        caption: 'Positioning',
+        type: 'string'
+    }, {
+        caption: 'Speed',
+        type: 'string'
+    }, {
+        caption: 'Direction',
+        type: 'string'
+    }, {
+        caption: 'IsEngine',
+        type: 'string'
+    }, {
+        caption: 'Voltage',
+        type: 'string'
+    }, {
+        caption: 'OdoMeter',
+        type: 'string'
+    }, {
+        caption: 'AD1',
+        type: 'string'
+    }, {
+        caption: 'AD2',
+        type: 'string'
+    }, {
+        caption: 'Altitude',
+        type: 'string'
+    }, {
+        caption: 'Status',
+        type: 'string'
+    }, {
+        caption: 'IsRelayToStopTheCar',
+        type: 'string'
+    }, {
+        caption: 'IsSirenSound',
+        type: 'string'
+    }, {
+        caption: 'IsLockTheDoor',
+        type: 'string'
+    }, {
+        caption: 'IsUnlockTheDoor',
+        type: 'string'
+    }, {
+        caption: 'IsSOS',
+        type: 'string'
+    }, {
+        caption: 'IsDoor',
+        type: 'string'
+    }, {
+        caption: 'CreatedDate',
+        type: 'string'
+    }];
 
 
 
+    var objParam = req.query;
+    var Orderby = 'CreatedDate asc';
 
+    var search = {};
 
-var objParam = req.query;
-var Orderby = 'CreatedDate asc';
+    var StartDate = convertdateUTCformat(objParam.StartDate);
+    var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
 
-var search = {};
-
-var StartDate = convertdateUTCformat(objParam.StartDate);
-var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
-
-var EndDate = convertdateUTCformat(objParam.EndDate);
-var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
-search['$and'] = [];
-var DeviceId = objParam.DeviceId;
-if (DeviceId != null && DeviceId != '' && DeviceId != undefined && DeviceId != "All") {
-    var obj = new Object();
-    obj['DeviceId'] = {
-        $eq: DeviceId
-    };
-    search['$and'].push(obj);
-}
-if (objParam.StartDate != '' && objParam.EndDate != '') {
-    var obj = new Object();
-    obj['Date'] = {
-        $between: [unixStartdate, unixEndDate]
-    };
-    search['$and'].push(obj);
-} else if (objParam.StartDate != null && objParam.StartDate != '') {
-    var obj = new Object();
-    obj['Date'] = {
-        $gt: unixStartdate
-    };
-    search['$and'].push(obj);
-} else if (objParam.EndDate != null && objParam.EndDate != '') {
-    var obj = new Object();
-    obj['Date'] = {
-        $lt: unixEndDate
-    };
-    search['$and'].push(obj);
-}
-
-
-Gps.findAll({
-where: search,
-order: Orderby,
-}).then(function(response) {
-conf.rows = [];
-var DeviceId = '';
-var Datetime = '';
-var Latitude = '';
-var Longitude = '';
-var GPSPositioning = '';
-var Speed = '';
-var Direction = '';
-var Status = '';
-var IsRelayToStopTheCar = false;
-var IsSirenSound = false;
-var IsLockTheDoor = false;
-var IsUnlockTheDoor = false;
-var IsSOS = false;
-var IsDoor = false;
-var IsEngine = false;
-var CreatedDate = '';
-var Altitude = '';
-var AD1 = '';
-var AD2 = '';
-var Voltage = '';
-var OdoMeter = '';
-GetGpsData(0);
-
-function GetGpsData(i) {
-    if (i < response.length) {
-        var row = [];
-        if (response[i].DeviceId != null && response[i].DeviceId != '' && response[i].DeviceId != undefined) {
-            DeviceId = response[i].DeviceId;
-        }
-
-        if (response[i].Datetime != null && response[i].Datetime != '' && response[i].Datetime != undefined) {
-            Datetime = convertdateformat(response[i].Datetime, 2);
-        }
-
-        if (response[i].Latitude != null && response[i].Latitude != '' && response[i].Latitude != undefined) {
-            Latitude = response[i].Latitude
-        }
-
-        if (response[i].Longitude != null && response[i].Longitude != '' && response[i].Longitude != undefined) {
-            Longitude = response[i].Longitude;
-        }
-
-        if (response[i].GPSPositioning != null && response[i].GPSPositioning != '' && response[i].GPSPositioning != undefined) {
-            GPSPositioning = response[i].GPSPositioning;
-        }
-
-        if (response[i].Speed != null && response[i].Speed != '' && response[i].Speed != undefined) {
-            Speed = response[i].Speed;
-        }
-
-        if (response[i].Direction != null && response[i].Direction != '' && response[i].Direction != undefined) {
-            Direction = response[i].Direction;
-        }
-
-        if (response[i].Status != null && response[i].Status != '' && response[i].Status != undefined) {
-            Status = response[i].Status;
-        }
-
-        if (response[i].IsRelayToStopTheCar != null && response[i].IsRelayToStopTheCar != '' && response[i].IsRelayToStopTheCar != undefined) {
-            IsRelayToStopTheCar = response[i].IsRelayToStopTheCar;
-        }
-        if (response[i].IsSirenSound != null && response[i].IsSirenSound != '' && response[i].IsSirenSound != undefined) {
-            IsSirenSound = response[i].IsSirenSound;
-        }
-        if (response[i].IsLockTheDoor != null && response[i].IsLockTheDoor != '' && response[i].IsLockTheDoor != undefined) {
-            IsLockTheDoor = response[i].IsLockTheDoor;
-        }
-        if (response[i].IsUnlockTheDoor != null && response[i].IsUnlockTheDoor != '' && response[i].IsUnlockTheDoor != undefined) {
-            IsUnlockTheDoor = response[i].IsUnlockTheDoor;
-        }
-        if (response[i].IsSOS != null && response[i].IsSOS != '' && response[i].IsSOS != undefined) {
-            IsSOS = response[i].IsSOS;
-        }
-        if (response[i].IsDoor != null && response[i].IsDoor != '' && response[i].IsDoor != undefined) {
-            IsDoor = response[i].IsDoor;
-        }
-        if (response[i].IsEngine != null && response[i].IsEngine != '' && response[i].IsEngine != undefined) {
-            IsEngine = response[i].IsEngine;
-        }
-        if (response[i].CreatedDate != null && response[i].CreatedDate != '' && response[i].CreatedDate != undefined) {
-            CreatedDate = convertdateformat(response[i].CreatedDate, 2);
-        }
-        if (response[i].Altitude != null && response[i].Altitude != '' && response[i].Altitude != undefined) {
-            Altitude = response[i].Altitude;
-        }
-        if (response[i].AD1 != null && response[i].AD1 != '' && response[i].AD1 != undefined) {
-            AD1 = response[i].AD1;
-        }
-        if (response[i].AD2 != null && response[i].AD2 != '' && response[i].AD2 != undefined) {
-            AD2 = response[i].AD2;
-            Voltage = Math.round((parseInt(AD2, 16) * 6 / 1024) * 100) / 100;
-        }
-        if (response[i].OdoMeter != null && response[i].OdoMeter != '' && response[i].OdoMeter != undefined) {
-            OdoMeter = response[i].OdoMeter;
-        }
-        row.push(DeviceId, Datetime, Latitude, Longitude, GPSPositioning, Speed, Direction, Status, IsRelayToStopTheCar, IsSirenSound, IsLockTheDoor, IsUnlockTheDoor, IsSOS, IsDoor, IsEngine, CreatedDate, Altitude, AD1, AD2, OdoMeter);
-        row.push(DeviceId, Datetime, Latitude, Longitude, GPSPositioning, Speed, Direction, IsEngine, Voltage, OdoMeter, AD1, AD2, Altitude, Status, IsRelayToStopTheCar, IsSirenSound, IsLockTheDoor, IsUnlockTheDoor, IsSOS, IsDoor, CreatedDate);
-
-
-
-        conf.rows.push(row);
-        GetGpsData(i + 1);
-    } else {
-        var result = nodeExcel.execute(conf);
-        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        res.setHeader("Content-Disposition", "attachment; filename=GPSData.xlsx");
-        res.end(result, 'binary');
+    var EndDate = convertdateUTCformat(objParam.EndDate);
+    var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
+    search['$and'] = [];
+    var DeviceId = objParam.DeviceId;
+    if (DeviceId != null && DeviceId != '' && DeviceId != undefined && DeviceId != "All") {
+        var obj = new Object();
+        obj['DeviceId'] = {
+            $eq: DeviceId
+        };
+        search['$and'].push(obj);
+    }
+    if (objParam.StartDate != '' && objParam.EndDate != '') {
+        var obj = new Object();
+        obj['Date'] = {
+            $between: [unixStartdate, unixEndDate]
+        };
+        search['$and'].push(obj);
+    } else if (objParam.StartDate != null && objParam.StartDate != '') {
+        var obj = new Object();
+        obj['Date'] = {
+            $gt: unixStartdate
+        };
+        search['$and'].push(obj);
+    } else if (objParam.EndDate != null && objParam.EndDate != '') {
+        var obj = new Object();
+        obj['Date'] = {
+            $lt: unixEndDate
+        };
+        search['$and'].push(obj);
     }
 
-}
+
+    Gps.findAll({
+        where: search,
+        order: Orderby,
+    }).then(function(response) {
+        conf.rows = [];
+        var DeviceId = '';
+        var Datetime = '';
+        var Latitude = '';
+        var Longitude = '';
+        var GPSPositioning = '';
+        var Speed = '';
+        var Direction = '';
+        var Status = '';
+        var IsRelayToStopTheCar = false;
+        var IsSirenSound = false;
+        var IsLockTheDoor = false;
+        var IsUnlockTheDoor = false;
+        var IsSOS = false;
+        var IsDoor = false;
+        var IsEngine = false;
+        var CreatedDate = '';
+        var Altitude = '';
+        var AD1 = '';
+        var AD2 = '';
+        var Voltage = '';
+        var OdoMeter = '';
+        var Date = '';
+        GetGpsData(0);
+
+        function GetGpsData(i) {
+            if (i < response.length) {
+                var row = [];
+                if (response[i].DeviceId != null && response[i].DeviceId != '' && response[i].DeviceId != undefined) {
+                    DeviceId = response[i].DeviceId;
+                }
+
+                if (response[i].Datetime != null && response[i].Datetime != '' && response[i].Datetime != undefined) {
+                    Datetime = convertdateformat(response[i].Datetime, "Excel Export");
+                }
+
+                if (response[i].Latitude != null && response[i].Latitude != '' && response[i].Latitude != undefined) {
+                    Latitude = response[i].Latitude
+                }
+
+                if (response[i].Longitude != null && response[i].Longitude != '' && response[i].Longitude != undefined) {
+                    Longitude = response[i].Longitude;
+                }
+
+                if (response[i].GPSPositioning != null && response[i].GPSPositioning != '' && response[i].GPSPositioning != undefined) {
+                    GPSPositioning = response[i].GPSPositioning;
+                }
+
+                if (response[i].Speed != null && response[i].Speed != '' && response[i].Speed != undefined) {
+                    Speed = response[i].Speed;
+                }
+
+                if (response[i].Direction != null && response[i].Direction != '' && response[i].Direction != undefined) {
+                    Direction = response[i].Direction;
+                }
+
+                if (response[i].Status != null && response[i].Status != '' && response[i].Status != undefined) {
+                    Status = response[i].Status;
+                }
+
+                if (response[i].IsRelayToStopTheCar != null && response[i].IsRelayToStopTheCar != '' && response[i].IsRelayToStopTheCar != undefined) {
+                    IsRelayToStopTheCar = response[i].IsRelayToStopTheCar;
+                }
+                if (response[i].IsSirenSound != null && response[i].IsSirenSound != '' && response[i].IsSirenSound != undefined) {
+                    IsSirenSound = response[i].IsSirenSound;
+                }
+                if (response[i].IsLockTheDoor != null && response[i].IsLockTheDoor != '' && response[i].IsLockTheDoor != undefined) {
+                    IsLockTheDoor = response[i].IsLockTheDoor;
+                }
+                if (response[i].IsUnlockTheDoor != null && response[i].IsUnlockTheDoor != '' && response[i].IsUnlockTheDoor != undefined) {
+                    IsUnlockTheDoor = response[i].IsUnlockTheDoor;
+                }
+                if (response[i].IsSOS != null && response[i].IsSOS != '' && response[i].IsSOS != undefined) {
+                    IsSOS = response[i].IsSOS;
+                }
+                if (response[i].IsDoor != null && response[i].IsDoor != '' && response[i].IsDoor != undefined) {
+                    IsDoor = response[i].IsDoor;
+                }
+                if (response[i].IsEngine != null && response[i].IsEngine != '' && response[i].IsEngine != undefined) {
+                    IsEngine = response[i].IsEngine;
+                }
+                if (response[i].CreatedDate != null && response[i].CreatedDate != '' && response[i].CreatedDate != undefined) {
+                    CreatedDate = convertdateformat(response[i].CreatedDate, 2);
+                }
+                if (response[i].Altitude != null && response[i].Altitude != '' && response[i].Altitude != undefined) {
+                    Altitude = response[i].Altitude;
+                }
+                if (response[i].AD1 != null && response[i].AD1 != '' && response[i].AD1 != undefined) {
+                    AD1 = response[i].AD1;
+                }
+                if (response[i].AD2 != null && response[i].AD2 != '' && response[i].AD2 != undefined) {
+                    AD2 = response[i].AD2;
+                    Voltage = Math.round((parseInt(AD2, 16) * 6 / 1024) * 100) / 100;
+                }
+                if (response[i].OdoMeter != null && response[i].OdoMeter != '' && response[i].OdoMeter != undefined) {
+                    OdoMeter = response[i].OdoMeter;
+                }
+                if (response[i].Date != null && response[i].Date != '' && response[i].Date != undefined) {
+                    Date = response[i].Date;
+                }
+                row.push(DeviceId, Datetime, Latitude, Longitude, GPSPositioning, Speed, Direction, IsEngine, Voltage, OdoMeter, AD1, AD2, Altitude, Status, IsRelayToStopTheCar, IsSirenSound, IsLockTheDoor, IsUnlockTheDoor, IsSOS, IsDoor, CreatedDate);
+                conf.rows.push(row);
+                GetGpsData(i + 1);
+            } else {
+                var result = nodeExcel.execute(conf);
+                res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+                res.setHeader("Content-Disposition", "attachment; filename=GPSData.xlsx");
+                res.end(result, 'binary');
+            }
+
+        }
+    });
 });
-});
-
-// router.get('/ExportAllGpsData', function(req, res) {
-//     var conf = {};
-//     conf.name = "Sheet1";
-//     conf.cols = [{
-//             caption: 'DeviceId',
-//             type: 'string'
-//         }, {
-//             caption: 'Datetime',
-//             type: 'string'
-//         }, {
-//             caption: 'Latitude',
-//             type: 'string'
-//         }, {
-//             caption: 'Longitude',
-//             type: 'string'
-//         }, {
-//             caption: 'GPSPositioning',
-//             type: 'string'
-//         }, {
-//             caption: 'Speed',
-//             type: 'string'
-//         }, {
-//             caption: 'Direction',
-//             type: 'string'
-//         }, {
-//             caption: 'Status',
-//             type: 'string'
-//         }, {
-//             caption: 'IsRelayToStopTheCar',
-//             type: 'string'
-//         }, {
-//             caption: 'IsSirenSound',
-//             type: 'string'
-//         }, {
-//             caption: 'IsLockTheDoor',
-//             type: 'string'
-//         }, {
-//             caption: 'IsUnlockTheDoor',
-//             type: 'string'
-//         }, {
-//             caption: 'IsSOS',
-//             type: 'string'
-//         }, {
-//             caption: 'IsDoor',
-//             type: 'string'
-//         }, {
-//             caption: 'IsEngine',
-//             type: 'string'
-//         }, {
-//             caption: 'CreatedDate',
-//             type: 'string'
-//         }, {
-//             caption: 'Altitude',
-//             type: 'string'
-//         }, {
-//             caption: 'AD1',
-//             type: 'string'
-//         },
-//         {
-//             caption: 'AD2',
-//             type: 'string'
-//         }, {
-//             caption: 'OdoMeter',
-//             type: 'string'
-//         }, {
-//             caption: 'Date',
-//             type: 'string'
-//         }
-//     ];
-
-
-
-//     var objParam = req.query;
-//     var Orderby = 'CreatedDate asc';
-
-//     var search = {};
-
-//     var StartDate = convertdateUTCformat(objParam.StartDate);
-//     var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
-
-//     var EndDate = convertdateUTCformat(objParam.EndDate);
-//     var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
-//     search['$and'] = [];
-//     var DeviceId = objParam.DeviceId;
-//     if (DeviceId != null && DeviceId != '' && DeviceId != undefined && DeviceId != "All") {
-//         var obj = new Object();
-//         obj['DeviceId'] = {
-//             $eq: DeviceId
-//         };
-//         search['$and'].push(obj);
-//     }
-//     if (objParam.StartDate != '' && objParam.EndDate != '') {
-//         var obj = new Object();
-//         obj['Date'] = {
-//             $between: [unixStartdate, unixEndDate]
-//         };
-//         search['$and'].push(obj);
-//     } else if (objParam.StartDate != null && objParam.StartDate != '') {
-//         var obj = new Object();
-//         obj['Date'] = {
-//             $gt: unixStartdate
-//         };
-//         search['$and'].push(obj);
-//     } else if (objParam.EndDate != null && objParam.EndDate != '') {
-//         var obj = new Object();
-//         obj['Date'] = {
-//             $lt: unixEndDate
-//         };
-//         search['$and'].push(obj);
-//     }
-
-
-//     Gps.findAll({
-//         where: search,
-//         order: Orderby,
-//     }).then(function(response) {
-//         conf.rows = [];
-//         var DeviceId = '';
-//         var Datetime = '';
-//         var Latitude = '';
-//         var Longitude = '';
-//         var GPSPositioning = '';
-//         var Speed = '';
-//         var Direction = '';
-//         var Status = '';
-//         var IsRelayToStopTheCar = false;
-//         var IsSirenSound = false;
-//         var IsLockTheDoor = false;
-//         var IsUnlockTheDoor = false;
-//         var IsSOS = false;
-//         var IsDoor = false;
-//         var IsEngine = false;
-//         var CreatedDate = '';
-//         var Altitude = '';
-//         var AD1 = '';
-//         var AD2 = '';
-//         var OdoMeter = '';
-//         var Date = '';
-//         GetGpsData(0);
-
-//         function GetGpsData(i) {
-//             if (i < response.length) {
-//                 var row = [];
-//                 if (response[i].DeviceId != null && response[i].DeviceId != '' && response[i].DeviceId != undefined) {
-//                     DeviceId = response[i].DeviceId;
-//                 }
-
-//                 if (response[i].Datetime != null && response[i].Datetime != '' && response[i].Datetime != undefined) {
-//                     Datetime = convertdateformat(response[i].Datetime, "Excel Export");
-//                 }
-
-//                 if (response[i].Latitude != null && response[i].Latitude != '' && response[i].Latitude != undefined) {
-//                     Latitude = response[i].Latitude
-//                 }
-
-//                 if (response[i].Longitude != null && response[i].Longitude != '' && response[i].Longitude != undefined) {
-//                     Longitude = response[i].Longitude;
-//                 }
-
-//                 if (response[i].GPSPositioning != null && response[i].GPSPositioning != '' && response[i].GPSPositioning != undefined) {
-//                     GPSPositioning = response[i].GPSPositioning;
-//                 }
-
-//                 if (response[i].Speed != null && response[i].Speed != '' && response[i].Speed != undefined) {
-//                     Speed = response[i].Speed;
-//                 }
-
-//                 if (response[i].Direction != null && response[i].Direction != '' && response[i].Direction != undefined) {
-//                     Direction = response[i].Direction;
-//                 }
-
-//                 if (response[i].Status != null && response[i].Status != '' && response[i].Status != undefined) {
-//                     Status = response[i].Status;
-//                 }
-
-//                 if (response[i].IsRelayToStopTheCar != null && response[i].IsRelayToStopTheCar != '' && response[i].IsRelayToStopTheCar != undefined) {
-//                     IsRelayToStopTheCar = response[i].IsRelayToStopTheCar;
-//                 }
-//                 if (response[i].IsSirenSound != null && response[i].IsSirenSound != '' && response[i].IsSirenSound != undefined) {
-//                     IsSirenSound = response[i].IsSirenSound;
-//                 }
-//                 if (response[i].IsLockTheDoor != null && response[i].IsLockTheDoor != '' && response[i].IsLockTheDoor != undefined) {
-//                     IsLockTheDoor = response[i].IsLockTheDoor;
-//                 }
-//                 if (response[i].IsUnlockTheDoor != null && response[i].IsUnlockTheDoor != '' && response[i].IsUnlockTheDoor != undefined) {
-//                     IsUnlockTheDoor = response[i].IsUnlockTheDoor;
-//                 }
-//                 if (response[i].IsSOS != null && response[i].IsSOS != '' && response[i].IsSOS != undefined) {
-//                     IsSOS = response[i].IsSOS;
-//                 }
-//                 if (response[i].IsDoor != null && response[i].IsDoor != '' && response[i].IsDoor != undefined) {
-//                     IsDoor = response[i].IsDoor;
-//                 }
-//                 if (response[i].IsEngine != null && response[i].IsEngine != '' && response[i].IsEngine != undefined) {
-//                     IsEngine = response[i].IsEngine;
-//                 }
-//                 if (response[i].CreatedDate != null && response[i].CreatedDate != '' && response[i].CreatedDate != undefined) {
-//                     CreatedDate = convertdateformat(response[i].CreatedDate, 2);
-//                 }
-//                 if (response[i].Altitude != null && response[i].Altitude != '' && response[i].Altitude != undefined) {
-//                     Altitude = response[i].Altitude;
-//                 }
-//                 if (response[i].AD1 != null && response[i].AD1 != '' && response[i].AD1 != undefined) {
-//                     AD1 = response[i].AD1;
-//                 }
-//                 if (response[i].AD2 != null && response[i].AD2 != '' && response[i].AD2 != undefined) {
-//                     AD2 = response[i].AD2;
-//                 }
-//                 if (response[i].OdoMeter != null && response[i].OdoMeter != '' && response[i].OdoMeter != undefined) {
-//                     OdoMeter = response[i].OdoMeter;
-//                 }
-//                 if (response[i].Date != null && response[i].Date != '' && response[i].Date != undefined) {
-//                     Date = response[i].Date;
-//                 }
-//                 row.push(DeviceId, Datetime, Latitude, Longitude, GPSPositioning, Speed, Direction, Status, IsRelayToStopTheCar, IsSirenSound, IsLockTheDoor, IsUnlockTheDoor, IsSOS, IsDoor, IsEngine, CreatedDate, Altitude, AD1, AD2, OdoMeter, Date);
-//                 conf.rows.push(row);
-//                 GetGpsData(i + 1);
-//             } else {
-//                 var result = nodeExcel.execute(conf);
-//                 res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-//                 res.setHeader("Content-Disposition", "attachment; filename=GPSData.xlsx");
-//                 res.end(result, 'binary');
-//             }
-
-//         }
-//     });
-// });
 
 router.get('/ExportAlarm', function(req, res) {
     var conf = {};
