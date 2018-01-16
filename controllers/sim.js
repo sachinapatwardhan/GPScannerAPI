@@ -240,6 +240,7 @@ router.post('/uploadExcelDevice', function(req, res) {
     var FileName = [];
     var Importerror = [];
     var idTelCo = null;
+    var idApp = null;
 
     //Set Parameter for User Permission
     req.query['tablename'] = req.headers['x-requested-with'];
