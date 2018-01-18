@@ -7,6 +7,17 @@ var Vehicle = models.tblvehicle;
 
 //End of Tables
 
+router.get('/setAlarmMarkAsRead', function(req, res) {
+    PetAlarm.update({ IsRead: 1 }, { where: { DeviceId: req.query.DeviceId } }).then(function(response) {
+        if (response) {
+            res.json({ success: true, message: 'All Alarm have been marked as read..' });
+        } else {
+            res.json({ success: true, message: 'Err....' });
+        }
+    }).catch(function(error) {
+        res.json(error);
+    })
+})
 router.get('/GetAllPetAlarm', function(req, res) {
     PetAlarm.findAll().then(function(response) {
         res.json(response);
