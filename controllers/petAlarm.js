@@ -10,7 +10,7 @@ var Vehicle = models.tblvehicle;
 router.get('/setAlarmMarkAsRead', function(req, res) {
     PetAlarm.update({ IsRead: 1 }, { where: { DeviceId: req.query.DeviceId } }).then(function(response) {
         if (response) {
-            res.json({ success: true, message: 'All Alarm have been marked as read..' });
+            res.json({ success: true, message: 'All Notification have been marked as read..' });
         } else {
             res.json({ success: true, message: 'Err....' });
         }
