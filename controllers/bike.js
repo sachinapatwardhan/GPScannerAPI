@@ -1799,7 +1799,7 @@ router.get('/GetDeviceAllInformation', function(req, res) {
         "LEFT JOIN tblsimdetails ts ON ts.id = tgd.idSim " +
         "INNER JOIN tblappinfo tai ON tai.AppName = tgd.AppName " +
         "where tai.id = " + req.query.idApp + " and tv.IsDelete=0 and " +
-        " tgd.DeviceId = " + req.query.DeviceId;
+        " tgd.IMEI = " + req.query.DeviceId;
     connection.query(query, function(err, rows, fields) {
         if (!err) {
             res.json({ success: true, data: rows })
