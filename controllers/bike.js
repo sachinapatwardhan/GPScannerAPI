@@ -1790,5 +1790,24 @@ router.get('/GetAllWorkingBikeWebAppNew', function(req, res) {
     })
 })
 
+router.get('/GetDeviceAllInformation', function(req, res) {
+
+    var query = "Select tgd.IMEI,tgd.DeviceId,tgd.Type,ts.SerialNum,ts.PhoneNum,tv.Name,tv.renewaldate,tu.username,tu.email,tu.phone " +
+        " from tblgpsdevice tgd " +
+        "LEFT JOIN tblvehicle tv ON tv.deviceid = tgd.DeviceId " +
+        "LEFT JOIN tbluserinformation tu ON tu.id = tv.iduser " +
+        "LEFT JOIN tblsimdetails ts ON ts.id = tgd.idSim " +
+        "INNER JOIN tblappinfo tai ON tai.AppName = tgd.AppName " +
+        "where tai.id = " + req.query.idApp + " and tv.IsDelete=0 and " +
+        " tgd.DeviceId = " + req.query.DeviceId;
+    connection.query(query, function(err, rows, fields) {
+        if (!err) {
+            res.json({ success: true, data: rows })
+        } else {
+            res.json({ success: false, data: [] })
+        }
+    })
+
+});
 
 module.exports = router
