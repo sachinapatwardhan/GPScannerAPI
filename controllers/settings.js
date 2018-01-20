@@ -506,6 +506,81 @@ router.get('/GetAllDynamickHandshake', function(req, res) {
     })
 })
 
+router.get('/GetAllDynamickHandshakeNew', function(req, res) {
+    var objParam = req.query;
+    var objColumns = objParam.columns;
+    var objOrderBy = objParam.order;
+    var objSearch = objParam.search;
+
+    var Orderby = objColumns[parseInt(objOrderBy[0].column)].data + ' ' + objOrderBy[0].dir;
+
+    var search = "";
+
+    if (objSearch != '' && objSearch != null && objSearch != undefined) {
+        search = 'Where (th.DeviceId like "%' + objSearch + '%" or ';
+        // search = search + 'th.Charging like "%' + objSearch + '%" or ';
+        // search = search + 'th.Power like "%' + objSearch + '%" or ';
+        search = search + 'th.Datetime like "%' + objSearch + '%") ';
+    }
+
+    if (objParam.DeviceId != null && objParam.DeviceId != 'All' && objParam.DeviceId != '' && objParam.DeviceId != undefined) {
+        if (search != "") {
+            search += ' and th.DeviceId like "%' + objParam.DeviceId + '%"';
+        } else {
+            search += ' where th.DeviceId like "%' + objParam.DeviceId + '%"';
+        }
+    }
+    if (objParam.fromdate != null && objParam.fromdate != '' && objParam.fromdate != undefined) {
+        if (search != "") {
+            search += ' and th.Datetime >= "' + convertdateformat(objParam.fromdate) + '"';
+        } else {
+            search += ' where th.Datetime >= "' + convertdateformat(objParam.fromdate) + '"';
+        }
+    }
+    if (objParam.todate != null && objParam.todate != '' && objParam.todate != undefined) {
+        if (search != "") {
+            search += ' and th.Datetime <= "' + convertdateformat(objParam.todate) + '"';
+        } else {
+            search += ' where th.Datetime <= "' + convertdateformat(objParam.todate) + '"';
+        }
+    }
+
+    // if (search != "") {
+    //     search += ' and tu.idApp = ' + objParam.idApp;
+    // } else {
+    //     search += ' where tu.idApp = ' + objParam.idApp;
+    // }
+
+    if (search != "") {
+        search += " and tgd.AppName =  '" + objParam.AppName + "'";
+    } else {
+        search += " where tgd.AppName = '" + objParam.AppName + "'";
+    }
+
+    var query = "SELECT th.Id,th.DeviceId,CONVERT_TZ(th.Datetime,'+00:00','" + CurrentOffset + "') as Datetime FROM tblhandshake as th inner join tblgpsdevice as tgd  on tgd.DeviceId = th.DeviceId " + search +
+        " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
+    var Countqry = "SELECT count(th.id) as TotalRecord FROM tblhandshake as th inner join tblgpsdevice as tgd  on tgd.DeviceId = th.DeviceId " + search;
+    connection.query(query, function(err, response) {
+        if (response != undefined) {
+            connection.query(Countqry, function(err, lstCount, fields) {
+                var response1 = new Object();
+                response1.draw = objParam.draw;
+                response1.recordsTotal = lstCount[0].TotalRecord;
+                response1.recordsFiltered = lstCount[0].TotalRecord;
+                response1.data = response;
+                res.json(response1);
+            });
+        } else {
+            var response1 = new Object();
+            response1.draw = objParam.draw;
+            response1.recordsTotal = 0;
+            response1.recordsFiltered = 0;
+            response1.data = [];
+            res.json(response1);
+        }
+    })
+})
+
 //End Hand shake
 
 
