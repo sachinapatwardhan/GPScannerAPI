@@ -1584,26 +1584,45 @@ router.get('/UpdateVehicleType', jsonParser, function(req, res) {
 })
 
 router.get('/UpdateVehicleShare', jsonParser, function(req, res) {
-    var updateAttribute = '';
-    if (req.query.IsShared == false || req.query.IsShared == 'false' || req.query.IsShared == 0) {
-        var updateAttribute = " , ShareCode ='" + Math.floor(100000 + Math.random() * 900000) + "'";
-    }
-    connection.query("Update tblvehicle set IsShared=" + req.query.IsShared + " " + updateAttribute + " where deviceid='" + req.query.DeviceId + "'", function(err, rows, fields) {
-        if (!err) {
-            res.json({ success: true, message: 'Vehicle No. Save Successfully.' });
-
-            var objConnection = {
-                DeviceId: req.query.DeviceId,
-                // PetId: objVehicle.id,
-                Status: req.query.IsShared
+    objHeader = req.headers;
+    var token = getToken(objHeader);
+    if (token) {
+        var decoded = jwt.decode(token, TokenKey);
+        User.findOne({
+            where: {
+                username: decoded.username,
+                password: decoded.password
             }
-            io.sockets.emit('ShareStatus', JSON.stringify(objConnection));
-            io.sockets.emit(req.query.DeviceId + 'ShareStatus', JSON.stringify(objConnection));
-        } else {
-            // console.log(err);
-            res.json({ success: false, message: 'Vehicle No. could not save. Try again later.' });
-        }
-    })
+        }).then(function(UserExist) {
+            if (UserExist != null) {
+                var updateAttribute = '';
+                if (req.query.IsShared == false || req.query.IsShared == 'false' || req.query.IsShared == 0) {
+                    var updateAttribute = " , ShareCode ='" + Math.floor(100000 + Math.random() * 900000) + "'";
+                }
+                connection.query("Update tblvehicle set IsShared=" + req.query.IsShared + " " + updateAttribute + " where deviceid='" + req.query.DeviceId + "'", function(err, rows, fields) {
+                    if (!err) {
+                        funAuditLog.CreateAuditLog('Update share Location ', UserExist.username, 'Update share Location (' + req.query.DeviceId + ')');
+                        res.json({ success: true, message: 'Vehicle No. Save Successfully.' });
+
+                        var objConnection = {
+                            DeviceId: req.query.DeviceId,
+                            // PetId: objVehicle.id,
+                            Status: req.query.IsShared
+                        }
+                        io.sockets.emit('ShareStatus', JSON.stringify(objConnection));
+                        io.sockets.emit(req.query.DeviceId + 'ShareStatus', JSON.stringify(objConnection));
+                    } else {
+                        // console.log(err);
+                        res.json({ success: false, message: 'Vehicle No. could not save. Try again later.' });
+                    }
+                })
+            } else {
+                res.json(InvalidToken);
+            }
+        })
+    } else {
+        res.json(InvalidToken);
+    }
 
 })
 
