@@ -80,7 +80,7 @@ router.get('/GetVehicleDetailById', function(req, res) {
     var query = "SELECT tv.*, tgd.ExpiryDate, tgd.IsActive, " +
         " CONVERT_TZ(tv.InsurenceDate,'+00:00','" + CurrentOffset + "') as DisplayInsurenceDate, " +
         " CONVERT_TZ(tv.PUCDate,'+00:00','" + CurrentOffset + "') as DisplayPUCDate, " +
-        " CONVERT_TZ(tgd.ExpiryDate,'+00:00','" + CurrentOffset + "') as DisplayExpiryDate " +
+        " CONVERT_TZ(tv.renewaldate,'+00:00','" + CurrentOffset + "') as DisplayExpiryDate " +
         " From tblvehicle as tv LEFT JOIN tblgpsdevice as tgd ON tgd.DeviceId = tv.deviceid WHERE tv.id = " + req.query.idVehicle + " LIMIT 1"
     connection.query(query, function(err, rows, fields) {
         if (!err) {
@@ -1664,13 +1664,21 @@ router.get('/GetAllExpireDevice', jsonParser, function(req, res) {
     date.setHours(0);
     date.setMinutes(0);
     date.setSeconds(0);
-    var query = "select tblgpsdevice.DeviceId,tblgpsdevice.ExpiryDate,tblsimdetails.SerialNum " +
+    // var query = "select tblgpsdevice.DeviceId,tblgpsdevice.ExpiryDate,tblsimdetails.SerialNum,tblvehicle.renewaldate " +
+    //     "from tblgpsdevice LEFT JOIN tblsimdetails ON tblgpsdevice.idSim = tblsimdetails.id " +
+    //     "INNER JOIN tblvehicle ON  tblgpsdevice.DeviceId = tblvehicle.deviceid " +
+    //     "where tblgpsdevice.AppName ='" + req.query.AppName + "' and " +
+    //     "tblvehicle.renewaldate >'" + ConvertDateFormat(date, true) + "' order by renewaldate asc";
+
+    var query = "select tblvehicle.deviceid,tblsimdetails.SerialNum,tblvehicle.renewaldate " +
         "from tblgpsdevice LEFT JOIN tblsimdetails ON tblgpsdevice.idSim = tblsimdetails.id " +
-        "INNER JOIN tblvehicle ON  tblgpsdevice.DeviceId = tblvehicle.deviceid " +
-        "where tblgpsdevice.AppName ='" + req.query.AppName + "' and " +
-        "tblgpsdevice.ExpiryDate>'" + ConvertDateFormat(date, true) + "' order by ExpiryDate asc";
+        "right JOIN tblvehicle ON  tblgpsdevice.DeviceId = tblvehicle.deviceid " +
+        "where tblgpsdevice.AppName ='" + req.query.AppName + "' and tblvehicle.IsDelete=0 and " +
+        "Date (tblvehicle.renewaldate )>'" + ConvertDateFormat(date) + "' order by renewaldate asc";
+
     connection.query(query, function(err, response, fields) {
-        res.json(response);
+        // res.json({ data: response, message: query });
+        res.json(response)
     })
 
 

@@ -166,6 +166,99 @@ router.get('/GetAllGPSDeviceold', function(req, res) {
         CheckUserCountry(0)
     }
 })
+router.get('/GetAllGPSDeviceold1', function(req, res) {
+    var objParam = req.query;
+
+    var objColumns = objParam.columns;
+    var objOrderBy = objParam.order;
+    var objSearch = objParam.search;
+    var Orderby = objColumns[parseInt(objOrderBy[0].column)].data + ' ' + objOrderBy[0].dir;
+    var search = '';
+
+    var TelSearchflg = false;
+    var SalesAgSearchflg = false;
+
+    var IsUserSuperAdmin = false;
+    var IsCountryAll = false;
+    var CountryList = objParam.CountryList;
+    if (CountryList == undefined || CountryList == null || CountryList == "") {
+        CountryList = [];
+    }
+
+    var UserRoles = objParam.UserRoles;
+
+    if (objSearch != null && objSearch != '') {
+        search = 'Where (tblgpsdevice.DeviceId like "%' + objSearch + '%" or ';
+        search = search + 'tblgpsdevice.Type like "%' + objSearch + '%" or ';
+        search = search + 'tblgpsdevice.IMEI like "%' + objSearch + '%" or ';
+        search = search + 'tblgpsdevice.Version like "%' + objSearch + '%" or ';
+        search = search + 'tblgpsdevice.SimNum like "%' + objSearch + '%" or ';
+        search = search + 'tbltelco.Name like "%' + objSearch + '%" or ';
+        search = search + 'tblgpsdevice.ExpiryDate like "%' + objSearch + '%" or ';
+        search = search + 'tblgpsdevice.CreatedDate like "%' + objSearch + '%" or ';
+        search = search + 'tblgpsdevice.CreatedBy like "%' + objSearch + '%" or ';
+        search = search + 'tblsimdetails.SerialNum like "%' + objSearch + '%" or ';
+        search = search + 'tblsimdetails.PhoneNum like "%' + objSearch + '%" or ';
+        search = search + 'tblcountrymgmt.Country like "%' + objSearch + '%" or ';
+        search = search + 'tblgpsdevice.AppName like "%' + objSearch + '%") ';
+    };
+    if (objParam.UserId != null && objParam.UserId != undefined && objParam.UserId != '') {
+        if (search != "") {
+            search += " and tblgpsdevice.idSalesAgent =" + objParam.UserId;
+        } else {
+            search += " Where tblgpsdevice.idSalesAgent =" + objParam.UserId;
+        }
+    }
+
+    if (objParam.AppName != null && objParam.AppName != undefined && objParam.AppName != '') {
+        if (search != "") {
+            search += ' and tblgpsdevice.AppName = "' + objParam.AppName + '"';
+        } else {
+            search += ' where tblgpsdevice.AppName = "' + objParam.AppName + '"';
+        }
+    }
+
+    var query = " select tblgpsdevice.*, tblcountrymgmt.Country, " +
+        " CONVERT_TZ(tblgpsdevice.CreatedDate,'+00:00','" + CurrentOffset + "') as CreatedDate," +
+        " CONVERT_TZ(tblgpsdevice.ExpiryDate,'+00:00','" + CurrentOffset + "') as ExpiryDate," +
+        " tbltelco.Name, tbluserinformation.username, tbluserinformation.idApp,tblsimdetails.SerialNum,tblsimdetails.PhoneNum" +
+        " from tblgpsdevice " +
+        " Left Join tbluserinformation on tblgpsdevice.idSalesAgent=tbluserinformation.id " +
+        " Left Join tblsimdetails on tblsimdetails.id = tblgpsdevice.idSim" +
+        " Left Join tblcountrymgmt on tblcountrymgmt.id = tblgpsdevice.CountryId" +
+        " Left Join tbltelco on tblsimdetails.idTelCo = tbltelco.id " + search +
+        " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
+
+    var Countqry = "SELECT count(tblgpsdevice.id) as TotalRecord " +
+        " from tblgpsdevice " +
+        " Left Join tbluserinformation on  tblgpsdevice.idSalesAgent=tbluserinformation.id " +
+        " Left Join tblsimdetails on tblsimdetails.id = tblgpsdevice.idSim" +
+        " Left Join tblcountrymgmt on tblcountrymgmt.id = tblgpsdevice.CountryId" +
+        " Left Join tbltelco on tblsimdetails.idTelCo = tbltelco.id " + search;
+    // " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
+    connection.query(query, function(err, response) {
+        if (response != undefined) {
+            connection.query(Countqry, function(err, lstCount, fields) {
+                var response1 = new Object();
+                response1.draw = objParam.draw;
+                response1.recordsTotal = lstCount[0].TotalRecord;
+                response1.recordsFiltered = lstCount[0].TotalRecord;
+                response1.data = response;
+                res.json(response1);
+            });
+        } else {
+            console.log(err);
+            var response1 = new Object();
+            response1.draw = objParam.draw;
+            response1.recordsTotal = 0;
+            response1.recordsFiltered = 0;
+            response1.data = [];
+            res.json(response1);
+        }
+    })
+
+})
+
 router.get('/GetAllGPSDevice', function(req, res) {
     var objParam = req.query;
 
@@ -286,6 +379,9 @@ router.get('/ExportTracker', function(req, res) {
             caption: 'Tel Company',
             type: 'string'
         }, {
+            caption: 'Country',
+            type: 'string'
+        }, {
             caption: 'App Type',
             type: 'string'
         }, {
@@ -295,7 +391,7 @@ router.get('/ExportTracker', function(req, res) {
             caption: 'Date',
             type: 'string'
         }, {
-            caption: 'Is Active',
+            caption: 'Created By',
             type: 'string'
         }];
     } else {
@@ -321,13 +417,16 @@ router.get('/ExportTracker', function(req, res) {
             caption: 'Tel Company',
             type: 'string'
         }, {
+            caption: 'Country',
+            type: 'string'
+        }, {
             caption: 'Expiry Date',
             type: 'string'
         }, {
             caption: 'Date',
             type: 'string'
         }, {
-            caption: 'Is Active',
+            caption: 'Created By',
             type: 'string'
         }];
     }
@@ -363,6 +462,7 @@ router.get('/ExportTracker', function(req, res) {
         search = search + 'tblgpsdevice.CreatedBy like "%' + objSearch + '%" or ';
         search = search + 'tblsimdetails.SerialNum like "%' + objSearch + '%" or ';
         search = search + 'tblsimdetails.PhoneNum like "%' + objSearch + '%" or ';
+        search = search + 'tblcountrymgmt.Country like "%' + objSearch + '%" or ';
         search = search + 'tblgpsdevice.AppName like "%' + objSearch + '%") ';
     };
 
@@ -380,13 +480,14 @@ router.get('/ExportTracker', function(req, res) {
             search += ' where tblgpsdevice.AppName = "' + objParam.AppName + '"';
         }
     }
-    var query = " select tblgpsdevice.*, " +
+    var query = " select tblgpsdevice.*, tblcountrymgmt.Country, " +
         " CONVERT_TZ(tblgpsdevice.CreatedDate,'+00:00','" + req.query.CurrentOffset + "') as CreatedDate," +
         " CONVERT_TZ(tblgpsdevice.ExpiryDate,'+00:00','" + req.query.CurrentOffset + "') as ExpiryDate," +
         " tbltelco.Name, tbluserinformation.username, tbluserinformation.idApp,tblsimdetails.SerialNum,tblsimdetails.PhoneNum" +
         " from tblgpsdevice " +
         " Left Join tbluserinformation on tblgpsdevice.idSalesAgent=tbluserinformation.id " +
         " Left Join tblsimdetails on tblsimdetails.id = tblgpsdevice.idSim" +
+        " Left Join tblcountrymgmt on tblcountrymgmt.id = tblgpsdevice.CountryId" +
         " Left Join tbltelco on tblsimdetails.idTelCo = tbltelco.id " + search +
         " order by " + Orderby;
 
@@ -411,6 +512,8 @@ router.get('/ExportTracker', function(req, res) {
                 var CreatedBy = '';
                 var isActive = 'false';
                 var AppName = '';
+                var Country = '';
+                var CreatedBy = '';
                 // if (i < response.length) {
                 var row = [];
                 if (response[i].DeviceId != null && response[i].DeviceId != '' && response[i].DeviceId != undefined) {
@@ -461,11 +564,17 @@ router.get('/ExportTracker', function(req, res) {
                 if (response[i].AppName != null && response[i].AppName != '' && response[i].AppName != undefined) {
                     AppName = response[i].AppName;
                 }
+                if (response[i].Country != null && response[i].Country != '' && response[i].Country != undefined) {
+                    Country = response[i].Country;
+                }
+                if (response[i].CreatedBy != null && response[i].CreatedBy != '' && response[i].CreatedBy != undefined) {
+                    CreatedBy = response[i].CreatedBy;
+                }
                 if (UserRoles == 'Super Admin') {
-                    row.push(DeviceId, Type, IMEI, Version, SimSerialNum, SimPhoneNum, TelCompany, AppName, ExpiryDate, Date, isActive);
+                    row.push(DeviceId, Type, IMEI, Version, SimSerialNum, SimPhoneNum, TelCompany, Country, AppName, ExpiryDate, Date, CreatedBy);
                     conf.rows.push(row);
                 } else {
-                    row.push(DeviceId, Type, IMEI, Version, SimSerialNum, SimPhoneNum, TelCompany, ExpiryDate, Date, isActive);
+                    row.push(DeviceId, Type, IMEI, Version, SimSerialNum, SimPhoneNum, TelCompany, Country, ExpiryDate, Date, CreatedBy);
                     conf.rows.push(row);
                 }
 

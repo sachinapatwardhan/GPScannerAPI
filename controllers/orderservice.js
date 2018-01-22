@@ -12,7 +12,7 @@ var AppInfo = models.tblappinfo;
 var User = models.tbluserinformation;
 var GPSDevice = models.tblgpsdevice;
 var WalletTransaction = models.tblwallettransaction;
-
+var Vehicle = models.tblvehicle;
 //
 // CreateOrderServiceGlobal("India", 1, "0000000000000", "IMMM", function(redds) {
 //     console.log(redds)
@@ -109,7 +109,7 @@ router.get('/GetAllOrderService', function(req, res) {
             allowNull: false
         }
     })
-    
+
     if (objParam.StartDate != '' && objParam.StartDate != null && objParam.StartDate != undefined && objParam.EndDate != '' && objParam.EndDate != null && objParam.EndDate != undefined) {
 
         // search['$and'] = [];
@@ -164,7 +164,7 @@ router.get('/GetAllOrderService', function(req, res) {
         InnerSearch['$or'].push(obj1);
 
         search['$and'].push(InnerSearch);
-        
+
     } else if (objParam.EndDate != '' && objParam.EndDate != null && objParam.EndDate != undefined) {
 
         if (search['$and'] == undefined) {
@@ -191,7 +191,7 @@ router.get('/GetAllOrderService', function(req, res) {
         InnerSearch['$or'].push(obj1);
 
         search['$and'].push(InnerSearch);
-        
+
     }
 
     if (objParam.Status > 0) {
@@ -238,7 +238,7 @@ router.get('/GetAllOrderService', function(req, res) {
 
 
     var offset = (req.query.PageNo * 10) - 10;
-    
+
     OrderService.findAndCountAll({
         where: search,
         order: Orderby,
@@ -342,12 +342,21 @@ router.post('/CreateOrderService', jsonParser, function(req, res) {
             objOrderDetail.PriceInclTax = OrderTotal;
             objOrderDetail.PriceExclTax = OrderTotal;
             OrderServiceDetail.create(objOrderDetail).then(function(responseOrderDetail) {
-                res.json({
-                    success: true,
-                    message: "Order Service placed successfully...",
-                    data: response,
-                    orderId: response.id,
-                });
+                // console.log("############", responseOrderDetail)
+                Vehicle.findOne({ where: { deviceid: responseOrderDetail.OrderNotes } }).then(function(vehicleExits) {
+                    if (vehicleExits) {
+                        vehicleExits.updateAttributes({
+                            renewaldate: responseOrderDetail.ExpiryDate,
+                        }).then(function(response1) {
+                            res.json({
+                                success: true,
+                                message: "Order Service placed successfully...",
+                                data: response,
+                                orderId: response.id,
+                            });
+                        })
+                    }
+                })
             });
         });
     });
@@ -435,12 +444,20 @@ router.get('/RenewOrderService', function(req, res) {
                         Deleted: true,
                         OrderStatusId: 3
                     }).then(function(resUpdateOrder) {
-                        res.json({
-                            success: true,
-                            message: "Order Service Renew successfully...",
-                            data: response,
-                            orderId: response.id,
-                        });
+                        Vehicle.findOne({ where: { deviceid: objOrderExists.OrderNotes } }).then(function(vehicleExits) {
+                            if (vehicleExits) {
+                                vehicleExits.updateAttributes({
+                                    renewaldate: objOrder.ExpiryDate,
+                                }).then(function(response) {
+                                    res.json({
+                                        success: true,
+                                        message: "Order Service Renew successfully...",
+                                        data: response,
+                                        orderId: response.id,
+                                    });
+                                });
+                            }
+                        })
                     });
                 });
             });
@@ -517,10 +534,28 @@ router.get('/UpdateOrderServiceDates', function(req, res) {
                 CreatedOnUtc: new Date(CreatedOnUtc),
                 ExpiryDate: ExpiryDate,
             }).then(function(resUpdate) {
-                res.json({
-                    success: true,
-                    message: "Expiry Date Updated Successfully"
-                });
+                Vehicle.findOne({ where: { deviceid: resOrderFind.OrderNotes } }).then(function(vehicleExits) {
+                        if (vehicleExits) {
+                            vehicleExits.updateAttributes({
+                                renewaldate: ExpiryDate,
+                            }).then(function(response) {
+                                res.json({
+                                    success: true,
+                                    message: "Expiry Date Updated Successfully"
+                                });
+                            })
+                        } else {
+                            res.json({
+                                success: false,
+                                message: "Expiry not Date Updated"
+                            });
+                        }
+
+                    })
+                    // res.json({
+                    //     success: true,
+                    //     message: "Expiry Date Updated Successfully"
+                    // });
             });
         } else {
             res.json({
@@ -621,88 +656,88 @@ router.get('/ExportOrderService', function(req, res) {
     })
 
     if (objParam.StartDate != '' && objParam.StartDate != null && objParam.StartDate != undefined && objParam.EndDate != '' && objParam.EndDate != null && objParam.EndDate != undefined) {
-        
-                // search['$and'] = [];
-                if (search['$and'] == undefined) {
-                    search['$and'] = [];
-                }
-        
-                var InnerSearch = {};
-                if (InnerSearch['$or'] == undefined) {
-                    InnerSearch['$or'] = [];
-                }
-        
-                var StartDate = convertdateUTCformat(objParam.StartDate);
-                var EndDate = convertdateUTCformat(objParam.EndDate, 2);
-        
-                var obj = new Object();
-                obj['ExpiryDate'] = {
-                    $between: [StartDate, EndDate]
-                };
-                InnerSearch['$or'].push(obj);
-        
-                var obj1 = new Object();
-                obj1['CreatedOnUtc'] = {
-                    $between: [StartDate, EndDate]
-                };
-                InnerSearch['$or'].push(obj1);
-        
-                search['$and'].push(InnerSearch);
-        
-            } else if (objParam.StartDate != '' && objParam.StartDate != null && objParam.StartDate != undefined) {
-        
-                if (search['$and'] == undefined) {
-                    search['$and'] = [];
-                }
-        
-                var InnerSearch = {};
-                if (InnerSearch['$or'] == undefined) {
-                    InnerSearch['$or'] = [];
-                }
-        
-                var StartDate = convertdateUTCformat(objParam.StartDate);
-                var obj = new Object();
-                obj['ExpiryDate'] = {
-                    $gte: StartDate
-                };
-                InnerSearch['$or'].push(obj);
-        
-                var obj1 = new Object();
-                obj1['CreatedOnUtc'] = {
-                    $gte: StartDate
-                };
-                InnerSearch['$or'].push(obj1);
-        
-                search['$and'].push(InnerSearch);
-                
-            } else if (objParam.EndDate != '' && objParam.EndDate != null && objParam.EndDate != undefined) {
-        
-                if (search['$and'] == undefined) {
-                    search['$and'] = [];
-                }
-        
-                var InnerSearch = {};
-                if (InnerSearch['$or'] == undefined) {
-                    InnerSearch['$or'] = [];
-                }
-        
-                var EndDate = convertdateUTCformat(objParam.EndDate, 2);
-        
-                var obj = new Object();
-                obj['ExpiryDate'] = {
-                    $lte: EndDate
-                };
-                InnerSearch['$or'].push(obj);
-        
-                var obj1 = new Object();
-                obj1['CreatedOnUtc'] = {
-                    $lte: EndDate
-                };
-                InnerSearch['$or'].push(obj1);
-        
-                search['$and'].push(InnerSearch);
-                
-            }
+
+        // search['$and'] = [];
+        if (search['$and'] == undefined) {
+            search['$and'] = [];
+        }
+
+        var InnerSearch = {};
+        if (InnerSearch['$or'] == undefined) {
+            InnerSearch['$or'] = [];
+        }
+
+        var StartDate = convertdateUTCformat(objParam.StartDate);
+        var EndDate = convertdateUTCformat(objParam.EndDate, 2);
+
+        var obj = new Object();
+        obj['ExpiryDate'] = {
+            $between: [StartDate, EndDate]
+        };
+        InnerSearch['$or'].push(obj);
+
+        var obj1 = new Object();
+        obj1['CreatedOnUtc'] = {
+            $between: [StartDate, EndDate]
+        };
+        InnerSearch['$or'].push(obj1);
+
+        search['$and'].push(InnerSearch);
+
+    } else if (objParam.StartDate != '' && objParam.StartDate != null && objParam.StartDate != undefined) {
+
+        if (search['$and'] == undefined) {
+            search['$and'] = [];
+        }
+
+        var InnerSearch = {};
+        if (InnerSearch['$or'] == undefined) {
+            InnerSearch['$or'] = [];
+        }
+
+        var StartDate = convertdateUTCformat(objParam.StartDate);
+        var obj = new Object();
+        obj['ExpiryDate'] = {
+            $gte: StartDate
+        };
+        InnerSearch['$or'].push(obj);
+
+        var obj1 = new Object();
+        obj1['CreatedOnUtc'] = {
+            $gte: StartDate
+        };
+        InnerSearch['$or'].push(obj1);
+
+        search['$and'].push(InnerSearch);
+
+    } else if (objParam.EndDate != '' && objParam.EndDate != null && objParam.EndDate != undefined) {
+
+        if (search['$and'] == undefined) {
+            search['$and'] = [];
+        }
+
+        var InnerSearch = {};
+        if (InnerSearch['$or'] == undefined) {
+            InnerSearch['$or'] = [];
+        }
+
+        var EndDate = convertdateUTCformat(objParam.EndDate, 2);
+
+        var obj = new Object();
+        obj['ExpiryDate'] = {
+            $lte: EndDate
+        };
+        InnerSearch['$or'].push(obj);
+
+        var obj1 = new Object();
+        obj1['CreatedOnUtc'] = {
+            $lte: EndDate
+        };
+        InnerSearch['$or'].push(obj1);
+
+        search['$and'].push(InnerSearch);
+
+    }
 
     if (objParam.Status > 0) {
         if (search['$and'] == undefined) {
@@ -987,10 +1022,55 @@ router.post('/SaveOrderService', jsonParser, function(req, res) {
                         GPSDevice.findOne({ where: { DeviceId: objOrderservice.DeviceId, AppName: objOrderservice.AppName } }).then(function(DeviceExist) {
                             if (DeviceExist) {
                                 CreateOrderServiceGlobal(Userfound.country, Userfound.id, DeviceExist.DeviceId, Userfound.username, Userfound.idApp, function(orderresponse) {
-                                    res.json({
-                                        success: true,
-                                        message: "Oder Service created successfully...",
-                                    });
+                                    if (orderresponse.success == true) {
+                                        var objVehicle = new Object();
+                                        objVehicle.CreatedDate = new Date();
+                                        objVehicle.CreatedBy = UserExist.username;
+                                        objVehicle.deviceid = DeviceExist.DeviceId;
+                                        objVehicle.iduser = Userfound.id;
+                                        objVehicle.Name = objOrderservice.Name;
+                                        objVehicle.idType = objOrderservice.idType;
+                                        objVehicle.renewaldate = AddDate(objVehicle.CreatedDate, 1, "Year");
+                                        Vehicle.findOne({
+                                            where: {
+                                                deviceid: objVehicle.deviceid,
+                                            }
+                                        }).then(function(VehicleExist) {
+                                            if (VehicleExist) {
+                                                if (VehicleExist.IsDelete == true) {
+                                                    objVehicle.IsDelete = false;
+
+                                                    Vehicle.update(objVehicle, {
+                                                        where: {
+                                                            id: VehicleExist.id
+                                                        }
+                                                    }).then(function(vehicleCreated) {
+                                                        if (vehicleCreated) {
+                                                            funAuditLog.CreateAuditLog('Create Vehicle through Create Oder service', UserExist.username, 'Save Vehicle  through Create Oder service');
+                                                        }
+                                                    })
+                                                } else {
+                                                    VehicleExist.updateAttributes({ renewaldate: AddDate(objVehicle.CreatedDate, 1, "Year") }).then(function(vehicleupdated) {
+                                                        funAuditLog.CreateAuditLog('update Vehicle Expiry date through Create Oder service', UserExist.username, 'update Vehicle Expiry date through Create Oder service');
+                                                    });
+                                                }
+                                            } else {
+                                                Vehicle.create(objVehicle).then(function(vehicleCreated) {
+                                                    if (vehicleCreated) {
+                                                        funAuditLog.CreateAuditLog('Create Vehicle through Create Oder service', UserExist.username, 'Save Vehicle Type through Create Oder service');
+                                                    }
+                                                })
+                                            }
+                                        })
+
+                                        res.json({
+                                            success: true,
+                                            message: "Oder Service created successfully...",
+                                        });
+                                    } else {
+                                        res.json(orderresponse);
+                                    }
+
                                 })
                             } else {
                                 res.json({
