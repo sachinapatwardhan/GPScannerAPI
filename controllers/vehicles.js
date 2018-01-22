@@ -16,6 +16,7 @@ router.get('/GetAllDynamicVehicle', function(req, res) {
     var objOrderBy = objParam.order;
     var objSearch = objParam.search;
 
+    var AdvanceSearch = objParam.AdvanceSearch;
     var Orderby = objColumns[parseInt(objOrderBy[0].column)].data + ' ' + objOrderBy[0].dir;
 
     var search = "";
@@ -51,8 +52,23 @@ router.get('/GetAllDynamicVehicle', function(req, res) {
             search += ' Where user.idApp =' + objParam.appId;
         }
     }
+    if (AdvanceSearch != null && AdvanceSearch != '' && AdvanceSearch != undefined) {
+        if (AdvanceSearch.idType != '' && AdvanceSearch.idType != undefined && AdvanceSearch.idType != '') {
+            search += " and vehicle.idType=" + AdvanceSearch.idType;
+        }
+        if (AdvanceSearch.StartDate != '' && AdvanceSearch.EndDate == '') {
+            search += " and Date(vehicle.renewaldate)>='" + ConvertDateFormat(new Date(AdvanceSearch.StartDate)) + "'";
+        }
+        if (AdvanceSearch.StartDate == '' && AdvanceSearch.EndDate != '') {
+            search += " and Date(vehicle.renewaldate)<'" + ConvertDateFormat(new Date(AdvanceSearch.EndDate)) + "'";
+        }
+        if (AdvanceSearch.StartDate != '' && AdvanceSearch.EndDate != '') {
+            search += " and Date(vehicle.renewaldate)>='" + ConvertDateFormat(new Date(AdvanceSearch.StartDate)) + "' and Date(vehicle.renewaldate) <= '" + ConvertDateFormat(new Date(AdvanceSearch.EndDate)) + "'";
+        }
+    }
 
-    var qry = "Select vehicle.*,vehicletype.Type,gpsdevice.IMEI,CONVERT_TZ(vehicle.HandshakDatetime,'+00:00','" + CurrentOffset + "') as DisplyHandshakDate,  " +
+
+    var qry = "Select vehicle.*,vehicletype.Type,gpsdevice.IMEI,CONVERT_TZ(vehicle.HandshakDatetime,'+00:00','" + CurrentOffset + "') as DisplyHandshakDate, CONVERT_TZ(vehicle.renewaldate,'+00:00','" + CurrentOffset + "') as Displyrenewaldate,  " +
         "user.username AS username " +
         "FROM tblvehicle AS vehicle " +
         " left join tblvehicletype  as vehicletype on vehicletype.id = vehicle.idType " +
@@ -608,5 +624,18 @@ router.get('/GetAllVehicleDeviceId', function(req, res) {
 
 })
 
+function ConvertDateFormat(today, flg) {
+    var year = today.getUTCFullYear();
+    var month = today.getUTCMonth() + 1; // beware: January = 0; February = 1, etc.
+    var day = today.getUTCDate();
+    var firstdayHours = today.getUTCHours();
+    var firstdayMinutes = today.getUTCMinutes();
+    var firstdaySeconds = today.getUTCSeconds();
+
+    //return year + "-" + month + "-" + day + " " + hour + ":" + min + ":" + sec;
+    if (flg) {
+        return ("00" + year.toString()).slice(-4) + "-" + ("00" + month.toString()).slice(-2) + "-" + ("0000" + day.toString()).slice(-2) + " " + ("00" + firstdayHours.toString()).slice(-2) + ':' + ("00" + firstdayMinutes.toString()).slice(-2) + ':' + ("00" + firstdaySeconds.toString()).slice(-2);
+    } else { return ("0000" + year.toString()).slice(-4) + "-" + ("00" + month.toString()).slice(-2) + "-" + ("00" + day.toString()).slice(-2); }
+}
 
 module.exports = router
