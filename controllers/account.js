@@ -950,7 +950,7 @@ router.post('/changepasswordNew', jsonParser, function(req, res) {
                                         });
                                         res.json({
                                             success: true,
-                                            message: "Password sent to your email successfully...",
+                                            message: "Password change Successfully. password send to customer's email....",
                                             data: response
                                         });
                                     })
@@ -1576,7 +1576,7 @@ router.get('/forgotpasswordfromOwnerCustomerNew', jsonParser, function(req, res)
                                                         });
                                                         res.json({
                                                             success: true,
-                                                            message: "Password sent to your email successfully...",
+                                                            message: "Reset Password successfully. Password send to customer's Email....",
                                                             data: response
                                                         });
                                                     })
