@@ -437,19 +437,23 @@ router.get('/GetVehicleCurrentLocationForSharedDevice', function(req, res) {
     var convertDate = convertdateformatForUnix(Startdate);
     var unixStartdate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
     // var unixStartdate = Startdate.getTime() / 1000;
-    var url = jwt.decode(req.query.DeviceId, "bugz");
-    url = url.split(',');
-    var DeviceId = url[0];
-    var ShareCode = url[1];
-    var query = "Select tv.Name, tv.IsOnline, tv.iduser, tv.IsShared, tgps.* FROM tblgpsdata as tgps LEFT JOIN tblvehicle as tv ON tgps.DeviceId = tv.deviceid where tgps.DeviceId = " + DeviceId + " AND tv.ShareCode ='" + ShareCode + "' AND tgps.Date <= '" + unixStartdate + "' ORDER BY Date DESC limit 1";
-    console.log("Select tv.Name, tv.IsOnline, tv.iduser, tv.IsShared, tgps.* FROM tblgpsdata as tgps LEFT JOIN tblvehicle as tv ON tgps.DeviceId = tv.deviceid where tgps.DeviceId = " + DeviceId + " AND tv.ShareCode ='" + ShareCode + "' AND tgps.Date <= '" + unixStartdate + "' ORDER BY Date DESC limit 1")
-    connection.query(query, function(err, rows, fields) {
-        if (!err) {
-            res.json({ success: true, data: rows[0] });
-        } else {
-            res.json({ success: false, data: [] });
-        }
-    })
+    try {
+        var url = jwt.decode(req.query.DeviceId, "bugz");
+        url = url.split(',');
+        var DeviceId = url[0];
+        var ShareCode = url[1];
+        var query = "Select tv.Name, tv.IsOnline, tv.iduser, tv.IsShared, tgps.* FROM tblgpsdata as tgps LEFT JOIN tblvehicle as tv ON tgps.DeviceId = tv.deviceid where tgps.DeviceId = " + DeviceId + " AND tv.ShareCode ='" + ShareCode + "' AND tgps.Date <= '" + unixStartdate + "' ORDER BY Date DESC limit 1";
+        console.log("Select tv.Name, tv.IsOnline, tv.iduser, tv.IsShared, tgps.* FROM tblgpsdata as tgps LEFT JOIN tblvehicle as tv ON tgps.DeviceId = tv.deviceid where tgps.DeviceId = " + DeviceId + " AND tv.ShareCode ='" + ShareCode + "' AND tgps.Date <= '" + unixStartdate + "' ORDER BY Date DESC limit 1")
+        connection.query(query, function(err, rows, fields) {
+            if (!err) {
+                res.json({ success: true, data: rows[0] });
+            } else {
+                res.json({ success: false, data: [] });
+            }
+        })
+    } catch (err) {
+        res.json({ success: false, data: [] });
+    }
 });
 
 router.get('/GetAllGPSDate', function(req, res) {
