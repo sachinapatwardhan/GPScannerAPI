@@ -574,11 +574,12 @@ router.get('/GetAllDynamickHandshakeNew', function(req, res) {
     // } else {
     //     search += ' where tu.idApp = ' + objParam.idApp;
     // }
-
-    if (search != "") {
-        search += " and tgd.AppName =  '" + objParam.AppName + "'";
-    } else {
-        search += " where tgd.AppName = '" + objParam.AppName + "'";
+    if (objParam.AppName != "" && objParam.AppName != null && objParam.AppName != undefined) {
+        if (search != "") {
+            search += " and tgd.AppName =  '" + objParam.AppName + "'";
+        } else {
+            search += " where tgd.AppName = '" + objParam.AppName + "'";
+        }
     }
 
     var query = "SELECT th.Id,th.DeviceId,CONVERT_TZ(th.Datetime,'+00:00','" + CurrentOffset + "') as Datetime FROM tblhandshake as th inner join tblgpsdevice as tgd  on tgd.DeviceId = th.DeviceId " + search +
