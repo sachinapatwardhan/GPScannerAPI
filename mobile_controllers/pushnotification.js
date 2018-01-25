@@ -29,29 +29,88 @@ router.post('/Subscribe', jsonParser, function(req, res) {
                     MessageCount: 0,
                     AppVersion: objPushNotification.AppVersion
                 }).then(function(resUpdate) {
-                    res.json({
-                        success: true,
-                        message: "User Subscribe successfully...",
-                        data: resUpdate
-                    });
+
+                    if (objPushNotification.iduser != 0) {
+                        User.findOne({ where: { id: objPushNotification.iduser } }).then(function(userExits) {
+                            if (userExits) {
+                                var LastLogin = new Date();
+                                if (objPushNotification.AppVersion != null && objPushNotification.AppVersion != undefined && objPushNotification.AppVersion != '0.0.0') {
+                                    userExits.updateAttributes({ LastLogin: LastLogin, AppVersion: objPushNotification.AppVersion, Platform: objPushNotification.Platform }).then(function(UpdateLastLogin) {})
+                                } else {
+                                    userExits.updateAttributes({ LastLogin: LastLogin, Platform: objPushNotification.Platform }).then(function(UpdateLastLogin) {})
+                                }
+                            }
+                            res.json({
+                                success: true,
+                                message: "User Subscribe successfully...",
+                                data: resUpdate
+                            });
+                        })
+
+                    } else {
+                        res.json({
+                            success: true,
+                            message: "User Subscribe successfully...",
+                            data: resUpdate
+                        });
+                    }
+
                 });
             } else {
                 PushnotificationExist.updateAttributes({ PushNotificationId: objPushNotification.PushNotificationId, iduser: objPushNotification.iduser, MessageCount: 0, AppVersion: objPushNotification.AppVersion }).then(function(resUpdate) {
-                    res.json({
-                        success: true,
-                        message: "User Subscribe successfully...",
-                        data: resUpdate
-                    });
+                    if (objPushNotification.iduser != 0) {
+                        User.findOne({ where: { id: objPushNotification.iduser } }).then(function(userExits) {
+                            if (userExits) {
+                                var LastLogin = new Date();
+                                if (objPushNotification.AppVersion != null && objPushNotification.AppVersion != undefined && objPushNotification.AppVersion != '0.0.0') {
+                                    userExits.updateAttributes({ LastLogin: LastLogin, AppVersion: objPushNotification.AppVersion, Platform: objPushNotification.Platform }).then(function(UpdateLastLogin) {})
+                                } else {
+                                    userExits.updateAttributes({ LastLogin: LastLogin, Platform: objPushNotification.Platform }).then(function(UpdateLastLogin) {})
+                                }
+                            }
+                            res.json({
+                                success: true,
+                                message: "User Subscribe successfully...",
+                                data: resUpdate
+                            });
+                        })
+
+                    } else {
+                        res.json({
+                            success: true,
+                            message: "User Subscribe successfully...",
+                            data: resUpdate
+                        });
+                    }
                 });
 
             }
         } else {
             PushNotification.create(objPushNotification).then(function(response) {
-                res.json({
-                    success: true,
-                    message: "User Subscribe successfully...",
-                    data: response
-                });
+                if (objPushNotification.iduser != 0) {
+                    User.findOne({ where: { id: objPushNotification.iduser } }).then(function(userExits) {
+                        if (userExits) {
+                            var LastLogin = new Date();
+                            if (objPushNotification.AppVersion != null && objPushNotification.AppVersion != undefined && objPushNotification.AppVersion != '0.0.0') {
+                                userExits.updateAttributes({ LastLogin: LastLogin, AppVersion: objPushNotification.AppVersion, Platform: objPushNotification.Platform }).then(function(UpdateLastLogin) {})
+                            } else {
+                                userExits.updateAttributes({ LastLogin: LastLogin, Platform: objPushNotification.Platform }).then(function(UpdateLastLogin) {})
+                            }
+                        }
+                        res.json({
+                            success: true,
+                            message: "User Subscribe successfully...",
+                            data: response
+                        });
+                    })
+
+                } else {
+                    res.json({
+                        success: true,
+                        message: "User Subscribe successfully...",
+                        data: response
+                    });
+                }
             })
         }
     })

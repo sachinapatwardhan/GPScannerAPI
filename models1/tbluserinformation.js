@@ -81,6 +81,14 @@ module.exports = function(sequelize, DataTypes) {
     LastLogin: {
       type: DataTypes.DATE,
       allowNull: true
+    },
+    AppVersion: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    Platform: {
+      type: DataTypes.STRING,
+      allowNull: true
     }
   }, {
     tableName: 'tbluserinformation'
