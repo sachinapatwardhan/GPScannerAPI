@@ -363,7 +363,7 @@ var DailyUserReport = schedule.scheduleJob('0 23 * * *', function() {
 
                 var mail = {
                     from: 'soham.patel@bugzstudio.com',
-                    to: 'soham.patel@bugzstudio.com',
+                    to: 'soham.patel@bugzstudio.com,pmt@bugzstudio.com',
                     //bcc: objSetting.Value,
                     subject: 'DailyUserReport__' + TodayDate,
                     attachments: [{
@@ -435,7 +435,7 @@ var MonthlyUserReport = schedule.scheduleJob('10 0 1 * *', function() {
 
                 var mail = {
                     from: 'soham.patel@bugzstudio.com',
-                    to: 'soham.patel@bugzstudio.com',
+                    to: 'soham.patel@bugzstudio.com,pmt@bugzstudio.com',
                     subject: 'MonthlyUserReport__' + Month + '_' + Year,
                     attachments: [{
                         filename: 'MonthlyUserReport__' + Month + '_' + Year + '.xlsx',

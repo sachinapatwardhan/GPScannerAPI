@@ -1999,7 +1999,11 @@ router.get('/MobileAppLoginNew', jsonParser, function(req, res) {
                 }
             });
             var LastLogin = new Date();
-            response.updateAttributes({ LastLogin: LastLogin }).then(function(UpdateLastLogin) {})
+            if (req.query.AppVersion != null && req.query.AppVersion != undefined && req.query.AppVersion != '0.0.0') {
+                response.updateAttributes({ LastLogin: LastLogin, AppVersion: req.query.AppVersion, Platform: req.query.Platform }).then(function(UpdateLastLogin) {})
+            } else {
+                response.updateAttributes({ LastLogin: LastLogin }).then(function(UpdateLastLogin) {})
+            }
             UserInRole.findAll({
                 where: {
                     userId: response.id

@@ -207,6 +207,8 @@ router.get('/GetAllDynamicUserNew', function(req, res) {
         search = search + 'tbluserinformation.email  like "%' + objSearch + '%" or ';
         search = search + 'tbluserinformation.phone  like "%' + objSearch + '%" or ';
         search = search + 'tbluserinformation.country  like "%' + objSearch + '%" or ';
+        search = search + 'tbluserinformation.AppVersion  like "%' + objSearch + '%" or ';
+        search = search + 'tbluserinformation.Platform  like "%' + objSearch + '%" or ';
         search = search + 'tblappinfo.AppName  like "%' + objSearch + '%" or ';
         search = search + 'tblrole.RoleName  like "%' + objSearch + '%" or ';
         search = search + 'tbluserinformation.IsMobileVerify like "%' + objSearch + '%") ';
@@ -218,7 +220,7 @@ router.get('/GetAllDynamicUserNew', function(req, res) {
             search = " and tbluserinformation.idApp=" + objParam.appId;
         }
     }
-    var query = "select tblappinfo.AppName,GROUP_CONCAT(tblrole.RoleName) as Role ,tbluserinformation.* from tbluserinformation " +
+    var query = "select tblappinfo.AppName,GROUP_CONCAT(tblrole.RoleName) as Role ,tbluserinformation.*,CONVERT_TZ(tbluserinformation.LastLogin,'+00:00','" + CurrentOffset + "') as LastLoginDate from tbluserinformation " +
         "left join tbluserinrole on tbluserinformation.id = tbluserinrole.userId " +
         "left join tblrole on tbluserinrole.roleId  = tblrole.id " +
         "left join tblappinfo on tblappinfo.id = tbluserinformation.idApp " + search +
@@ -2755,7 +2757,7 @@ router.get('/GetAllDynamicOwnerCustomer', function(req, res) {
         }
     }
 
-    var query = "select tbluserinformation.CreatedDate, tblappinfo.AppName,tbluserinformation.id,tbluserinformation.username,tbluserinformation.idApp,tbluserinformation.email,tbluserinformation.phone,tbluserinformation.country,tbluserinformation.OTP,tbluserinformation.IsMobileVerify, " +
+    var query = "select tbluserinformation.CreatedDate, tblappinfo.AppName,tbluserinformation.id,tbluserinformation.username,tbluserinformation.idApp,tbluserinformation.email,tbluserinformation.phone,tbluserinformation.country,tbluserinformation.OTP,tbluserinformation.IsMobileVerify,CONVERT_TZ(tbluserinformation.LastLogin,'+00:00','" + CurrentOffset + "') as LastLogin, " +
         "(select count(tblvehicle.deviceid) from tblvehicle where iduser = tbluserinformation.id and tblvehicle.IsDelete=0 and tblvehicle.deviceid !='' ) as TotalDevice " +
         "from tbluserinformation left join tblappinfo on tbluserinformation.idApp = tblappinfo.id " + search +
         " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
