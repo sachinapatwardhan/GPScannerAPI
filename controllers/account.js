@@ -871,7 +871,7 @@ router.get('/passwordVerification', jsonParser, function(req, res) {
                 } else {
                     res.json({
                         success: false,
-                        message: "Your password is worng. Plase try again..."
+                        message: "The password is incorrect.Try again."
                     });
                 }
 
@@ -932,7 +932,7 @@ router.post('/changepasswordNew', jsonParser, function(req, res) {
                                         }
                                     }).then(function(objSetting) {
 
-                                        var body = objEmailTemplate.EmailBody.replace(/{UserName}/g, Name).replace("{Password}", Password).replace("{AppName}", objUser.AppName);
+                                        var body = objEmailTemplate.EmailBody.replace(/{UserName}/g, Name).replace("{Password}", Password).replace(/{AppName}/g, objUser.AppName).replace("{Email}", chkUserExist.email);
                                         var mail = {
                                             from: objSystemEmail.DefaultEmailFrom,
                                             to: chkUserExist.email,
@@ -950,7 +950,7 @@ router.post('/changepasswordNew', jsonParser, function(req, res) {
                                         });
                                         res.json({
                                             success: true,
-                                            message: "Password change Successfully. password send to customer's email....",
+                                            message: "New Password email sent. password has been changed....",
                                             data: response
                                         });
                                     })
@@ -1557,7 +1557,7 @@ router.get('/forgotpasswordfromOwnerCustomerNew', jsonParser, function(req, res)
                                                         }
                                                     }).then(function(objSetting) {
 
-                                                        var body = objEmailTemplate.EmailBody.replace(/{UserName}/g, Name).replace("{Password}", Password).replace("{AppName}", req.query.AppName);
+                                                        var body = objEmailTemplate.EmailBody.replace(/{UserName}/g, Name).replace("{Password}", Password).replace(/{AppName}/g, req.query.AppName).replace("{Email}", objUser.email);
                                                         var mail = {
                                                             from: objSystemEmail.DefaultEmailFrom,
                                                             to: objUser.email,
@@ -1576,7 +1576,7 @@ router.get('/forgotpasswordfromOwnerCustomerNew', jsonParser, function(req, res)
                                                         });
                                                         res.json({
                                                             success: true,
-                                                            message: "Reset Password successfully. Password send to customer's Email....",
+                                                            message: "Reset Password email sent.",
                                                             data: response
                                                         });
                                                     })
@@ -1616,7 +1616,7 @@ router.get('/forgotpasswordfromOwnerCustomerNew', jsonParser, function(req, res)
                 } else {
                     res.json({
                         success: false,
-                        message: "Your password is worng. Plase try again..."
+                        message: "The password is incorrect.Try again."
                     });
                 }
 
