@@ -2252,7 +2252,7 @@ router.get('/MobileForgotPasswordNew', function(req, res) {
                                         Name: 'NotificationEmailTo'
                                     }
                                 }).then(function(objSetting) {
-                                    var body = objEmailTemplate.EmailBody.replace(/{UserName}/g, Name).replace("{Password}", Password).replace("{AppName}", req.query.AppName);
+                                    var body = objEmailTemplate.EmailBody.replace(/{UserName}/g, Name).replace("{Password}", Password).replace(/{AppName}/g, req.query.AppName).replace("{Email}", objUser.email);
                                     var mail = {
                                         from: objSystemEmail.DefaultEmailFrom,
                                         to: objUser.email, // + ', ' + objSystemEmail.NotificationEmailTo,
