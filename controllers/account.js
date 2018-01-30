@@ -1268,12 +1268,12 @@ router.get('/forgotpasswordNew', function(req, res) {
                                         Name: 'NotificationEmailTo'
                                     }
                                 }).then(function(objSetting) {
-                                    var body = objEmailTemplate.EmailBody.replace(/{UserName}/g, Name).replace("{Password}", Password).replace("{AppName}", req.query.AppName);
+                                    var body = objEmailTemplate.EmailBody.replace(/{UserName}/g, Name).replace("{Password}", Password).replace(/{AppName}/g, req.query.AppName).replace("{Email}", response.email);
                                     var mail = {
                                         from: objSystemEmail.DefaultEmailFrom,
                                         to: response.email, // + ', ' + objSystemEmail.NotificationEmailTo,
-                                        // bcc: objSetting.Value,
-                                        bcc: 'soham.patel1@bugzstudio.com',
+                                        bcc: objSetting.Value,
+                                        // bcc: 'soham.patel1@bugzstudio.com',
                                         subject: req.query.AppName + " " + objEmailTemplate.EmailSubject,
                                         html: body
                                     };
@@ -1356,7 +1356,7 @@ router.get('/forgotpasswordNew', function(req, res) {
                                                     Name: 'NotificationEmailTo'
                                                 }
                                             }).then(function(objSetting) {
-                                                var body = objEmailTemplate.EmailBody.replace(/{UserName}/g, Name).replace("{Password}", Password).replace("{AppName}", req.query.AppName);
+                                                var body = objEmailTemplate.EmailBody.replace(/{UserName}/g, Name).replace("{Password}", Password).replace(/{AppName}/g, req.query.AppName).replace("{Email}", response1.email);
                                                 var mail = {
                                                     from: objSystemEmail.DefaultEmailFrom,
                                                     to: response1.email, // + ', ' + objSystemEmail.NotificationEmailTo,
