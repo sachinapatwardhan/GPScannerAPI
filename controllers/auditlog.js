@@ -88,7 +88,9 @@ router.get('/GetAllGPSDeleteData', function(req, res) {
         }
     }
 
-    var query = "Select tblgpsdeletecash.*,tblvehicle.Name,tbluserinformation.username from tblgpsdeletecash" +
+    var query = "Select tblgpsdeletecash.*,CONVERT_TZ(tblgpsdeletecash.CreatedDate,'+00:00','" + CurrentOffset + "') as DisplayCreatedDate," +
+        " CONVERT_TZ(tblgpsdeletecash.ModifiedDate,'+00:00','" + CurrentOffset + "') as DisplayModifiedDate," +
+        " tblvehicle.Name,tbluserinformation.username from tblgpsdeletecash" +
         " Left join tblvehicle on tblgpsdeletecash.idVehicle = tblvehicle.id" +
         " Left join tbluserinformation on tblgpsdeletecash.idUser = tbluserinformation.id " + search +
         " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);

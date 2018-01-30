@@ -221,7 +221,7 @@
             // search = search + '  tgd.DeviceId not in (select deviceId from tbldeviceagentretailer)'
         }
 
-        var query = 'select tgd.DeviceId,tgd.Type,tgd.IMEI,tgd.Version,tgd.CreatedDate,tgd.CreatedBy,tgd.AppName,tgd.ExpiryDate,ts.SerialNum,ts.PhoneNum,tel.Name,tdr.id,tdr.agentId,tcm.Country' +
+        var query = "select tgd.DeviceId,tgd.Type,tgd.IMEI,tgd.Version,CONVERT_TZ(tgd.CreatedDate,'+00:00','" + CurrentOffset + "') as CreatedDate,tgd.CreatedBy,tgd.AppName,tgd.ExpiryDate,ts.SerialNum,ts.PhoneNum,tel.Name,tdr.id,tdr.agentId,tcm.Country" +
             ' from tblgpsdevice tgd LEFT JOIN tblsimdetails ts on tgd.idSim = ts.id' +
             ' LEFT JOIN tbltelco tel on ts.idTelCo = tel.id' +
             ' LEFT JOIN tblcountrymgmt tcm on tgd.CountryId = tcm.id' +

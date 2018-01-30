@@ -67,7 +67,7 @@ router.get('/GetAllCanbusData', function(req, res) {
         search += ' where tu.idApp = ' + objParam.idApp;
     }
 
-    var query = "SELECT tcb.*, tv.iduser, tu.idApp FROM tblcanbusdata as tcb left join tblvehicle as tv on tv.deviceid = tcb.DeviceId left join tbluserinformation as tu on tv.idUser = tu.id " + search +
+    var query = "SELECT tcb.*,CONVERT_TZ(tcb.CreatedDate,'+00:00','" + CurrentOffset + "') as DisplayCreatedDate, tv.iduser, tu.idApp FROM tblcanbusdata as tcb left join tblvehicle as tv on tv.deviceid = tcb.DeviceId left join tbluserinformation as tu on tv.idUser = tu.id " + search +
         " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
     var Countqry = "SELECT count(tcb.id) as TotalRecord FROM tblcanbusdata as tcb left join tblvehicle as tv on tv.deviceid = tcb.DeviceId left join tbluserinformation as tu on tv.idUser = tu.id " + search;
     connection.query(query, function(err, response) {

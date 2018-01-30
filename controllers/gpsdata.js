@@ -785,69 +785,71 @@ router.get('/ExportAllGpsDataNew', function(req, res) {
     var conf = {};
     conf.name = "Sheet1";
     conf.cols = [{
-        caption: 'DeviceId',
-        type: 'string'
-    }, {
-        caption: 'Datetime',
-        type: 'string'
-    }, {
-        caption: 'Latitude',
-        type: 'string'
-    }, {
-        caption: 'Longitude',
-        type: 'string'
-    }, {
-        caption: 'Positioning',
-        type: 'string'
-    }, {
-        caption: 'Speed',
-        type: 'string'
-    }, {
-        caption: 'Direction',
-        type: 'string'
-    }, {
-        caption: 'IsEngine',
-        type: 'string'
-    }, {
-        caption: 'Voltage',
-        type: 'string'
-    }, {
-        caption: 'OdoMeter',
-        type: 'string'
-    }, {
-        caption: 'AD1',
-        type: 'string'
-    }, {
-        caption: 'AD2',
-        type: 'string'
-    }, {
-        caption: 'Altitude',
-        type: 'string'
-    }, {
-        caption: 'Status',
-        type: 'string'
-    }, {
-        caption: 'IsRelayToStopTheCar',
-        type: 'string'
-    }, {
-        caption: 'IsSirenSound',
-        type: 'string'
-    }, {
-        caption: 'IsLockTheDoor',
-        type: 'string'
-    }, {
-        caption: 'IsUnlockTheDoor',
-        type: 'string'
-    }, {
-        caption: 'IsSOS',
-        type: 'string'
-    }, {
-        caption: 'IsDoor',
-        type: 'string'
-    }, {
-        caption: 'CreatedDate',
-        type: 'string'
-    }];
+            caption: 'DeviceId',
+            type: 'string'
+        }, {
+            caption: 'Datetime',
+            type: 'string'
+        }, {
+            caption: 'Latitude',
+            type: 'string'
+        }, {
+            caption: 'Longitude',
+            type: 'string'
+        }, {
+            caption: 'Positioning',
+            type: 'string'
+        }, {
+            caption: 'Speed',
+            type: 'string'
+        }, {
+            caption: 'Direction',
+            type: 'string'
+        }, {
+            caption: 'IsEngine',
+            type: 'string'
+        }, {
+            caption: 'Voltage',
+            type: 'string'
+        }, {
+            caption: 'OdoMeter',
+            type: 'string'
+        }, {
+            caption: 'AD1',
+            type: 'string'
+        }, {
+            caption: 'AD2',
+            type: 'string'
+        }, {
+            caption: 'Altitude',
+            type: 'string'
+        }, {
+            caption: 'Status',
+            type: 'string'
+        }, {
+            caption: 'IsRelayToStopTheCar',
+            type: 'string'
+        }, {
+            caption: 'IsSirenSound',
+            type: 'string'
+        }, {
+            caption: 'IsLockTheDoor',
+            type: 'string'
+        }, {
+            caption: 'IsUnlockTheDoor',
+            type: 'string'
+        }, {
+            caption: 'IsSOS',
+            type: 'string'
+        }, {
+            caption: 'IsDoor',
+            type: 'string'
+        },
+        //  {
+        //     caption: 'CreatedDate',
+        //     type: 'string'
+        // }
+    ];
 
     var objParam = req.query;
     var objColumns = objParam.columns;
@@ -1022,7 +1024,7 @@ router.get('/ExportAllGpsDataNew', function(req, res) {
                     Date1 = response[i].Date;
                     Datetime = momentz.utc(new Date(response[i].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a')
                 }
-                row.push(DeviceId, Datetime, Latitude, Longitude, GPSPositioning, Speed, Direction, IsEngine, Voltage, OdoMeter, AD1, AD2, Altitude, Status, IsRelayToStopTheCar, IsSirenSound, IsLockTheDoor, IsUnlockTheDoor, IsSOS, IsDoor, CreatedDate);
+                row.push(DeviceId, Datetime, Latitude, Longitude, GPSPositioning, Speed, Direction, IsEngine, Voltage, OdoMeter, AD1, AD2, Altitude, Status, IsRelayToStopTheCar, IsSirenSound, IsLockTheDoor, IsUnlockTheDoor, IsSOS, IsDoor);
                 conf.rows.push(row);
                 // GetGpsData(i + 1);
             }
