@@ -8,7 +8,264 @@ var DrivingData = models.tbldrivingdata;
 var GPSData = models.tblgpsdata;
 var Alarm = models.tblalarm;
 var DefaultValue = models.tbldefaultvalue;
+var VehicleGroup = models.tblvehiclegroup;
 //End of Tables
+
+router.get('/GetAllGroup', function(req, res) {
+    VehicleGroup.findAll({ where: { IdUser: req.query.IdUser } }).then(function(response) {
+        res.json(response)
+    })
+})
+
+
+router.get('/AddVehicleToGroup', function(req, res) {
+    objHeader = req.headers;
+    console.log(req.query)
+    var TotalSuccess = 0;
+    var TotalError = 0;
+    // var DeviceList = req.query.DeviceList;
+    var token = getToken(objHeader);
+    if (token) {
+        var decoded = jwt.decode(token, TokenKey);
+        User.findOne({
+            where: {
+                username: decoded.username,
+                password: decoded.password
+            }
+        }).then(function(UserExist) {
+            if (UserExist != null) {
+                connection.query("Update tblvehicle set IdGroup=null where IdGroup =" + req.query.Id, function(err, vehicleRemoveToGroup, fields) {
+                    connection.query("Update tblsharedevice set IdSharedGroup=null where idUser=" + req.query.idUser + " and IdSharedGroup =" + req.query.Id, function(err, sharedvehicleRemoveToGroup, fields) {
+                        uploder(0);
+
+                        function uploder(i) {
+                            console.log(i)
+                            if (i < 2) {
+                                if (i == 0) {
+                                    if (req.query.DeviceList != undefined && req.query.DeviceList != null && req.query.DeviceList != '') {
+                                        connection.query("Update tblvehicle set IdGroup=" + req.query.Id + " where deviceid in (" + [req.query.DeviceList] + ")", function(err, VehicleAddToGroup, fields) {
+                                            if (!err && VehicleAddToGroup) {
+                                                uploder(i + 1);
+                                                TotalSuccess++;
+                                            } else {
+                                                uploder(i + 1);
+                                                TotalError++;
+                                            }
+                                        })
+                                    } else {
+                                        uploder(i + 1);
+                                    }
+                                }
+                                if (i == 1) {
+                                    if (req.query.SharedDeviceList != undefined && req.query.SharedDeviceList != null && req.query.SharedDeviceList != '') {
+                                        console.log("Update tblsharedevice set IdSharedGroup=" + req.query.Id + " where idUser=" + req.query.idUser + " and DeviceId in (" + [req.query.SharedDeviceList] + ")")
+                                        connection.query("Update tblsharedevice set IdSharedGroup=" + req.query.Id + " where idUser=" + req.query.idUser + " and DeviceId in (" + [req.query.SharedDeviceList] + ")", function(err, VehicleAddToGroup, fields) {
+
+                                            if (!err && VehicleAddToGroup) {
+                                                uploder(i + 1);
+                                                TotalSuccess++;
+                                            } else {
+                                                uploder(i + 1);
+                                                TotalError++;
+                                            }
+                                        })
+                                    } else {
+                                        uploder(i + 1);
+                                    }
+                                }
+                            } else {
+                                res.json({ success: true, message: 'Vehicle added in this group successfully..', TotalError: TotalError, TotalSuccess: TotalSuccess })
+                            }
+
+                        }
+                        // if (req.query.DeviceList.length > 0) {
+                        //     console.log("Update tblvehicle set IdGroup=" + req.query.Id + " where deviceid in (" + [req.query.DeviceList] + ")");
+                        //     connection.query("Update tblvehicle set IdGroup=" + req.query.Id + " where deviceid in (" + [req.query.DeviceList] + ")", function(err, VehicleAddToGroup, fields) {
+                        //         console.log(err)
+                        //         if (!err && VehicleAddToGroup) {
+                        //             res.json({ success: true, message: 'Vehicle added in this group successfully..' })
+                        //         } else {
+                        //             res.json({ success: false, message: 'Vehicle not added in this group..' })
+                        //         }
+                        //     })
+                        // } else {
+                        //     res.json({ success: false, message: 'Vehicle list not found' })
+                        // }
+
+                        // if (req.query.SharedDeviceList.length > 0) {
+
+                        // }
+                    })
+                })
+
+            } else {
+                res.json(InvalidToken);
+            }
+        })
+    } else {
+        res.json(InvalidToken);
+    }
+})
+
+
+router.get('/GroupRemoveById', function(req, res) {
+    console.log(req.query)
+    objHeader = req.headers;
+    // var DeviceList = req.query.DeviceList;
+    var token = getToken(objHeader);
+    if (token) {
+        var decoded = jwt.decode(token, TokenKey);
+        User.findOne({
+            where: {
+                username: decoded.username,
+                password: decoded.password
+            }
+        }).then(function(UserExist) {
+            if (UserExist != null) {
+
+                connection.query("Update tblvehicle set IdGroup=null where IdGroup =" + req.query.Id, function(err, GroupRemoved, fields) {
+                    if (!err && GroupRemoved) {
+                        VehicleGroup.destroy({ where: { Id: req.query.Id } }).then(function(response) {
+                            if (response) {
+                                res.json({ success: true, message: 'Group removed successfully..' })
+                            }
+                        })
+                    } else {
+                        res.json({ success: false, message: 'Group is not removed..' })
+                    }
+                })
+
+            } else {
+                res.json(InvalidToken);
+            }
+        })
+    } else {
+        res.json(InvalidToken);
+    }
+})
+
+
+router.get('/updateVehicleGroupName', function(req, res) {
+
+    objHeader = req.headers;
+    var token = getToken(objHeader);
+    if (token) {
+        var decoded = jwt.decode(token, TokenKey);
+        User.findOne({
+            where: {
+                username: decoded.username,
+                password: decoded.password
+            }
+        }).then(function(UserExist) {
+            if (UserExist != null) {
+                VehicleGroup.findOne({ where: { Id: req.query.Id } }).then(function(VehiceGroupExist) {
+                    if (VehiceGroupExist) {
+                        VehiceGroupExist.updateAttributes({ GroupName: req.query.GroupName }).then(function(response) {
+                            if (response) {
+                                funAuditLog.CreateAuditLog('update vehicle group name', UserExist.username, 'update vehicle group name');
+                                res.json({ success: true, message: "Group Name updated Successfully...", data: response });
+                            } else {
+                                res.json({ success: false, message: "Group Name is not Created...", data: response });
+                            }
+                        })
+                    } else {
+                        res.json({ success: false, message: "Group not found..." });
+                    }
+                })
+            } else {
+                res.json(InvalidToken);
+            }
+        })
+    } else {
+        res.json(InvalidToken);
+    }
+})
+
+
+router.get('/GetAllNotAssignGroupVehicle', function(req, res) {
+
+    var query = "Select tblvehicle.*,tblsharedevice.IdSharedGroup from tblvehicle " +
+        "Left Join tblsharedevice on tblsharedevice.idVehicle = tblvehicle.id " +
+        "where (tblvehicle.IdGroup IS Null or tblsharedevice.IdSharedGroup IS Null or tblvehicle.IdGroup =" + req.query.IdGroup + " or tblsharedevice.IdSharedGroup ==" + req.query.IdGroup + " ) " +
+        "and tblvehicle.IsDelete=0 and tblvehicle.Iduser=" + req.query.IdUser;
+
+
+    Vehicle.findAll({
+        where: {
+            $or: [{ IdGroup: null }, { IdGroup: req.query.IdGroup }],
+            $and: [{
+                Iduser: req.query.IdUser,
+                IsDelete: 0
+            }]
+        }
+    }).then(function(response) {
+        res.json(response)
+    })
+})
+
+router.post('/SaveVehicleGroup', jsonParser, function(req, res) {
+    console.log(req.body)
+    objGroup = req.body;
+    objHeader = req.headers;
+    var token = getToken(objHeader);
+    if (token) {
+        var decoded = jwt.decode(token, TokenKey);
+        User.findOne({
+            where: {
+                username: decoded.username,
+                password: decoded.password
+            }
+        }).then(function(UserExist) {
+            if (UserExist != null) {
+                if (objGroup.Id == 0) {
+                    objGroup.CreatedBy = UserExist.username;
+                    objGroup.CreatedDate = new Date();
+
+                    VehicleGroup.findOne({ where: { IdUser: objGroup.IdUser, GroupName: objGroup.GroupName } }).then(function(VehiceGroupExist) {
+                        if (VehiceGroupExist) {
+                            res.json({ success: false, message: "Group is already exist...", data: VehiceGroupExist });
+                        } else {
+                            VehicleGroup.create(objGroup).then(function(response) {
+                                if (response) {
+                                    funAuditLog.CreateAuditLog('Create vehicle group', UserExist.username, 'Cerate New vehicle group');
+                                    res.json({ success: true, message: "Group created successfully...", data: response });
+                                } else {
+                                    res.json({ success: false, message: "Group is not Created...", data: response });
+                                }
+                            })
+                        }
+                    })
+
+                } else {
+                    VehicleGroup.findOne({
+                        where: { IdUser: objGroup.IdUser, GroupName: objGroup.GroupName },
+                        defaults: objGroup
+                    }).then(function(objVehicleGroupExist) {
+                        if (objVehicleGroupExist != null && objGroup.Id != objVehicleGroupExist.Id) {
+                            res.json({ success: false, message: "Group is already exist...", data: objVehicleGroupExist });
+                        } else {
+                            VehicleGroup.update(objGroup, { where: { Id: objGroup.Id } }).then(function(response) {
+                                if (response[0]) {
+                                    funAuditLog.CreateAuditLog('Update  vehicle group', UserExist.username, 'Update  vehicle group Data');
+                                    res.json({ success: true, message: "Group updated successfully...", data: response });
+                                } else {
+                                    res.json({ success: true, message: "Group is not updated successfully...", data: response });
+                                }
+                            })
+                        }
+                    })
+                }
+            } else {
+                res.json(InvalidToken);
+            }
+        })
+    } else {
+        res.json(InvalidToken);
+    }
+})
+
+
+
 
 router.get('/GetAllDynamicVehicle', function(req, res) {
     var objParam = req.query;
