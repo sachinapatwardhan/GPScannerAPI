@@ -20,7 +20,6 @@ router.get('/GetAllGroup', function(req, res) {
 
 router.get('/AddVehicleToGroup', function(req, res) {
     objHeader = req.headers;
-    console.log(req.query)
     var TotalSuccess = 0;
     var TotalError = 0;
     // var DeviceList = req.query.DeviceList;
@@ -39,7 +38,6 @@ router.get('/AddVehicleToGroup', function(req, res) {
                         uploder(0);
 
                         function uploder(i) {
-                            console.log(i)
                             if (i < 2) {
                                 if (i == 0) {
                                     if (req.query.DeviceList != undefined && req.query.DeviceList != null && req.query.DeviceList != '') {
@@ -58,7 +56,6 @@ router.get('/AddVehicleToGroup', function(req, res) {
                                 }
                                 if (i == 1) {
                                     if (req.query.SharedDeviceList != undefined && req.query.SharedDeviceList != null && req.query.SharedDeviceList != '') {
-                                        console.log("Update tblsharedevice set IdSharedGroup=" + req.query.Id + " where idUser=" + req.query.idUser + " and DeviceId in (" + [req.query.SharedDeviceList] + ")")
                                         connection.query("Update tblsharedevice set IdSharedGroup=" + req.query.Id + " where idUser=" + req.query.idUser + " and DeviceId in (" + [req.query.SharedDeviceList] + ")", function(err, VehicleAddToGroup, fields) {
 
                                             if (!err && VehicleAddToGroup) {
@@ -109,7 +106,6 @@ router.get('/AddVehicleToGroup', function(req, res) {
 
 
 router.get('/GroupRemoveById', function(req, res) {
-    console.log(req.query)
     objHeader = req.headers;
     // var DeviceList = req.query.DeviceList;
     var token = getToken(objHeader);
@@ -165,7 +161,7 @@ router.get('/updateVehicleGroupName', function(req, res) {
                                 funAuditLog.CreateAuditLog('update vehicle group name', UserExist.username, 'update vehicle group name');
                                 res.json({ success: true, message: "Group Name updated Successfully...", data: response });
                             } else {
-                                res.json({ success: false, message: "Group Name is not Created...", data: response });
+                                res.json({ success: false, message: "Group Name is not updated...", data: response });
                             }
                         })
                     } else {
