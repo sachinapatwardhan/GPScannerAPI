@@ -32,14 +32,13 @@ router.post('/saveUserfeedBack', jsonParser, function(req, res) {
                                 funAuditLog.CreateAuditLog('update Feedback', UserExist.username, 'Update Feedback');
                                 res.json({ success: true, message: "FeedBack updated successfully...", data: response });
                             } else {
-                                res.json({ success: true, message: "FeedBack updated successfully...", data: response });
+                                res.json({ success: false, message: "FeedBack not updated...", data: response });
                             }
                         })
                     } else {
                         objfeedback.CreatedDate = new Date();
                         objfeedback.CreatedBy = UserExist.username;
                         FeedBack.create(objfeedback).then(function(response) {
-                            console.log(response)
                             if (response) {
                                 funAuditLog.CreateAuditLog('feedback cerate', UserExist.username, 'Cerate New feedback');
                                 res.json({ success: true, message: "FeedBack created successfully...", data: response });

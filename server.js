@@ -537,5 +537,7 @@ app.use('/salesAgent', require('./controllers/salesAgent'));
 app.use('/retailer', require('./controllers/retailer'));
 app.use('/admin', require('./controllers/admin'));
 app.use('/auditlog', require('./controllers/auditlog'));
+// app.use('/routeplan', require('./controllers/routeplan'));
+app.use('/feedback', require('./controllers/feedback'))
 
 // MAARK Install App End
