@@ -30,7 +30,7 @@ router.get('/GetAllFeedback', function(req, res) {
         search = search + 'tbluserinformation.phone like "%' + objSearch + '%") ';
     }
 
-    var query = "Select tblfeedback.*, tbluserinformation.phone,tbluserinformation.email from tblfeedback " +
+    var query = "Select tblfeedback.*,CONVERT_TZ(tblfeedback.CreatedDate,'+00:00','" + CurrentOffset + "') as DisplayCreatedDate, tbluserinformation.phone,tbluserinformation.email from tblfeedback " +
         " Left join tbluserinformation on tbluserinformation.id = tblfeedback.IdUser " + search +
         " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
     console.log(query)
