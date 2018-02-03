@@ -174,6 +174,10 @@ module.exports = function(sequelize, DataTypes) {
     ShareCode: {
       type: DataTypes.STRING,
       allowNull: true
+    },
+    IdGroup: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true
     }
   }, {
     tableName: 'tblvehicle'
