@@ -121,10 +121,17 @@ router.get('/GroupRemoveById', function(req, res) {
 
                 connection.query("Update tblvehicle set IdGroup=null where IdGroup =" + req.query.Id, function(err, GroupRemoved, fields) {
                     if (!err && GroupRemoved) {
-                        VehicleGroup.destroy({ where: { Id: req.query.Id } }).then(function(response) {
-                            if (response) {
-                                res.json({ success: true, message: 'Group removed successfully..' })
+                        connection.query("Update tblsharedevice set IdSharedGroup=null where idUser=" + req.query.idUser + " and IdSharedGroup =" + req.query.Id, function(err, sharedvehicleRemoveToGroup, fields) {
+                            if (!err && sharedvehicleRemoveToGroup) {
+                                VehicleGroup.destroy({ where: { Id: req.query.Id } }).then(function(response) {
+                                    if (response) {
+                                        res.json({ success: true, message: 'Group removed successfully..' })
+                                    }
+                                })
+                            } else {
+                                res.json({ success: false, message: 'Group is not removed..' })
                             }
+
                         })
                     } else {
                         res.json({ success: false, message: 'Group is not removed..' })
@@ -200,7 +207,6 @@ router.get('/GetAllNotAssignGroupVehicle', function(req, res) {
 })
 
 router.post('/SaveVehicleGroup', jsonParser, function(req, res) {
-    console.log(req.body)
     objGroup = req.body;
     objHeader = req.headers;
     var token = getToken(objHeader);
