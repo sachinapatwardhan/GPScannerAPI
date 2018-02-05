@@ -121,7 +121,7 @@ router.get('/GroupRemoveById', function(req, res) {
 
                 connection.query("Update tblvehicle set IdGroup=null where IdGroup =" + req.query.Id, function(err, GroupRemoved, fields) {
                     if (!err && GroupRemoved) {
-                        connection.query("Update tblsharedevice set IdSharedGroup=null where idUser=" + req.query.idUser + " and IdSharedGroup =" + req.query.Id, function(err, sharedvehicleRemoveToGroup, fields) {
+                        connection.query("Update tblsharedevice set IdSharedGroup=null where IdSharedGroup =" + req.query.Id, function(err, sharedvehicleRemoveToGroup, fields) {
                             if (!err && sharedvehicleRemoveToGroup) {
                                 VehicleGroup.destroy({ where: { Id: req.query.Id } }).then(function(response) {
                                     if (response) {
