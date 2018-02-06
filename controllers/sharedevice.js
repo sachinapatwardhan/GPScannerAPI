@@ -5,6 +5,84 @@ var EmailTemplate = models.tblemailtemplate;
 var SystemEmail = models.tblemailsettingsys;
 var SharedEmail = models.tblsharedemail;
 var AppInfo = models.tblappinfo;
+router.get('/GetAllSharedVehicle', function(req, res) {
+    var search = '';
+    if (req.query.appId != null && req.query.appId != '' && req.query.appId != undefined) {
+        if (search != "") {
+            search += " and user.idApp =" + req.query.appId;
+        } else {
+            search += " Where user.idApp =" + req.query.appId;
+        }
+    }
+
+    var qry = "Select vehicle.id as idVehicle,vehicle.deviceId,user.email ,user.id,user.idApp " +
+        "FROM tblvehicle AS vehicle " +
+        " left join tblvehicletype  as vehicletype on vehicletype.id = vehicle.idType " +
+        " left join tblgpsdevice as gpsdevice on gpsdevice.DeviceId =vehicle.deviceid " +
+        " LEFT JOIN tbluserinformation AS user ON vehicle.iduser = user.id " + search;
+    connection.query(qry, function(err, response) {
+        if (!err && response) {
+            res.json(response)
+        }
+    })
+
+})
+
+
+router.get('/GetAllSharedUser', function(req, res) {
+
+    var objParam = req.query;
+    var objColumns = objParam.columns;
+    var objOrder = objParam.order;
+    var objSearch = objParam.search;
+
+    var Orderby = objColumns[parseInt(objOrder[0].column)].data + ' ' + objOrder[0].dir;
+    var search = '';
+
+    if (objSearch != '' && objSearch != null && objSearch != undefined) {
+        search = 'Where (tu.email like "%' + objSearch + '%" or ';
+        search = search + 'tv.sharedUser like "%' + objSearch + '%" or ';
+        search = search + 'tv.Name like "%' + objSearch + '%" or ';
+        search = search + 'ts.DeviceId like "%' + objSearch + '%" or ';
+        search = search + 'ts.CreatedDate like "%' + objSearch + '%") ';
+    }
+
+    if (objParam.appId != null && objParam.appId != '' && objParam.appId != undefined) {
+        if (search != "") {
+            search += ' and tu.idApp =' + objParam.appId;
+        } else {
+            search += ' Where tu.idApp =' + objParam.appId;
+        }
+    }
+    var query = " SELECT ts.id,ts.idUser,ts.idSharedUser,tu.email,tv.sharedUser,tv.Name,ts.DeviceId,CONVERT_TZ(ts.CreatedDate,'+00:00','" + CurrentOffset + "') as CreatedDate" +
+        " FROM tblsharedevice ts  LEFT JOIN tbluserinformation tu on tu.id = ts.idUser" +
+        " LEFT JOIN (SELECT tbluserinformation.email as 'sharedUser',tblvehicle.Name, tblvehicle.deviceid,tblvehicle.id,tblvehicle.iduser" +
+        " FROM tblvehicle LEFT JOIN tbluserinformation ON tbluserinformation.id= tblvehicle.iduser) as tv on tv.deviceid= ts.DeviceId " + search +
+        " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
+    var Countqry = "SELECT count(ts.id) as TotalRecord " +
+        " FROM tblsharedevice ts  LEFT JOIN tbluserinformation tu on tu.id = ts.idUser" +
+        " LEFT JOIN (SELECT tbluserinformation.email as 'sharedUser',tblvehicle.Name, tblvehicle.deviceid,tblvehicle.id,tblvehicle.iduser" +
+        " FROM tblvehicle LEFT JOIN tbluserinformation ON tbluserinformation.id= tblvehicle.iduser) as tv on tv.deviceid= ts.DeviceId " + search;
+    connection.query(query, function(err, response) {
+        if (response != undefined) {
+            connection.query(Countqry, function(err, lstCount, fields) {
+                var response1 = new Object();
+                response1.draw = objParam.draw;
+                response1.recordsTotal = lstCount[0].TotalRecord;
+                response1.recordsFiltered = lstCount[0].TotalRecord;
+                response1.data = response;
+                res.json(response1);
+            });
+        } else {
+            var response1 = new Object();
+            response1.draw = objParam.draw;
+            response1.recordsTotal = 0;
+            response1.recordsFiltered = 0;
+            response1.data = [];
+            res.json(response1);
+        }
+    })
+})
 
 router.get('/GetAllSharedDeviceByUserNew', function(req, res) {
     SharedDevice.belongsTo(User, {
@@ -153,11 +231,13 @@ router.post('/SaveSharedUserNew', jsonParser, function(req, res) {
         res.json(InvalidToken);
     }
 })
+
 router.get('/GetAllInvitedEmail', jsonParser, function(req, res) {
     SharedEmail.findAll({ where: { DeviceId: req.query.DeviceId } }).then(function(response) {
         res.json(response);
     })
 })
+
 router.post('/InvitedNewUser', jsonParser, function(req, res) {
     objUser = req.body;
 
@@ -420,4 +500,6 @@ router.get('/RejectSharedInvitation', function(req, res) {
     }
 
 })
+
+
 module.exports = router

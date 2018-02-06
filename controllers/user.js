@@ -13,13 +13,21 @@ var SharedDevice = models.tblsharedevice;
 //End of Tables
 
 router.get('/GetAllUser', function(req, res) {
+    var search = {};
     User.hasMany(UserInRole, {
         foreignKey: {
             name: 'userId',
             allowNull: false
         }
     });
-
+    if (req.query.appId != null && req.query.appId != '' && req.query.appId != undefined) {
+        search['$and'] = [];
+        var obj = new Object();
+        obj['idApp'] = {
+            $eq: req.query.appId
+        };
+        search['$and'].push(obj);
+    }
     UserInRole.belongsTo(Role, {
         foreignKey: {
             name: 'roleId',
@@ -33,6 +41,7 @@ router.get('/GetAllUser', function(req, res) {
                 Role
             ]
         }],
+        where: search,
         order: 'createddate'
     }).then(function(response) {
         res.json(response);
