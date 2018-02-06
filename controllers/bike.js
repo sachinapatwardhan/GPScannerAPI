@@ -12,6 +12,7 @@ var GpsDevice = models.tblgpsdevice;
 var Buffer = require('buffer').Buffer;
 var momentz = require('moment-timezone');
 var SIM = models.tblsimdetails;
+var SharedDevice = models.tblsharedevice;
 //End of Tables
 
 app.use(express.static(__dirname + '/../MediaUploads/PetUpload'));
@@ -684,6 +685,24 @@ function convertdateformatForUnix(date1) {
 
 }
 
+function changeSharedId(VehicleUserId, SharedUserId, callback) {
+    console.log(VehicleUserId, " == ", SharedUserId)
+
+    var query = "update tblsharedevice set idSharedUser=" + VehicleUserId + " where idSharedUser=" + SharedUserId;
+    connection.query(query, function(err, response) {
+        if (!err && response) {
+            SharedDevice.destroy({ where: { idSharedUser: VehicleUserId, iduser: VehicleUserId } }).then(function(SharedDeviceDeleted) {
+                callback({
+                    success: true,
+                    message: "Vehicle Shared User remove successfully.."
+                });
+            })
+        }
+    })
+
+
+}
+
 router.get('/SaveVehicle', jsonParser, function(req, res) {
     objVehicle = req.query;
     objVehicle.IsDelete = false;
@@ -766,11 +785,15 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                                     })
                                                     // if (objGpsDevice.AppName == 'Maark') {
                                                     // CreateOrderServiceGlobal(UserExist.country, UserExist.id, objVehicle.deviceid, UserExist.username, UserExist.idApp, function(orderresponse) {
-                                                res.json({
-                                                    success: true,
-                                                    message: "Vehicle created successfully...",
-                                                    data: objVehicle
-                                                });
+                                                changeSharedId(objVehicle.iduser, objVehicleExist.iduser, function(shareuserupdate) {
+                                                    // console.log("0....1...................................", shareuserupdate)
+                                                    res.json({
+                                                        success: true,
+                                                        message: "Vehicle created successfully...",
+                                                        data: objVehicle
+                                                    });
+                                                })
+
                                                 // })
                                                 // } else {
                                                 //     res.json({
@@ -875,11 +898,15 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                         }).then(function(response) {
                                             if (response[0]) {
                                                 funAuditLog.CreateAuditLog('SaveVehicle', UserExist.username, 'Update Vehicle');
-                                                res.json({
-                                                    success: true,
-                                                    message: "Vehicle updated successfully...",
-                                                    data: objVehicle
-                                                });
+                                                changeSharedId(objVehicle.iduser, objVehicleExist.iduser, function(shareuserupdate) {
+                                                    // console.log("1...2................................", shareuserupdate)
+                                                    res.json({
+                                                        success: true,
+                                                        message: "Vehicle updated successfully...",
+                                                        data: objVehicle
+                                                    });
+                                                })
+
                                             } else {
                                                 res.json({
                                                     success: false,
@@ -938,11 +965,15 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                                 // })
                                                 // if (objGpsDevice.AppName == 'Maark') {
                                                 // CreateOrderServiceGlobal(UserExist.country, UserExist.id, objVehicle.deviceid, UserExist.username, UserExist.idApp, function(orderresponse) {
-                                                res.json({
-                                                    success: true,
-                                                    message: "Vehicle created successfully...",
-                                                    data: objVehicle
-                                                });
+                                                changeSharedId(objVehicle.iduser, objVehicleExist.iduser, function(shareuserupdate) {
+                                                    // console.log("1...2.......3.........................", shareuserupdate)
+                                                    res.json({
+                                                        success: true,
+                                                        message: "Vehicle created successfully...",
+                                                        data: objVehicle
+                                                    });
+                                                })
+
                                                 // })
                                                 // } else {
                                                 //     res.json({
@@ -1036,11 +1067,15 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                         }).then(function(response) {
                                             if (response[0]) {
                                                 funAuditLog.CreateAuditLog('SaveVehicle', UserExist.username, 'Update Vehicle');
-                                                res.json({
-                                                    success: true,
-                                                    message: "Vehicle updated successfully...",
-                                                    data: objVehicle
-                                                });
+                                                changeSharedId(objVehicle.iduser, objVehicleExist.iduser, function(shareuserupdate) {
+                                                    // console.log("1...2.......3........4.................", shareuserupdate)
+                                                    res.json({
+                                                        success: true,
+                                                        message: "Vehicle updated successfully...",
+                                                        data: objVehicle
+                                                    });
+                                                })
+
                                             } else {
                                                 res.json({
                                                     success: false,
