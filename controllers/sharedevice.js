@@ -44,6 +44,7 @@ router.get('/GetAllSharedUser', function(req, res) {
         search = search + 'tv.sharedUser like "%' + objSearch + '%" or ';
         search = search + 'tv.Name like "%' + objSearch + '%" or ';
         search = search + 'ts.DeviceId like "%' + objSearch + '%" or ';
+        search = search + 'tai.AppName like "%' + objSearch + '%" or ';
         search = search + 'ts.CreatedDate like "%' + objSearch + '%") ';
     }
 
@@ -54,13 +55,15 @@ router.get('/GetAllSharedUser', function(req, res) {
             search += ' Where tu.idApp =' + objParam.appId;
         }
     }
-    var query = " SELECT ts.id,ts.idUser,ts.idSharedUser,tu.email,tv.sharedUser,tv.Name,ts.DeviceId,CONVERT_TZ(ts.CreatedDate,'+00:00','" + CurrentOffset + "') as CreatedDate" +
+    var query = " SELECT tai.AppName,ts.id,ts.idUser,ts.idSharedUser,tu.email,tv.sharedUser,tv.Name,ts.DeviceId,CONVERT_TZ(ts.CreatedDate,'+00:00','" + CurrentOffset + "') as CreatedDate" +
         " FROM tblsharedevice ts  LEFT JOIN tbluserinformation tu on tu.id = ts.idUser" +
+        " LEFT Join tblappinfo tai ON tu.idApp = tai.id" +
         " LEFT JOIN (SELECT tbluserinformation.email as 'sharedUser',tblvehicle.Name, tblvehicle.deviceid,tblvehicle.id,tblvehicle.iduser" +
         " FROM tblvehicle LEFT JOIN tbluserinformation ON tbluserinformation.id= tblvehicle.iduser) as tv on tv.deviceid= ts.DeviceId " + search +
         " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
     var Countqry = "SELECT count(ts.id) as TotalRecord " +
         " FROM tblsharedevice ts  LEFT JOIN tbluserinformation tu on tu.id = ts.idUser" +
+        " LEFT Join tblappinfo tai ON tu.idApp = tai.id" +
         " LEFT JOIN (SELECT tbluserinformation.email as 'sharedUser',tblvehicle.Name, tblvehicle.deviceid,tblvehicle.id,tblvehicle.iduser" +
         " FROM tblvehicle LEFT JOIN tbluserinformation ON tbluserinformation.id= tblvehicle.iduser) as tv on tv.deviceid= ts.DeviceId " + search;
     connection.query(query, function(err, response) {
