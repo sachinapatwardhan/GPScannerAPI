@@ -682,6 +682,7 @@ global.Command9955 = function(line, Callback) {
         var IsWiringForAntiTamper = false;
         var IsDoor = false;
         var IsEngine = false;
+        var IsPatchEngine = false;
         var IsOriginalSirenTriggeringStatus = false;
 
         if (lstInputOutputStatus[15] == '1') {
@@ -724,6 +725,11 @@ global.Command9955 = function(line, Callback) {
             IsOriginalSirenTriggeringStatus = true;
         }
 
+        IsPatchEngine = IsEngine;
+        if (((Speed > 2 && Direction > 0) || Speed > 10) && Position == 'A' && IsEngine == false) {
+            IsPatchEngine = true
+        }
+
         //check <5 min time difference then only store data otherwise neglect
         var systemtime = new Date();
         var DeviceTime = new Date(GPSDateTime + " UTC");
@@ -735,8 +741,8 @@ global.Command9955 = function(line, Callback) {
         if (timediffernce <= 3600) {
 
             // //Insert data in gps
-            var query = "INSERT INTO tblgpsdata (Datetime,Latitude,Longitude,GPSPositioning,Speed,Direction,Status,DeviceId,IsRelayToStopTheCar,IsSirenSound,IsUserDefined,IsLockTheDoor,IsUnlockTheDoor,IsSOS,IsWiringForAntiTamper,IsDoor,IsEngine,IsOriginalSirenTriggeringStatus,CreatedDate,HDOP,Altitude,AD1,AD2,OdoMeter,Date ) " +
-                "VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + inputoutputSTatus + "', '" + DeviceId + "'," + IsRelayToStopTheCar + "," + IsSirenSound + "," + IsUserDefined + "," + IsLockTheDoor + "," + IsUnlockTheDoor + "," + IsSOS + "," + IsWiringForAntiTamper + "," + IsDoor + "," + IsEngine + "," + IsOriginalSirenTriggeringStatus + ",'" + CurrentDate + "','" + HDOP + "','" + altitude + "','" + AD1 + "','" + AD2 + "','" + Odometer + "','" + unixDateStemp + "');";
+            var query = "INSERT INTO tblgpsdata (Datetime,Latitude,Longitude,GPSPositioning,Speed,Direction,Status,DeviceId,IsRelayToStopTheCar,IsSirenSound,IsUserDefined,IsLockTheDoor,IsUnlockTheDoor,IsSOS,IsWiringForAntiTamper,IsDoor,IsEngine,IsOriginalSirenTriggeringStatus,CreatedDate,HDOP,Altitude,AD1,AD2,OdoMeter,Date,IsPatchEngine ) " +
+                "VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + inputoutputSTatus + "', '" + DeviceId + "'," + IsRelayToStopTheCar + "," + IsSirenSound + "," + IsUserDefined + "," + IsLockTheDoor + "," + IsUnlockTheDoor + "," + IsSOS + "," + IsWiringForAntiTamper + "," + IsDoor + "," + IsEngine + "," + IsOriginalSirenTriggeringStatus + ",'" + CurrentDate + "','" + HDOP + "','" + altitude + "','" + AD1 + "','" + AD2 + "','" + Odometer + "','" + unixDateStemp + "'," + IsPatchEngine + ");";
             connection.query(query, function(err, rows, fields) {
                 // console.log(err);
                 var objConnection = {
@@ -755,7 +761,7 @@ global.Command9955 = function(line, Callback) {
                     IsSOS: IsSOS,
                     IsWiringForAntiTamper: IsWiringForAntiTamper,
                     IsDoor: IsDoor,
-                    IsEngine: IsEngine,
+                    IsEngine: IsPatchEngine,
                     IsOriginalSirenTriggeringStatus: IsOriginalSirenTriggeringStatus,
                     Date: unixDateStemp
                 }
@@ -767,7 +773,7 @@ global.Command9955 = function(line, Callback) {
                 }
             });
 
-            if (IsEngine == true) {
+            if (IsPatchEngine == true) {
                 //Fence
                 connection.query("SELECT * from tblfence where deviceId=" + DeviceId + " and IsFenceOnline=true", function(err, rows, fields) {
                     if (!err && rows.length > 0) {
@@ -1052,7 +1058,7 @@ global.Command9955 = function(line, Callback) {
                         if (Bikerows[0].Arm == 2) {
                             var checkEngine = 0;
                             var ArmStatus = 1;
-                            if (IsEngine == true) {
+                            if (IsPatchEngine == true) {
                                 checkEngine = 1;
                                 ArmStatus = 0;
                             }

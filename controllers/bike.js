@@ -406,6 +406,9 @@ router.get('/GetVehicleCurrentLocation', function(req, res) {
             order: 'Date DESC'
         }).then(function(response) {
             if (response != null) {
+                //Use Patch Engine
+                response.IsEngine = response.IsPatchEngine;
+
                 client.set(req.query.DeviceId, JSON.stringify(response), function(err, replies) {});
                 res.json({ success: true, data: response });
             } else {
@@ -605,7 +608,7 @@ router.get('/GetAllGPSByTimeZoneDate', function(req, res) {
     var unixEnddate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
 
 
-    var query = "select Datetime, Latitude, Longitude, GPSPositioning, Speed, Direction, DeviceId,IsEngine, Date from tblgpsdata where deviceid=" + req.query.DeviceId + " and GPSPositioning='A' and Date >= '" + unixStartdate + "' and Date <= '" + unixEnddate + "' order by Date;"
+    var query = "select Datetime, Latitude, Longitude, GPSPositioning, Speed, Direction, DeviceId,IsPatchEngine as IsEngine, Date from tblgpsdata where deviceid=" + req.query.DeviceId + " and GPSPositioning='A' and Date >= '" + unixStartdate + "' and Date <= '" + unixEnddate + "' order by Date;"
     connection.query(query, function(err, lstGPSData, fields) {
         res.json(lstGPSData);
     });
@@ -622,7 +625,7 @@ router.get('/GetAllGPSByTimeZoneDateWithV', function(req, res) {
     var convertDate = convertdateformatForUnix(Enddate);
     var unixEnddate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
 
-    var query = "select Id,Datetime, Latitude, Longitude, GPSPositioning, Speed, Direction, DeviceId, IsEngine, OdoMeter, Date from tblgpsdata where deviceid=" + req.query.DeviceId + " and Date >= '" + unixStartdate + "' and Date <= '" + unixEnddate + "' order by Date;"
+    var query = "select Id,Datetime, Latitude, Longitude, GPSPositioning, Speed, Direction, DeviceId, IsPatchEngine as IsEngine, OdoMeter, Date from tblgpsdata where deviceid=" + req.query.DeviceId + " and Date >= '" + unixStartdate + "' and Date <= '" + unixEnddate + "' order by Date;"
     connection.query(query, function(err, lstGPSData, fields) {
         res.json(lstGPSData);
     });
@@ -1752,7 +1755,7 @@ router.get('/GetAllWorkingBikeWebAppNew1', jsonParser, function(req, res) {
         "(select count(*) from tblalarm  a where a.DeviceId =t4.deviceid and IsRead=false) as 'NotificationCount' ," +
         "(SELECT COUNT(*) FROM tblserviceenhancementnotification WHERE IsRead=false and idvehicle = t4.id) as 'AlertCount' " +
         "from " +
-        "(select t3.deviceid,t3.id,t3.iduser,t3.DeviceType,t3.ShareId,t3.VehicleType,tg.OdoMeter,tg.IsEngine, tg.Latitude,tg.Longitude,tg.Datetime, tg.Date, tg.Speed, tg.Direction,t3.Name,t3.IsOnline from " +
+        "(select t3.deviceid,t3.id,t3.iduser,t3.DeviceType,t3.ShareId,t3.VehicleType,tg.OdoMeter,tg.IsPatchEngine as IsEngine, tg.Latitude,tg.Longitude,tg.Datetime, tg.Date, tg.Speed, tg.Direction,t3.Name,t3.IsOnline from " +
         " (select t.iduser ,t.deviceid ,t.id,t.Name,t.DeviceType,t.VehicleType,t.ShareId,t.IsOnline,max(tgp2.id) as 'GPSID'  from " +
         "  (select tb.iduser,tb.deviceid,tb.id,tb.Name,tb.DeviceType,tvt.Type as 'VehicleType',tsd.id as'ShareId',tb.IsOnline from tblvehicle tb " +
         "   LEFT join tblsharedevice tsd on tb.id=tsd.idVehicle " +

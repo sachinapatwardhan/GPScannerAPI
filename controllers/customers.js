@@ -92,7 +92,7 @@ router.get('/GetGeneralInfo', function(req, res) {
 router.get('/SendTestMail', function(req, res) {
 
     var mail = {
-        from: 'soham.patel@bugzstudio.com',
+        from: 'noreply@maark.my',
         to: 'soham.patel@bugzstudio.com',
         subject: 'hello',
         text: 'hello world!'
