@@ -26,19 +26,28 @@ router.get('/GetAppVersionByAppName', function(req, res) {
 })
 
 router.get('/GetAppVersionByAppNameNew', function(req, res) {
-    AppInfo.findOne({ where: { WebAppUrl: req.query.WebAppUrl } }).then(function(response) {
-        if (response != null) {
-            AppVersion.findOne({ where: { Name: response.AppName } }).then(function(resVersion) {
-                res.json(resVersion);
-            }).catch(function(error) {
-                res.json(error);
-            })
+    var query = "select * from tblappinfo inner join tblappversion on tblappinfo.AppName = tblappversion.Name where tblappinfo.WebAppUrl='" + req.query.WebAppUrl + "'";
+    connection.query(query, function(err, rows, fields) {
+        if (!err) {
+            res.json(rows);
         } else {
-            res.json(response);
+            res.json({ success: false });
         }
-    }).catch(function(error) {
-        res.json(error);
     })
+
+    // AppInfo.findOne({ where: { WebAppUrl: req.query.WebAppUrl } }).then(function(response) {
+    //     if (response != null) {
+    //         AppVersion.findOne({ where: { Name: response.AppName } }).then(function(resVersion) {
+    //             res.json(resVersion);
+    //         }).catch(function(error) {
+    //             res.json(error);
+    //         })
+    //     } else {
+    //         res.json(response);
+    //     }
+    // }).catch(function(error) {
+    //     res.json(error);
+    // })
 })
 
 module.exports = router
