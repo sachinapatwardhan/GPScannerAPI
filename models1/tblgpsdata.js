@@ -107,6 +107,11 @@ module.exports = function(sequelize, DataTypes) {
     Date: {
       type: DataTypes.BIGINT,
       allowNull: true
+    },
+    IsPatchEngine: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+      defaultValue: '0'
     }
   }, {
     tableName: 'tblgpsdata'
