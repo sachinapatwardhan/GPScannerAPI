@@ -223,11 +223,11 @@ router.post('/GetAllWorkingBike', jsonParser, function(req, res) {
 // })
 
 router.get('/GetAllWorkingBikeWebApp', jsonParser, function(req, res) {
-    var query = "select t4.id,t4.iduser,t4.Name,t4.deviceid,t4.IsOnline,t4.DeviceType,t4.ShareId,t4.VehicleType,t4.CreatedDate, " +
+    var query = "select t4.id,t4.iduser,t4.Name,t4.deviceid,t4.IsOnline,t4.DeviceType,t4.ShareId,t4.VehicleType,t4.CreatedDate,t4.IdGroup,t4.IdSharedGroup,  " +
         "(select count(*) from tblalarm  a where a.DeviceId =t4.deviceid and IsRead=false) as 'NotificationCount' ," +
         "(SELECT COUNT(*) FROM tblserviceenhancementnotification WHERE IsRead=false and idvehicle = t4.id) as 'AlertCount' " +
         "from " +
-        "  (select tb.iduser,tb.deviceid,tb.id,tb.Name,tb.DeviceType,tvt.Type as 'VehicleType',tb.CreatedDate,tsd.id as'ShareId',tb.IsOnline from tblvehicle tb " +
+        "  (select tb.iduser,tb.deviceid,tb.id,tb.Name,tb.DeviceType,tvt.Type as 'VehicleType',tb.CreatedDate,tsd.id as'ShareId',tb.IsOnline,tsd.IdSharedGroup as 'IdSharedGroup',tb.IdGroup from tblvehicle tb " +
         "   LEFT join tblsharedevice tsd on tb.id=tsd.idVehicle " +
         "   LEFT JOIN tblvehicletype tvt on tb.idType=tvt.id " +
         "   where (tb.iduser=" + req.query.idUser + " or tsd.iduser=" + req.query.idUser + ") and IsDelete = false " +
@@ -251,7 +251,9 @@ router.get('/GetAllWorkingBikeWebApp', jsonParser, function(req, res) {
                     obj.VehicleType = rows[i].VehicleType;
                     obj.NotificationCount = rows[i].NotificationCount;
                     obj.AlertCount = rows[i].AlertCount;
-
+                    obj.IsShared = rows[i].IsShared;
+                    obj.IdSharedGroup = rows[i].IdSharedGroup;
+                    obj.IdGroup = rows[i].IdGroup;
                     client.get(rows[i].deviceid, function(err, strgpsdata) {
                         if (!err) {
                             if (strgpsdata != null & strgpsdata != '' && strgpsdata != undefined) {
