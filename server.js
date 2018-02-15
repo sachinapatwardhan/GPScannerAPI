@@ -495,6 +495,7 @@ app.use('/productAttributeValue', require('./controllers/productAttributeValue')
 app.use('/productAttributeCombination', require('./controllers/productAttributeCombination'))
 app.use('/productPictureMapping', require('./controllers/productPictureMapping'))
 app.use('/orderservice', require('./controllers/orderservice'))
+app.use('/journey', require('./controllers/journey'))
     // app.use('/advancefence', require('./controllers/advancefence'))
     //End of Setting
 
@@ -537,7 +538,7 @@ app.use('/salesAgent', require('./controllers/salesAgent'));
 app.use('/retailer', require('./controllers/retailer'));
 app.use('/admin', require('./controllers/admin'));
 app.use('/auditlog', require('./controllers/auditlog'));
-// app.use('/routeplan', require('./controllers/routeplan'));
+app.use('/routeplan', require('./controllers/routeplan'));
 app.use('/feedback', require('./controllers/feedback'))
 
 // MAARK Install App End
