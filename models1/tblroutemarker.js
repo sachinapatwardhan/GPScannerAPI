@@ -27,6 +27,11 @@ module.exports = function(sequelize, DataTypes) {
     IdRoute: {
       type: DataTypes.INTEGER(11),
       allowNull: true
+    },
+    IsInRouteMarker: {
+      type: DataTypes.INTEGER(4),
+      allowNull: true,
+      defaultValue: '0'
     }
   }, {
     tableName: 'tblroutemarker'
