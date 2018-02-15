@@ -39,6 +39,11 @@ module.exports = function(sequelize, DataTypes) {
     ModifiedBy: {
       type: DataTypes.STRING,
       allowNull: true
+    },
+    IsCompleted: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+      defaultValue: '0'
     }
   }, {
     tableName: 'tbljourneyroute'
