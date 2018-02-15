@@ -11,6 +11,42 @@ var DefaultValue = models.tbldefaultvalue;
 var VehicleGroup = models.tblvehiclegroup;
 //End of Tables
 
+router.get('/UpdateExpiryDate', function(req, res) {
+    objHeader = req.headers;
+    // var DeviceList = req.query.DeviceList;
+    var token = getToken(objHeader);
+    if (token) {
+        var decoded = jwt.decode(token, TokenKey);
+        User.findOne({
+            where: {
+                username: decoded.username,
+                password: decoded.password
+            }
+        }).then(function(UserExist) {
+            if (UserExist != null) {
+                Vehicle.findOne({ where: { id: req.query.id } }).then(function(vehicleExist) {
+                    if (vehicleExist) {
+                        vehicleExist.updateAttributes({ renewaldate: req.query.renewaldate }).then(function(response) {
+                            if (response) {
+                                res.json({ success: true, message: 'Expiry Date updated successfully..' })
+                            } else {
+                                res.json({ success: false, message: 'Expiry Date not updated' })
+                            }
+                        })
+                    } else {
+                        res.json({ success: false, message: 'vehicle not found..' })
+                    }
+                })
+            } else {
+                res.json(InvalidToken);
+            }
+        })
+    } else {
+        res.json(InvalidToken);
+    }
+})
+
+
 router.get('/GetAllGroup', function(req, res) {
     VehicleGroup.findAll({ where: { IdUser: req.query.IdUser } }).then(function(response) {
         res.json(response)
