@@ -136,6 +136,7 @@ router.get('/GetTaxSettingForSharlink', jsonParser, function(req, res) {
                                 var url = req.query.DeviceId + "," + VehicleExist.ShareCode;
                                 response1.enDeviceId = jwt.encode(url, "bugz");
                                 response1.link = response.Value + '/' + response1.enDeviceId;
+                                // console.log(response1.link)
                                 res.json({ success: true, message: "Record found...", data: response1 });
                             } else {
                                 VehicleExist.updateAttributes({ ShareCode: Math.floor(100000 + Math.random() * 900000) }).then(function(shareCodeupdated) {
@@ -556,16 +557,16 @@ router.get('/GetAllDynamickHandshakeNew', function(req, res) {
     }
     if (objParam.fromdate != null && objParam.fromdate != '' && objParam.fromdate != undefined) {
         if (search != "") {
-            search += ' and th.Datetime >= "' + convertdateformat(objParam.fromdate) + '"';
+            search += ' and th.Datetime >= "' + convertdateUTCformat(objParam.fromdate) + '"';
         } else {
-            search += ' where th.Datetime >= "' + convertdateformat(objParam.fromdate) + '"';
+            search += ' where th.Datetime >= "' + convertdateUTCformat(objParam.fromdate) + '"';
         }
     }
     if (objParam.todate != null && objParam.todate != '' && objParam.todate != undefined) {
         if (search != "") {
-            search += ' and th.Datetime <= "' + convertdateformat(objParam.todate) + '"';
+            search += ' and th.Datetime <= "' + convertdateUTCformat(objParam.todate) + '"';
         } else {
-            search += ' where th.Datetime <= "' + convertdateformat(objParam.todate) + '"';
+            search += ' where th.Datetime <= "' + convertdateUTCformat(objParam.todate) + '"';
         }
     }
 
