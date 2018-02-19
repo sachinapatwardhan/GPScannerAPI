@@ -4,14 +4,48 @@
  var EmailSetting = models.tblemailsettingsys;
  var EmailTemplate = models.tblemailtemplate;
  var SystemEmail = models.tblemailsettingsys;
+ var AppInfo = models.tblappinfo;
  //End of Tables
 
  //Email EmailSetting
+
+ router.get('/GetAllAppName', function(req, res) {
+     var query = "select * from tblappinfo where Id not in (select IdApp from tblemailsettingsys)";
+     connection.query(query, function(err, rows, fields) {
+             if (!err) {
+                 res.json({ success: true, data: rows });
+             } else {
+                 res.json({ success: false, data: [] });
+             }
+         })
+         // AppInfo.findAll().then(function(response) {
+         //     res.json(response);
+         // }).catch(function(error) {
+         //     res.json(error);
+         // })
+ });
+
  router.get('/GetAllEmailSetting', function(req, res) {
      EmailSetting.findAll().then(function(response) {
          res.json(response);
      }).catch(function(error) {
          res.json(error);
+     })
+ })
+ router.get('/GetAllEmailSettingNew', function(req, res) {
+     EmailSetting.belongsTo(AppInfo, {
+         foreignKey: {
+             name: 'IdApp',
+             allowNull: false
+         }
+     });
+
+     EmailSetting.findAll({
+         include: [{
+             model: AppInfo,
+         }]
+     }).then(function(response) {
+         res.json(response)
      })
  })
 
@@ -64,7 +98,7 @@
                          if (AccessPermission) {
 
                              EmailSetting.create(objEmailSetting).then(function(response) {
-                                 funAuditLog.CreateAuditLog('SaveEmailSetting', UserExist.username , 'Create Email Setting');
+                                 funAuditLog.CreateAuditLog('SaveEmailSetting', UserExist.username, 'Create Email Setting');
                                  res.json({
                                      success: true,
                                      message: "Email Setting created successfully...",
@@ -94,7 +128,7 @@
                                  }
                              }).then(function(response) {
                                  if (response[0]) {
-                                     funAuditLog.CreateAuditLog('SaveEmailSetting', UserExist.username , 'Update Email Setting');
+                                     funAuditLog.CreateAuditLog('SaveEmailSetting', UserExist.username, 'Update Email Setting');
                                      res.json({
                                          success: true,
                                          message: "Email Setting updated successfully...",
@@ -134,7 +168,7 @@
                      }
                  }).then(function(response) {
                      if (response) {
-                         funAuditLog.CreateAuditLog('DeleteEmailSetting', UserExist.username , 'Delete Email Setting');
+                         funAuditLog.CreateAuditLog('DeleteEmailSetting', UserExist.username, 'Delete Email Setting');
                          res.json({
                              success: true,
                              message: "Email Setting deleted successfully...",
@@ -220,7 +254,7 @@
                          if (AccessPermission) {
 
                              EmailTemplate.create(objEmailTemplate).then(function(response) {
-                                 funAuditLog.CreateAuditLog('SaveEmailTemplate', UserExist.username , 'Create Email Template');
+                                 funAuditLog.CreateAuditLog('SaveEmailTemplate', UserExist.username, 'Create Email Template');
                                  res.json({
                                      success: true,
                                      message: "EmailTemplate created successfully...",
@@ -248,7 +282,7 @@
                                  }
                              }).then(function(response) {
                                  if (response[0]) {
-                                     funAuditLog.CreateAuditLog('SaveEmailTemplate', UserExist.username , 'Update Email Template');
+                                     funAuditLog.CreateAuditLog('SaveEmailTemplate', UserExist.username, 'Update Email Template');
                                      res.json({
                                          success: true,
                                          message: "EmailTemplate updated successfully...",
@@ -301,7 +335,7 @@
                              }
                          }).then(function(response) {
                              if (response) {
-                                 funAuditLog.CreateAuditLog('DeleteEmailTemplate', UserExist.username , 'Delete EmailTemplate');
+                                 funAuditLog.CreateAuditLog('DeleteEmailTemplate', UserExist.username, 'Delete EmailTemplate');
                                  res.json({
                                      success: true,
                                      message: "EmailTemplate deleted successfully...",
