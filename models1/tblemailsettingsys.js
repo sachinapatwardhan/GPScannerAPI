@@ -27,6 +27,10 @@ module.exports = function(sequelize, DataTypes) {
     EEValidateEmailAddresses: {
       type: DataTypes.BOOLEAN,
       allowNull: true
+    },
+    IdApp: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true
     }
   }, {
     tableName: 'tblemailsettingsys'
