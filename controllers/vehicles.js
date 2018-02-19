@@ -854,10 +854,11 @@ router.get('/GetAllNotUseDevcie', function(req, res) {
         search = " and (tb.iduser=" + req.query.UserId + " OR tsd.idUser=" + req.query.UserId + ")";
     }
 
-    var qry = "SELECT  tb.Name,tb.deviceid,tvt.Type as vehicleType,tb.DeviceType as Type,tpg.Datetime, tpg.Date,tpg.IsEngine,tu.email,tu.username,tu.phone,tpg.Latitude,tpg.Longitude" +
+    var qry = "SELECT  taf.AppName,tb.Name,tb.deviceid,tvt.Type as vehicleType,tb.DeviceType as Type,tpg.Datetime, tpg.Date,tpg.IsEngine,tu.email,tu.username,tu.phone,tpg.Latitude,tpg.Longitude" +
         " FROM tblvehicle tb" +
         " left join tbluserinformation tu on tu.id = tb.iduser" +
         " left join tblvehicletype tvt on tvt.id = tb.idType " +
+        " left join tblappinfo taf on taf.id = tu.idApp " +
         " Inner JOIN tblgpsdata tpg ON tb.deviceid=tpg.DeviceId" +
         " INNER JOIN (SELECT DeviceId, MAX(Date) as maxDate FROM (SELECT DeviceId, Date FROM tblgpsdata where IsEngine=1 ORDER BY Date DESC) d GROUP BY DeviceId)  b ON tpg.DeviceId = b.DeviceId AND tpg.Date = b.maxDate" +
         " where IsDelete=false  group by tb.deviceid";
