@@ -548,13 +548,13 @@ router.get('/GetAllDynamickHandshakeNew', function(req, res) {
         search = search + 'th.Datetime like "%' + objSearch + '%") ';
     }
 
-    if (objParam.DeviceId != null && objParam.DeviceId != 'All' && objParam.DeviceId != '' && objParam.DeviceId != undefined) {
-        if (search != "") {
-            search += ' and th.DeviceId like "%' + objParam.DeviceId + '%"';
-        } else {
-            search += ' where th.DeviceId like "%' + objParam.DeviceId + '%"';
-        }
+    // if (objParam.DeviceId != null && objParam.DeviceId != 'All' && objParam.DeviceId != '' && objParam.DeviceId != undefined) {
+    if (search != "") {
+        search += ' and th.DeviceId = "' + objParam.DeviceId + '"';
+    } else {
+        search += ' where th.DeviceId = "' + objParam.DeviceId + '"';
     }
+    // }
     if (objParam.fromdate != null && objParam.fromdate != '' && objParam.fromdate != undefined) {
         if (search != "") {
             search += ' and th.Datetime >= "' + convertdateUTCformat(objParam.fromdate) + '"';

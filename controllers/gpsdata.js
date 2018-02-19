@@ -191,13 +191,13 @@ router.get('/GetAllGpsDataNew', function(req, res) {
     }
 
     var DeviceId = objParam.DeviceId;
-    if (DeviceId != null && DeviceId != '' && DeviceId != 'All' && DeviceId != undefined) {
-        if (search != "") {
-            search += ' and tgps.DeviceId = ' + DeviceId;
-        } else {
-            search += ' where tgps.DeviceId = ' + DeviceId;
-        }
+    // if (DeviceId != null && DeviceId != '' && DeviceId != 'All' && DeviceId != undefined) {
+    if (search != "") {
+        search += ' and tgps.DeviceId = ' + DeviceId;
+    } else {
+        search += ' where tgps.DeviceId = ' + DeviceId;
     }
+    // }
     var StartDate = convertdateUTCformat(objParam.StartDate);
     var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
 
