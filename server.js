@@ -212,6 +212,32 @@ global.schedule = require('node-schedule');
 global.PushNotificationSend = new PushNotifications(PushNotificationSettings);
 
 //Push Notification End
+global.SetsmtpConfig = SetsmtpConfig;
+
+function SetsmtpConfig(data, mail, callback) {
+    var smtpConfig = {
+        service: data.SMTPService,
+        host: data.SMTPhost,
+        port: process.env.SMTPport,
+        secure: true,
+        auth: {
+            user: data.SMTPuser,
+            pass: data.SMTPpass
+        },
+        tls: {
+            rejectUnauthorized: false
+        }
+    };
+    // var obj = new Object()
+    global.transporter = nodemailer.createTransport(smtpTransport(smtpConfig));
+    transporter.sendMail(mail, function(error, response) {
+        if (error) {
+            callback({ success: false, error: error })
+        } else {
+            callback({ success: true });
+        }
+    })
+}
 
 var smtpConfig = {
     service: process.env.SMTPService,
