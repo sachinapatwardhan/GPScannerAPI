@@ -845,7 +845,7 @@ router.get('/GetAllNotUseDevcie', function(req, res) {
 
     var search = "";
     var date = new Date;
-    date.setDate(date.getDate() - 30);
+    date.setDate(date.getDate() - 10);
 
     date = new Date(date).getTime() / 1000;
     date = date.toString().split('.');
