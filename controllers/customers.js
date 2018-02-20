@@ -8,7 +8,6 @@ var Module = models.tblmodulemgmt;
 var Role = models.tblrole;
 var UserInRole = models.tbluserinrole;
 var AuditLog = models.tblauditlog;
-var SystemEmail = models.tblemailsettingsys;
 //End of Tables
 
 //Global Message
@@ -372,16 +371,9 @@ var DailyUserReport = schedule.scheduleJob('0 23 * * *', function() {
                         path: 'MediaUploads/UserReportFileUpload/DailyUserReport__' + TodayDate + '.xlsx', // stream this file
                     }]
                 };
+                transporter.sendMail(mail, function(error, response) {
 
-                SystemEmail.findOne({ where: { IdApp: 1 } }).then(function(objSystemEmail) {
-                    SetsmtpConfig(objSystemEmail, mail, function(EmailSettingCreated) {
-                        // console.log(EmailSettingCreated)
-                    })
-                })
-
-                // transporter.sendMail(mail, function(error, response) {
-
-                // });
+                });
             }
 
         }
@@ -450,13 +442,7 @@ var MonthlyUserReport = schedule.scheduleJob('10 0 1 * *', function() {
                         path: 'MediaUploads/UserReportFileUpload/MonthlyUserReport__' + Month + '_' + Year + '.xlsx', // stream this file
                     }]
                 };
-                SystemEmail.findOne({ where: { IdApp: 1 } }).then(function(objSystemEmail) {
-                    SetsmtpConfig(objSystemEmail, mail, function(EmailSettingCreated) {
-                        // console.log(EmailSettingCreated)
-                    })
-                })
-
-                // transporter.sendMail(mail, function(error, response) {});
+                transporter.sendMail(mail, function(error, response) {});
 
             }
         }
@@ -1974,14 +1960,8 @@ var IsActiveDeviceCheck = schedule.scheduleJob('1 0 0 1,16 * *', function() {
                                 path: 'MediaUploads/UserReportFileUpload/GpsDeviceActive__' + Day + '_' + Month + '_' + Year + '.xlsx', // stream this file
                             }]
                         };
-                        // transporter.sendMail(mail, function(error, response) {});
-                        SystemEmail.findOne({ where: { IdApp: 1 } }).then(function(objSystemEmail) {
-                            SetsmtpConfig(objSystemEmail, mail, function(EmailSettingCreated) {
-                                // console.log(EmailSettingCreated)
-                            })
-                        })
+                        transporter.sendMail(mail, function(error, response) {});
                     }
-
                     // else {
                     //     var mail = {
                     //         from: 'soham.patel@bugzstudio.com',
