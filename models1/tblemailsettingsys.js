@@ -12,20 +12,20 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING,
       allowNull: true
     },
-    NotificationEmailTo: {
+    SMTPService: {
       type: DataTypes.STRING,
       allowNull: true
     },
-    EEMandrillKey: {
+    SMTPhost: {
       type: DataTypes.STRING,
       allowNull: true
     },
-    EEDefaultFrom: {
+    SMTPuser: {
       type: DataTypes.STRING,
       allowNull: true
     },
-    EEValidateEmailAddresses: {
-      type: DataTypes.BOOLEAN,
+    SMTPpass: {
+      type: DataTypes.STRING,
       allowNull: true
     },
     IdApp: {
