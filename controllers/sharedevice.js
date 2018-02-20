@@ -272,7 +272,7 @@ router.post('/InvitedNewUser', jsonParser, function(req, res) {
 
 
                             funAuditLog.CreateAuditLog('Create shared Email', decoded.username, 'Save shared Email');
-                            SystemEmail.findOne().then(function(objSystemEmail) {
+                            SystemEmail.findOne({ where: { IdApp: AppInfoExit.Id } }).then(function(objSystemEmail) {
                                 EmailTemplate.findOne({
                                     where: {
                                         Type: "Invitation Email",
@@ -293,19 +293,22 @@ router.post('/InvitedNewUser', jsonParser, function(req, res) {
                                             subject: UserExist.email + " " + objEmailTemplate.EmailSubject,
                                             html: body
                                         };
+                                        SetsmtpConfig(objSystemEmail, mail, function(EmailSettingCreated) {
+                                            // console.log(EmailSettingCreated)
+                                        })
 
-                                        transporter.sendMail(mail, function(error, response) {
-                                            if (error) {
-                                                res.json(error);
-                                            } else {
-                                                // funAuditLog.CreateAuditLog('Send initation mail', decoded.username, 'Send initation mail');
-                                                res.json({
-                                                    success: true,
-                                                    message: "Invitation email send to this user successfully",
-                                                    data: response
-                                                });
-                                            }
+                                        // transporter.sendMail(mail, function(error, response) {
+                                        //     if (error) {
+                                        //         res.json(error);
+                                        //     } else {
+                                        // funAuditLog.CreateAuditLog('Send initation mail', decoded.username, 'Send initation mail');
+                                        res.json({
+                                            success: true,
+                                            message: "Invitation email send to this user successfully",
+                                            // data: response
                                         });
+                                        //     }
+                                        // });
                                     } else {
                                         res.json({
                                             success: false,
@@ -322,7 +325,7 @@ router.post('/InvitedNewUser', jsonParser, function(req, res) {
                                 SharedEmailExit[0].updateAttributes(obj).then(function(SystemEmailUpdate) {
                                     if (SystemEmailUpdate) {
                                         funAuditLog.CreateAuditLog('Create shared Email', decoded.username, 'Update shared Email');
-                                        SystemEmail.findOne().then(function(objSystemEmail) {
+                                        SystemEmail.findOne({ where: { IdApp: AppInfoExit.Id } }).then(function(objSystemEmail) {
                                             EmailTemplate.findOne({
                                                 where: {
                                                     Type: "Invitation Email",
@@ -344,18 +347,22 @@ router.post('/InvitedNewUser', jsonParser, function(req, res) {
                                                         html: body
                                                     };
 
-                                                    transporter.sendMail(mail, function(error, response) {
-                                                        if (error) {
-                                                            res.json(error);
-                                                        } else {
-                                                            // funAuditLog.CreateAuditLog('Send initation mail', decoded.username, 'Send initation mail');
-                                                            res.json({
-                                                                success: true,
-                                                                message: "Invitation email send to this user successfully",
-                                                                data: response
-                                                            });
-                                                        }
+                                                    SetsmtpConfig(objSystemEmail, mail, function(EmailSettingCreated) {
+                                                        // console.log(EmailSettingCreated)
+                                                    })
+
+                                                    // transporter.sendMail(mail, function(error, response) {
+                                                    //     if (error) {
+                                                    //         res.json(error);
+                                                    //     } else {
+                                                    // funAuditLog.CreateAuditLog('Send initation mail', decoded.username, 'Send initation mail');
+                                                    res.json({
+                                                        success: true,
+                                                        message: "Invitation email send to this user successfully",
+                                                        // data: response
                                                     });
+                                                    //     }
+                                                    // });
                                                 } else {
                                                     res.json({
                                                         success: false,

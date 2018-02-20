@@ -916,7 +916,7 @@ router.post('/changepasswordNew', jsonParser, function(req, res) {
                         password: EncryptNewpassword
                     }).then(function(response) {
                         funAuditLog.CreateAuditLog('changepassword', chkUserExist.username, 'Change User Password');
-                        SystemEmail.findOne().then(function(objSystemEmail) {
+                        SystemEmail.findOne({ where: { IdApp: chkUserExist.idApp } }).then(function(objSystemEmail) {
                             EmailTemplate.findOne({
                                 where: {
                                     Type: "Change Password",
@@ -941,17 +941,22 @@ router.post('/changepasswordNew', jsonParser, function(req, res) {
                                             subject: objUser.AppName + " " + objEmailTemplate.EmailSubject,
                                             html: body
                                         };
-                                        transporter.sendMail(mail, function(error, response) {
-                                            if (error) {
-                                                // res.json(error);
-                                            } else {
-                                                // funAuditLog.CreateAuditLog('change password', chkUserExist.username, 'change password');
-                                            }
-                                        });
+                                        SetsmtpConfig(objSystemEmail, mail, function(EmailSettingCreated) {
+                                            // console.log(EmailSettingCreated)
+                                        })
+
+                                        // transporter.sendMail(mail, function(error, response) {
+                                        //     if (error) {
+                                        //         // res.json(error);
+                                        //     } else {
+                                        //         // funAuditLog.CreateAuditLog('change password', chkUserExist.username, 'change password');
+                                        //     }
+                                        // });
+                                        funAuditLog.CreateAuditLog('change password', chkUserExist.username, 'change password');
                                         res.json({
                                             success: true,
                                             message: "New Password email sent. password has been changed....",
-                                            data: response
+                                            // data: response
                                         });
                                     })
                                 } else {
@@ -1150,7 +1155,7 @@ router.get('/forgotpassword', function(req, res) {
         }
     }).then(function(objUser) {
         if (objUser != null) {
-            SystemEmail.findOne().then(function(objSystemEmail) {
+            SystemEmail.findOne({ where: { IdApp: objUser.idApp } }).then(function(objSystemEmail) {
                 var NewPassword = customPassword();
                 console.log(NewPassword);
                 var EncryptNewpassword = jwt.encode(NewPassword, "bugz");
@@ -1179,18 +1184,22 @@ router.get('/forgotpassword', function(req, res) {
                                         subject: req.query.AppName + " " + objEmailTemplate.EmailSubject,
                                         html: body
                                     };
-                                    transporter.sendMail(mail, function(error, response) {
-                                        if (error) {
-                                            res.json(error);
-                                        } else {
-                                            funAuditLog.CreateAuditLog('forgotpassword', objUser.username, 'forgot User Password');
-                                            res.json({
-                                                success: true,
-                                                message: "Password sent to your email successfully...",
-                                                data: response
-                                            });
-                                        }
+                                    SetsmtpConfig(objSystemEmail, mail, function(EmailSettingCreated) {
+                                        // console.log(EmailSettingCreated)
+                                    })
+
+                                    // transporter.sendMail(mail, function(error, response) {
+                                    //     if (error) {
+                                    //         res.json(error);
+                                    //     } else {
+                                    funAuditLog.CreateAuditLog('forgotpassword', objUser.username, 'forgot User Password');
+                                    res.json({
+                                        success: true,
+                                        message: "Password sent to your email successfully...",
+                                        // data: response
                                     });
+                                    //     }
+                                    // });
                                 });
                             } else {
                                 res.json({
@@ -1249,7 +1258,7 @@ router.get('/forgotpasswordNew', function(req, res) {
     }).then(function(response) {
 
         if (response != null) {
-            SystemEmail.findOne().then(function(objSystemEmail) {
+            SystemEmail.findOne({ where: { IdApp: req.query.idApp } }).then(function(objSystemEmail) {
                 var NewPassword = customPassword();
                 // console.log(NewPassword);
                 var EncryptNewpassword = jwt.encode(NewPassword, "bugz");
@@ -1277,17 +1286,21 @@ router.get('/forgotpasswordNew', function(req, res) {
                                         subject: req.query.AppName + " " + objEmailTemplate.EmailSubject,
                                         html: body
                                     };
-                                    transporter.sendMail(mail, function(error, response) {
-                                        if (error) {
-                                            res.json(error);
-                                        } else {
-                                            funAuditLog.CreateAuditLog('forgotpassword', response.email, 'forgot User Password');
-                                            res.json({
-                                                success: true,
-                                                message: "Password sent to your email successfully...",
-                                                data: response
-                                            });
-                                        }
+                                    SetsmtpConfig(objSystemEmail, mail, function(EmailSettingCreated) {
+                                        // transporter.sendMail(mail, function(error, response) {
+                                        // if (error) {
+                                        //     res.json(error);
+                                        // } else {
+                                        //     funAuditLog.CreateAuditLog('forgotpassword', response.email, 'forgot User Password');
+
+                                        // }
+                                        // });
+                                        console.log(EmailSettingCreated)
+                                    })
+                                    funAuditLog.CreateAuditLog('forgotpassword', response.email, 'forgot User Password');
+                                    res.json({
+                                        success: true,
+                                        message: "Password sent to your email successfully...",
                                     });
                                 })
                             } else {
@@ -1338,7 +1351,8 @@ router.get('/forgotpasswordNew', function(req, res) {
                             message: "This system Email not found..."
                         });
                     } else {
-                        SystemEmail.findOne().then(function(objSystemEmail) {
+                        SystemEmail.findOne({ where: { IdApp: req.query.idApp } }).then(function(objSystemEmail) {
+
                             var NewPassword = customPassword();
                             var EncryptNewpassword = jwt.encode(NewPassword, "bugz");
                             response1.updateAttributes({ password: EncryptNewpassword }).then(function(response) {
@@ -1365,18 +1379,27 @@ router.get('/forgotpasswordNew', function(req, res) {
                                                     subject: req.query.AppName + " " + objEmailTemplate.EmailSubject,
                                                     html: body
                                                 };
-                                                transporter.sendMail(mail, function(error, response) {
-                                                    console.log(error)
-                                                    if (error) {
-                                                        res.json(error);
-                                                    } else {
-                                                        funAuditLog.CreateAuditLog('forgotpassword', response1.email, 'forgot User Password');
-                                                        res.json({
-                                                            success: true,
-                                                            message: "Password sent to your email successfully...",
-                                                            data: response
-                                                        });
-                                                    }
+                                                SetsmtpConfig(objSystemEmail, mail, function(EmailSettingCreated) {
+                                                    // transporter.sendMail(mail, function(error, response) {
+                                                    //     console.log(error)
+                                                    //     if (error) {
+                                                    //         res.json(error);
+                                                    //     } else {
+                                                    //         funAuditLog.CreateAuditLog('forgotpassword', response1.email, 'forgot User Password');
+                                                    //         res.json({
+                                                    //             success: true,
+                                                    //             message: "Password sent to your email successfully...",
+                                                    //             data: response
+                                                    //         });
+                                                    //     }
+                                                    // }); 
+                                                    // console.log(EmailSettingCreated)
+
+                                                })
+                                                res.json({
+                                                    success: true,
+                                                    message: "Password sent to your email successfully...",
+                                                    // data: response
                                                 });
                                             })
                                         } else {
@@ -1423,7 +1446,7 @@ router.get('/forgotpasswordfromOwnerCustomer', function(req, res) {
     }).then(function(objUser) {
         if (objUser != null) {
 
-            SystemEmail.findOne().then(function(objSystemEmail) {
+            SystemEmail.findOne({ where: { IdApp: objUser.idApp } }).then(function(objSystemEmail) {
 
                 var NewPassword = customPassword();
                 var EncryptNewpassword = jwt.encode(NewPassword, "bugz");
@@ -1459,18 +1482,21 @@ router.get('/forgotpasswordfromOwnerCustomer', function(req, res) {
                                             subject: req.query.AppName + " " + objEmailTemplate.EmailSubject,
                                             html: body
                                         };
-                                        transporter.sendMail(mail, function(error, response) {
-                                            if (error) {
-                                                res.json(error);
-                                            } else {
-                                                funAuditLog.CreateAuditLog('forgotpassword', objUser.username, 'forgot User Password');
-                                                res.json({
-                                                    success: true,
-                                                    message: "Password sent to your email successfully...",
-                                                    data: response
-                                                });
-                                            }
+                                        SetsmtpConfig(objSystemEmail, mail, function(EmailSettingCreated) {
+                                                // console.log(EmailSettingCreated)
+                                            })
+                                            // transporter.sendMail(mail, function(error, response) {
+                                            //     if (error) {
+                                            //         res.json(error);
+                                            //     } else {
+                                        funAuditLog.CreateAuditLog('forgotpassword', objUser.username, 'forgot User Password');
+                                        res.json({
+                                            success: true,
+                                            message: "Password sent to your email successfully...",
+                                            // data: response
                                         });
+                                        //     }
+                                        // });
                                     })
                                 } else {
                                     res.json({
@@ -1530,7 +1556,7 @@ router.get('/forgotpasswordfromOwnerCustomerNew', jsonParser, function(req, res)
                         }
                     }).then(function(objUser) {
                         if (objUser != null) {
-                            SystemEmail.findOne().then(function(objSystemEmail) {
+                            SystemEmail.findOne({ where: { IdApp: objUser.idApp } }).then(function(objSystemEmail) {
 
                                 var NewPassword = customPassword();
                                 var EncryptNewpassword = jwt.encode(NewPassword, "bugz");
@@ -1566,18 +1592,23 @@ router.get('/forgotpasswordfromOwnerCustomerNew', jsonParser, function(req, res)
                                                             subject: req.query.AppName + " " + objEmailTemplate.EmailSubject,
                                                             html: body
                                                         };
-                                                        transporter.sendMail(mail, function(error, response) {
-                                                            if (error) {
-                                                                // res.json(error);
-                                                            } else {
-                                                                funAuditLog.CreateAuditLog('forgotpassword', objUser.username, 'forgot User Password');
+                                                        SetsmtpConfig(objSystemEmail, mail, function(EmailSettingCreated) {
+                                                            // console.log(EmailSettingCreated
+                                                        })
 
-                                                            }
-                                                        });
+                                                        // transporter.sendMail(mail, function(error, response) {
+                                                        //     if (error) {
+                                                        //         // res.json(error);
+                                                        //     } else {
+                                                        //        
+
+                                                        //     }
+                                                        // });
+                                                        funAuditLog.CreateAuditLog('forgotpassword', objUser.username, 'forgot User Password');
                                                         res.json({
                                                             success: true,
                                                             message: "Reset Password email sent.",
-                                                            data: response
+                                                            // data: response
                                                         });
                                                     })
                                                 } else {
@@ -2232,7 +2263,7 @@ function AddNewShareDevice(objparam, callback) {
 router.get('/MobileForgotPasswordNew', function(req, res) {
     User.findOne({ where: { email: req.query.email, idApp: req.query.idApp, } }).then(function(objUser) {
         if (objUser != null) {
-            SystemEmail.findOne().then(function(objSystemEmail) {
+            SystemEmail.findOne({ where: { IdApp: objUser.idApp } }).then(function(objSystemEmail) {
                 var NewPassword = customPassword();
                 console.log(NewPassword);
                 var EncryptNewpassword = jwt.encode(NewPassword, "bugz");
@@ -2261,22 +2292,26 @@ router.get('/MobileForgotPasswordNew', function(req, res) {
                                         subject: req.query.AppName + " " + objEmailTemplate.EmailSubject,
                                         html: body
                                     };
-                                    transporter.sendMail(mail, function(error, response) {
-                                        if (error) {
-                                            res.json({
-                                                success: false,
-                                                message: "Error in Sending Email " + error,
-                                                data: error
-                                            });
-                                        } else {
-                                            funAuditLog.CreateAuditLog('forgotpassword', objUser.username, 'forgot User Password');
-                                            res.json({
-                                                success: true,
-                                                message: "Password sent to your email successfully...",
-                                                data: response
-                                            });
-                                        }
+                                    SetsmtpConfig(objSystemEmail, mail, function(EmailSettingCreated) {
+                                        // console.log(EmailSettingCreated)
+                                    })
+
+                                    // transporter.sendMail(mail, function(error, response) {
+                                    //     if (error) {
+                                    //         res.json({
+                                    //             success: false,
+                                    //             message: "Error in Sending Email " + error,
+                                    //             data: error
+                                    //         });
+                                    //     } else {
+                                    funAuditLog.CreateAuditLog('forgotpassword', objUser.username, 'forgot User Password');
+                                    res.json({
+                                        success: true,
+                                        message: "Password sent to your email successfully...",
+                                        // data: response
                                     });
+                                    //     }
+                                    // });
                                 });
                             } else {
                                 res.json({
