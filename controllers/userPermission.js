@@ -436,7 +436,7 @@ router.get('/CheckRightsbyPage', function(req, res) {
                                     lstUserRole.push(strRole[i].tblrole.RoleName);
                                 }
                                 if (lstUserRole.length > 0) {
-                                    UserPermission.findOne({
+                                    UserPermission.findAll({
                                         where: {
                                             idModule: objModule.id,
                                             RoleName: {
@@ -449,7 +449,23 @@ router.get('/CheckRightsbyPage', function(req, res) {
                                         }
                                     }).then(function(objUserPermission) {
                                         if (objUserPermission != null) {
-                                            res.json({ success: true, message: "Permission to Access...", data: objUserPermission });
+                                            var obj = new Object();
+                                            for (var i = 0; i < objUserPermission.length; i++) {
+                                                if (objUserPermission[i].Added == true) {
+                                                    obj.Added = true;
+                                                }
+                                                if (objUserPermission[i].Deleted == true) {
+                                                    obj.Deleted = true;
+                                                }
+                                                if (objUserPermission[i].Modified == true) {
+                                                    obj.Modified = true;
+                                                }
+                                                if (objUserPermission[i].Show == true) {
+                                                    obj.Show = true;
+                                                }
+                                            }
+
+                                            res.json({ success: true, message: "Permission to Access...", data: obj });
                                             // if (permission == "Added") {
                                             //     if (objUserPermission.Added == true) {
                                             //         res.json({ success: true, message: "Permission to Access...", order: objModule.DisplayOrder });
