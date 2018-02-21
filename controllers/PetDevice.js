@@ -8,6 +8,7 @@ var Country = models.tblcountrymgmt;
 var TelCo = models.tbltelco;
 var SimService = models.tblsimdetails;
 var VehicleType = models.tblvehicletype;
+var Vehicle = models.tblvehicle;
 //End of Tables
 
 router.get('/GetAllGPSDeviceold', function(req, res) {
@@ -996,6 +997,9 @@ router.post('/SaveGPSDevice', jsonParser, function(req, res) {
                                     GPSDevice.update(objGPSDevice, { where: { id: objGPSDevice.id } }).then(function(response) {
                                         if (response[0]) {
                                             funAuditLog.CreateAuditLog('SaveGPSDevice', UserExist.username, 'Update GPS Tracker Device');
+                                            Vehicle.findOne({ where: { deviceid: objGPSDevice.DeviceId } }).then(function(vehicleExits) {
+                                                vehicleExits.updateAttributes({ DeviceType: objGPSDevice.Type }).then(function(VehicleDeviceTypeupdate) {})
+                                            })
                                             res.json({ success: true, message: "Tracker updated successfully", data: response });
                                         } else {
                                             res.json({ success: false, message: "Tracker Is Not updated", data: response });

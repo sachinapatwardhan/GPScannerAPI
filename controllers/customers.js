@@ -2944,6 +2944,22 @@ function convertdateformatForUnix(date1) {
 
 
 //============================End Vehical Location======================================
+//========================================Defult Setting========================================
+global.DefultAppSetting = DefultAppSetting;
+var EmailSetting = models.tblemailsettingsys;
+
+function DefultAppSetting(Id) {
+    var obj = new Object();
+    obj.DefaultEmailFrom = process.env.SMTPuser;
+    obj.SMTPService = process.env.SMTPService;
+    obj.SMTPhost = process.env.SMTPhost;
+    obj.SMTPuser = process.env.SMTPuser;
+    obj.SMTPpass = process.env.SMTPpass;
+    obj.IdApp = Id;
+    EmailSetting.create(obj).then(function(EmailSettingCreated) {
+
+    })
+}
 
 
 module.exports = router

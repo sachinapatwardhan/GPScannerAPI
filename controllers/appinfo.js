@@ -82,6 +82,8 @@ router.post('/SaveAppInfo', jsonParser, function(req, res) {
                     objAppInfo.CreatedBy = decoded.username;
                     AppInfo.findOrCreate({ where: { AppName: objAppInfo.AppName }, defaults: objAppInfo }).then(function(response) {
                         if (response[0]) {
+
+                            DefultAppSetting(response[0].Id);
                             funAuditLog.CreateAuditLog('SaveApp', decoded.username, 'Create App Info');
                             res.json({
                                 success: true,
