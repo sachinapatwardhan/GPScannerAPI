@@ -1883,4 +1883,193 @@ router.get('/GetDeviceAllInformation', function(req, res) {
 
 });
 
+
+router.get('/GetExcelVehicleDetailReport', function(req, res) {
+
+    var conf = {};
+    conf.name = "Sheet1";
+    conf.cols = [{
+        caption: 'User',
+        type: 'string'
+    }, {
+        caption: 'DeviceID',
+        type: 'string'
+    }, {
+        caption: 'IMEI',
+        type: 'string'
+    }, {
+        caption: 'Sim Serial Number',
+        type: 'string'
+    }, {
+        caption: 'Phone Number',
+        type: 'string'
+    }, {
+        caption: 'Expiry Date',
+        type: 'string'
+    }, {
+        caption: 'GPSDate',
+        type: 'string'
+    }, {
+        caption: 'AppName',
+        type: 'string'
+    }];
+    conf.rows = [];
+    var query = "Select tv.id, tu.Email, tgd.DeviceId,CONVERT_TZ(tv.renewaldate,'+00:00','" + CurrentOffset + "') as DisplayExpiryDate, tgd.AppName,CONVERT_TZ(tgd.ExpiryDate,'+00:00','" + CurrentOffset + "') as DisplayExpiryDate2,tgd.IMEI,ts.SerialNum,ts.PhoneNum from tblgpsdevice as tgd " +
+        "left join tblsimdetails as ts on tgd.idSim=ts.id " +
+        // "left join tblgpsdata as tg on (tgd.DeviceId=tg.DeviceId and tg.GPSPositioning='A') " +
+        "left join (tblvehicle as tv inner join tbluserinformation as tu on tv.iduser=tu.id) on (tgd.DeviceId=tv.deviceid and tv.IsDelete=false) " +
+        // "where (tv.id is not null || tg.Id is not null) " +
+        "group by tgd.DeviceId";
+    connection.query(query, function(err, rowsdata, fields) {
+        if (!err) {
+            var lstAllData = [];
+
+            function GetGpsData(i) {
+                if (i < rowsdata.length) {
+                    console.log(i);
+                    GPSData.findOne({
+                        where: {
+                            DeviceId: rowsdata[i].DeviceId
+                        },
+                    }).then(function(response) {
+                        var row = [];
+                        if (response != null) {
+
+                            var User = '';
+                            if (rowsdata[i].Email != null) {
+                                User = rowsdata[i].Email;
+                            }
+                            var ExpiryDate = '';
+                            if (rowsdata[i].DisplayExpiryDate != null && rowsdata[i].DisplayExpiryDate != '' && rowsdata[i].DisplayExpiryDate != undefined) {
+                                ExpiryDate = convertdateformat(rowsdata[i].DisplayExpiryDate);
+                            } else if (rowsdata[i].DisplayExpiryDate2 != null && rowsdata[i].DisplayExpiryDate2 != '' && rowsdata[i].DisplayExpiryDate2 != undefined) {
+                                ExpiryDate = convertdateformat(rowsdata[i].DisplayExpiryDate2);
+                            }
+
+                            var GPSDate = '';
+                            if (response.Date != null && response.Date != '' && response.Date != undefined) {
+                                GPSDate = convertdateformat(new Date(response.Date * 1000));
+                            }
+
+                            var AppName = '';
+                            if (rowsdata[i].AppName != null && rowsdata[i].AppName != '' && rowsdata[i].AppName != undefined) {
+                                AppName = rowsdata[i].AppName;
+                            }
+
+                            var SimNum = '';
+                            if (rowsdata[i].SerialNum != null && rowsdata[i].SerialNum != '' && rowsdata[i].SerialNum != undefined) {
+                                SimNum = rowsdata[i].SerialNum;
+                            }
+
+                            var PhoneNum = '';
+                            if (rowsdata[i].PhoneNum != null && rowsdata[i].PhoneNum != '' && rowsdata[i].PhoneNum != undefined) {
+                                PhoneNum = rowsdata[i].PhoneNum;
+                            }
+
+                            var obj = new Object();
+                            obj.User = User;
+                            obj.DeviceId = rowsdata[i].DeviceId;
+                            obj.IMEI = rowsdata[i].IMEI;
+                            obj.SimNum = SimNum;
+                            obj.PhoneNum = PhoneNum;
+                            obj.ExpiryDate = ExpiryDate;
+                            obj.GPSDate = GPSDate;
+                            obj.AppName = AppName;
+                            obj.AppName = AppName;
+                            obj.Date = response.Date;
+                            lstAllData.push(obj);
+                            // row.push(User, rowsdata[i].DeviceId, rowsdata[i].IMEI, SimNum, PhoneNum, ExpiryDate, GPSDate, AppName);
+                            // conf.rows.push(row);
+                            GetGpsData(i + 1);
+                        } else if (rowsdata[i].id != null) {
+                            var User = '';
+                            if (rowsdata[i].Email != null) {
+                                User = rowsdata[i].Email;
+                            }
+                            var ExpiryDate = '';
+                            if (rowsdata[i].DisplayExpiryDate != null && rowsdata[i].DisplayExpiryDate != '' && rowsdata[i].DisplayExpiryDate != undefined) {
+                                ExpiryDate = convertdateformat(rowsdata[i].DisplayExpiryDate);
+                            } else if (rowsdata[i].DisplayExpiryDate2 != null && rowsdata[i].DisplayExpiryDate2 != '' && rowsdata[i].DisplayExpiryDate2 != undefined) {
+                                ExpiryDate = convertdateformat(rowsdata[i].DisplayExpiryDate2);
+                            }
+
+                            var SimNum = '';
+                            if (rowsdata[i].SerialNum != null && rowsdata[i].SerialNum != '' && rowsdata[i].SerialNum != undefined) {
+                                SimNum = rowsdata[i].SerialNum;
+                            }
+
+                            var PhoneNum = '';
+                            if (rowsdata[i].PhoneNum != null && rowsdata[i].PhoneNum != '' && rowsdata[i].PhoneNum != undefined) {
+                                PhoneNum = rowsdata[i].PhoneNum;
+                            }
+
+                            var AppName = '';
+                            if (rowsdata[i].AppName != null && rowsdata[i].AppName != '' && rowsdata[i].AppName != undefined) {
+                                AppName = rowsdata[i].AppName;
+                            }
+
+                            var obj = new Object();
+                            obj.User = User;
+                            obj.DeviceId = rowsdata[i].DeviceId;
+                            obj.IMEI = rowsdata[i].IMEI;
+                            obj.SimNum = SimNum;
+                            obj.PhoneNum = PhoneNum;
+                            obj.ExpiryDate = ExpiryDate;
+                            obj.GPSDate = '';
+                            obj.AppName = AppName;
+                            obj.AppName = AppName;
+                            obj.Date = 0;
+                            lstAllData.push(obj);
+                            // row.push(User, rowsdata[i].DeviceId, rowsdata[i].IMEI, SimNum, PhoneNum, ExpiryDate, '', AppName);
+                            // conf.rows.push(row);
+                            GetGpsData(i + 1);
+                        } else {
+                            GetGpsData(i + 1);
+                        }
+                    });
+
+
+                } else {
+                    lstAllData = u.sortBy(lstAllData, function(o) { return o.Date; })
+                    for (var j = 0; j < lstAllData.length; j++) {
+                        var row = [];
+                        row.push(lstAllData[j].User, lstAllData[j].DeviceId, lstAllData[j].IMEI, lstAllData[j].SimNum, lstAllData[j].PhoneNum, lstAllData[j].ExpiryDate, lstAllData[j].GPSDate, lstAllData[j].AppName);
+                        conf.rows.push(row);
+                    }
+
+                    var result = nodeExcel.execute(conf);
+                    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+                    res.setHeader("Content-Disposition", "attachment; filename=VehicleExpiryData.xlsx");
+                    res.end(result, 'binary');
+                }
+            }
+            GetGpsData(0);
+            // res.json({ success: true, data: rows });
+
+
+        } else {
+            res.json({ success: false, data: [] });
+        }
+    })
+})
+
+function convertdateformat(date1) {
+    var date = new Date(date1);
+    var firstdayMonth = date.getMonth() + 1;
+
+    var firstdayDay = date.getDate();
+
+    var firstdayYear = date.getFullYear();
+
+    var firstdayHours = date.getHours();
+
+    var firstdayMinutes = date.getMinutes();
+
+    var firstdaySeconds = date.getSeconds();
+
+
+    return ("00" + firstdayDay.toString()).slice(-2) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("0000" + firstdayYear.toString()).slice(-4) + " " + ("00" + firstdayHours.toString()).slice(-2) + ":" + ("00" + firstdayMinutes.toString()).slice(-2) + ":" + ("00" + firstdaySeconds.toString()).slice(-2);
+
+}
+
 module.exports = router
