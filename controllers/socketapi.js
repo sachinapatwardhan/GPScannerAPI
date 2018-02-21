@@ -372,6 +372,16 @@ router.get('/TestAPI', function(req, res) {
     res.send("Success");
 });
 
+router.get('/GetCenterByGPS', function(req, res) {
+    console.log(req.query);
+    console.log(CurrentOffset)
+    connection.query("SELECT Latitude as latitude,Longitude as longitude FROM tblgpsdata where DeviceId='" + req.query.DeviceId + "' and DATE_FORMAT(Datetime,'%H:%i:%s')>='20:30:00' and DATE_FORMAT(Datetime,'%H:%i:%s')<='22:30:00' and speed=0 and Direction=0  and Datetime>'2018-01-02';", function(err, lstData, fields) {
+        var centerdata = geolib.getCenter(lstData);
+        console.log(centerdata)
+        res.send(centerdata);
+    });
+});
+
 router.get('/RequestIMEINumberbyUDID', function(req, res) {
     var UDID = req.query.UDID;
     IMEINumberMapping.findOne({ where: { UDID: UDID } }).then(function(objUserIMEI) {
@@ -774,13 +784,14 @@ global.Command9955 = function(line, Callback) {
             });
 
             if (IsPatchEngine == true) {
-                //Fence
-                connection.query("SELECT * from tblfence where deviceId=" + DeviceId + " and IsFenceOnline=true", function(err, rows, fields) {
-                    if (!err && rows.length > 0) {
-                        connection.query("SELECT id,Name,iduser,deviceid from tblvehicle where deviceid=" + DeviceId + " and IsDelete=false", function(err, Bikerows, fields) {
-                            if (!err && Bikerows.length > 0) {
-                                var objVehicle = Bikerows[0];
-                                if (Position == 'A') {
+                if (Position == 'A') {
+                    //Fence
+                    connection.query("SELECT * from tblfence where deviceId=" + DeviceId + " and IsFenceOnline=true", function(err, rows, fields) {
+                        if (!err && rows.length > 0) {
+                            connection.query("SELECT id,Name,iduser,deviceid from tblvehicle where deviceid=" + DeviceId + " and IsDelete=false", function(err, Bikerows, fields) {
+                                if (!err && Bikerows.length > 0) {
+                                    var objVehicle = Bikerows[0];
+
 
                                     function checkFence(j) {
                                         if (j < rows.length) {
@@ -970,12 +981,165 @@ global.Command9955 = function(line, Callback) {
                                         }
                                     }
                                     checkFence(0);
-                                }
-                            }
-                        });
-                    };
-                });
 
+                                }
+                            });
+                        };
+                    });
+
+                    //Route
+                    var RouteQuery = "SELECT trd.*,tr.*,trm.MarkerName,trm.Lat as MarkerLat,trm.Lng as Markerlng, trm.IdRoute as idmarkerroute,trm.IsInRouteMarker,trm.Id as RouteMarkerId FROM tblroutedevice as trd " +
+                        "inner join tblroute as tr on trd.IdRoute=tr.id " +
+                        "inner join tblroutemarker as trm on trm.IdRoute=tr.id " +
+                        "where DeviceId='" + DeviceId + "';";
+                    connection.query(RouteQuery, function(err, rows, fields) {
+                        if (!err && rows.length > 0) {
+                            connection.query("SELECT id,Name,iduser,deviceid from tblvehicle where deviceid=" + DeviceId + " and IsDelete=false", function(err, Bikerows, fields) {
+                                if (!err && Bikerows.length > 0) {
+                                    var objVehicle = Bikerows[0];
+
+                                    function checkRoute(j) {
+                                        if (j < rows.length) {
+
+                                            var response = rows[j];
+                                            if (response.IsInRouteMarker == false) {
+                                                // var response = rows[0];
+
+                                                var CheckPoints = {
+                                                    latitude: parseFloat(Latitude),
+                                                    longitude: parseFloat(Longitude)
+                                                }
+
+                                                var IsVehicleInRouteMarker = true;
+
+
+                                                var CircleCenterPoints = {
+                                                    latitude: parseFloat(response.lat),
+                                                    longitude: parseFloat(response.lng)
+                                                }
+                                                var CircleRadius = 50;
+                                                IsVehicleInRouteMarker = geolib.isPointInCircle(CheckPoints, CircleCenterPoints, CircleRadius)
+
+
+                                                // console.log("Fence Last State = " + objBike.IsInFence)
+                                                // console.log("Fence Current State = " + IsVehicleInRouteMarker)
+                                                if (IsVehicleInRouteMarker == true) {
+                                                    var AlarmCode = '7';
+                                                    var Message = '';
+                                                    var soundname = "";
+
+
+                                                    Message = objVehicle.Name + ' is at ' + response.MarkerName + ' Point of ' + response.Name + ' Route.';
+
+                                                    soundname = "Default";
+
+                                                    // console.log(unixDateStemp);
+                                                    connection.query('UPDATE tblroutemarker set IsInRouteMarker=' + IsVehicleInRouteMarker + ' WHERE Id=' + response.RouteMarkerId, function(err, rowsFence, fields) {
+                                                        // console.log(err)
+                                                        var Alarmquery = "INSERT INTO tblalarm (Datetime, Date, Latitude,Longitude,GPSPositioning,Speed,Direction,Status,DeviceId,AlarmCode,CreatedDate,FenceName ) VALUES ('" + GPSDateTime + "', '" + unixDateStemp + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + inputoutputSTatus + "', '" + DeviceId + "','" + AlarmCode + "','" + CurrentDate + "','" + response.MarkerName + "');";
+                                                        // var Alarmquery = "INSERT INTO tblalarm (Datetime,Latitude,Longitude,GPSPositioning,Speed,Direction,Status,ReservedSign,ReservedSelection,DeviceId,AlarmCode ) VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + Status + "', '" + Sign + "', '" + ReserveSection + "', '" + deviceID + "','" + AlarmCode + "');";
+                                                        connection.query(Alarmquery, function(err1, Alarmrows, fields) {
+
+                                                            connection.query("SELECT * from tblsharedevice where idVehicle=" + objVehicle.id + " and IsSharedUserNotification=true and IsNotification=true", function(err, lstShareUser, fields) {
+                                                                var lstAllUser = [objVehicle.iduser];
+                                                                var AllUser = objVehicle.iduser.toString();
+                                                                if (!err && lstShareUser.length > 0) {
+                                                                    for (var i = 0; i < lstShareUser.length; i++) {
+                                                                        lstAllUser.push(lstShareUser[i].idUser)
+                                                                        AllUser = AllUser + ',' + lstShareUser[i].idUser;
+                                                                    }
+                                                                }
+                                                                connection.query("SELECT tu.id, tu.username, ta.AppName, ta.IOSCertificate, ta.IOSKey, ta.AndroidId, ta.AndroidSenderId FROM tbluserinformation as tu inner Join tblappinfo as ta ON ta.id = tu.idApp where tu.id=" + objVehicle.iduser, function(err, objAppInfo, fields) {
+
+                                                                    var PushNotificationdata = {
+                                                                        title: 'Alert',
+                                                                        message: Message,
+                                                                        // Fence: 'Default',
+                                                                        soundname: soundname,
+                                                                        otherfields: {
+                                                                            deviceid: DeviceId,
+                                                                            Id: objVehicle.id,
+                                                                            VehicleName: objVehicle.Name,
+                                                                            AlarmCode: AlarmCode,
+                                                                            Type: 'Alarm'
+                                                                        }
+                                                                    };
+
+                                                                    SendPushNotification(PushNotificationdata, AllUser, objAppInfo[0]);
+
+                                                                    // var objConnection = {
+                                                                    //     AlarmCode: AlarmCode.toString(),
+                                                                    //     DeviceId: DeviceId,
+                                                                    //     Datetime: GPSDateTime,
+                                                                    //     Date: unixDateStemp,
+                                                                    //     IdUser: objVehicle.iduser,
+                                                                    //     Name: objVehicle.Name,
+                                                                    //     FenceName: rows[j].name
+                                                                    // }
+
+
+                                                                    // // io.sockets.emit('DeviceAlarm', JSON.stringify(objConnection));
+                                                                    // io.sockets.emit(objVehicle.iduser + 'DeviceAlarm', JSON.stringify(objConnection));
+
+                                                                    for (var i = 0; i < lstAllUser.length; i++) {
+                                                                        var objConnection = {
+                                                                            AlarmCode: AlarmCode.toString(),
+                                                                            DeviceId: DeviceId,
+                                                                            Datetime: GPSDateTime,
+                                                                            Date: unixDateStemp,
+                                                                            IdUser: lstAllUser[i],
+                                                                            Name: objVehicle.Name,
+                                                                            FenceName: response.MarkerName,
+                                                                            RouteName: response.Name
+                                                                        }
+
+                                                                        io.sockets.emit(lstAllUser[i] + 'DeviceAlarm', JSON.stringify(objConnection));
+
+                                                                        var objPushnotificationCount = {
+                                                                            Id: Alarmrows.insertId,
+                                                                            Latitude: Latitude,
+                                                                            Longitude: Longitude,
+                                                                            GPSPositioning: Position,
+                                                                            Speed: Speed,
+                                                                            Direction: Direction,
+                                                                            Status: inputoutputSTatus,
+                                                                            AlarmCode: AlarmCode.toString(),
+                                                                            DeviceId: DeviceId,
+                                                                            CreatedDate: CurrentDate,
+                                                                            Datetime: GPSDateTime,
+                                                                            Date: unixDateStemp,
+                                                                            FenceName: response.MarkerName,
+                                                                            UserId: lstAllUser[i],
+                                                                            IsRead: false,
+                                                                            // Name: objVehicle.Name
+                                                                        }
+
+                                                                        io.sockets.emit(lstAllUser[i] + 'DeviceNotificationCount', JSON.stringify(objPushnotificationCount));
+                                                                    }
+
+                                                                    checkRoute(j + 1);
+                                                                });
+                                                            });
+                                                        });
+                                                    });
+                                                } else {
+                                                    checkRoute(j + 1);
+                                                }
+                                            } else {
+                                                checkRoute(j + 1);
+                                            }
+                                        } else {
+
+                                        }
+                                    }
+                                    checkRoute(0);
+
+                                }
+                            });
+                        };
+                    });
+
+                }
                 //Favorite place
                 // connection.query("SELECT * from tblfavoriteplace where DeviceId=" + DeviceId, function(err, rows, fields) {
                 //     if (!err && rows.length > 0) {
