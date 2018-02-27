@@ -44,6 +44,15 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.BOOLEAN,
       allowNull: true,
       defaultValue: '0'
+    },
+    JourneyName: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    IsDelete: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+      defaultValue: '0'
     }
   }, {
     tableName: 'tbljourneyroute'
