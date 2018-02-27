@@ -522,6 +522,7 @@ app.use('/productAttributeCombination', require('./controllers/productAttributeC
 app.use('/productPictureMapping', require('./controllers/productPictureMapping'))
 app.use('/orderservice', require('./controllers/orderservice'))
 app.use('/journey', require('./controllers/journey'))
+app.use('/NotificationSetting', require('./controllers/NotificationSetting.js'))
     // app.use('/advancefence', require('./controllers/advancefence'))
     //End of Setting
 
@@ -566,5 +567,6 @@ app.use('/admin', require('./controllers/admin'));
 app.use('/auditlog', require('./controllers/auditlog'));
 app.use('/routeplan', require('./controllers/routeplan'));
 app.use('/feedback', require('./controllers/feedback'))
+app.use('/assignretailer', require('./controllers/assignretailer'))
 
 // MAARK Install App End
