@@ -2030,13 +2030,8 @@ var ExpiryDateDeviceCheck = schedule.scheduleJob(rule, function() {
                                                 Type: 'Alarm'
                                             }
                                         };
-                                        if (objAppInfo[0].Notification == 1) {
-                                            CheckNotificationOn(lstShareUser[i].idUser, 'Expire Device', function(alarmStatus) {
-                                                if (alarmStatus.success == true) {
-                                                    SendPushNotification(PushNotificationdata, AllUser, objAppInfo[0]);
-                                                }
-                                            })
-                                        }
+
+                                        SendPushNotification(PushNotificationdata, AllUser, objAppInfo[0]);
                                         SendExpiryNotification1(i + 1);
                                     });
                                 });
@@ -2095,14 +2090,7 @@ var ExpiryDateDeviceCheck = schedule.scheduleJob(rule, function() {
                                                 Type: 'Alarm'
                                             }
                                         };
-                                        if (objAppInfo[0].Notification == 1) {
-                                            CheckNotificationOn(lstShareUser[i].idUser, 'Expire Device', function(alarmStatus) {
-                                                if (alarmStatus.success == true) {
-                                                    SendPushNotification(PushNotificationdata, AllUser, objAppInfo[0]);
-
-                                                }
-                                            })
-                                        }
+                                        SendPushNotification(PushNotificationdata, AllUser, objAppInfo[0]);
                                         SendExpiryNotification2(i + 1);
                                     });
                                 });
@@ -2162,13 +2150,9 @@ var ExpiryDateDeviceCheck = schedule.scheduleJob(rule, function() {
                                             }
                                         };
 
-                                        if (objAppInfo[0].Notification == 1) {
-                                            CheckNotificationOn(lstShareUser[i].idUser, 'Expire Device', function(alarmStatus) {
-                                                if (alarmStatus.success == true) {
-                                                    SendPushNotification(PushNotificationdata, AllUser, objAppInfo[0]);
-                                                }
-                                            })
-                                        }
+
+                                        SendPushNotification(PushNotificationdata, AllUser, objAppInfo[0]);
+
                                         SendExpiryNotification3(i + 1);
                                     });
                                 });
@@ -2228,13 +2212,9 @@ var ExpiryDateDeviceCheck = schedule.scheduleJob(rule, function() {
                                             }
                                         };
 
-                                        if (objAppInfo[0].Notification == 1) {
-                                            CheckNotificationOn(lstShareUser[i].idUser, 'Expire Device', function(alarmStatus) {
-                                                if (alarmStatus.success == true) {
-                                                    SendPushNotification(PushNotificationdata, AllUser, objAppInfo[0]);
-                                                }
-                                            })
-                                        }
+
+                                        SendPushNotification(PushNotificationdata, AllUser, objAppInfo[0]);
+
                                         SendExpiryNotification4(i + 1);
                                     });
                                 });
@@ -2337,77 +2317,78 @@ function convertdateformat(date1, flg) {
     }
 }
 
-function SendPushNotification(data, UserId, objAppInfo) {
-    // var deviceIds = [];
-    connection.query("SELECT PushNotificationId,Platform,MessageCount,UserType,udid from tblpushnotification where iduser in (" + UserId + ") group by PushNotificationId, Platform", function(err, response, fields) {
-        if (!err && response.length > 0) {
-            // PushNotification.findAll({ where: { iduser: UserId } }).then(function(response) {
-            function SendNotification(i) {
-                if (i < response.length) {
-                    var messagecount = 1;
-                    if (response[i].MessageCount) {
-                        messagecount = parseInt(response[i].MessageCount) + 1;
-                    }
-                    // connection.query("SELECT * from tblsetting where Name ='" + PushNotificationType + "' ", function(err, lstSetting, fields) {
-                    //     if (lstSetting[0].Value == 1) {
-                    var deviceIds = [];
-                    deviceIds.push(response[i].PushNotificationId)
-                        //SendNotification(i + 1);
-                        // } else {
-                        // console.log(deviceIds)
-                    var objData = clone(data);
 
-                    if (response[i].Platform == 'ios') {
-                        objData.title = data.message;
-                        objData.message = data.message;
+// function SendPushNotification(data, UserId, objAppInfo) {
+//     // var deviceIds = [];
+//     connection.query("SELECT PushNotificationId,Platform,MessageCount,UserType,udid from tblpushnotification where iduser in (" + UserId + ") group by PushNotificationId, Platform", function(err, response, fields) {
+//         if (!err && response.length > 0) {
+//             // PushNotification.findAll({ where: { iduser: UserId } }).then(function(response) {
+//             function SendNotification(i) {
+//                 if (i < response.length) {
+//                     var messagecount = 1;
+//                     if (response[i].MessageCount) {
+//                         messagecount = parseInt(response[i].MessageCount) + 1;
+//                     }
+//                     // connection.query("SELECT * from tblsetting where Name ='" + PushNotificationType + "' ", function(err, lstSetting, fields) {
+//                     //     if (lstSetting[0].Value == 1) {
+//                     var deviceIds = [];
+//                     deviceIds.push(response[i].PushNotificationId)
+//                         //SendNotification(i + 1);
+//                         // } else {
+//                         // console.log(deviceIds)
+//                     var objData = clone(data);
 
-                        PushNotificationSettings.apn.options.cert = __dirname + '/../MediaUploads/FileUpload/' + objAppInfo.IOSCertificate;
-                        PushNotificationSettings.apn.options.key = __dirname + '/../MediaUploads/FileUpload/' + objAppInfo.IOSKey;
+//                     if (response[i].Platform == 'ios') {
+//                         objData.title = data.message;
+//                         objData.message = data.message;
 
-                        PushNotificationSettings.apn.badge = messagecount;
+//                         PushNotificationSettings.apn.options.cert = __dirname + '/../MediaUploads/FileUpload/' + objAppInfo.IOSCertificate;
+//                         PushNotificationSettings.apn.options.key = __dirname + '/../MediaUploads/FileUpload/' + objAppInfo.IOSKey;
 
-                        if (objData.soundname == 'Default') {
-                            PushNotificationSettings.apn.defaultData.sound = 'default';
-                        } else {
-                            PushNotificationSettings.apn.defaultData.sound = objData.soundname + '.caf';
-                        };
+//                         PushNotificationSettings.apn.badge = messagecount;
 
-                    } else {
+//                         if (objData.soundname == 'Default') {
+//                             PushNotificationSettings.apn.defaultData.sound = 'default';
+//                         } else {
+//                             PushNotificationSettings.apn.defaultData.sound = objData.soundname + '.caf';
+//                         };
 
-                        PushNotificationSettings.gcm.msgcnt = messagecount;
-                        PushNotificationSettings.gcm.id = objAppInfo.AndroidId;
+//                     } else {
 
-                    }
-                    // console.log(response[i].Platform + "_______________________________________________________")
-                    // console.log(objData)
-                    objData.priority = 'high';
-                    var objPushNotificationSend = new PushNotifications(PushNotificationSettings);
-                    if (deviceIds.length > 0) {
+//                         PushNotificationSettings.gcm.msgcnt = messagecount;
+//                         PushNotificationSettings.gcm.id = objAppInfo.AndroidId;
 
-                        objPushNotificationSend.send(deviceIds, objData, function(result) {
-                            // console.log(result);
-                            connection.query("Update tblpushnotification set messagecount=" + messagecount + " where udid='" + response[i].udid + "' and UserType='" + response[i].UserType + "'", function(errupdate, updateresp, fields) {
-                                console.log(errupdate)
-                                SendNotification(i + 1);
-                            });
-                        });
-                    } else {
-                        SendNotification(i + 1);
-                    };
-                    //     } else {
-                    //         SendNotification(i + 1);
-                    //     }
-                    // });
+//                     }
+//                     // console.log(response[i].Platform + "_______________________________________________________")
+//                     // console.log(objData)
+//                     objData.priority = 'high';
+//                     var objPushNotificationSend = new PushNotifications(PushNotificationSettings);
+//                     if (deviceIds.length > 0) {
+
+//                         objPushNotificationSend.send(deviceIds, objData, function(result) {
+//                             // console.log(result);
+//                             connection.query("Update tblpushnotification set messagecount=" + messagecount + " where udid='" + response[i].udid + "' and UserType='" + response[i].UserType + "'", function(errupdate, updateresp, fields) {
+//                                 console.log(errupdate)
+//                                 SendNotification(i + 1);
+//                             });
+//                         });
+//                     } else {
+//                         SendNotification(i + 1);
+//                     };
+//                     //     } else {
+//                     //         SendNotification(i + 1);
+//                     //     }
+//                     // });
 
 
 
-                }
-            }
-            SendNotification(0)
-        }
+//                 }
+//             }
+//             SendNotification(0)
+//         }
 
-    })
-}
+//     })
+// }
 
 
 var OrderService = models.tblorderservice;

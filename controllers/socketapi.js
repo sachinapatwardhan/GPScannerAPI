@@ -143,85 +143,98 @@ function clone(obj) {
 
 global.SendPushNotification = function(data, UserId, objAppInfo) {
     // var deviceIds = [];
-    connection.query("SELECT PushNotificationId,Platform,MessageCount,UserType,udid from tblpushnotification where iduser in (" + UserId + ") group by PushNotificationId, Platform", function(err, response, fields) {
-        if (!err && response.length > 0) {
-            // PushNotification.findAll({ where: { iduser: UserId } }).then(function(response) {
-            function SendNotification(i) {
-                if (i < response.length) {
-                    try {
-                        var messagecount = 1;
-                        if (response[i].MessageCount) {
-                            messagecount = parseInt(response[i].MessageCount) + 1;
-                        }
-                        // connection.query("SELECT * from tblsetting where Name ='" + PushNotificationType + "' ", function(err, lstSetting, fields) {
-                        //     if (lstSetting[0].Value == 1) {
-                        var deviceIds = [];
-                        deviceIds.push(response[i].PushNotificationId)
-                            //SendNotification(i + 1);
-                            // } else {
-                        console.log(deviceIds)
-                        var objData = clone(data);
+    var AlarmCode = '';
+    if (data.otherfields.AlarmCode != null && data.otherfields.AlarmCode != undefined && data.otherfields.AlarmCode != '') {
+        AlarmCode = data.otherfields.AlarmCode;
+    } else {
+        AlarmCode = data.otherfields.NotificationType;
+    }
+    CheckNotificationOn(UserId, AlarmCode, function(alarmStatusUserId) {
+        if (alarmStatusUserId != '') {
+            connection.query("SELECT PushNotificationId,Platform,MessageCount,UserType,udid,iduser from tblpushnotification where iduser in (" + alarmStatusUserId + ") group by PushNotificationId, Platform", function(err, response, fields) {
+                if (!err && response.length > 0) {
+                    // PushNotification.findAll({ where: { iduser: UserId } }).then(function(response) {
+                    function SendNotification(i) {
+                        if (i < response.length) {
+                            try {
+                                var messagecount = 1;
+                                if (response[i].MessageCount) {
+                                    messagecount = parseInt(response[i].MessageCount) + 1;
+                                }
+                                // connection.query("SELECT * from tblsetting where Name ='" + PushNotificationType + "' ", function(err, lstSetting, fields) {
+                                //     if (lstSetting[0].Value == 1) {
+                                var deviceIds = [];
+                                deviceIds.push(response[i].PushNotificationId)
+                                    //SendNotification(i + 1);
+                                    // } else {
+                                console.log(deviceIds)
+                                var objData = clone(data);
 
-                        if (response[i].Platform == 'ios') {
-                            objData.title = data.message;
-                            objData.message = data.message;
+                                if (response[i].Platform == 'ios') {
+                                    objData.title = data.message;
+                                    objData.message = data.message;
 
-                            PushNotificationSettings.apn.options.cert = __dirname + '/../MediaUploads/FileUpload/' + objAppInfo.IOSCertificate;
-                            PushNotificationSettings.apn.options.key = __dirname + '/../MediaUploads/FileUpload/' + objAppInfo.IOSKey;
+                                    PushNotificationSettings.apn.options.cert = __dirname + '/../MediaUploads/FileUpload/' + objAppInfo.IOSCertificate;
+                                    PushNotificationSettings.apn.options.key = __dirname + '/../MediaUploads/FileUpload/' + objAppInfo.IOSKey;
 
-                            PushNotificationSettings.apn.badge = messagecount;
+                                    PushNotificationSettings.apn.badge = messagecount;
 
-                            if (objData.soundname == 'Default') {
-                                PushNotificationSettings.apn.defaultData.sound = 'default';
-                            } else {
-                                PushNotificationSettings.apn.defaultData.sound = objData.soundname + '.caf';
-                            };
+                                    if (objData.soundname == 'Default') {
+                                        PushNotificationSettings.apn.defaultData.sound = 'default';
+                                    } else {
+                                        PushNotificationSettings.apn.defaultData.sound = objData.soundname + '.caf';
+                                    };
 
-                        } else {
+                                } else {
 
-                            PushNotificationSettings.gcm.msgcnt = messagecount;
-                            PushNotificationSettings.gcm.id = objAppInfo.AndroidId;
+                                    PushNotificationSettings.gcm.msgcnt = messagecount;
+                                    PushNotificationSettings.gcm.id = objAppInfo.AndroidId;
 
-                        }
-                        // console.log(response[i].Platform + "_______________________________________________________")
-                        // console.log(objData)
-                        objData.priority = 'high';
-                        var objPushNotificationSend = new PushNotifications(PushNotificationSettings);
-                        if (deviceIds.length > 0) {
+                                }
+                                // console.log(response[i].Platform + "_______________________________________________________")
+                                // console.log(objData)
+                                objData.priority = 'high';
+                                var objPushNotificationSend = new PushNotifications(PushNotificationSettings);
+                                if (deviceIds.length > 0) {
 
-                            objPushNotificationSend.send(deviceIds, objData, function(result) {
-                                // console.log(result);
-                                connection.query("Update tblpushnotification set messagecount=" + messagecount + " where udid='" + response[i].udid + "' and UserType='" + response[i].UserType + "'", function(errupdate, updateresp, fields) {
-                                    console.log(errupdate)
+                                    objPushNotificationSend.send(deviceIds, objData, function(result) {
+                                        // console.log(result);
+                                        connection.query("Update tblpushnotification set messagecount=" + messagecount + " where udid='" + response[i].udid + "' and UserType='" + response[i].UserType + "'", function(errupdate, updateresp, fields) {
+                                            console.log(errupdate)
+
+                                            SendNotification(i + 1);
+                                        });
+                                    });
+                                } else {
                                     SendNotification(i + 1);
-                                });
-                            });
+                                };
+                                //     } else {
+                                //         SendNotification(i + 1);
+                                //     }
+                                // });
+
+                            } catch (ex) {
+                                console.log(ex);
+                                SendNotification(i + 1);
+                            }
+
+
                         } else {
-                            SendNotification(i + 1);
-                        };
-                        //     } else {
-                        //         SendNotification(i + 1);
-                        //     }
-                        // });
-                    } catch (ex) {
-                        console.log(ex);
-                        SendNotification(i + 1);
+                            SendPWAPushNotification(data, UserId);
+                        }
                     }
-
-
+                    SendNotification(0)
                 } else {
                     SendPWAPushNotification(data, UserId);
                 }
-            }
-            SendNotification(0)
-        } else {
-            SendPWAPushNotification(data, UserId);
+            })
         }
     })
 }
 
 router.get('/SendPushTest1', function(req, res) {
     var UserId = req.query.UserId;
+    CheckNotificationOn('1,50316', 'Road Tax Renewal', function(alarmStatus) {})
     connection.query("SELECT tu.id, tu.username, tu.Notification, ta.AppName, ta.IOSCertificate, ta.IOSKey, ta.AndroidId, ta.AndroidSenderId FROM tbluserinformation as tu inner Join tblappinfo as ta ON ta.id = tu.idApp where tu.id=" + UserId, function(err, objAppInfo, fields) {
         if (objAppInfo[0].Notification == 1) {
             var AlarmCode = 'Road Tax Renewal'
@@ -238,17 +251,7 @@ router.get('/SendPushTest1', function(req, res) {
                     // NotificationType: 'Road Tax Renewal'
                 }
             };
-            CheckNotificationOn(UserId, 'Expire Device', function(alarmStatus) {
-                console.log(alarmStatus)
-                if (alarmStatus.success == true) {
-                    console.log("true..........");
-                    SendPushNotification(PushNotificationdata, UserId, objAppInfo[0]);
-
-                } else {
-                    console.log("false....")
-                }
-            })
-
+            SendPushNotification(PushNotificationdata, '1,50316', objAppInfo[0]);
         }
     })
 })
@@ -257,63 +260,96 @@ global.CheckNotificationOn = CheckNotificationOn;
 
 function CheckNotificationOn(UserId, AlarmCode, callback) {
     var UserId = UserId;
-    var qry = "SELECT tnm.Notification, tnm.AlarmCode, tns.IsNotificationOn FROM tblnotificationmgmt as tnm INNER JOIN tblnotificationsetting as tns ON tns.idNotification = tnm.id where tns.idUser = " + UserId + " and tns.IsNotificationOn = true";
-    connection.query(qry, function(err, lstNotification, fields) {
-        var IsNotificationAllow = u.findWhere(lstNotification, { AlarmCode: AlarmCode });
-        if (IsNotificationAllow != undefined && IsNotificationAllow.length != 0) {
-            return callback({ success: true })
-        } else {
-            var IsNotificationAllow = u.findWhere(lstNotification, { Notification: AlarmCode });
-            if (IsNotificationAllow != undefined && IsNotificationAllow.length != 0) {
-                return callback({ success: true })
+    var FinalUserId = '';
+    var qryUserNotitifcation = "Select id from tbluserinformation where id in (" + UserId + ") and Notification=true";
+    connection.query(qryUserNotitifcation, function(err, lstUserNotificationOn, fields) {
+        var NewUserId = '';
+        for (var i = 0; i < lstUserNotificationOn.length; i++) {
+            if (NewUserId != '') {
+                NewUserId = NewUserId + ',' + lstUserNotificationOn[i].id;
             } else {
-                return callback({ success: false })
+                NewUserId = lstUserNotificationOn[i].id
             }
         }
+        if (NewUserId != '') {
+            var qry = "SELECT tnm.Notification, tnm.AlarmCode, tns.IsNotificationOn,tns.idUser FROM tblnotificationmgmt as tnm INNER JOIN tblnotificationsetting as tns ON tns.idNotification = tnm.id where tns.idUser in (" + NewUserId + ") and (Notification='" + AlarmCode + "' or AlarmCode = '" + AlarmCode + "')";
+            connection.query(qry, function(err, lstNotification, fields) {
+                for (var i = 0; i < lstUserNotificationOn.length; i++) {
+                    var IsNotificationAllow = u.findWhere(lstNotification, { idUser: lstUserNotificationOn[i].id });
+                    if (IsNotificationAllow != undefined) {
+                        if (IsNotificationAllow.IsNotificationOn == true || IsNotificationAllow.IsNotificationOn == 1) {
+                            if (FinalUserId != '') {
+                                FinalUserId = FinalUserId + ',' + lstUserNotificationOn[i].id;
+                            } else {
+                                FinalUserId = lstUserNotificationOn[i].id
+                            }
+                        }
+                    } else {
+                        if (FinalUserId != '') {
+                            FinalUserId = FinalUserId + ',' + lstUserNotificationOn[i].id;
+                        } else {
+                            FinalUserId = lstUserNotificationOn[i].id
+                        }
+                    }
+                }
+                return callback(FinalUserId)
+            })
+        } else {
+            return callback(FinalUserId)
+        }
     })
-
 }
 
 function SendPWAPushNotification(data, UserId) {
+    var AlarmCode = '';
+    if (data.otherfields.AlarmCode != null && data.otherfields.AlarmCode != undefined && data.otherfields.AlarmCode != '') {
+        AlarmCode = data.otherfields.AlarmCode;
+    } else {
+        AlarmCode = data.otherfields.NotificationType;
+    }
     try {
         if (UserId.length > 0 && data.title != undefined && data.title != null && data.title != '') {
-            connection.query("SELECT * from tblpwa_notification_subscription where iduser in (" + UserId + ")", function(errors, lstPWASubscribers, fields) {
-                if (!errors && lstPWASubscribers.length > 0) {
-                    var title = data.title;
-                    var message = data.message;
+            CheckNotificationOn(UserId, AlarmCode, function(alarmStatusUserId) {
+                if (alarmStatusUserId != '') {
+                    connection.query("SELECT * from tblpwa_notification_subscription where iduser in (" + alarmStatusUserId + ")", function(errors, lstPWASubscribers, fields) {
+                        if (!errors && lstPWASubscribers.length > 0) {
+                            var title = data.title;
+                            var message = data.message;
 
-                    function SendOneByOne(p) {
-                        if (p < lstPWASubscribers.length) {
-                            try {
-                                var objPWANotification = lstPWASubscribers[p];
+                            function SendOneByOne(p) {
+                                if (p < lstPWASubscribers.length) {
+                                    try {
+                                        var objPWANotification = lstPWASubscribers[p];
 
-                                var endpoint = objPWANotification.endpoint;
-                                var auth = objPWANotification.auth;
-                                var p256dh = objPWANotification.p256dh;
-                                const pushSubscription = {
-                                    endpoint: endpoint,
-                                    keys: {
-                                        auth: auth,
-                                        p256dh: p256dh
+                                        var endpoint = objPWANotification.endpoint;
+                                        var auth = objPWANotification.auth;
+                                        var p256dh = objPWANotification.p256dh;
+                                        const pushSubscription = {
+                                            endpoint: endpoint,
+                                            keys: {
+                                                auth: auth,
+                                                p256dh: p256dh
+                                            }
+                                        };
+                                        webpush.sendNotification(pushSubscription, JSON.stringify({ title: title, content: message })).then(function(resPWA) {
+                                            SendOneByOne(p + 1);
+                                            // console.log("========================================================")
+                                            // console.log(resPWA)
+                                            // console.log("========================================================")
+                                        }).catch(function(err) {
+                                            // console.log(err);
+                                            SendOneByOne(p + 1);
+                                        });
+                                    } catch (errr) {
+                                        SendOneByOne(p + 1);
                                     }
-                                };
-                                webpush.sendNotification(pushSubscription, JSON.stringify({ title: title, content: message })).then(function(resPWA) {
-                                    SendOneByOne(p + 1);
-                                    // console.log("========================================================")
-                                    // console.log(resPWA)
-                                    // console.log("========================================================")
-                                }).catch(function(err) {
-                                    // console.log(err);
-                                    SendOneByOne(p + 1);
-                                });
-                            } catch (errr) {
-                                SendOneByOne(p + 1);
+                                }
                             }
+                            SendOneByOne(0);
                         }
-                    }
-                    SendOneByOne(0);
+                    });
                 }
-            });
+            })
         }
     } catch (er) {}
 }
@@ -970,14 +1006,7 @@ global.Command9955 = function(line, Callback) {
                                                                         Type: 'Alarm'
                                                                     }
                                                                 };
-                                                                if (objAppInfo[0].Notification == 1) {
-                                                                    CheckNotificationOn(lstShareUser[i].idUser, AlarmCode, function(alarmStatus) {
-                                                                        if (alarmStatus.success == true) {
-                                                                            SendPushNotification(PushNotificationdata, AllUser, objAppInfo[0]);
-
-                                                                        }
-                                                                    })
-                                                                }
+                                                                SendPushNotification(PushNotificationdata, AllUser, objAppInfo[0]);
 
                                                                 // var objConnection = {
                                                                 //     AlarmCode: AlarmCode.toString(),
@@ -1428,14 +1457,7 @@ global.Command9955 = function(line, Callback) {
                                                 }
                                             };
 
-                                            if (objAppInfo[0].Notification == 1) {
-                                                CheckNotificationOn(response[i].tblvehicle.iduser, response[i].Type, function(alarmStatus) {
-                                                    if (alarmStatus.success == true) {
-                                                        SendPushNotification(PushNotificationdata, AllUser, objAppInfo[0]);
-
-                                                    }
-                                                })
-                                            }
+                                            SendPushNotification(PushNotificationdata, AllUser, objAppInfo[0]);
                                             uploader(i + 1);
                                         });
                                     } else {
@@ -1610,13 +1632,7 @@ global.Command9999 = function(line, Callback) {
                                 }
                             };
                             // console.log(AllUser)
-                            if (objAppInfo[0].Notification == 1) {
-                                CheckNotificationOn(lstShareUser[i].idUser, AlarmCode, function(alarmStatus) {
-                                    if (alarmStatus.success == true) {
-                                        SendPushNotification(PushNotificationdata, AllUser, objAppInfo[0]);
-                                    }
-                                })
-                            }
+                            SendPushNotification(PushNotificationdata, AllUser, objAppInfo[0]);
                             // if (new Date(GPSDateTime) <= new Date()) {
                             // io.sockets.emit('DeviceAlarm', JSON.stringify(objConnection));
                             for (var i = 0; i < lstAllUser.length; i++) {
