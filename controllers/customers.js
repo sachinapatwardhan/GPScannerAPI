@@ -2016,7 +2016,7 @@ var ExpiryDateDeviceCheck = schedule.scheduleJob(rule, function() {
                                         }
 
                                     }
-                                    connection.query("SELECT tu.id, tu.username, ta.AppName, ta.IOSCertificate, ta.IOSKey, ta.AndroidId, ta.AndroidSenderId FROM tbluserinformation as tu inner Join tblappinfo as ta ON ta.id = tu.idApp where tu.id=" + objVehicle.iduser, function(err, objAppInfo, fields) {
+                                    connection.query("SELECT tu.id, tu.username,tu.Notification, ta.AppName, ta.IOSCertificate, ta.IOSKey, ta.AndroidId, ta.AndroidSenderId FROM tbluserinformation as tu inner Join tblappinfo as ta ON ta.id = tu.idApp where tu.id=" + objVehicle.iduser, function(err, objAppInfo, fields) {
 
                                         var PushNotificationdata = {
                                             title: 'Alert',
@@ -2030,7 +2030,13 @@ var ExpiryDateDeviceCheck = schedule.scheduleJob(rule, function() {
                                                 Type: 'Alarm'
                                             }
                                         };
-                                        SendPushNotification(PushNotificationdata, AllUser, objAppInfo[0]);
+                                        if (objAppInfo[0].Notification == 1) {
+                                            CheckNotificationOn(lstShareUser[i].idUser, 'Expire Device', function(alarmStatus) {
+                                                if (alarmStatus.success == true) {
+                                                    SendPushNotification(PushNotificationdata, AllUser, objAppInfo[0]);
+                                                }
+                                            })
+                                        }
                                         SendExpiryNotification1(i + 1);
                                     });
                                 });
@@ -2075,7 +2081,7 @@ var ExpiryDateDeviceCheck = schedule.scheduleJob(rule, function() {
                                         }
 
                                     }
-                                    connection.query("SELECT tu.id, tu.username, ta.AppName, ta.IOSCertificate, ta.IOSKey, ta.AndroidId, ta.AndroidSenderId FROM tbluserinformation as tu inner Join tblappinfo as ta ON ta.id = tu.idApp where tu.id=" + objVehicle.iduser, function(err, objAppInfo, fields) {
+                                    connection.query("SELECT tu.id, tu.username,tu.Notification, ta.AppName, ta.IOSCertificate, ta.IOSKey, ta.AndroidId, ta.AndroidSenderId FROM tbluserinformation as tu inner Join tblappinfo as ta ON ta.id = tu.idApp where tu.id=" + objVehicle.iduser, function(err, objAppInfo, fields) {
 
                                         var PushNotificationdata = {
                                             title: 'Alert',
@@ -2089,8 +2095,14 @@ var ExpiryDateDeviceCheck = schedule.scheduleJob(rule, function() {
                                                 Type: 'Alarm'
                                             }
                                         };
+                                        if (objAppInfo[0].Notification == 1) {
+                                            CheckNotificationOn(lstShareUser[i].idUser, 'Expire Device', function(alarmStatus) {
+                                                if (alarmStatus.success == true) {
+                                                    SendPushNotification(PushNotificationdata, AllUser, objAppInfo[0]);
 
-                                        SendPushNotification(PushNotificationdata, AllUser, objAppInfo[0]);
+                                                }
+                                            })
+                                        }
                                         SendExpiryNotification2(i + 1);
                                     });
                                 });
@@ -2135,7 +2147,7 @@ var ExpiryDateDeviceCheck = schedule.scheduleJob(rule, function() {
                                         }
 
                                     }
-                                    connection.query("SELECT tu.id, tu.username, ta.AppName, ta.IOSCertificate, ta.IOSKey, ta.AndroidId, ta.AndroidSenderId FROM tbluserinformation as tu inner Join tblappinfo as ta ON ta.id = tu.idApp where tu.id=" + objVehicle.iduser, function(err, objAppInfo, fields) {
+                                    connection.query("SELECT tu.id, tu.username, tu.Notification,ta.AppName, ta.IOSCertificate, ta.IOSKey, ta.AndroidId, ta.AndroidSenderId FROM tbluserinformation as tu inner Join tblappinfo as ta ON ta.id = tu.idApp where tu.id=" + objVehicle.iduser, function(err, objAppInfo, fields) {
 
                                         var PushNotificationdata = {
                                             title: 'Alert',
@@ -2150,7 +2162,13 @@ var ExpiryDateDeviceCheck = schedule.scheduleJob(rule, function() {
                                             }
                                         };
 
-                                        SendPushNotification(PushNotificationdata, AllUser, objAppInfo[0]);
+                                        if (objAppInfo[0].Notification == 1) {
+                                            CheckNotificationOn(lstShareUser[i].idUser, 'Expire Device', function(alarmStatus) {
+                                                if (alarmStatus.success == true) {
+                                                    SendPushNotification(PushNotificationdata, AllUser, objAppInfo[0]);
+                                                }
+                                            })
+                                        }
                                         SendExpiryNotification3(i + 1);
                                     });
                                 });
@@ -2195,7 +2213,7 @@ var ExpiryDateDeviceCheck = schedule.scheduleJob(rule, function() {
                                         }
 
                                     }
-                                    connection.query("SELECT tu.id, tu.username, ta.AppName, ta.IOSCertificate, ta.IOSKey, ta.AndroidId, ta.AndroidSenderId FROM tbluserinformation as tu inner Join tblappinfo as ta ON ta.id = tu.idApp where tu.id=" + objVehicle.iduser, function(err, objAppInfo, fields) {
+                                    connection.query("SELECT tu.id, tu.username,tu.Notification, ta.AppName, ta.IOSCertificate, ta.IOSKey, ta.AndroidId, ta.AndroidSenderId FROM tbluserinformation as tu inner Join tblappinfo as ta ON ta.id = tu.idApp where tu.id=" + objVehicle.iduser, function(err, objAppInfo, fields) {
 
                                         var PushNotificationdata = {
                                             title: 'Alert',
@@ -2210,7 +2228,13 @@ var ExpiryDateDeviceCheck = schedule.scheduleJob(rule, function() {
                                             }
                                         };
 
-                                        SendPushNotification(PushNotificationdata, AllUser, objAppInfo[0]);
+                                        if (objAppInfo[0].Notification == 1) {
+                                            CheckNotificationOn(lstShareUser[i].idUser, 'Expire Device', function(alarmStatus) {
+                                                if (alarmStatus.success == true) {
+                                                    SendPushNotification(PushNotificationdata, AllUser, objAppInfo[0]);
+                                                }
+                                            })
+                                        }
                                         SendExpiryNotification4(i + 1);
                                     });
                                 });
@@ -2946,7 +2970,6 @@ function convertdateformatForUnix(date1) {
 //============================End Vehical Location======================================
 //========================================Defult Setting========================================
 global.DefultAppSetting = DefultAppSetting;
-var EmailSetting = models.tblemailsettingsys;
 
 function DefultAppSetting(Id) {
     var obj = new Object();

@@ -220,6 +220,60 @@ global.SendPushNotification = function(data, UserId, objAppInfo) {
     })
 }
 
+router.get('/SendPushTest1', function(req, res) {
+    var UserId = req.query.UserId;
+    connection.query("SELECT tu.id, tu.username, tu.Notification, ta.AppName, ta.IOSCertificate, ta.IOSKey, ta.AndroidId, ta.AndroidSenderId FROM tbluserinformation as tu inner Join tblappinfo as ta ON ta.id = tu.idApp where tu.id=" + UserId, function(err, objAppInfo, fields) {
+        if (objAppInfo[0].Notification == 1) {
+            var AlarmCode = 'Road Tax Renewal'
+            var PushNotificationdata = {
+                title: 'Alert',
+                message: '9787 is out of Home Fence.',
+                Fence: 'Default',
+                otherfields: {
+                    deviceid: 123456,
+                    Id: 1,
+                    VehicleName: '9787',
+                    AlarmCode: AlarmCode,
+                    Type: 'Alarm',
+                    // NotificationType: 'Road Tax Renewal'
+                }
+            };
+            CheckNotificationOn(UserId, 'Expire Device', function(alarmStatus) {
+                console.log(alarmStatus)
+                if (alarmStatus.success == true) {
+                    console.log("true..........");
+                    SendPushNotification(PushNotificationdata, UserId, objAppInfo[0]);
+
+                } else {
+                    console.log("false....")
+                }
+            })
+
+        }
+    })
+})
+
+global.CheckNotificationOn = CheckNotificationOn;
+
+function CheckNotificationOn(UserId, AlarmCode, callback) {
+    var UserId = UserId;
+    var qry = "SELECT tnm.Notification, tnm.AlarmCode, tns.IsNotificationOn FROM tblnotificationmgmt as tnm INNER JOIN tblnotificationsetting as tns ON tns.idNotification = tnm.id where tns.idUser = " + UserId + " and tns.IsNotificationOn = true";
+    connection.query(qry, function(err, lstNotification, fields) {
+        var IsNotificationAllow = u.findWhere(lstNotification, { AlarmCode: AlarmCode });
+        if (IsNotificationAllow != undefined && IsNotificationAllow.length != 0) {
+            return callback({ success: true })
+        } else {
+            var IsNotificationAllow = u.findWhere(lstNotification, { Notification: AlarmCode });
+            if (IsNotificationAllow != undefined && IsNotificationAllow.length != 0) {
+                return callback({ success: true })
+            } else {
+                return callback({ success: false })
+            }
+        }
+    })
+
+}
+
 function SendPWAPushNotification(data, UserId) {
     try {
         if (UserId.length > 0 && data.title != undefined && data.title != null && data.title != '') {
@@ -901,7 +955,7 @@ global.Command9955 = function(line, Callback) {
                                                                     AllUser = AllUser + ',' + lstShareUser[i].idUser;
                                                                 }
                                                             }
-                                                            connection.query("SELECT tu.id, tu.username, ta.AppName, ta.IOSCertificate, ta.IOSKey, ta.AndroidId, ta.AndroidSenderId FROM tbluserinformation as tu inner Join tblappinfo as ta ON ta.id = tu.idApp where tu.id=" + objVehicle.iduser, function(err, objAppInfo, fields) {
+                                                            connection.query("SELECT tu.id, tu.username, ta.AppName,tu.Notification, ta.IOSCertificate, ta.IOSKey, ta.AndroidId, ta.AndroidSenderId FROM tbluserinformation as tu inner Join tblappinfo as ta ON ta.id = tu.idApp where tu.id=" + objVehicle.iduser, function(err, objAppInfo, fields) {
 
                                                                 var PushNotificationdata = {
                                                                     title: 'Alert',
@@ -916,8 +970,14 @@ global.Command9955 = function(line, Callback) {
                                                                         Type: 'Alarm'
                                                                     }
                                                                 };
+                                                                if (objAppInfo[0].Notification == 1) {
+                                                                    CheckNotificationOn(lstShareUser[i].idUser, AlarmCode, function(alarmStatus) {
+                                                                        if (alarmStatus.success == true) {
+                                                                            SendPushNotification(PushNotificationdata, AllUser, objAppInfo[0]);
 
-                                                                SendPushNotification(PushNotificationdata, AllUser, objAppInfo[0]);
+                                                                        }
+                                                                    })
+                                                                }
 
                                                                 // var objConnection = {
                                                                 //     AlarmCode: AlarmCode.toString(),
@@ -1351,7 +1411,7 @@ global.Command9955 = function(line, Callback) {
 
                                         //push Notification Send
 
-                                        connection.query("SELECT tu.id, tu.username, ta.AppName, ta.IOSCertificate, ta.IOSKey, ta.AndroidId, ta.AndroidSenderId FROM tbluserinformation as tu inner Join tblappinfo as ta ON ta.id = tu.idApp where tu.id=" + response[i].tblvehicle.iduser, function(err, objAppInfo, fields) {
+                                        connection.query("SELECT tu.id, tu.username, tu.Notification,ta.AppName, ta.IOSCertificate, ta.IOSKey, ta.AndroidId, ta.AndroidSenderId FROM tbluserinformation as tu inner Join tblappinfo as ta ON ta.id = tu.idApp where tu.id=" + response[i].tblvehicle.iduser, function(err, objAppInfo, fields) {
                                             var soundname = "Default";
                                             var AllUser = response[i].tblvehicle.iduser.toString();
                                             var PushNotificationdata = {
@@ -1368,8 +1428,14 @@ global.Command9955 = function(line, Callback) {
                                                 }
                                             };
 
-                                            SendPushNotification(PushNotificationdata, AllUser, objAppInfo[0]);
+                                            if (objAppInfo[0].Notification == 1) {
+                                                CheckNotificationOn(response[i].tblvehicle.iduser, response[i].Type, function(alarmStatus) {
+                                                    if (alarmStatus.success == true) {
+                                                        SendPushNotification(PushNotificationdata, AllUser, objAppInfo[0]);
 
+                                                    }
+                                                })
+                                            }
                                             uploader(i + 1);
                                         });
                                     } else {
@@ -1479,7 +1545,7 @@ global.Command9999 = function(line, Callback) {
                                 AllUser = AllUser + ',' + lstShareUser[i].idUser;
                             }
                         }
-                        connection.query("SELECT tu.id, tu.username, ta.AppName, ta.IOSCertificate, ta.IOSKey, ta.AndroidId, ta.AndroidSenderId FROM tbluserinformation as tu inner Join tblappinfo as ta ON ta.id = tu.idApp where tu.id=" + objVehicle.iduser, function(err, objAppInfo, fields) {
+                        connection.query("SELECT tu.id, tu.username,tu.Notification, ta.AppName, ta.IOSCertificate, ta.IOSKey, ta.AndroidId, ta.AndroidSenderId FROM tbluserinformation as tu inner Join tblappinfo as ta ON ta.id = tu.idApp where tu.id=" + objVehicle.iduser, function(err, objAppInfo, fields) {
 
                             var Message = "";
                             var soundname = "";
@@ -1543,9 +1609,14 @@ global.Command9999 = function(line, Callback) {
                                     Type: 'Alarm'
                                 }
                             };
-                            console.log(AllUser)
-                            SendPushNotification(PushNotificationdata, AllUser, objAppInfo[0]);
-
+                            // console.log(AllUser)
+                            if (objAppInfo[0].Notification == 1) {
+                                CheckNotificationOn(lstShareUser[i].idUser, AlarmCode, function(alarmStatus) {
+                                    if (alarmStatus.success == true) {
+                                        SendPushNotification(PushNotificationdata, AllUser, objAppInfo[0]);
+                                    }
+                                })
+                            }
                             // if (new Date(GPSDateTime) <= new Date()) {
                             // io.sockets.emit('DeviceAlarm', JSON.stringify(objConnection));
                             for (var i = 0; i < lstAllUser.length; i++) {
