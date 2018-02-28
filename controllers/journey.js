@@ -11,7 +11,7 @@ router.get('/getAllCompletedJourney', function(req, res) {
 
 
 router.get('/GetDeviceJourney', function(req, res) {
-    JourneyRoute.findAll({ where: { DeviceId: req.query.DeviceId, EndTime: { $ne: null } }, order: 'StartTime desc' }).then(function(response) {
+    JourneyRoute.findAll({ where: { DeviceId: req.query.DeviceId, EndTime: { $ne: null }, IsDelete: 0 }, order: 'StartTime desc' }).then(function(response) {
         res.json(response)
     })
 })
@@ -52,10 +52,10 @@ router.post('/StartJourney', jsonParser, function(req, res) {
                             JourneyName: objJourney.JourneyName,
                         }).then(function(response) {
                             if (response) {
-                                funAuditLog.CreateAuditLog('update Joureny', UserExist.username, 'Stop Joureny');
-                                res.json({ success: true, message: 'Joureny stop successfully..' });
+                                funAuditLog.CreateAuditLog('update Journey', UserExist.username, 'Stop Journey');
+                                res.json({ success: true, message: 'Journey stop successfully..' });
                             } else {
-                                res.json({ success: false, message: 'Joureny not stop..' });
+                                res.json({ success: false, message: 'Journey can not stop. Try again later.' });
                             }
                         })
                     } else {
@@ -65,10 +65,10 @@ router.post('/StartJourney', jsonParser, function(req, res) {
 
                         JourneyRoute.create(objJourney).then(function(response) {
                             if (response) {
-                                funAuditLog.CreateAuditLog('Create Joureny', UserExist.username, 'Start Joureny');
-                                res.json({ success: true, message: 'Joureny started successfully..' });
+                                funAuditLog.CreateAuditLog('Create Journey', UserExist.username, 'Start Journey');
+                                res.json({ success: true, message: 'Journey started successfully..' });
                             } else {
-                                res.json({ success: false, message: 'Joureny not started..' });
+                                res.json({ success: false, message: 'Journey can not start. Try again later.' });
                             }
                         })
                     }
@@ -126,7 +126,7 @@ router.get('/deleteJourneyById', function(req, res) {
                                     } else {
                                         res.json({
                                             success: true,
-                                            message: "journey not deleted",
+                                            message: "journey can not delete. Try again later.",
                                         });
                                     }
                                 })
