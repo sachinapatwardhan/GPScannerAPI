@@ -23,9 +23,10 @@ router.get('/GetAllGPSByTimeZoneDate', function(req, res) {
         orderby = ' ' + req.query.orderby;
     }
 
-    var query = "select tblgpsdata.*,tblvehicle.Name from tblgpsdata left join tblvehicle on tblgpsdata.deviceid = tblvehicle.deviceid Where tblgpsdata.Date >= '" + unixStartdate + "' and tblgpsdata.Date <= '" + unixEnddate + "'" + wherecondition + orderby + " LIMIT " + req.query.length + " OFFSET " + req.query.start + ";"
+    var query = "select tblgpsdata.Date,tblgpsdata.IsPatchEngine as IsEngine,tblgpsdata.Speed,tblgpsdata.Direction,tblgpsdata.Latitude,tblgpsdata.Longitude,tblvehicle.Name from tblgpsdata left join tblvehicle on tblgpsdata.deviceid = tblvehicle.deviceid Where tblgpsdata.Date >= '" + unixStartdate + "' and tblgpsdata.Date <= '" + unixEnddate + "'" + wherecondition + orderby + " LIMIT " + req.query.length + " OFFSET " + req.query.start + ";"
     var Count = "select count(*) AS Totalrecord from tblgpsdata left join tblvehicle on tblgpsdata.deviceid = tblvehicle.deviceid Where tblgpsdata.Date >= '" + unixStartdate + "' and tblgpsdata.Date <= '" + unixEnddate + "'" + wherecondition + ";"
     connection.query(query, function(err, lstGPSData, fields) {
+        console.log(err)
         if (!err) {
             connection.query(Count, function(err1, res1, fields) {
                 var object = new Object();
@@ -33,7 +34,6 @@ router.get('/GetAllGPSByTimeZoneDate', function(req, res) {
                 object.Totalrecord = res1[0].Totalrecord;
                 res.json(object);
             })
-
         }
     });
 });
@@ -111,7 +111,7 @@ router.get('/ExportDetailTripReport', function(req, res) {
 
 
 
-    var query = "select tblgpsdata.*,tblvehicle.Name from tblgpsdata left join tblvehicle on tblgpsdata.deviceid = tblvehicle.deviceid Where tblgpsdata.Date >= '" + unixStartdate + "' and tblgpsdata.Date <= '" + unixEnddate + "'" + wherecondition + " order by Date ASC;"
+    var query = "select tblgpsdata.Date,tblgpsdata.IsPatchEngine as IsEngine,tblgpsdata.Speed,tblgpsdata.Direction,tblgpsdata.Latitude,tblgpsdata.Longitude,tblvehicle.Name from tblgpsdata left join tblvehicle on tblgpsdata.deviceid = tblvehicle.deviceid Where tblgpsdata.Date >= '" + unixStartdate + "' and tblgpsdata.Date <= '" + unixEnddate + "'" + wherecondition + " order by Date ASC;"
     connection.query(query, function(err, response) {
         conf.rows = [];
         for (var i = 0; i < response.length; i++) {
@@ -303,7 +303,7 @@ router.get('/PrintDetailTripReport', function(req, res) {
 
 
 
-    var query = "select tblgpsdata.*,tblvehicle.Name from tblgpsdata left join tblvehicle on tblgpsdata.deviceid = tblvehicle.deviceid Where tblgpsdata.Date >= '" + unixStartdate + "' and tblgpsdata.Date <= '" + unixEnddate + "'" + wherecondition + " order by Date ASC;"
+    var query = "select tblgpsdata.Date,tblgpsdata.IsPatchEngine as IsEngine,tblgpsdata.Speed,tblgpsdata.Direction,tblgpsdata.Latitude,tblgpsdata.Longitude,tblvehicle.Name from tblgpsdata left join tblvehicle on tblgpsdata.deviceid = tblvehicle.deviceid Where tblgpsdata.Date >= '" + unixStartdate + "' and tblgpsdata.Date <= '" + unixEnddate + "'" + wherecondition + " order by Date ASC;"
     connection.query(query, function(err, response) {
         for (var i = 0; i < response.length; i++) {
             if (response[i].IsEngine == 1) {
@@ -991,7 +991,7 @@ router.get('/GetAllEngineData', function(req, res) {
             search += " Where tblgpsdata.Date <= '" + unixEnddate + "'";
         }
     }
-    var query = "SELECT  tblgpsdata.Datetime, tblgpsdata.Date, tblgpsdata.Latitude, tblgpsdata.Longitude, tblgpsdata.DeviceId, tblgpsdata.IsEngine, tblgpsdata.Speed,tblgpsdata.GPSPositioning, tblvehicle.Name, tblvehicle.iduser FROM tblgpsdata LEFT JOIN tblvehicle ON tblvehicle.deviceid = tblgpsdata.DeviceId " + search;
+    var query = "SELECT  tblgpsdata.Datetime, tblgpsdata.Date, tblgpsdata.Latitude, tblgpsdata.Longitude, tblgpsdata.DeviceId, tblgpsdata.IsPatchEngine as IsEngine, tblgpsdata.Speed,tblgpsdata.GPSPositioning, tblvehicle.Name, tblvehicle.iduser FROM tblgpsdata LEFT JOIN tblvehicle ON tblvehicle.deviceid = tblgpsdata.DeviceId " + search;
     // console.log(query)
     query += Orderby;
     connection.query(query, function(err, response) {
@@ -1168,7 +1168,7 @@ router.get('/ExportEngineReport', function(req, res) {
     }
     // var query = "SELECT tblgpsdata.Id, tblgpsdata.Datetime, tblgpsdata.Date, tblgpsdata.Latitude, tblgpsdata.Longitude, tblgpsdata.DeviceId, tblgpsdata.IsEngine, tblgpsdata.Speed, tblvehicle.Name, tblvehicle.iduser FROM tblgpsdata LEFT JOIN tblvehicle ON tblvehicle.deviceid = tblgpsdata.DeviceId " + search;
     // query += Orderby;
-    var query = "SELECT  tblgpsdata.Datetime, tblgpsdata.Date, tblgpsdata.Latitude, tblgpsdata.Longitude, tblgpsdata.DeviceId, tblgpsdata.IsEngine, tblgpsdata.Speed,tblgpsdata.GPSPositioning, tblvehicle.Name, tblvehicle.iduser FROM tblgpsdata LEFT JOIN tblvehicle ON tblvehicle.deviceid = tblgpsdata.DeviceId " + search;
+    var query = "SELECT  tblgpsdata.Datetime, tblgpsdata.Date, tblgpsdata.Latitude, tblgpsdata.Longitude, tblgpsdata.DeviceId, tblgpsdata.IsPatchEngine as IsEngine, tblgpsdata.Speed,tblgpsdata.GPSPositioning, tblvehicle.Name, tblvehicle.iduser FROM tblgpsdata LEFT JOIN tblvehicle ON tblvehicle.deviceid = tblgpsdata.DeviceId " + search;
     query += Orderby;
     connection.query(query, function(err, response) {
         // console.log(response.length)
@@ -1425,7 +1425,7 @@ router.get('/PrintEngineReport', function(req, res) {
             search += " Where tblgpsdata.Date <= '" + unixEnddate + "'";
         }
     }
-    var query = "SELECT  tblgpsdata.Datetime, tblgpsdata.Date, tblgpsdata.Latitude, tblgpsdata.Longitude, tblgpsdata.DeviceId, tblgpsdata.IsEngine, tblgpsdata.Speed,tblgpsdata.GPSPositioning, tblvehicle.Name, tblvehicle.iduser FROM tblgpsdata LEFT JOIN tblvehicle ON tblvehicle.deviceid = tblgpsdata.DeviceId " + search;
+    var query = "SELECT  tblgpsdata.Datetime, tblgpsdata.Date, tblgpsdata.Latitude, tblgpsdata.Longitude, tblgpsdata.DeviceId, tblgpsdata.IsPatchEngine as IsEngine, tblgpsdata.Speed,tblgpsdata.GPSPositioning, tblvehicle.Name, tblvehicle.iduser FROM tblgpsdata LEFT JOIN tblvehicle ON tblvehicle.deviceid = tblgpsdata.DeviceId " + search;
     query += Orderby;
     connection.query(query, function(err, response) {
         var Array = [];
@@ -1640,14 +1640,13 @@ router.get('/GetAllVehicleLastPositionByUserIdWebApp', jsonParser, function(req,
         }
     }
     // var query = "SELECT  tb.*,tpg.IsEngine,tpg.IsDoor, tpg.Latitude,tpg.Longitude,tpg.Datetime, tpg.Date, tpg.Speed, tpg.Direction FROM tblvehicle tb Inner JOIN tblgpsdata tpg ON tb.deviceid=tpg.DeviceId INNER JOIN (SELECT DeviceId, MAX(Date) as maxDate FROM (SELECT DeviceId, Date FROM tblgpsdata " + WhereCondition + "ORDER BY Date DESC) d GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId AND tpg.Date = b.maxDate WHERE iduser=" + req.query.UserId + " and IsDelete=false group by tb.deviceid order by Name LIMIT " + req.query.length + " OFFSET " + req.query.start + ";"
-    var query = "SELECT  tb.*,tpg.IsEngine,tpg.IsDoor, tpg.Latitude,tpg.Longitude,tpg.Datetime, tpg.Date, tpg.Speed, tpg.Direction" +
+    var query = "SELECT  tb.*,tpg.IsPatchEngine as IsEngine,tpg.IsDoor, tpg.Latitude,tpg.Longitude,tpg.Datetime, tpg.Date, tpg.Speed, tpg.Direction" +
         " FROM tblvehicle tb left join tblsharedevice tsd ON tsd.idVehicle = tb.id Inner JOIN tblgpsdata tpg ON tb.deviceid=tpg.DeviceId " +
         " INNER JOIN (SELECT DeviceId, MAX(Date) as maxDate FROM " +
         " (SELECT DeviceId, Date FROM tblgpsdata " + WhereCondition + "ORDER BY Date DESC) d GROUP BY DeviceId) " +
         " b ON tpg.DeviceId = b.DeviceId AND tpg.Date = b.maxDate WHERE " +
         " (tb.iduser=" + req.query.UserId + " OR tsd.idUser=" + req.query.UserId + ") and IsDelete=false " +
         " group by tb.deviceid order by Name LIMIT " + req.query.length + " OFFSET " + req.query.start + ";"
-        // console.log(query);
     var count = "SELECT count(*) FROM tblvehicle tb left join tblsharedevice tsd ON tsd.idVehicle = tb.id" +
         " Inner JOIN tblgpsdata tpg ON tb.deviceid=tpg.DeviceId INNER JOIN" +
         " (SELECT DeviceId, MAX(Date) as maxDate FROM " +
@@ -1761,7 +1760,7 @@ router.get('/ExportLastPositionDataByUserId', function(req, res) {
             WhereCondition = WhereCondition + 'and Date<="' + unixEnddate + '" ';
         }
     }
-    var query = "SELECT  tb.*,tpg.IsEngine,tpg.IsDoor, tpg.Latitude,tpg.Longitude,tpg.Datetime, tpg.Date, tpg.Speed, tpg.Direction" +
+    var query = "SELECT  tb.*,tpg.IsPatchEngine as IsEngine,tpg.IsDoor, tpg.Latitude,tpg.Longitude,tpg.Datetime, tpg.Date, tpg.Speed, tpg.Direction" +
         " FROM tblvehicle tb left join tblsharedevice tsd ON tsd.idVehicle = tb.id Inner JOIN tblgpsdata tpg ON tb.deviceid=tpg.DeviceId " +
         " INNER JOIN (SELECT DeviceId, MAX(Date) as maxDate FROM " +
         " (SELECT DeviceId, Date FROM tblgpsdata " + WhereCondition + "ORDER BY Date DESC) d GROUP BY DeviceId) " +
@@ -1989,7 +1988,7 @@ router.get('/PrintLastPositionDataByUserId', function(req, res) {
             WhereCondition = WhereCondition + 'and Date<="' + unixEnddate + '" ';
         }
     }
-    var query = "SELECT  tb.*,tpg.IsEngine,tpg.IsDoor, tpg.Latitude,tpg.Longitude,tpg.Datetime, tpg.Date, tpg.Speed, tpg.Direction" +
+    var query = "SELECT  tb.*,tpg.IsPatchEngine as IsEngine,tpg.IsDoor, tpg.Latitude,tpg.Longitude,tpg.Datetime, tpg.Date, tpg.Speed, tpg.Direction" +
         " FROM tblvehicle tb left join tblsharedevice tsd ON tsd.idVehicle = tb.id Inner JOIN tblgpsdata tpg ON tb.deviceid=tpg.DeviceId " +
         " INNER JOIN (SELECT DeviceId, MAX(Date) as maxDate FROM " +
         " (SELECT DeviceId, Date FROM tblgpsdata " + WhereCondition + "ORDER BY Date DESC) d GROUP BY DeviceId) " +
@@ -2470,7 +2469,7 @@ router.get('/GetAllParkingDataNew', function(req, res) {
         WhereCondition += " And gps.Date <='" + unixEnddate + "'";
     }
     var query = "select " +
-        "gps.DeviceId,gps.Date,gps.Speed,gps.IsEngine,gps.Latitude,gps.Longitude,gps.GPSPositioning,Bike.Name,Bike.id,Bike.deviceid " +
+        "gps.DeviceId,gps.Date,gps.Speed,gps.IsPatchEngine as IsEngine,gps.Latitude,gps.Longitude,gps.GPSPositioning,Bike.Name,Bike.id,Bike.deviceid " +
         "from tblvehicle  As Bike " +
         "inner  join tblgpsdata as gps " +
         "on " +
@@ -2478,7 +2477,7 @@ router.get('/GetAllParkingDataNew', function(req, res) {
         WhereCondition +
         " order by gps.Date Asc";
     var Count = "select " +
-        "gps.DeviceId,gps.Date,gps.Speed,gps.IsEngine,gps.Latitude,gps.Longitude,gps.GPSPositioning,Bike.Name,Bike.id,Bike.deviceid " +
+        "gps.DeviceId,gps.Date,gps.Speed,gps.IsPatchEngine as IsEngine,gps.Latitude,gps.Longitude,gps.GPSPositioning,Bike.Name,Bike.id,Bike.deviceid " +
         "from tblvehicle  As Bike " +
         "inner  join tblgpsdata as gps " +
         "on " +
@@ -2909,7 +2908,7 @@ router.get('/ExportParkingReportNew', function(req, res) {
     }
     // var query = "select tblgpsdata.*,tblvehicle.Name from tblgpsdata left join tblvehicle on tblgpsdata.deviceid = tblvehicle.deviceid Where tblvehicle.iduser=" + req.query.idUser + "  and tblgpsdata.Date >= '" + unixStartdate + "' and tblgpsdata.Date <= '" + unixEnddate + "'" + wherecondition + ' order by tblgpsdata.Date ASC' + ";"
     var query = "select " +
-        "gps.DeviceId,gps.Date,gps.Speed,gps.IsEngine,gps.Latitude,gps.Longitude,gps.GPSPositioning,Bike.Name,Bike.id,Bike.deviceid " +
+        "gps.DeviceId,gps.Date,gps.Speed,gps.IsPatchEngine as IsEngine,gps.Latitude,gps.Longitude,gps.GPSPositioning,Bike.Name,Bike.id,Bike.deviceid " +
         "from tblvehicle  As Bike " +
         "inner  join tblgpsdata as gps " +
         "on " +
@@ -3118,7 +3117,7 @@ router.get('/PrintParkingReportNew', function(req, res) {
     }
     // var query = "select tblgpsdata.*,tblvehicle.Name from tblgpsdata left join tblvehicle on tblgpsdata.deviceid = tblvehicle.deviceid Where tblvehicle.iduser=" + req.query.idUser + "  and tblgpsdata.Date >= '" + unixStartdate + "' and tblgpsdata.Date <= '" + unixEnddate + "'" + wherecondition + ' order by tblgpsdata.Date ASC' + ";"
     var query = "select " +
-        "gps.DeviceId,gps.Date,gps.Speed,gps.IsEngine,gps.Latitude,gps.Longitude,gps.GPSPositioning,Bike.Name,Bike.id,Bike.deviceid " +
+        "gps.DeviceId,gps.Date,gps.Speed,gps.IsPatchEngine as IsEngine,gps.Latitude,gps.Longitude,gps.GPSPositioning,Bike.Name,Bike.id,Bike.deviceid " +
         "from tblvehicle  As Bike " +
         "inner  join tblgpsdata as gps " +
         "on " +
@@ -4292,7 +4291,7 @@ router.get('/GetAllDailyStatDateNew', function(req, res) {
     var convertDate = convertdateformatForUnix(Enddate);
     var unixEnddate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
     var query = "select " +
-        "gps.id,gps.DeviceId,gps.Date,gps.Speed,gps.IsEngine,gps.Latitude,gps.Longitude,gps.GPSPositioning,Bike.Name,Bike.id,Bike.deviceid " +
+        "gps.id,gps.DeviceId,gps.Date,gps.Speed,gps.IsPatchEngine as IsEngine,gps.Latitude,gps.Longitude,gps.GPSPositioning,Bike.Name,Bike.id,Bike.deviceid " +
         "from tblvehicle  As Bike " +
         "inner  join tblgpsdata as gps " +
         "on " +
@@ -4300,7 +4299,8 @@ router.get('/GetAllDailyStatDateNew', function(req, res) {
         "Where gps.Date >= '" + unixStartdate + "' and gps.Date <= '" + unixEnddate + "'" +
         wherecondition +
         " order by gps.Date Asc";
-    //  var query = "select tblgpsdata.*,tblvehicle.Name,tblvehicle.deviceid from tblgpsdata left join tblvehicle on tblgpsdata.deviceid = tblvehicle.deviceid Where tblvehicle.iduser=" + req.query.idUser + "  and tblgpsdata.Date >= '" + unixStartdate + "' and tblgpsdata.Date <= '" + unixEnddate + "'" + wherecondition + ' order by tblgpsdata.Date asc' + ";"
+    console.log(query)
+        //  var query = "select tblgpsdata.*,tblvehicle.Name,tblvehicle.deviceid from tblgpsdata left join tblvehicle on tblgpsdata.deviceid = tblvehicle.deviceid Where tblvehicle.iduser=" + req.query.idUser + "  and tblgpsdata.Date >= '" + unixStartdate + "' and tblgpsdata.Date <= '" + unixEnddate + "'" + wherecondition + ' order by tblgpsdata.Date asc' + ";"
     connection.query(query, function(err, response, fields) {
         var query1 = "select tblalarm.*,tblvehicle.deviceid from tblalarm left join tblvehicle on tblalarm.deviceid = tblvehicle.deviceid Where  tblalarm.Date >= '" + unixStartdate + "' and tblalarm.Date <= '" + unixEnddate + "'" + wherecondition1 + ";"
             // console.log(query1)
@@ -4991,7 +4991,7 @@ router.get('/ExportDailyStatReportNew', function(req, res) {
     var convertDate = convertdateformatForUnix(Enddate);
     var unixEnddate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
     var query = "select " +
-        "gps.DeviceId,gps.Date,gps.Speed,gps.IsEngine,gps.Latitude,gps.Longitude,gps.GPSPositioning,Bike.Name,Bike.id,Bike.deviceid " +
+        "gps.DeviceId,gps.Date,gps.Speed,gps.IsPatchEngine as IsEngine,gps.Latitude,gps.Longitude,gps.GPSPositioning,Bike.Name,Bike.id,Bike.deviceid " +
         "from tblvehicle  As Bike " +
         "inner  join tblgpsdata as gps " +
         "on " +
@@ -5325,7 +5325,7 @@ router.get('/PrintDailyStatReportNew', function(req, res) {
     var convertDate = convertdateformatForUnix(Enddate);
     var unixEnddate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
     var query = "select " +
-        "gps.DeviceId,gps.Date,gps.Speed,gps.IsEngine,gps.Latitude,gps.Longitude,gps.GPSPositioning,Bike.Name,Bike.id,Bike.deviceid " +
+        "gps.DeviceId,gps.Date,gps.Speed,gps.IsPatchEngine as IsEngine,gps.Latitude,gps.Longitude,gps.GPSPositioning,Bike.Name,Bike.id,Bike.deviceid " +
         "from tblvehicle  As Bike " +
         "inner  join tblgpsdata as gps " +
         "on " +
@@ -5741,19 +5741,17 @@ router.get('/GetDeviceJourneyRoute', function(req, res) {
     //     WhereCondition += " And gps.Date <='" + unixEndDate + "'";
 
     // }
-    console.log(objParam.IdJourneyRoute)
     if (objParam.IdJourneyRoute != null && objParam.IdJourneyRoute != '' && objParam.IdJourneyRoute != undefined) {
         WhereCondition += " and gps.IdJourneyRoute = " + objParam.IdJourneyRoute;
     }
     var query = "select " +
-        "gps.DeviceId,gps.Date,gps.Speed,gps.IsEngine,gps.Latitude,gps.Longitude,gps.GPSPositioning,Bike.Name,Bike.id,Bike.deviceid " +
+        "gps.DeviceId,gps.Date,gps.Speed,gps.IsPatchEngine as IsEngine,gps.Latitude,gps.Longitude,gps.GPSPositioning,Bike.Name,Bike.id,Bike.deviceid " +
         "from tblvehicle  As Bike " +
         "inner  join tbljourneygpsdata as gps " +
         "on " +
         "gps.DeviceId = Bike.deviceid " +
         WhereCondition +
         " order by gps.Date Asc";
-    console.log(query)
     connection.query(query, function(err, response, fields) {
         if (!err) {
             // var query1 = "select tblalarm.*,tblvehicle.deviceid from tblalarm left join tblvehicle on tblalarm.deviceid = tblvehicle.deviceid Where tblvehicle.iduser=" + req.query.idUser + "  and tblalarm.Date >= '" + unixStartdate + "' and tblalarm.Date <= '" + unixEndDate + "'" + wherecondition1 + ";"
@@ -5963,7 +5961,7 @@ router.get('/ExportAlljourneyReport', function(req, res) {
 
 
     var query = "select " +
-        "gps.DeviceId,gps.Date,gps.Speed,gps.IsEngine,gps.Latitude,gps.Longitude,gps.GPSPositioning,Bike.Name,Bike.id,Bike.deviceid " +
+        "gps.DeviceId,gps.Date,gps.Speed,gps.IsPatchEngine as IsEngine,gps.Latitude,gps.Longitude,gps.GPSPositioning,Bike.Name,Bike.id,Bike.deviceid " +
         "from tblvehicle  As Bike " +
         "inner  join tbljourneygpsdata as gps " +
         "on " +
@@ -6165,7 +6163,7 @@ router.get('/PrintJourneyReport', function(req, res) {
         WhereCondition += " and gps.IdJourneyRoute = " + objParam.IdJourneyRoute;
     }
     var query = "select " +
-        "gps.DeviceId,gps.Date,gps.Speed,gps.IsEngine,gps.Latitude,gps.Longitude,gps.GPSPositioning,Bike.Name,Bike.id,Bike.deviceid " +
+        "gps.DeviceId,gps.Date,gps.Speed,gps.IsPatchEngine as IsEngine,gps.Latitude,gps.Longitude,gps.GPSPositioning,Bike.Name,Bike.id,Bike.deviceid " +
         "from tblvehicle  As Bike " +
         "inner  join tbljourneygpsdata as gps " +
         "on " +

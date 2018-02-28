@@ -1823,7 +1823,7 @@ router.get('/GetAllWoringHourForReportNew', function(req, res) {
     }
 
     var query = "select " +
-        "gps.DeviceId,gps.Date,gps.Speed,gps.IsEngine,gps.Latitude,gps.Longitude,gps.GPSPositioning,Bike.Name,Bike.id,Bike.deviceid " +
+        "gps.DeviceId,gps.Date,gps.Speed,gps.IsPatchEngine as IsEngine,gps.Latitude,gps.Longitude,gps.GPSPositioning,Bike.Name,Bike.id,Bike.deviceid " +
         "from tblvehicle  As Bike " +
         "inner  join tblgpsdata as gps " +
         "on " +
@@ -2409,7 +2409,7 @@ router.get('/ExportAllWoringHourForReportNew', function(req, res) {
 
 
     var query = "select " +
-        "gps.DeviceId,gps.Date,gps.Speed,gps.IsEngine,gps.Latitude,gps.Longitude,gps.GPSPositioning,Bike.Name,Bike.id,Bike.deviceid " +
+        "gps.DeviceId,gps.Date,gps.Speed,gps.IsPatchEngine as IsEngine,gps.Latitude,gps.Longitude,gps.GPSPositioning,Bike.Name,Bike.id,Bike.deviceid " +
         "from tblvehicle  As Bike " +
         "inner  join tblgpsdata as gps " +
         "on " +
@@ -2609,7 +2609,7 @@ router.get('/PrintAllWoringHourForReportNew', function(req, res) {
 
 
     var query = "select " +
-        "gps.DeviceId,gps.Date,gps.Speed,gps.IsEngine,gps.Latitude,gps.Longitude,gps.GPSPositioning,Bike.Name,Bike.id,Bike.deviceid " +
+        "gps.DeviceId,gps.Date,gps.Speed,gps.IsPatchEngine as IsEngine,gps.Latitude,gps.Longitude,gps.GPSPositioning,Bike.Name,Bike.id,Bike.deviceid " +
         "from tblvehicle  As Bike " +
         "inner  join tblgpsdata as gps " +
         "on " +
@@ -3551,7 +3551,7 @@ router.get('/GetAllDriverReportNew', function(req, res) {
     //WhereCondition += " And Gps.DeviceId = 075034901552";
     // WhereCondition += " And Gps.IsEngine = false";
     var query = "select " +
-        " gps.*,Bike.*  " +
+        " gps.Date,gps.Speed,gps.Longitude,gps.Latitude,gps.Direction,gps.GPSPositioning,gps.DeviceId,gps.IsPatchEngine as IsEngine,Bike.*  " +
         "from tblvehicle  As Bike " +
         "inner  join tblgpsdata as gps " +
         "on " +
@@ -4470,7 +4470,7 @@ router.get('/PrintDriverReportNew', function(req, res) {
     //WhereCondition += " And Gps.DeviceId = 075034901552";
     // WhereCondition += " And Gps.IsEngine = false";
     var query = "select " +
-        " gps.*,Bike.*  " +
+        " gps.Date,gps.Speed,gps.Longitude,gps.Latitude,gps.Direction,gps.GPSPositioning,gps.DeviceId,gps.IsPatchEngine as IsEngine,Bike.*  " +
         "from tblvehicle  As Bike " +
         "inner  join tblgpsdata as gps " +
         "on " +
@@ -4977,7 +4977,7 @@ router.get('/ExportDriverReportNew', function(req, res) {
     //WhereCondition += " And Gps.DeviceId = 075034901552";
     // WhereCondition += " And Gps.IsEngine = false";
     var query = "select " +
-        " gps.*,Bike.*  " +
+        " gps.Date,gps.Speed,gps.Longitude,gps.Latitude,gps.Direction,gps.GPSPositioning,gps.DeviceId,gps.IsPatchEngine as IsEngine,Bike.*  " +
         "from tblvehicle  As Bike " +
         "inner  join tblgpsdata as gps " +
         "on " +
