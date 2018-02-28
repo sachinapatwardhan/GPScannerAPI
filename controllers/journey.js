@@ -3,6 +3,14 @@ var User = models.tbluserinformation;
 var JourneyRoute = models.tbljourneyroute;
 var JourneyGPSData = models.tbljourneygpsdata;
 
+
+router.get('/getAllCompletedJourneyHistoryById', function(req, res) {
+    var query = "select Id,Datetime, Latitude, Longitude, GPSPositioning, Speed, Direction, DeviceId, IsPatchEngine as IsEngine, OdoMeter, Date from tbljourneygpsdata where IdJourneyRoute=" + req.query.Id;
+    connection.query(query, function(err, lstGPSData, fields) {
+        res.json(lstGPSData);
+    });
+})
+
 router.get('/getAllCompletedJourney', function(req, res) {
     JourneyRoute.findAll({ where: { DeviceId: req.query.DeviceId, UserId: req.query.UserId, IsCompleted: 1, IsDelete: 0 }, order: 'StartTime desc' }).then(function(response) {
         res.json(response)
