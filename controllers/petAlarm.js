@@ -213,7 +213,28 @@ router.get('/GetVehicleAlarmByUser', function(req, res) {
             search += " Where tp.DeviceId = '" + req.query.DeviceId + "'";
         }
     }
-    var query = "select tp.Id,tp.CreatedDate,tp.Datetime,tp.Date,tp.DeviceId,tp.Speed,tp.AlarmCode, tp.FenceName,tp.IsRead, tpg.id,tpg.Name from tblalarm tp inner join tblvehicle tpg on tp.DeviceId = tpg.deviceid left join tblsharedevice tsd on tpg.id=tsd.idVehicle ";
+    if (req.query.AlarmCode != null && req.query.AlarmCode != undefined && req.query.AlarmCode != '-1' && req.query.AlarmCode != 'All') {
+        if (req.query.AlarmCode == 50) {
+            if (search != "") {
+                search += " and (tp.AlarmCode = '" + req.query.AlarmCode + "' or tp.AlarmCode=52)";
+            } else {
+                search += " Where (tp.AlarmCode = '" + req.query.AlarmCode + "' or tp.AlarmCode=52)";
+            }
+        } else if (req.query.AlarmCode == 51) {
+            if (search != "") {
+                search += " and (tp.AlarmCode = '" + req.query.AlarmCode + "' or tp.AlarmCode=53)";
+            } else {
+                search += " Where (tp.AlarmCode = '" + req.query.AlarmCode + "' or tp.AlarmCode=53)";
+            }
+        } else {
+            if (search != "") {
+                search += " and tp.AlarmCode = '" + req.query.AlarmCode + "'";
+            } else {
+                search += " Where tp.AlarmCode = '" + req.query.AlarmCode + "'";
+            }
+        }
+    }
+    var query = "select tp.Id,tp.CreatedDate,tp.Latitude,tp.Longitude,tp.Datetime,tp.Date,tp.DeviceId,tp.Speed,tp.AlarmCode, tp.FenceName,tp.IsRead, tpg.id,tpg.Name from tblalarm tp inner join tblvehicle tpg on tp.DeviceId = tpg.deviceid left join tblsharedevice tsd on tpg.id=tsd.idVehicle ";
     query += search;
 
     var limit = 10;
