@@ -53,6 +53,18 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.BOOLEAN,
       allowNull: true,
       defaultValue: '0'
+    },
+    StartAddress: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    EndAddress: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    TotalKm: {
+      type: DataTypes.DECIMAL,
+      allowNull: true
     }
   }, {
     tableName: 'tbljourneyroute'
