@@ -690,11 +690,12 @@ function convertdateformatForUnix(date1) {
 
 }
 
-function changeSharedId(VehicleUserId, SharedUserId, callback) {
-    console.log(VehicleUserId, " == ", SharedUserId)
+function changeSharedId(VehicleUserId, SharedUserId, DeviceId, callback) {
+    // console.log(VehicleUserId, " == ", SharedUserId, "=", DeviceId);
 
-    var query = "update tblsharedevice set idSharedUser=" + VehicleUserId + " where idSharedUser=" + SharedUserId;
+    var query = "update tblsharedevice set idSharedUser=" + VehicleUserId + " where idSharedUser=" + SharedUserId + " and DeviceId=" + DeviceId;
     connection.query(query, function(err, response) {
+        // console.log(err)
         if (!err && response) {
             SharedDevice.destroy({ where: { idSharedUser: VehicleUserId, iduser: VehicleUserId } }).then(function(SharedDeviceDeleted) {
                 callback({
@@ -790,7 +791,7 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                                     })
                                                     // if (objGpsDevice.AppName == 'Maark') {
                                                     // CreateOrderServiceGlobal(UserExist.country, UserExist.id, objVehicle.deviceid, UserExist.username, UserExist.idApp, function(orderresponse) {
-                                                changeSharedId(objVehicle.iduser, objVehicleExist.iduser, function(shareuserupdate) {
+                                                changeSharedId(objVehicle.iduser, objVehicleExist.iduser, objVehicle.deviceid, function(shareuserupdate) {
                                                     // console.log("0....1...................................", shareuserupdate)
                                                     res.json({
                                                         success: true,
@@ -903,7 +904,7 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                         }).then(function(response) {
                                             if (response[0]) {
                                                 funAuditLog.CreateAuditLog('SaveVehicle', UserExist.username, 'Update Vehicle');
-                                                changeSharedId(objVehicle.iduser, objVehicleExist.iduser, function(shareuserupdate) {
+                                                changeSharedId(objVehicle.iduser, objVehicleExist.iduser, objVehicle.deviceid, function(shareuserupdate) {
                                                     // console.log("1...2................................", shareuserupdate)
                                                     res.json({
                                                         success: true,
@@ -970,7 +971,7 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                                 // })
                                                 // if (objGpsDevice.AppName == 'Maark') {
                                                 // CreateOrderServiceGlobal(UserExist.country, UserExist.id, objVehicle.deviceid, UserExist.username, UserExist.idApp, function(orderresponse) {
-                                                changeSharedId(objVehicle.iduser, objVehicleExist.iduser, function(shareuserupdate) {
+                                                changeSharedId(objVehicle.iduser, objVehicleExist.iduser, objVehicle.deviceid, function(shareuserupdate) {
                                                     // console.log("1...2.......3.........................", shareuserupdate)
                                                     res.json({
                                                         success: true,
@@ -1072,7 +1073,7 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                         }).then(function(response) {
                                             if (response[0]) {
                                                 funAuditLog.CreateAuditLog('SaveVehicle', UserExist.username, 'Update Vehicle');
-                                                changeSharedId(objVehicle.iduser, objVehicleExist.iduser, function(shareuserupdate) {
+                                                changeSharedId(objVehicle.iduser, objVehicleExist.iduser, objVehicle.deviceid, function(shareuserupdate) {
                                                     // console.log("1...2.......3........4.................", shareuserupdate)
                                                     res.json({
                                                         success: true,
