@@ -693,7 +693,7 @@ function convertdateformatForUnix(date1) {
 function changeSharedId(VehicleUserId, SharedUserId, DeviceId, callback) {
     // console.log(VehicleUserId, " == ", SharedUserId, "=", DeviceId);
 
-    var query = "update tblsharedevice set idSharedUser=" + VehicleUserId + " where idSharedUser=" + SharedUserId + " and DeviceId=" + DeviceId;
+    var query = "update tblsharedevice set idSharedUser=" + VehicleUserId + " where idSharedUser=" + SharedUserId + " and DeviceId='" + DeviceId + "'";
     connection.query(query, function(err, response) {
         // console.log(err)
         if (!err && response) {
