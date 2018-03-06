@@ -75,6 +75,12 @@ router.get('/SendOTP', function(req, res) {
     });
 });
 
+router.post('/Getlocations', jsonParser, function(req, res) {
+    console.log(req.body)
+    console.log(req.query)
+    res.send("success");
+});
+
 router.get('/GetGeneralInfo', function(req, res) {
     var CompanyName = '';
     var phoneNumber = '';
