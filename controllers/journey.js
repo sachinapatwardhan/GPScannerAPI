@@ -1,15 +1,15 @@
 var router = express.Router();
 var User = models.tbluserinformation;
 var JourneyRoute = models.tbljourneyroute;
-var JourneyGPSData = models.tbljourneygpsdata;
+// var JourneyGPSData = models.tbljourneygpsdata;
 var momentz = require('moment-timezone');
 
-router.get('/getAllCompletedJourneyHistoryById', function(req, res) {
-    var query = "select Id,Datetime, Latitude, Longitude, GPSPositioning, Speed, Direction, DeviceId, IsPatchEngine as IsEngine, OdoMeter, Date from tbljourneygpsdata where IdJourneyRoute=" + req.query.Id;
-    connection.query(query, function(err, lstGPSData, fields) {
-        res.json(lstGPSData);
-    });
-})
+// router.get('/getAllCompletedJourneyHistoryById', function(req, res) {
+//     var query = "select Id,Datetime, Latitude, Longitude, GPSPositioning, Speed, Direction, DeviceId, IsPatchEngine as IsEngine, OdoMeter, Date from tbljourneygpsdata where IdJourneyRoute=" + req.query.Id;
+//     connection.query(query, function(err, lstGPSData, fields) {
+//         res.json(lstGPSData);
+//     });
+// })
 
 router.get('/getAllCompletedJourney', function(req, res) {
     JourneyRoute.findAll({ where: { DeviceId: req.query.DeviceId, UserId: req.query.UserId, IsCompleted: 1, IsDelete: 0 }, order: 'StartTime desc' }).then(function(response) {
@@ -118,27 +118,28 @@ router.get('/deleteJourneyById', function(req, res) {
                         }
                     }).then(function(JourneyRouteExist) {
                         if (JourneyRouteExist) {
-                            JourneyGPSData.destroy({
-                                where: {
-                                    IdJourneyRoute: req.query.Id
+                            // JourneyGPSData.destroy({
+                            //     where: {
+                            //         IdJourneyRoute: req.query.Id
+                            //     }
+                            // }).then(function(JouryGpsDataDeleted) {
+                            JourneyRouteExist.updateAttributes({ IsDelete: 1 }).then(function(response) {
+                                if (response) {
+                                    funAuditLog.CreateAuditLog('Delete journey route', UserExist.username, 'Delete journey route');
+                                    res.json({
+                                        success: true,
+                                        message: "journey deleted successfully...",
+                                        data: response
+                                    });
+                                } else {
+                                    res.json({
+                                        success: true,
+                                        message: "journey can not delete. Try again later.",
+                                    });
                                 }
-                            }).then(function(JouryGpsDataDeleted) {
-                                JourneyRouteExist.updateAttributes({ IsDelete: 1 }).then(function(response) {
-                                    if (response) {
-                                        funAuditLog.CreateAuditLog('Delete journey route', UserExist.username, 'Delete journey route');
-                                        res.json({
-                                            success: true,
-                                            message: "journey deleted successfully...",
-                                            data: response
-                                        });
-                                    } else {
-                                        res.json({
-                                            success: true,
-                                            message: "journey can not delete. Try again later.",
-                                        });
-                                    }
-                                })
                             })
+
+                            //})
 
                         } else {
                             res.json(RecordNotFound);
@@ -187,7 +188,16 @@ router.get('/ExportReport', function(req, res) {
         type: 'string'
     }];
 
-    var query = "select Id,Datetime, Latitude, Longitude, GPSPositioning, Speed, Direction, DeviceId,IsPatchEngine as IsEngine, Date from tbljourneygpsdata where IdJourneyRoute='" + req.query.Id + "' order by Date;"
+    var Startdate = req.query.TodayStartDateTime;
+    var Enddate = req.query.TodayEndDateTime;
+
+    var convertDate = convertdateformatForUnix(Startdate);
+    var unixStartdate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
+
+    var convertDate = convertdateformatForUnix(Enddate);
+    var unixEnddate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
+
+    var query = "select Id,Datetime, Latitude, Longitude, GPSPositioning, Speed, Direction, DeviceId,IsPatchEngine as IsEngine, Date from tblgpsdata where deviceid=" + req.query.DeviceId + " and Date >= '" + unixStartdate + "' and Date <= '" + unixEnddate + "' order by Date;"
 
     connection.query(query, function(err, response) {
         conf.rows = [];
@@ -245,6 +255,19 @@ router.get('/ExportReport', function(req, res) {
         }
     })
 })
+
+function convertdateformatForUnix(date1) {
+    var date = new Date(date1);
+    var firstdayMonth = date.getMonth() + 1;
+    var firstdayDay = date.getDate();
+    var firstdayYear = date.getFullYear();
+    var firstdayHours = date.getHours();
+    var firstdayMinutes = date.getMinutes();
+    var firstdaySeconds = date.getSeconds();
+
+    return ("00" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("0000" + firstdayDay.toString()).slice(-2) + " " + ("00" + firstdayHours.toString()).slice(-2) + ':' + ("00" + firstdayMinutes.toString()).slice(-2) + ':' + ("00" + firstdaySeconds.toString()).slice(-2);
+
+}
 
 
 module.exports = router
