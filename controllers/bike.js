@@ -831,9 +831,11 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                                     data: null
                                                 });
                                             } else {
+                                                objVehicle.renewaldate = ExpiryDate;
                                                 Vehicle.create(objVehicle).then(function(response) {
                                                     if (response) {
                                                         funAuditLog.CreateAuditLog('SaveVehicle(IMEI:' + objVehicle.IMEI + ')', UserExist.username, 'Create Vehicle');
+
                                                         GpsDevice.findOne({ where: { DeviceId: response.deviceid } }).then(function(GpsDataExist) {
                                                             if (GpsDataExist) {
                                                                 funAuditLog.CreateAuditLog('SaveDate', UserExist.username, 'Save Vehicle Expiry & Activation Date');
@@ -856,6 +858,15 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                                                 })
                                                             }
                                                         })
+
+                                                        //Insert DeviceId to Acc Value set table (if country !=Cambodia)
+                                                        if (objGpsDevice.CountryId != 30) {
+                                                            var CurrentDate = GetCurrentDate();
+                                                            var query = "INSERT INTO tbldeviceaccvalueset (DeviceId,CreatedDate ) VALUES ('" + objVehicle.deviceid + "', '" + CurrentDate + "');";
+                                                            connection.query(query, function(err, rows, fields) {
+
+                                                            });
+                                                        }
 
                                                         // if (objGpsDevice.AppName == 'Maark') {
                                                         // CreateOrderServiceGlobal(UserExist.country, UserExist.id, objVehicle.deviceid, UserExist.username, UserExist.idApp, function(orderresponse) {
@@ -1010,9 +1021,19 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                                     data: null
                                                 });
                                             } else {
+                                                objVehicle.renewaldate = ExpiryDate;
                                                 Vehicle.create(objVehicle).then(function(response) {
                                                     if (response) {
                                                         funAuditLog.CreateAuditLog('SaveVehicle', UserExist.username, 'Create Vehicle');
+
+                                                        //Insert DeviceId to Acc Value set table (if country !=Cambodia)
+                                                        if (objGpsDevice.CountryId != 30) {
+                                                            var CurrentDate = GetCurrentDate();
+                                                            var query = "INSERT INTO tbldeviceaccvalueset (DeviceId,CreatedDate ) VALUES ('" + objVehicle.deviceid + "', '" + CurrentDate + "');";
+                                                            connection.query(query, function(err, rows, fields) {
+
+                                                            });
+                                                        }
                                                         // console.log("***********")
                                                         // console.log("country...........", UserExist.country)
                                                         // console.log("id................", UserExist.id)
