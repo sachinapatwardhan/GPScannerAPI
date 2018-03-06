@@ -11,6 +11,7 @@ Promise.config({
 var x = new Date();
 var offset = -x.getTimezoneOffset();
 global.CurrentOffset = (('00' + offset).slice(-2) >= 0 ? "+" : "-") + ('00' + parseInt(offset / 60).toString()).slice(-2) + ":" + offset % 60;
+// global.CurrentOffset = '+08:00';
 global.bodyParser = require('body-parser');
 global.jsonParser = bodyParser.json();
 global.passport = require('passport');
@@ -428,6 +429,19 @@ io.sockets.on('connection', function(socket) {
         Command9902(data, function(res) {
 
         })
+    });
+
+    //Update Device Status
+    socket.on('UpdateDeviceStatus', function(data) {
+        // console.log('socket.io server received : ' + data);
+        var objdata = JSON.parse(data);
+        UpdateDeviceStatus(objdata);
+    });
+
+    // Journey Route Complete
+    socket.on('JourneyRouteComplete', function(data) {
+        // console.log('socket.io server received 5001 : ' + data);
+        io.sockets.emit(data + 'JourneyRouteComplete', "Complete");
     });
 });
 
