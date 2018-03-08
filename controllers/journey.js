@@ -12,7 +12,7 @@ var momentz = require('moment-timezone');
 // })
 
 router.get('/getAllCompletedJourney', function(req, res) {
-    JourneyRoute.findAll({ where: { DeviceId: req.query.DeviceId, UserId: req.query.UserId, IsCompleted: 1, IsDelete: 0 }, order: 'StartTime desc' }).then(function(response) {
+    JourneyRoute.findAll({ where: { DeviceId: req.query.DeviceId, IsCompleted: 1, IsDelete: 0 }, order: 'StartTime desc' }).then(function(response) {
         res.json(response)
     })
 })
