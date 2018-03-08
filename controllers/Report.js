@@ -5894,7 +5894,6 @@ router.get('/GetDeviceJourneyRoute', function(req, res) {
     });
 });
 
-
 router.get('/ExportAlljourneyReport', function(req, res) {
     var conf = {};
     conf.name = "Sheet1";
@@ -5922,11 +5921,10 @@ router.get('/ExportAlljourneyReport', function(req, res) {
         {
             caption: 'Highest Speed',
             type: 'number'
+        }, {
+            caption: 'Over Speed(Times)',
+            type: 'number'
         },
-        // {
-        //     caption: 'Over Speed(Times)',
-        //     type: 'number'
-        // },
     ];
 
 
@@ -5938,196 +5936,194 @@ router.get('/ExportAlljourneyReport', function(req, res) {
         WhereCondition += " Where gps.DeviceId in (" + objParam.DeviceId + ")";
         wherecondition1 = ' and tblalarm.deviceid in (' + req.query.DeviceId + ')';
     }
-    // if (objParam.StartDate != '' && objParam.EndDate != '') {
-    //     var StartDate = convertdateformatForUnix(objParam.StartDate);
-    //     var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
-    //     var EndDate = convertdateformatForUnix(objParam.EndDate);
-    //     var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
-    //     WhereCondition += " And gps.Date between '" + unixStartdate + "' And '" + unixEndDate + "'";
+    if (objParam.StartDate != '' && objParam.EndDate != '') {
+        var StartDate = convertdateformatForUnix(objParam.StartDate);
+        var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
+        var EndDate = convertdateformatForUnix(objParam.EndDate);
+        var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
+        WhereCondition += " And gps.Date between '" + unixStartdate + "' And '" + unixEndDate + "'";
 
-    // } else if (objParam.StartDate != null && objParam.StartDate != '') {
-    //     var StartDate = convertdateformatForUnix(objParam.StartDate);
-    //     var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
-    //     WhereCondition += " And gps.Date >='" + unixStartdate + "'";
-    // } else if (objParam.EndDate != null && objParam.EndDate != '') {
-    //     var EndDate = convertdateformatForUnix(objParam.EndDate);
-    //     var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
-    //     WhereCondition += " And gps.Date <='" + unixEndDate + "'";
-    // }
+    } else if (objParam.StartDate != null && objParam.StartDate != '') {
+        var StartDate = convertdateformatForUnix(objParam.StartDate);
+        var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
+        WhereCondition += " And gps.Date >='" + unixStartdate + "'";
+    } else if (objParam.EndDate != null && objParam.EndDate != '') {
+        var EndDate = convertdateformatForUnix(objParam.EndDate);
+        var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
+        WhereCondition += " And gps.Date <='" + unixEndDate + "'";
 
-    if (objParam.IdJourneyRoute != null && objParam.IdJourneyRoute != '' && objParam.IdJourneyRoute != undefined) {
-        WhereCondition += " and gps.IdJourneyRoute = " + objParam.IdJourneyRoute;
     }
 
 
     var query = "select " +
         "gps.DeviceId,gps.Date,gps.Speed,gps.IsPatchEngine as IsEngine,gps.Latitude,gps.Longitude,gps.GPSPositioning,Bike.Name,Bike.id,Bike.deviceid " +
         "from tblvehicle  As Bike " +
-        "inner  join tbljourneygpsdata as gps " +
+        "inner  join tblgpsdata as gps " +
         "on " +
         "gps.DeviceId = Bike.deviceid " +
         WhereCondition +
         " order by gps.Date Asc";
     connection.query(query, function(err, response, fields) {
-        // var query1 = "select tblalarm.*,tblvehicle.deviceid from tblalarm left join tblvehicle on tblalarm.deviceid = tblvehicle.deviceid Where tblvehicle.iduser=" + req.query.idUser + "  and tblalarm.Date >= '" + unixStartdate + "' and tblalarm.Date <= '" + unixEndDate + "'" + wherecondition1 + ";"
-        // connection.query(query1, function(alarmerr, alarmresponse, alarmfields) {
-        var DeviceId = null;
-        var response1 = [];
+        var query1 = "select tblalarm.*,tblvehicle.deviceid from tblalarm left join tblvehicle on tblalarm.deviceid = tblvehicle.deviceid Where tblvehicle.iduser=" + req.query.idUser + "  and tblalarm.Date >= '" + unixStartdate + "' and tblalarm.Date <= '" + unixEndDate + "'" + wherecondition1 + ";"
+        connection.query(query1, function(alarmerr, alarmresponse, alarmfields) {
+            var DeviceId = null;
+            var response1 = [];
 
 
-        var DeviceId = null;
-        var GroupByDevice = u.groupBy(response, function(data) { return data.DeviceId; });
-        var TotalAllDrivingTime = 0;
-        var TotalAllParkingTime = 0;
-        var TotalAllTime = 0;
+            var DeviceId = null;
+            var GroupByDevice = u.groupBy(response, function(data) { return data.DeviceId; });
+            var TotalAllDrivingTime = 0;
+            var TotalAllParkingTime = 0;
+            var TotalAllTime = 0;
 
-        var lstGroup = u.map(GroupByDevice, function(group, DeviceId) {
-            var IsDriving = 0;
-            var DrivingStartPosition = 0;
-            var TotalDrivingtime = 0;
-            var IsParking = 0;
-            var ParkingStartPosition = 0;
-            var TotalParkingtime = 0;
-            var TotalSpeed = 0;
-            var TotalSpeedRecord = 0;
-            var HighestSpeed = 0;
-            var TotalMileage = 0;
-            var StartMilage = 0;
-            var Milageco = 0;
-            var Engineco = 0;
-            var OverSpeed = 0;
+            var lstGroup = u.map(GroupByDevice, function(group, DeviceId) {
+                var IsDriving = 0;
+                var DrivingStartPosition = 0;
+                var TotalDrivingtime = 0;
+                var IsParking = 0;
+                var ParkingStartPosition = 0;
+                var TotalParkingtime = 0;
+                var TotalSpeed = 0;
+                var TotalSpeedRecord = 0;
+                var HighestSpeed = 0;
+                var TotalMileage = 0;
+                var StartMilage = 0;
+                var Milageco = 0;
+                var Engineco = 0;
+                var OverSpeed = 0;
 
-            for (var i = 0; i < group.length; i++) {
+                for (var i = 0; i < group.length; i++) {
 
-                group[i].Date = new Date(group[i].Date * 1000);
+                    group[i].Date = new Date(group[i].Date * 1000);
 
-                if (group[i].IsEngine == true) {
+                    if (group[i].IsEngine == true) {
 
-                    if (Engineco == 0) {
-                        StartMilage = i;
-                        Engineco = 1;
-                    }
-                    if ((i != 0) && group[i].GPSPositioning == 'A') {
-                        if (parseFloat(group[i].Speed) > 1) {
-                            Milageco = 0;
-                            TotalMileage += distance(parseFloat(group[StartMilage].Latitude), parseFloat(group[StartMilage].Longitude), parseFloat(group[i].Latitude), parseFloat(group[i].Longitude));
+                        if (Engineco == 0) {
                             StartMilage = i;
-                        } else {
-
-                            if (Milageco == 0) {
+                            Engineco = 1;
+                        }
+                        if ((i != 0) && group[i].GPSPositioning == 'A') {
+                            if (parseFloat(group[i].Speed) > 1) {
+                                Milageco = 0;
                                 TotalMileage += distance(parseFloat(group[StartMilage].Latitude), parseFloat(group[StartMilage].Longitude), parseFloat(group[i].Latitude), parseFloat(group[i].Longitude));
                                 StartMilage = i;
+                            } else {
+
+                                if (Milageco == 0) {
+                                    TotalMileage += distance(parseFloat(group[StartMilage].Latitude), parseFloat(group[StartMilage].Longitude), parseFloat(group[i].Latitude), parseFloat(group[i].Longitude));
+                                    StartMilage = i;
+                                }
+                                Milageco = 1;
                             }
-                            Milageco = 1;
                         }
-                    }
 
 
-                    if (group[i].GPSPositioning == "A" && group[i].Speed > 1) {
-                        if (HighestSpeed < parseFloat(group[i].Speed)) {
-                            HighestSpeed = parseFloat(group[i].Speed);
+                        if (group[i].GPSPositioning == "A" && group[i].Speed > 1) {
+                            if (HighestSpeed < parseFloat(group[i].Speed)) {
+                                HighestSpeed = parseFloat(group[i].Speed);
+                            }
+                            TotalSpeed = TotalSpeed + parseFloat(group[i].Speed);
+                            TotalSpeedRecord = TotalSpeedRecord + 1;
                         }
-                        TotalSpeed = TotalSpeed + parseFloat(group[i].Speed);
-                        TotalSpeedRecord = TotalSpeedRecord + 1;
-                    }
 
-                    if (IsParking == 1) {
-                        IsParking = 0;
-                        TotalParkingtime = TotalParkingtime + calcDateDiffCalInSec(moment(group[i].Date), moment(group[ParkingStartPosition].Date));
-                    }
-                    if (parseFloat(group[i].Speed) > 1) {
-                        if (IsDriving == 0) {
-                            DrivingStartPosition = i;
+                        if (IsParking == 1) {
+                            IsParking = 0;
+                            TotalParkingtime = TotalParkingtime + calcDateDiffCalInSec(moment(group[i].Date), moment(group[ParkingStartPosition].Date));
                         }
-                        IsDriving = 1;
-                    }
+                        if (parseFloat(group[i].Speed) > 1) {
+                            if (IsDriving == 0) {
+                                DrivingStartPosition = i;
+                            }
+                            IsDriving = 1;
+                        }
 
-                } else {
-                    Engineco = 0;
-                    if (IsDriving == 1) {
-                        IsDriving = 0;
-                        TotalDrivingtime = TotalDrivingtime + calcDateDiffCalInSec(moment(group[i].Date), moment(group[DrivingStartPosition].Date));
-                        TotalMileage += distance(parseFloat(group[StartMilage].Latitude), parseFloat(group[StartMilage].Longitude), parseFloat(group[i].Latitude), parseFloat(group[i].Longitude));
-                    }
+                    } else {
+                        Engineco = 0;
+                        if (IsDriving == 1) {
+                            IsDriving = 0;
+                            TotalDrivingtime = TotalDrivingtime + calcDateDiffCalInSec(moment(group[i].Date), moment(group[DrivingStartPosition].Date));
+                            TotalMileage += distance(parseFloat(group[StartMilage].Latitude), parseFloat(group[StartMilage].Longitude), parseFloat(group[i].Latitude), parseFloat(group[i].Longitude));
+                        }
 
-                    if (IsParking == 0) {
-                        ParkingStartPosition = i;
+                        if (IsParking == 0) {
+                            ParkingStartPosition = i;
+                        }
+                        IsParking = 1;
                     }
-                    IsParking = 1;
                 }
+
+                if (IsParking == 1) {
+                    IsParking = 0;
+                    TotalParkingtime = TotalParkingtime + calcDateDiffCalInSec(moment(group[group.length - 1].Date), moment(group[ParkingStartPosition].Date));
+                }
+
+                if (IsDriving == 1) {
+                    IsDriving = 0;
+                    TotalDrivingtime = TotalDrivingtime + calcDateDiffCalInSec(moment(group[group.length - 1].Date), moment(group[DrivingStartPosition].Date));
+                }
+                if (TotalSpeedRecord == 0) {
+                    TotalSpeedRecord = 1;
+                }
+
+                var TotalDrivingTimeDisplay = calhrminsecfromsec(TotalDrivingtime);
+                var TotalParkingTimeDisplay = calhrminsecfromsec(TotalParkingtime);
+                var TotalTiming = TotalDrivingtime + TotalParkingtime;
+                var TotalTimingDisplay = calhrminsecfromsec(TotalTiming);
+                var AverageSpeed = (TotalSpeed / TotalSpeedRecord).toFixed(2);
+                if (alarmresponse.length > 0) {
+                    for (var h = 0; h < alarmresponse.length; h++) {
+                        if (alarmresponse[h].deviceid == DeviceId) {
+                            if (alarmresponse[h].AlarmCode == '11') {
+                                OverSpeed = OverSpeed + 1;
+                            }
+                        }
+                    }
+                }
+                TotalAllDrivingTime = TotalAllDrivingTime + TotalDrivingtime;
+                TotalAllParkingTime = TotalAllParkingTime + TotalParkingtime;
+                TotalAllTime = TotalAllTime + TotalTiming;
+                return {
+                    Name: group[0].Name,
+                    DeviceId: DeviceId,
+                    DrivingTime: TotalDrivingTimeDisplay,
+                    Parkingtime: TotalParkingTimeDisplay,
+                    AverageSpeed: AverageSpeed + " km/h",
+                    HighestSpeed: HighestSpeed.toFixed(2) + " km/h",
+                    TotalMileage: TotalMileage.toFixed(2) + " km",
+                    OverSpeed: OverSpeed,
+                    TotalTiming: TotalTimingDisplay,
+                }
+            });
+
+            response1 = lstGroup;
+
+            conf.rows = [];
+
+            response1 = u.sortBy(response1, function(num) { return num.Name })
+
+            for (var i = 0; i < response1.length; i++) {
+                var row = [];
+                row.push(response1[i].Name, response1[i].DrivingTime, response1[i].Parkingtime, response1[i].TotalTiming, response1[i].TotalMileage, response1[i].AverageSpeed, response1[i].HighestSpeed, response1[i].OverSpeed);
+                conf.rows.push(row);
+
             }
 
-            if (IsParking == 1) {
-                IsParking = 0;
-                TotalParkingtime = TotalParkingtime + calcDateDiffCalInSec(moment(group[group.length - 1].Date), moment(group[ParkingStartPosition].Date));
-            }
-
-            if (IsDriving == 1) {
-                IsDriving = 0;
-                TotalDrivingtime = TotalDrivingtime + calcDateDiffCalInSec(moment(group[group.length - 1].Date), moment(group[DrivingStartPosition].Date));
-            }
-            if (TotalSpeedRecord == 0) {
-                TotalSpeedRecord = 1;
-            }
-
-            var TotalDrivingTimeDisplay = calhrminsecfromsec(TotalDrivingtime);
-            var TotalParkingTimeDisplay = calhrminsecfromsec(TotalParkingtime);
-            var TotalTiming = TotalDrivingtime + TotalParkingtime;
-            var TotalTimingDisplay = calhrminsecfromsec(TotalTiming);
-            var AverageSpeed = (TotalSpeed / TotalSpeedRecord).toFixed(2);
-            // if (alarmresponse.length > 0) {
-            //     for (var h = 0; h < alarmresponse.length; h++) {
-            //         if (alarmresponse[h].deviceid == DeviceId) {
-            //             if (alarmresponse[h].AlarmCode == '11') {
-            //                 OverSpeed = OverSpeed + 1;
-            //             }
-            //         }
-            //     }
-            // }
-            TotalAllDrivingTime = TotalAllDrivingTime + TotalDrivingtime;
-            TotalAllParkingTime = TotalAllParkingTime + TotalParkingtime;
-            TotalAllTime = TotalAllTime + TotalTiming;
-            return {
-                Name: group[0].Name,
-                DeviceId: DeviceId,
-                DrivingTime: TotalDrivingTimeDisplay,
-                Parkingtime: TotalParkingTimeDisplay,
-                AverageSpeed: AverageSpeed + " km/h",
-                HighestSpeed: HighestSpeed.toFixed(2) + " km/h",
-                TotalMileage: TotalMileage.toFixed(2) + " km",
-                // OverSpeed: OverSpeed,
-                TotalTiming: TotalTimingDisplay,
-            }
-        });
-
-        response1 = lstGroup;
-
-        conf.rows = [];
-
-        response1 = u.sortBy(response1, function(num) { return num.Name })
-
-        for (var i = 0; i < response1.length; i++) {
             var row = [];
-            row.push(response1[i].Name, response1[i].DrivingTime, response1[i].Parkingtime, response1[i].TotalTiming, response1[i].TotalMileage, response1[i].AverageSpeed, response1[i].HighestSpeed);
+            // console.log(TotalAllDrivingTime, " - ", TotalAllParkingTime, " - ", TotalAllTime);
+            TotalAllDrivingTime = calhrminsecfromsec(TotalAllDrivingTime)
+            TotalAllParkingTime = calhrminsecfromsec(TotalAllParkingTime)
+            TotalAllTime = calhrminsecfromsec(TotalAllTime)
+            row.push('Total:', TotalAllDrivingTime, TotalAllParkingTime, TotalAllTime, '', '', '', '');
             conf.rows.push(row);
+            var result = nodeExcel.execute(conf);
+            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            res.setHeader("Content-Disposition", "attachment; filename=JourneyRouteReport.xlsx");
+            res.end(result, 'binary');
 
-        }
-
-        var row = [];
-        // console.log(TotalAllDrivingTime, " - ", TotalAllParkingTime, " - ", TotalAllTime);
-        TotalAllDrivingTime = calhrminsecfromsec(TotalAllDrivingTime)
-        TotalAllParkingTime = calhrminsecfromsec(TotalAllParkingTime)
-        TotalAllTime = calhrminsecfromsec(TotalAllTime)
-        row.push('Total:', TotalAllDrivingTime, TotalAllParkingTime, TotalAllTime, '', '', '', '');
-        conf.rows.push(row);
-        var result = nodeExcel.execute(conf);
-        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        res.setHeader("Content-Disposition", "attachment; filename=JourneyRouteReport.xlsx");
-        res.end(result, 'binary');
-
-        // })
+        })
     });
 })
+
 
 
 router.get('/PrintJourneyReport', function(req, res) {
@@ -6140,260 +6136,758 @@ router.get('/PrintJourneyReport', function(req, res) {
         WhereCondition += " Where gps.DeviceId in (" + objParam.DeviceId + ")";
         wherecondition1 = ' and tblalarm.deviceid in (' + req.query.DeviceId + ')';
     }
-    // if (objParam.StartDate != '' && objParam.EndDate != '') {
-    //     var StartDate = convertdateformatForUnix(objParam.StartDate);
-    //     var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
-    //     var EndDate = convertdateformatForUnix(objParam.EndDate);
-    //     var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
-    //     WhereCondition += " And gps.Date between '" + unixStartdate + "' And '" + unixEndDate + "'";
+    if (objParam.StartDate != '' && objParam.EndDate != '') {
+        var StartDate = convertdateformatForUnix(objParam.StartDate);
+        var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
+        var EndDate = convertdateformatForUnix(objParam.EndDate);
+        var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
+        WhereCondition += " And gps.Date between '" + unixStartdate + "' And '" + unixEndDate + "'";
 
-    // } else if (objParam.StartDate != null && objParam.StartDate != '') {
-    //     var StartDate = convertdateformatForUnix(objParam.StartDate);
-    //     var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
-    //     WhereCondition += " And gps.Date >='" + unixStartdate + "'";
-    // } else if (objParam.EndDate != null && objParam.EndDate != '') {
-    //     var EndDate = convertdateformatForUnix(objParam.EndDate);
-    //     var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
-    //     WhereCondition += " And gps.Date <='" + unixEndDate + "'";
+    } else if (objParam.StartDate != null && objParam.StartDate != '') {
+        var StartDate = convertdateformatForUnix(objParam.StartDate);
+        var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
+        WhereCondition += " And gps.Date >='" + unixStartdate + "'";
+    } else if (objParam.EndDate != null && objParam.EndDate != '') {
+        var EndDate = convertdateformatForUnix(objParam.EndDate);
+        var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
+        WhereCondition += " And gps.Date <='" + unixEndDate + "'";
 
-    // }
-
-
-    if (objParam.IdJourneyRoute != null && objParam.IdJourneyRoute != '' && objParam.IdJourneyRoute != undefined) {
-        WhereCondition += " and gps.IdJourneyRoute = " + objParam.IdJourneyRoute;
     }
+
+
     var query = "select " +
         "gps.DeviceId,gps.Date,gps.Speed,gps.IsPatchEngine as IsEngine,gps.Latitude,gps.Longitude,gps.GPSPositioning,Bike.Name,Bike.id,Bike.deviceid " +
         "from tblvehicle  As Bike " +
-        "inner  join tbljourneygpsdata as gps " +
+        "inner  join tblgpsdata as gps " +
         "on " +
         "gps.DeviceId = Bike.deviceid " +
         WhereCondition +
         " order by gps.Date Asc";
     connection.query(query, function(err, response, fields) {
-        // var query1 = "select tblalarm.*,tblvehicle.deviceid from tblalarm left join tblvehicle on tblalarm.deviceid = tblvehicle.deviceid Where tblvehicle.iduser=" + req.query.idUser + "  and tblalarm.Date >= '" + unixStartdate + "' and tblalarm.Date <= '" + unixEndDate + "'" + wherecondition1 + ";"
-        // connection.query(query1, function(alarmerr, alarmresponse, alarmfields) {
-        var DeviceId = null;
-        var response1 = [];
+        var query1 = "select tblalarm.*,tblvehicle.deviceid from tblalarm left join tblvehicle on tblalarm.deviceid = tblvehicle.deviceid Where tblvehicle.iduser=" + req.query.idUser + "  and tblalarm.Date >= '" + unixStartdate + "' and tblalarm.Date <= '" + unixEndDate + "'" + wherecondition1 + ";"
+        connection.query(query1, function(alarmerr, alarmresponse, alarmfields) {
+            var DeviceId = null;
+            var response1 = [];
 
 
-        var DeviceId = null;
-        var GroupByDevice = u.groupBy(response, function(data) { return data.DeviceId; });
-        var TotalAllDrivingTime = 0;
-        var TotalAllParkingTime = 0;
-        var TotalAllTime = 0;
+            var DeviceId = null;
+            var GroupByDevice = u.groupBy(response, function(data) { return data.DeviceId; });
+            var TotalAllDrivingTime = 0;
+            var TotalAllParkingTime = 0;
+            var TotalAllTime = 0;
 
-        var lstGroup = u.map(GroupByDevice, function(group, DeviceId) {
-            var IsDriving = 0;
-            var DrivingStartPosition = 0;
-            var TotalDrivingtime = 0;
-            var IsParking = 0;
-            var ParkingStartPosition = 0;
-            var TotalParkingtime = 0;
-            var TotalSpeed = 0;
-            var TotalSpeedRecord = 0;
-            var HighestSpeed = 0;
-            var TotalMileage = 0;
-            var StartMilage = 0;
-            var Milageco = 0;
-            var Engineco = 0;
-            var OverSpeed = 0;
+            var lstGroup = u.map(GroupByDevice, function(group, DeviceId) {
+                var IsDriving = 0;
+                var DrivingStartPosition = 0;
+                var TotalDrivingtime = 0;
+                var IsParking = 0;
+                var ParkingStartPosition = 0;
+                var TotalParkingtime = 0;
+                var TotalSpeed = 0;
+                var TotalSpeedRecord = 0;
+                var HighestSpeed = 0;
+                var TotalMileage = 0;
+                var StartMilage = 0;
+                var Milageco = 0;
+                var Engineco = 0;
+                var OverSpeed = 0;
 
-            for (var i = 0; i < group.length; i++) {
+                for (var i = 0; i < group.length; i++) {
 
-                group[i].Date = new Date(group[i].Date * 1000);
+                    group[i].Date = new Date(group[i].Date * 1000);
 
-                if (group[i].IsEngine == true) {
+                    if (group[i].IsEngine == true) {
 
-                    if (Engineco == 0) {
-                        StartMilage = i;
-                        Engineco = 1;
-                    }
-                    if ((i != 0) && group[i].GPSPositioning == 'A') {
-                        if (parseFloat(group[i].Speed) > 1) {
-                            Milageco = 0;
-                            TotalMileage += distance(parseFloat(group[StartMilage].Latitude), parseFloat(group[StartMilage].Longitude), parseFloat(group[i].Latitude), parseFloat(group[i].Longitude));
+                        if (Engineco == 0) {
                             StartMilage = i;
-                        } else {
-
-                            if (Milageco == 0) {
+                            Engineco = 1;
+                        }
+                        if ((i != 0) && group[i].GPSPositioning == 'A') {
+                            if (parseFloat(group[i].Speed) > 1) {
+                                Milageco = 0;
                                 TotalMileage += distance(parseFloat(group[StartMilage].Latitude), parseFloat(group[StartMilage].Longitude), parseFloat(group[i].Latitude), parseFloat(group[i].Longitude));
                                 StartMilage = i;
+                            } else {
+
+                                if (Milageco == 0) {
+                                    TotalMileage += distance(parseFloat(group[StartMilage].Latitude), parseFloat(group[StartMilage].Longitude), parseFloat(group[i].Latitude), parseFloat(group[i].Longitude));
+                                    StartMilage = i;
+                                }
+                                Milageco = 1;
                             }
-                            Milageco = 1;
                         }
-                    }
 
 
-                    if (group[i].GPSPositioning == "A" && group[i].Speed > 1) {
-                        if (HighestSpeed < parseFloat(group[i].Speed)) {
-                            HighestSpeed = parseFloat(group[i].Speed);
+                        if (group[i].GPSPositioning == "A" && group[i].Speed > 1) {
+                            if (HighestSpeed < parseFloat(group[i].Speed)) {
+                                HighestSpeed = parseFloat(group[i].Speed);
+                            }
+                            TotalSpeed = TotalSpeed + parseFloat(group[i].Speed);
+                            TotalSpeedRecord = TotalSpeedRecord + 1;
                         }
-                        TotalSpeed = TotalSpeed + parseFloat(group[i].Speed);
-                        TotalSpeedRecord = TotalSpeedRecord + 1;
-                    }
 
-                    if (IsParking == 1) {
-                        IsParking = 0;
-                        TotalParkingtime = TotalParkingtime + calcDateDiffCalInSec(moment(group[i].Date), moment(group[ParkingStartPosition].Date));
-                    }
-                    if (parseFloat(group[i].Speed) > 1) {
-                        if (IsDriving == 0) {
-                            DrivingStartPosition = i;
+                        if (IsParking == 1) {
+                            IsParking = 0;
+                            TotalParkingtime = TotalParkingtime + calcDateDiffCalInSec(moment(group[i].Date), moment(group[ParkingStartPosition].Date));
                         }
-                        IsDriving = 1;
-                    }
+                        if (parseFloat(group[i].Speed) > 1) {
+                            if (IsDriving == 0) {
+                                DrivingStartPosition = i;
+                            }
+                            IsDriving = 1;
+                        }
 
-                } else {
-                    Engineco = 0;
-                    if (IsDriving == 1) {
-                        IsDriving = 0;
-                        TotalDrivingtime = TotalDrivingtime + calcDateDiffCalInSec(moment(group[i].Date), moment(group[DrivingStartPosition].Date));
-                        TotalMileage += distance(parseFloat(group[StartMilage].Latitude), parseFloat(group[StartMilage].Longitude), parseFloat(group[i].Latitude), parseFloat(group[i].Longitude));
-                    }
+                    } else {
+                        Engineco = 0;
+                        if (IsDriving == 1) {
+                            IsDriving = 0;
+                            TotalDrivingtime = TotalDrivingtime + calcDateDiffCalInSec(moment(group[i].Date), moment(group[DrivingStartPosition].Date));
+                            TotalMileage += distance(parseFloat(group[StartMilage].Latitude), parseFloat(group[StartMilage].Longitude), parseFloat(group[i].Latitude), parseFloat(group[i].Longitude));
+                        }
 
-                    if (IsParking == 0) {
-                        ParkingStartPosition = i;
+                        if (IsParking == 0) {
+                            ParkingStartPosition = i;
+                        }
+                        IsParking = 1;
                     }
-                    IsParking = 1;
                 }
+
+                if (IsParking == 1) {
+                    IsParking = 0;
+                    TotalParkingtime = TotalParkingtime + calcDateDiffCalInSec(moment(group[group.length - 1].Date), moment(group[ParkingStartPosition].Date));
+                }
+
+                if (IsDriving == 1) {
+                    IsDriving = 0;
+                    TotalDrivingtime = TotalDrivingtime + calcDateDiffCalInSec(moment(group[group.length - 1].Date), moment(group[DrivingStartPosition].Date));
+                }
+                if (TotalSpeedRecord == 0) {
+                    TotalSpeedRecord = 1;
+                }
+
+                var TotalDrivingTimeDisplay = calhrminsecfromsec(TotalDrivingtime);
+                var TotalParkingTimeDisplay = calhrminsecfromsec(TotalParkingtime);
+                var TotalTiming = TotalDrivingtime + TotalParkingtime;
+                var TotalTimingDisplay = calhrminsecfromsec(TotalTiming);
+                var AverageSpeed = (TotalSpeed / TotalSpeedRecord).toFixed(2);
+                if (alarmresponse.length > 0) {
+                    for (var h = 0; h < alarmresponse.length; h++) {
+                        if (alarmresponse[h].deviceid == DeviceId) {
+                            if (alarmresponse[h].AlarmCode == '11') {
+                                OverSpeed = OverSpeed + 1;
+                            }
+                        }
+                    }
+                }
+                TotalAllDrivingTime = TotalAllDrivingTime + TotalDrivingtime;
+                TotalAllParkingTime = TotalAllParkingTime + TotalParkingtime;
+                TotalAllTime = TotalAllTime + TotalTiming;
+                return {
+                    Name: group[0].Name,
+                    DeviceId: DeviceId,
+                    DrivingTime: TotalDrivingTimeDisplay,
+                    Parkingtime: TotalParkingTimeDisplay,
+                    AverageSpeed: AverageSpeed + " km/h",
+                    HighestSpeed: HighestSpeed.toFixed(2) + " km/h",
+                    TotalMileage: TotalMileage.toFixed(2) + " km",
+                    OverSpeed: OverSpeed,
+                    TotalTiming: TotalTimingDisplay,
+                }
+            });
+
+            response1 = lstGroup;
+
+
+            response1 = u.sortBy(response1, function(num) { return num.Name })
+            var TodayDate = momentz.utc(new Date()).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
+            // var table = '<h2 style="text-align:center"><b>Journey Route Report</b></h2><h5 style="text-align:right">' + TodayDate + '</h5><hr/><table style="width:100%">' +
+            //     '<tr><th style="text-align:left">No</th>' +
+            //     '<th style="text-align:left">Asset Name</th>' +
+            //     '<th style="text-align:left">Driving Time</th>' +
+            //     '<th style="text-align:left">Parking Time</th>' +
+            //     '<th style="text-align:left">Total Time</th>' +
+            //     '<th style="text-align:left">Total Mileage</th>' +
+            //     '<th style="text-align:left">Average Speed(km/h)</th>' +
+            //     '<th style="text-align:left">Highest Speed</th>' +
+            //     '<th style="text-align:left">Over Speed(Times)</th></tr>';
+
+
+            var table = '<div style="font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; font-size: 10px; padding:0 15px;">' +
+                '<div style="padding:15px; border-bottom:1px solid #000;">' +
+                '<h1 style="text-transform: uppercase; text-align:center; font-weight: normal;font-size: 14px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">Journey Route Report</h1>' +
+                '<div style="text-align: right;font-size: 8px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;"><strong>' + TodayDate + '</strong></div>' +
+                '</div>' +
+                '<div>' +
+                '<table style="width:100%; margin:0; padding: 0;">' +
+                '<thead>' +
+                '<tr>' +
+                '<th style="padding: 10px 5px;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-bottom: 1px dotted #000; border-right: 1px dotted #000;">No</th>' +
+                '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Asset Name</th>' +
+                '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Driving Time</th>' +
+                '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Parking Time</th>' +
+                '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Total Time</th>' +
+                '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Total Mileage</th>' +
+                '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Average Speed(km/h)</th>' +
+                '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Highest Speed</th>' +
+                '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">Over Speed(Times)</th></tr>' +
+                '</thead><tbody>';
+
+            for (var i = 0; i < response1.length; i++) {
+                table += '<tr>' +
+                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + (i + 1) + '</td>' +
+                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + response1[i].Name + '</td>' +
+                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + response1[i].DrivingTime + '</td>' +
+                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + response1[i].Parkingtime + '</td>' +
+                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + response1[i].TotalTiming + '</td>' +
+                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + response1[i].TotalMileage + '</td>' +
+                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + response1[i].AverageSpeed + '</td>' +
+                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + response1[i].HighestSpeed + '</td>' +
+                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">' + response1[i].OverSpeed + '</td>' +
+                    '</tr>';
+
             }
 
-            if (IsParking == 1) {
-                IsParking = 0;
-                TotalParkingtime = TotalParkingtime + calcDateDiffCalInSec(moment(group[group.length - 1].Date), moment(group[ParkingStartPosition].Date));
-            }
 
-            if (IsDriving == 1) {
-                IsDriving = 0;
-                TotalDrivingtime = TotalDrivingtime + calcDateDiffCalInSec(moment(group[group.length - 1].Date), moment(group[DrivingStartPosition].Date));
-            }
-            if (TotalSpeedRecord == 0) {
-                TotalSpeedRecord = 1;
-            }
+            TotalAllDrivingTime = calhrminsecfromsec(TotalAllDrivingTime)
+            TotalAllParkingTime = calhrminsecfromsec(TotalAllParkingTime)
+            TotalAllTime = calhrminsecfromsec(TotalAllTime)
 
-            var TotalDrivingTimeDisplay = calhrminsecfromsec(TotalDrivingtime);
-            var TotalParkingTimeDisplay = calhrminsecfromsec(TotalParkingtime);
-            var TotalTiming = TotalDrivingtime + TotalParkingtime;
-            var TotalTimingDisplay = calhrminsecfromsec(TotalTiming);
-            var AverageSpeed = (TotalSpeed / TotalSpeedRecord).toFixed(2);
-            // if (alarmresponse.length > 0) {
-            //     for (var h = 0; h < alarmresponse.length; h++) {
-            //         if (alarmresponse[h].deviceid == DeviceId) {
-            //             if (alarmresponse[h].AlarmCode == '11') {
-            //                 OverSpeed = OverSpeed + 1;
-            //             }
-            //         }
-            //     }
-            // }
-            TotalAllDrivingTime = TotalAllDrivingTime + TotalDrivingtime;
-            TotalAllParkingTime = TotalAllParkingTime + TotalParkingtime;
-            TotalAllTime = TotalAllTime + TotalTiming;
-            return {
-                Name: group[0].Name,
-                DeviceId: DeviceId,
-                DrivingTime: TotalDrivingTimeDisplay,
-                Parkingtime: TotalParkingTimeDisplay,
-                AverageSpeed: AverageSpeed + " km/h",
-                HighestSpeed: HighestSpeed.toFixed(2) + " km/h",
-                TotalMileage: TotalMileage.toFixed(2) + " km",
-                OverSpeed: OverSpeed,
-                TotalTiming: TotalTimingDisplay,
-            }
-        });
+            table += '</tbody><tfoot style="font-weight: bold;">' +
+                ' <tr>' +
+                ' <td style="padding: 8px 5px; border-bottom: 1px dotted #000; border-right: 1px dotted #000;" colspan="2">Total:</td>' +
+                '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + TotalAllDrivingTime + '</td>' +
+                '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + TotalAllParkingTime + '</td>' +
+                '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + TotalAllTime + '</td>' +
+                '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;"></td>' +
+                '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;"></td>' +
+                '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;"></td>' +
+                '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;"></td>' +
+                '</tr>' +
+                '</tfoot>';
+            table += '</table>' +
+                ' </div>' +
+                '</div>';
+            var html = table;
+            var options = {
+                format: 'A4',
+                footer: {
+                    height: '35px',
+                    contents: { default: '<hr/><span style="color: #444;text-align:right">{{page}}</span>' },
+                    last: 'Last Page'
+                },
+                header: {
+                    "height": "35px",
+                },
+            };
 
-        response1 = lstGroup;
+            pdf.create(html, options).toStream(function(err, stream) {
+                stream.pipe(res);
+            });
 
-
-        response1 = u.sortBy(response1, function(num) { return num.Name })
-        var TodayDate = momentz.utc(new Date()).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
-        // var table = '<h2 style="text-align:center"><b>Working Hour Report</b></h2><h5 style="text-align:right">' + TodayDate + '</h5><hr/><table style="width:100%">' +
-        //     '<tr><th style="text-align:left">No</th>' +
-        //     '<th style="text-align:left">Asset Name</th>' +
-        //     '<th style="text-align:left">Driving Time</th>' +
-        //     '<th style="text-align:left">Parking Time</th>' +
-        //     '<th style="text-align:left">Total Time</th>' +
-        //     '<th style="text-align:left">Total Mileage</th>' +
-        //     '<th style="text-align:left">Average Speed(km/h)</th>' +
-        //     '<th style="text-align:left">Highest Speed</th>' +
-        //     '<th style="text-align:left">Over Speed(Times)</th></tr>';
-
-
-        var table = '<div style="font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; font-size: 10px; padding:0 15px;">' +
-            '<div style="padding:15px; border-bottom:1px solid #000;">' +
-            '<h1 style="text-transform: uppercase; text-align:center; font-weight: normal;font-size: 14px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">Journey Route Report</h1>' +
-            '<div style="text-align: right;font-size: 8px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;"><strong>' + TodayDate + '</strong></div>' +
-            '</div>' +
-            '<div>' +
-            '<table style="width:100%; margin:0; padding: 0;">' +
-            '<thead>' +
-            '<tr>' +
-            '<th style="padding: 10px 5px;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-bottom: 1px dotted #000; border-right: 1px dotted #000;">No</th>' +
-            '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Asset Name</th>' +
-            '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Driving Time</th>' +
-            '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Parking Time</th>' +
-            '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Total Time</th>' +
-            '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Total Mileage</th>' +
-            '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Average Speed(km/h)</th>' +
-            '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Highest Speed</th>' +
-            // '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">Over Speed(Times)</th></tr>' +
-            '</thead><tbody>';
-
-        for (var i = 0; i < response1.length; i++) {
-            table += '<tr>' +
-                '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + (i + 1) + '</td>' +
-                '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + response1[i].Name + '</td>' +
-                '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + response1[i].DrivingTime + '</td>' +
-                '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + response1[i].Parkingtime + '</td>' +
-                '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + response1[i].TotalTiming + '</td>' +
-                '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + response1[i].TotalMileage + '</td>' +
-                '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + response1[i].AverageSpeed + '</td>' +
-                '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + response1[i].HighestSpeed + '</td>' +
-                // '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">' + response1[i].OverSpeed + '</td>' +
-                '</tr>';
-
-        }
-
-
-        TotalAllDrivingTime = calhrminsecfromsec(TotalAllDrivingTime)
-        TotalAllParkingTime = calhrminsecfromsec(TotalAllParkingTime)
-        TotalAllTime = calhrminsecfromsec(TotalAllTime)
-
-        table += '</tbody><tfoot style="font-weight: bold;">' +
-            ' <tr>' +
-            ' <td style="padding: 8px 5px; border-bottom: 1px dotted #000; border-right: 1px dotted #000;" colspan="2">Total:</td>' +
-            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + TotalAllDrivingTime + '</td>' +
-            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + TotalAllParkingTime + '</td>' +
-            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + TotalAllTime + '</td>' +
-            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;"></td>' +
-            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;"></td>' +
-            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;"></td>' +
-            // '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;"></td>' +
-            '</tr>' +
-            '</tfoot>';
-        table += '</table>' +
-            ' </div>' +
-            '</div>';
-        var html = table;
-        var options = {
-            format: 'A4',
-            footer: {
-                height: '35px',
-                contents: { default: '<hr/><span style="color: #444;text-align:right">{{page}}</span>' },
-                last: 'Last Page'
-            },
-            header: {
-                "height": "35px",
-            },
-        };
-
-        pdf.create(html, options).toStream(function(err, stream) {
-            stream.pipe(res);
-        });
-
-        // })
+        })
     });
 })
+
+
+// router.get('/ExportAlljourneyReport', function(req, res) {
+//     var conf = {};
+//     conf.name = "Sheet1";
+//     conf.cols = [{
+//             caption: 'Assest Name',
+//             type: 'string'
+//         }, {
+//             caption: 'Driving Time',
+//             type: 'string'
+//         }, {
+//             caption: 'Parking Time',
+//             type: 'string'
+//         }, {
+//             caption: 'Total Time',
+//             type: 'string'
+//         },
+//         {
+//             caption: 'Total Mileage',
+//             type: 'string'
+//         },
+//         {
+//             caption: 'Average Speed',
+//             type: 'number'
+//         },
+//         {
+//             caption: 'Highest Speed',
+//             type: 'number'
+//         },
+//         // {
+//         //     caption: 'Over Speed(Times)',
+//         //     type: 'number'
+//         // },
+//     ];
+
+
+//     var objParam = req.query;
+
+//     var WhereCondition = " ";
+//     var wherecondition1 = "";
+//     if (objParam.DeviceId != null && objParam.DeviceId != undefined && objParam.DeviceId != '') {
+//         WhereCondition += " Where gps.DeviceId in (" + objParam.DeviceId + ")";
+//         wherecondition1 = ' and tblalarm.deviceid in (' + req.query.DeviceId + ')';
+//     }
+//     // if (objParam.StartDate != '' && objParam.EndDate != '') {
+//     //     var StartDate = convertdateformatForUnix(objParam.StartDate);
+//     //     var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
+//     //     var EndDate = convertdateformatForUnix(objParam.EndDate);
+//     //     var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
+//     //     WhereCondition += " And gps.Date between '" + unixStartdate + "' And '" + unixEndDate + "'";
+
+//     // } else if (objParam.StartDate != null && objParam.StartDate != '') {
+//     //     var StartDate = convertdateformatForUnix(objParam.StartDate);
+//     //     var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
+//     //     WhereCondition += " And gps.Date >='" + unixStartdate + "'";
+//     // } else if (objParam.EndDate != null && objParam.EndDate != '') {
+//     //     var EndDate = convertdateformatForUnix(objParam.EndDate);
+//     //     var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
+//     //     WhereCondition += " And gps.Date <='" + unixEndDate + "'";
+//     // }
+
+//     if (objParam.IdJourneyRoute != null && objParam.IdJourneyRoute != '' && objParam.IdJourneyRoute != undefined) {
+//         WhereCondition += " and gps.IdJourneyRoute = " + objParam.IdJourneyRoute;
+//     }
+
+
+//     var query = "select " +
+//         "gps.DeviceId,gps.Date,gps.Speed,gps.IsPatchEngine as IsEngine,gps.Latitude,gps.Longitude,gps.GPSPositioning,Bike.Name,Bike.id,Bike.deviceid " +
+//         "from tblvehicle  As Bike " +
+//         "inner  join tbljourneygpsdata as gps " +
+//         "on " +
+//         "gps.DeviceId = Bike.deviceid " +
+//         WhereCondition +
+//         " order by gps.Date Asc";
+//     connection.query(query, function(err, response, fields) {
+//         // var query1 = "select tblalarm.*,tblvehicle.deviceid from tblalarm left join tblvehicle on tblalarm.deviceid = tblvehicle.deviceid Where tblvehicle.iduser=" + req.query.idUser + "  and tblalarm.Date >= '" + unixStartdate + "' and tblalarm.Date <= '" + unixEndDate + "'" + wherecondition1 + ";"
+//         // connection.query(query1, function(alarmerr, alarmresponse, alarmfields) {
+//         var DeviceId = null;
+//         var response1 = [];
+
+
+//         var DeviceId = null;
+//         var GroupByDevice = u.groupBy(response, function(data) { return data.DeviceId; });
+//         var TotalAllDrivingTime = 0;
+//         var TotalAllParkingTime = 0;
+//         var TotalAllTime = 0;
+
+//         var lstGroup = u.map(GroupByDevice, function(group, DeviceId) {
+//             var IsDriving = 0;
+//             var DrivingStartPosition = 0;
+//             var TotalDrivingtime = 0;
+//             var IsParking = 0;
+//             var ParkingStartPosition = 0;
+//             var TotalParkingtime = 0;
+//             var TotalSpeed = 0;
+//             var TotalSpeedRecord = 0;
+//             var HighestSpeed = 0;
+//             var TotalMileage = 0;
+//             var StartMilage = 0;
+//             var Milageco = 0;
+//             var Engineco = 0;
+//             var OverSpeed = 0;
+
+//             for (var i = 0; i < group.length; i++) {
+
+//                 group[i].Date = new Date(group[i].Date * 1000);
+
+//                 if (group[i].IsEngine == true) {
+
+//                     if (Engineco == 0) {
+//                         StartMilage = i;
+//                         Engineco = 1;
+//                     }
+//                     if ((i != 0) && group[i].GPSPositioning == 'A') {
+//                         if (parseFloat(group[i].Speed) > 1) {
+//                             Milageco = 0;
+//                             TotalMileage += distance(parseFloat(group[StartMilage].Latitude), parseFloat(group[StartMilage].Longitude), parseFloat(group[i].Latitude), parseFloat(group[i].Longitude));
+//                             StartMilage = i;
+//                         } else {
+
+//                             if (Milageco == 0) {
+//                                 TotalMileage += distance(parseFloat(group[StartMilage].Latitude), parseFloat(group[StartMilage].Longitude), parseFloat(group[i].Latitude), parseFloat(group[i].Longitude));
+//                                 StartMilage = i;
+//                             }
+//                             Milageco = 1;
+//                         }
+//                     }
+
+
+//                     if (group[i].GPSPositioning == "A" && group[i].Speed > 1) {
+//                         if (HighestSpeed < parseFloat(group[i].Speed)) {
+//                             HighestSpeed = parseFloat(group[i].Speed);
+//                         }
+//                         TotalSpeed = TotalSpeed + parseFloat(group[i].Speed);
+//                         TotalSpeedRecord = TotalSpeedRecord + 1;
+//                     }
+
+//                     if (IsParking == 1) {
+//                         IsParking = 0;
+//                         TotalParkingtime = TotalParkingtime + calcDateDiffCalInSec(moment(group[i].Date), moment(group[ParkingStartPosition].Date));
+//                     }
+//                     if (parseFloat(group[i].Speed) > 1) {
+//                         if (IsDriving == 0) {
+//                             DrivingStartPosition = i;
+//                         }
+//                         IsDriving = 1;
+//                     }
+
+//                 } else {
+//                     Engineco = 0;
+//                     if (IsDriving == 1) {
+//                         IsDriving = 0;
+//                         TotalDrivingtime = TotalDrivingtime + calcDateDiffCalInSec(moment(group[i].Date), moment(group[DrivingStartPosition].Date));
+//                         TotalMileage += distance(parseFloat(group[StartMilage].Latitude), parseFloat(group[StartMilage].Longitude), parseFloat(group[i].Latitude), parseFloat(group[i].Longitude));
+//                     }
+
+//                     if (IsParking == 0) {
+//                         ParkingStartPosition = i;
+//                     }
+//                     IsParking = 1;
+//                 }
+//             }
+
+//             if (IsParking == 1) {
+//                 IsParking = 0;
+//                 TotalParkingtime = TotalParkingtime + calcDateDiffCalInSec(moment(group[group.length - 1].Date), moment(group[ParkingStartPosition].Date));
+//             }
+
+//             if (IsDriving == 1) {
+//                 IsDriving = 0;
+//                 TotalDrivingtime = TotalDrivingtime + calcDateDiffCalInSec(moment(group[group.length - 1].Date), moment(group[DrivingStartPosition].Date));
+//             }
+//             if (TotalSpeedRecord == 0) {
+//                 TotalSpeedRecord = 1;
+//             }
+
+//             var TotalDrivingTimeDisplay = calhrminsecfromsec(TotalDrivingtime);
+//             var TotalParkingTimeDisplay = calhrminsecfromsec(TotalParkingtime);
+//             var TotalTiming = TotalDrivingtime + TotalParkingtime;
+//             var TotalTimingDisplay = calhrminsecfromsec(TotalTiming);
+//             var AverageSpeed = (TotalSpeed / TotalSpeedRecord).toFixed(2);
+//             // if (alarmresponse.length > 0) {
+//             //     for (var h = 0; h < alarmresponse.length; h++) {
+//             //         if (alarmresponse[h].deviceid == DeviceId) {
+//             //             if (alarmresponse[h].AlarmCode == '11') {
+//             //                 OverSpeed = OverSpeed + 1;
+//             //             }
+//             //         }
+//             //     }
+//             // }
+//             TotalAllDrivingTime = TotalAllDrivingTime + TotalDrivingtime;
+//             TotalAllParkingTime = TotalAllParkingTime + TotalParkingtime;
+//             TotalAllTime = TotalAllTime + TotalTiming;
+//             return {
+//                 Name: group[0].Name,
+//                 DeviceId: DeviceId,
+//                 DrivingTime: TotalDrivingTimeDisplay,
+//                 Parkingtime: TotalParkingTimeDisplay,
+//                 AverageSpeed: AverageSpeed + " km/h",
+//                 HighestSpeed: HighestSpeed.toFixed(2) + " km/h",
+//                 TotalMileage: TotalMileage.toFixed(2) + " km",
+//                 // OverSpeed: OverSpeed,
+//                 TotalTiming: TotalTimingDisplay,
+//             }
+//         });
+
+//         response1 = lstGroup;
+
+//         conf.rows = [];
+
+//         response1 = u.sortBy(response1, function(num) { return num.Name })
+
+//         for (var i = 0; i < response1.length; i++) {
+//             var row = [];
+//             row.push(response1[i].Name, response1[i].DrivingTime, response1[i].Parkingtime, response1[i].TotalTiming, response1[i].TotalMileage, response1[i].AverageSpeed, response1[i].HighestSpeed);
+//             conf.rows.push(row);
+
+//         }
+
+//         var row = [];
+//         // console.log(TotalAllDrivingTime, " - ", TotalAllParkingTime, " - ", TotalAllTime);
+//         TotalAllDrivingTime = calhrminsecfromsec(TotalAllDrivingTime)
+//         TotalAllParkingTime = calhrminsecfromsec(TotalAllParkingTime)
+//         TotalAllTime = calhrminsecfromsec(TotalAllTime)
+//         row.push('Total:', TotalAllDrivingTime, TotalAllParkingTime, TotalAllTime, '', '', '', '');
+//         conf.rows.push(row);
+//         var result = nodeExcel.execute(conf);
+//         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+//         res.setHeader("Content-Disposition", "attachment; filename=JourneyRouteReport.xlsx");
+//         res.end(result, 'binary');
+
+//         // })
+//     });
+// })
+
+
+// router.get('/PrintJourneyReport', function(req, res) {
+
+//     var objParam = req.query;
+
+//     var WhereCondition = " ";
+//     var wherecondition1 = "";
+//     if (objParam.DeviceId != null && objParam.DeviceId != undefined && objParam.DeviceId != '') {
+//         WhereCondition += " Where gps.DeviceId in (" + objParam.DeviceId + ")";
+//         wherecondition1 = ' and tblalarm.deviceid in (' + req.query.DeviceId + ')';
+//     }
+//     // if (objParam.StartDate != '' && objParam.EndDate != '') {
+//     //     var StartDate = convertdateformatForUnix(objParam.StartDate);
+//     //     var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
+//     //     var EndDate = convertdateformatForUnix(objParam.EndDate);
+//     //     var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
+//     //     WhereCondition += " And gps.Date between '" + unixStartdate + "' And '" + unixEndDate + "'";
+
+//     // } else if (objParam.StartDate != null && objParam.StartDate != '') {
+//     //     var StartDate = convertdateformatForUnix(objParam.StartDate);
+//     //     var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
+//     //     WhereCondition += " And gps.Date >='" + unixStartdate + "'";
+//     // } else if (objParam.EndDate != null && objParam.EndDate != '') {
+//     //     var EndDate = convertdateformatForUnix(objParam.EndDate);
+//     //     var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
+//     //     WhereCondition += " And gps.Date <='" + unixEndDate + "'";
+
+//     // }
+
+
+//     if (objParam.IdJourneyRoute != null && objParam.IdJourneyRoute != '' && objParam.IdJourneyRoute != undefined) {
+//         WhereCondition += " and gps.IdJourneyRoute = " + objParam.IdJourneyRoute;
+//     }
+//     var query = "select " +
+//         "gps.DeviceId,gps.Date,gps.Speed,gps.IsPatchEngine as IsEngine,gps.Latitude,gps.Longitude,gps.GPSPositioning,Bike.Name,Bike.id,Bike.deviceid " +
+//         "from tblvehicle  As Bike " +
+//         "inner  join tbljourneygpsdata as gps " +
+//         "on " +
+//         "gps.DeviceId = Bike.deviceid " +
+//         WhereCondition +
+//         " order by gps.Date Asc";
+//     connection.query(query, function(err, response, fields) {
+//         // var query1 = "select tblalarm.*,tblvehicle.deviceid from tblalarm left join tblvehicle on tblalarm.deviceid = tblvehicle.deviceid Where tblvehicle.iduser=" + req.query.idUser + "  and tblalarm.Date >= '" + unixStartdate + "' and tblalarm.Date <= '" + unixEndDate + "'" + wherecondition1 + ";"
+//         // connection.query(query1, function(alarmerr, alarmresponse, alarmfields) {
+//         var DeviceId = null;
+//         var response1 = [];
+
+
+//         var DeviceId = null;
+//         var GroupByDevice = u.groupBy(response, function(data) { return data.DeviceId; });
+//         var TotalAllDrivingTime = 0;
+//         var TotalAllParkingTime = 0;
+//         var TotalAllTime = 0;
+
+//         var lstGroup = u.map(GroupByDevice, function(group, DeviceId) {
+//             var IsDriving = 0;
+//             var DrivingStartPosition = 0;
+//             var TotalDrivingtime = 0;
+//             var IsParking = 0;
+//             var ParkingStartPosition = 0;
+//             var TotalParkingtime = 0;
+//             var TotalSpeed = 0;
+//             var TotalSpeedRecord = 0;
+//             var HighestSpeed = 0;
+//             var TotalMileage = 0;
+//             var StartMilage = 0;
+//             var Milageco = 0;
+//             var Engineco = 0;
+//             var OverSpeed = 0;
+
+//             for (var i = 0; i < group.length; i++) {
+
+//                 group[i].Date = new Date(group[i].Date * 1000);
+
+//                 if (group[i].IsEngine == true) {
+
+//                     if (Engineco == 0) {
+//                         StartMilage = i;
+//                         Engineco = 1;
+//                     }
+//                     if ((i != 0) && group[i].GPSPositioning == 'A') {
+//                         if (parseFloat(group[i].Speed) > 1) {
+//                             Milageco = 0;
+//                             TotalMileage += distance(parseFloat(group[StartMilage].Latitude), parseFloat(group[StartMilage].Longitude), parseFloat(group[i].Latitude), parseFloat(group[i].Longitude));
+//                             StartMilage = i;
+//                         } else {
+
+//                             if (Milageco == 0) {
+//                                 TotalMileage += distance(parseFloat(group[StartMilage].Latitude), parseFloat(group[StartMilage].Longitude), parseFloat(group[i].Latitude), parseFloat(group[i].Longitude));
+//                                 StartMilage = i;
+//                             }
+//                             Milageco = 1;
+//                         }
+//                     }
+
+
+//                     if (group[i].GPSPositioning == "A" && group[i].Speed > 1) {
+//                         if (HighestSpeed < parseFloat(group[i].Speed)) {
+//                             HighestSpeed = parseFloat(group[i].Speed);
+//                         }
+//                         TotalSpeed = TotalSpeed + parseFloat(group[i].Speed);
+//                         TotalSpeedRecord = TotalSpeedRecord + 1;
+//                     }
+
+//                     if (IsParking == 1) {
+//                         IsParking = 0;
+//                         TotalParkingtime = TotalParkingtime + calcDateDiffCalInSec(moment(group[i].Date), moment(group[ParkingStartPosition].Date));
+//                     }
+//                     if (parseFloat(group[i].Speed) > 1) {
+//                         if (IsDriving == 0) {
+//                             DrivingStartPosition = i;
+//                         }
+//                         IsDriving = 1;
+//                     }
+
+//                 } else {
+//                     Engineco = 0;
+//                     if (IsDriving == 1) {
+//                         IsDriving = 0;
+//                         TotalDrivingtime = TotalDrivingtime + calcDateDiffCalInSec(moment(group[i].Date), moment(group[DrivingStartPosition].Date));
+//                         TotalMileage += distance(parseFloat(group[StartMilage].Latitude), parseFloat(group[StartMilage].Longitude), parseFloat(group[i].Latitude), parseFloat(group[i].Longitude));
+//                     }
+
+//                     if (IsParking == 0) {
+//                         ParkingStartPosition = i;
+//                     }
+//                     IsParking = 1;
+//                 }
+//             }
+
+//             if (IsParking == 1) {
+//                 IsParking = 0;
+//                 TotalParkingtime = TotalParkingtime + calcDateDiffCalInSec(moment(group[group.length - 1].Date), moment(group[ParkingStartPosition].Date));
+//             }
+
+//             if (IsDriving == 1) {
+//                 IsDriving = 0;
+//                 TotalDrivingtime = TotalDrivingtime + calcDateDiffCalInSec(moment(group[group.length - 1].Date), moment(group[DrivingStartPosition].Date));
+//             }
+//             if (TotalSpeedRecord == 0) {
+//                 TotalSpeedRecord = 1;
+//             }
+
+//             var TotalDrivingTimeDisplay = calhrminsecfromsec(TotalDrivingtime);
+//             var TotalParkingTimeDisplay = calhrminsecfromsec(TotalParkingtime);
+//             var TotalTiming = TotalDrivingtime + TotalParkingtime;
+//             var TotalTimingDisplay = calhrminsecfromsec(TotalTiming);
+//             var AverageSpeed = (TotalSpeed / TotalSpeedRecord).toFixed(2);
+//             // if (alarmresponse.length > 0) {
+//             //     for (var h = 0; h < alarmresponse.length; h++) {
+//             //         if (alarmresponse[h].deviceid == DeviceId) {
+//             //             if (alarmresponse[h].AlarmCode == '11') {
+//             //                 OverSpeed = OverSpeed + 1;
+//             //             }
+//             //         }
+//             //     }
+//             // }
+//             TotalAllDrivingTime = TotalAllDrivingTime + TotalDrivingtime;
+//             TotalAllParkingTime = TotalAllParkingTime + TotalParkingtime;
+//             TotalAllTime = TotalAllTime + TotalTiming;
+//             return {
+//                 Name: group[0].Name,
+//                 DeviceId: DeviceId,
+//                 DrivingTime: TotalDrivingTimeDisplay,
+//                 Parkingtime: TotalParkingTimeDisplay,
+//                 AverageSpeed: AverageSpeed + " km/h",
+//                 HighestSpeed: HighestSpeed.toFixed(2) + " km/h",
+//                 TotalMileage: TotalMileage.toFixed(2) + " km",
+//                 OverSpeed: OverSpeed,
+//                 TotalTiming: TotalTimingDisplay,
+//             }
+//         });
+
+//         response1 = lstGroup;
+
+
+//         response1 = u.sortBy(response1, function(num) { return num.Name })
+//         var TodayDate = momentz.utc(new Date()).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
+//         // var table = '<h2 style="text-align:center"><b>Working Hour Report</b></h2><h5 style="text-align:right">' + TodayDate + '</h5><hr/><table style="width:100%">' +
+//         //     '<tr><th style="text-align:left">No</th>' +
+//         //     '<th style="text-align:left">Asset Name</th>' +
+//         //     '<th style="text-align:left">Driving Time</th>' +
+//         //     '<th style="text-align:left">Parking Time</th>' +
+//         //     '<th style="text-align:left">Total Time</th>' +
+//         //     '<th style="text-align:left">Total Mileage</th>' +
+//         //     '<th style="text-align:left">Average Speed(km/h)</th>' +
+//         //     '<th style="text-align:left">Highest Speed</th>' +
+//         //     '<th style="text-align:left">Over Speed(Times)</th></tr>';
+
+
+//         var table = '<div style="font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; font-size: 10px; padding:0 15px;">' +
+//             '<div style="padding:15px; border-bottom:1px solid #000;">' +
+//             '<h1 style="text-transform: uppercase; text-align:center; font-weight: normal;font-size: 14px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">Journey Route Report</h1>' +
+//             '<div style="text-align: right;font-size: 8px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;"><strong>' + TodayDate + '</strong></div>' +
+//             '</div>' +
+//             '<div>' +
+//             '<table style="width:100%; margin:0; padding: 0;">' +
+//             '<thead>' +
+//             '<tr>' +
+//             '<th style="padding: 10px 5px;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-bottom: 1px dotted #000; border-right: 1px dotted #000;">No</th>' +
+//             '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Asset Name</th>' +
+//             '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Driving Time</th>' +
+//             '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Parking Time</th>' +
+//             '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Total Time</th>' +
+//             '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Total Mileage</th>' +
+//             '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Average Speed(km/h)</th>' +
+//             '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Highest Speed</th>' +
+//             // '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">Over Speed(Times)</th></tr>' +
+//             '</thead><tbody>';
+
+//         for (var i = 0; i < response1.length; i++) {
+//             table += '<tr>' +
+//                 '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + (i + 1) + '</td>' +
+//                 '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + response1[i].Name + '</td>' +
+//                 '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + response1[i].DrivingTime + '</td>' +
+//                 '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + response1[i].Parkingtime + '</td>' +
+//                 '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + response1[i].TotalTiming + '</td>' +
+//                 '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + response1[i].TotalMileage + '</td>' +
+//                 '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + response1[i].AverageSpeed + '</td>' +
+//                 '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + response1[i].HighestSpeed + '</td>' +
+//                 // '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">' + response1[i].OverSpeed + '</td>' +
+//                 '</tr>';
+
+//         }
+
+
+//         TotalAllDrivingTime = calhrminsecfromsec(TotalAllDrivingTime)
+//         TotalAllParkingTime = calhrminsecfromsec(TotalAllParkingTime)
+//         TotalAllTime = calhrminsecfromsec(TotalAllTime)
+
+//         table += '</tbody><tfoot style="font-weight: bold;">' +
+//             ' <tr>' +
+//             ' <td style="padding: 8px 5px; border-bottom: 1px dotted #000; border-right: 1px dotted #000;" colspan="2">Total:</td>' +
+//             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + TotalAllDrivingTime + '</td>' +
+//             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + TotalAllParkingTime + '</td>' +
+//             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + TotalAllTime + '</td>' +
+//             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;"></td>' +
+//             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;"></td>' +
+//             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;"></td>' +
+//             // '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;"></td>' +
+//             '</tr>' +
+//             '</tfoot>';
+//         table += '</table>' +
+//             ' </div>' +
+//             '</div>';
+//         var html = table;
+//         var options = {
+//             format: 'A4',
+//             footer: {
+//                 height: '35px',
+//                 contents: { default: '<hr/><span style="color: #444;text-align:right">{{page}}</span>' },
+//                 last: 'Last Page'
+//             },
+//             header: {
+//                 "height": "35px",
+//             },
+//         };
+
+//         pdf.create(html, options).toStream(function(err, stream) {
+//             stream.pipe(res);
+//         });
+
+//         // })
+//     });
+// })
 
 //-----------------------------------------------------End journey Report-------------------------------------------------
 
