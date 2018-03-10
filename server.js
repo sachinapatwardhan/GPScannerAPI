@@ -64,7 +64,8 @@ global.connection = mysql.createConnection({
     host: MysqlHost,
     user: Mysqluser,
     password: Mysqlpassword,
-    database: Mysqldatabase
+    database: Mysqldatabase,
+    multipleStatements: true
 });
 global.RoutePath = process.env.RoutePath;
 
