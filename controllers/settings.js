@@ -541,70 +541,96 @@ router.get('/GetAllDynamickHandshakeNew', function(req, res) {
 
     var search = "";
 
-    if (objSearch != '' && objSearch != null && objSearch != undefined) {
-        search = 'Where (th.DeviceId like "%' + objSearch + '%" or ';
-        // search = search + 'th.Charging like "%' + objSearch + '%" or ';
-        // search = search + 'th.Power like "%' + objSearch + '%" or ';
-        search = search + 'th.Datetime like "%' + objSearch + '%") ';
-    }
-
-    // if (objParam.DeviceId != null && objParam.DeviceId != 'All' && objParam.DeviceId != '' && objParam.DeviceId != undefined) {
-    if (search != "") {
-        search += ' and th.DeviceId = "' + objParam.DeviceId + '"';
-    } else {
-        search += ' where th.DeviceId = "' + objParam.DeviceId + '"';
-    }
+    // if (objSearch != '' && objSearch != null && objSearch != undefined) {
+    //     search = 'Where (th.DeviceId like "%' + objSearch + '%" or ';
+    //     // search = search + 'th.Charging like "%' + objSearch + '%" or ';
+    //     // search = search + 'th.Power like "%' + objSearch + '%" or ';
+    //     search = search + 'th.Datetime like "%' + objSearch + '%") ';
     // }
-    if (objParam.fromdate != null && objParam.fromdate != '' && objParam.fromdate != undefined) {
-        if (search != "") {
-            search += ' and th.Datetime >= "' + convertdateUTCformat(objParam.fromdate) + '"';
-        } else {
-            search += ' where th.Datetime >= "' + convertdateUTCformat(objParam.fromdate) + '"';
-        }
-    }
-    if (objParam.todate != null && objParam.todate != '' && objParam.todate != undefined) {
-        if (search != "") {
-            search += ' and th.Datetime <= "' + convertdateUTCformat(objParam.todate) + '"';
-        } else {
-            search += ' where th.Datetime <= "' + convertdateUTCformat(objParam.todate) + '"';
-        }
-    }
 
-    // if (search != "") {
-    //     search += ' and tu.idApp = ' + objParam.idApp;
-    // } else {
-    //     search += ' where tu.idApp = ' + objParam.idApp;
-    // }
-    if (objParam.AppName != "" && objParam.AppName != null && objParam.AppName != undefined) {
+    if (objParam.DeviceId != null && objParam.DeviceId != 'All' && objParam.DeviceId != '' && objParam.DeviceId != undefined) {
         if (search != "") {
-            search += " and tgd.AppName =  '" + objParam.AppName + "'";
+            search += ' and th.DeviceId = "' + objParam.DeviceId + '"';
         } else {
-            search += " where tgd.AppName = '" + objParam.AppName + "'";
+            search += ' where th.DeviceId = "' + objParam.DeviceId + '"';
         }
-    }
 
-    var query = "SELECT th.Id,th.DeviceId,CONVERT_TZ(th.Datetime,'+00:00','" + CurrentOffset + "') as Datetime FROM tblhandshake as th inner join tblgpsdevice as tgd  on tgd.DeviceId = th.DeviceId " + search +
-        " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
-    var Countqry = "SELECT count(th.id) as TotalRecord FROM tblhandshake as th inner join tblgpsdevice as tgd  on tgd.DeviceId = th.DeviceId " + search;
-    connection.query(query, function(err, response) {
-        if (response != undefined) {
-            connection.query(Countqry, function(err, lstCount, fields) {
+        if (objParam.fromdate != null && objParam.fromdate != '' && objParam.fromdate != undefined) {
+            if (search != "") {
+                search += ' and th.Datetime >= "' + convertdateUTCformat(objParam.fromdate) + '"';
+            } else {
+                search += ' where th.Datetime >= "' + convertdateUTCformat(objParam.fromdate) + '"';
+            }
+        }
+        if (objParam.todate != null && objParam.todate != '' && objParam.todate != undefined) {
+            if (search != "") {
+                search += ' and th.Datetime <= "' + convertdateUTCformat(objParam.todate) + '"';
+            } else {
+                search += ' where th.Datetime <= "' + convertdateUTCformat(objParam.todate) + '"';
+            }
+        }
+
+        // if (search != "") {
+        //     search += ' and tu.idApp = ' + objParam.idApp;
+        // } else {
+        //     search += ' where tu.idApp = ' + objParam.idApp;
+        // }
+        if (objParam.AppName != "" && objParam.AppName != null && objParam.AppName != undefined) {
+            if (search != "") {
+                search += " and tgd.AppName =  '" + objParam.AppName + "'";
+            } else {
+                search += " where tgd.AppName = '" + objParam.AppName + "'";
+            }
+        }
+
+        var query = "SELECT SQL_CALC_FOUND_ROWS th.Id,th.DeviceId,CONVERT_TZ(th.Datetime,'+00:00','" + CurrentOffset + "') as Datetime " +
+            "FROM tblhandshake as th " +
+            "inner join tblgpsdevice as tgd  on tgd.DeviceId = th.DeviceId" +
+            search +
+            " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start) + ";SELECT FOUND_ROWS() as TotalRecord;";
+        // console.log(query)
+        // var Countqry = "SELECT count(th.id) as TotalRecord " +
+        //     "FROM tblhandshake as th " +
+        //     "inner join tblgpsdevice as tgd  on tgd.DeviceId = th.DeviceId" +
+        //     search;
+        // var query = "SELECT th.Id,th.DeviceId,CONVERT_TZ(th.Datetime,'+00:00','" + CurrentOffset + "') as Datetime FROM tblhandshake as th inner join tblgpsdevice as tgd  on tgd.DeviceId = th.DeviceId " + search +
+        //     " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
+        // var Countqry = "SELECT count(th.id) as TotalRecord FROM tblhandshake as th inner join tblgpsdevice as tgd  on tgd.DeviceId = th.DeviceId " + search;
+        connection.query(query, function(err, response) {
+            if (response != undefined) {
+                // connection.query(Countqry, function(err, lstCount, fields) {
+                // var response1 = new Object();
+                // response1.draw = objParam.draw;
+                // response1.recordsTotal = lstCount[0].TotalRecord;
+                // response1.recordsFiltered = lstCount[0].TotalRecord;
+                // response1.data = response;
+                // res.json(response1);
+
                 var response1 = new Object();
                 response1.draw = objParam.draw;
-                response1.recordsTotal = lstCount[0].TotalRecord;
-                response1.recordsFiltered = lstCount[0].TotalRecord;
-                response1.data = response;
+                response1.recordsTotal = response[1][0].TotalRecord;
+                response1.recordsFiltered = response[1][0].TotalRecord;
+                response1.data = response[0];
                 res.json(response1);
-            });
-        } else {
-            var response1 = new Object();
-            response1.draw = objParam.draw;
-            response1.recordsTotal = 0;
-            response1.recordsFiltered = 0;
-            response1.data = [];
-            res.json(response1);
-        }
-    })
+                // });
+            } else {
+                var response1 = new Object();
+                response1.draw = objParam.draw;
+                response1.recordsTotal = 0;
+                response1.recordsFiltered = 0;
+                response1.data = [];
+                res.json(response1);
+            }
+        })
+    } else {
+
+        var response1 = new Object();
+        response1.draw = objParam.draw;
+        response1.recordsTotal = 0;
+        response1.recordsFiltered = 0;
+        response1.data = [];
+        res.json(response1);
+    }
 })
 
 //End Hand shake
