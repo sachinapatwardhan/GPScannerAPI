@@ -718,7 +718,8 @@ global.AssignLicenceNumber = AssignLicenceNumber;
 
 function checkLicence(objVehicle, callback) {
     // console.log("deviceid.....")
-    LicenceManager.findOne({ where: { DeviceId: objVehicle.deviceid, IsDeleted: 0 } }).then(function(LicenceNoExist) {
+    console.log(objVehicle)
+    LicenceManager.findOne({ where: { DeviceId: objVehicle.deviceid, IdUser: objVehicle.iduser, IsDeleted: 0 } }).then(function(LicenceNoExist) {
         if (LicenceNoExist) {
             LicenceNoExist.updateAttributes({
                 IdUser: objVehicle.iduser,
