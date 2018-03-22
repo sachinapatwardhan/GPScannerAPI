@@ -411,91 +411,119 @@
                         }).then(function(rDeviceAgentRetailer) {
 
                             User.findOne({ where: { id: req.body.retailerId } }).then(function(userexits) {
-                                GPSDevice.findOne({ where: { DeviceId: objVehicle.deviceid } }).then(function(GPSDevicefound) {
-                                    if (GPSDevicefound) {
-                                        GPSDevicefound.updateAttributes({ idSim: req.body.idSim }).then(function(GPSDeviceupdated) {
-                                            if (GPSDeviceupdated) {
-                                                funAuditLog.CreateAuditLog('update idSim GPSDevice ', userexits.username, 'update idSim GPSDevice throgth through  Device activation ');
-                                            }
-                                        })
-                                    }
-                                })
-                                objVehicle.CreatedDate = new Date();
-                                objVehicle.CreatedBy = userexits.username;
-                                Vehicle.findOne({
-                                    where: {
-                                        deviceid: objVehicle.deviceid,
-                                    }
-                                }).then(function(VehicleExist) {
-
-                                    if (VehicleExist) {
-                                        if (VehicleExist.IsDelete == true) {
-                                            objVehicle.IsDelete = false;
-                                            Vehicle.update(objVehicle, {
-                                                where: {
-                                                    id: VehicleExist.id
-                                                }
-                                            }).then(function(vehicleCreated) {
-                                                if (vehicleCreated) {
-                                                    funAuditLog.CreateAuditLog('Create Vehicle through device Activation', userexits.username, 'Save Vehicle  through device Activation');
-
-
+                                    GPSDevice.findOne({ where: { DeviceId: objVehicle.deviceid } }).then(function(GPSDevicefound) {
+                                        if (GPSDevicefound) {
+                                            GPSDevicefound.updateAttributes({ idSim: req.body.idSim }).then(function(GPSDeviceupdated) {
+                                                if (GPSDeviceupdated) {
+                                                    funAuditLog.CreateAuditLog('update idSim GPSDevice ', userexits.username, 'update idSim GPSDevice throgth through  Device activation ');
                                                 }
                                             })
                                         }
-                                    } else {
-                                        Vehicle.create(objVehicle).then(function(vehicleCreated) {
-                                            if (vehicleCreated) {
-                                                funAuditLog.CreateAuditLog('Create Vehicle Type', userexits.username, 'Save Vehicle Type');
-                                                // GPSDevice.findOne({ where: { DeviceId: objVehicle.deviceid } }).then(function(GPSDevicefound) {
-                                                //     if (GPSDevicefound) {
-                                                //         GPSDevicefound.updateAttributes({ idSim: req.body.idSim }).then(function(GPSDeviceupdated) {
-                                                //             if (GPSDeviceupdated) {
-                                                //                 funAuditLog.CreateAuditLog('update idSim GPSDevice ', userexits.username, 'update idSim GPSDevice throgth through  Device activation ');
-                                                //             }
-                                                //         })
-                                                //     }
-                                                // })
-
-                                            }
-                                        })
-                                    }
-
-                                })
-                            })
-
-
-                            User.findOne({ where: rDeviceAgentRetailer.agentId }).then(function(UserExist) {
-                                GPSDevice.findOne({ where: { DeviceId: rDeviceAgentRetailer.deviceId } }).then(function(GPSDeviceExist) {
-                                    Country.findOne({ where: { id: GPSDeviceExist.CountryId } }).then(function(countryExist) {
-                                        var DeviceCountry = null;
-                                        if (countryExist) {
-                                            DeviceCountry = countryExist.Country;
+                                    })
+                                    objVehicle.CreatedDate = new Date();
+                                    objVehicle.CreatedBy = userexits.username;
+                                    Vehicle.findOne({
+                                        where: {
+                                            deviceid: objVehicle.deviceid,
                                         }
-                                        CreateOrderServiceGlobal(DeviceCountry, objVehicle.iduser, rDeviceAgentRetailer.deviceId, UserExist.username, UserExist.idApp, function(orderresponse) {
-                                            AppInfo.findOne({ where: { id: UserExist.idApp } }).then(function(AppinfoExist) {
-                                                if (AppinfoExist.AppName == 'Maark') {
-                                                    res.json({
-                                                        success: true,
-                                                        message: 'Device activated!',
-                                                        data: rDeviceAgentRetailer
-                                                    });
+                                    }).then(function(VehicleExist) {
+                                        // AssignLicenceNumber(objVehicle, userexits.username, function(LicenceNores) {
+                                        //     if (LicenceNores.success == true) {
+                                        if (VehicleExist) {
+
+                                            if (VehicleExist.IsDelete == true) {
+                                                objVehicle.IsDelete = false;
+                                                // var LicenceNo = objVehicle.Licence_No;
+                                                AssignLicenceNumber(objVehicle, userexits.username, function(LicenceNores) {
+                                                    if (LicenceNores.success == true) {
+                                                        objVehicle.renewaldate = LicenceNores.data.ExpiryDate;
+                                                        Vehicle.update(objVehicle, {
+                                                            where: {
+                                                                id: VehicleExist.id
+                                                            }
+                                                        }).then(function(vehicleCreated) {
+                                                            if (vehicleCreated) {
+                                                                funAuditLog.CreateAuditLog('Create Vehicle through device Activation', userexits.username, 'Save Vehicle  through device Activation');
+                                                                callActiveDevice()
+                                                            }
+                                                        })
+                                                    } else {
+                                                        res.json({
+                                                            success: false,
+                                                            message: "Invalid Licence Number",
+                                                            data: null
+                                                        });
+                                                    }
+                                                })
+                                            } else {
+                                                callActiveDevice()
+                                            }
+                                        } else {
+                                            // var LicenceNo = objVehicle.Licence_No;
+                                            AssignLicenceNumber(objVehicle, userexits.username, function(LicenceNores) {
+                                                if (LicenceNores.success == true) {
+                                                    objVehicle.renewaldate = LicenceNores.data.ExpiryDate;
+                                                    Vehicle.create(objVehicle).then(function(vehicleCreated) {
+                                                        if (vehicleCreated) {
+                                                            funAuditLog.CreateAuditLog('Create Vehicle Type', userexits.username, 'Save Vehicle Type');
+                                                            callActiveDevice()
+                                                        }
+                                                    })
+
                                                 } else {
-                                                    CreateDabitWalletTransactionGlobal(DeviceCountry, rDeviceAgentRetailer.deviceId, UserExist.username, UserExist.idApp, function(resFlg) {
+                                                    res.json({
+                                                        success: false,
+                                                        message: "Invalid Licence Number",
+                                                        data: null
+                                                    });
+                                                }
+                                            })
+                                        }
+                                        //     } else {
+                                        //         res.json({
+                                        //             success: false,
+                                        //             message: "Invalid Licence Number",
+                                        //             data: null
+                                        //         });
+                                        //     }
+                                        // })
+                                    })
+                                })
+                                // console.log("SUCCESS..............................................................")
+
+                            function callActiveDevice() {
+                                User.findOne({ where: rDeviceAgentRetailer.agentId }).then(function(UserExist) {
+                                    GPSDevice.findOne({ where: { DeviceId: rDeviceAgentRetailer.deviceId } }).then(function(GPSDeviceExist) {
+                                        Country.findOne({ where: { id: GPSDeviceExist.CountryId } }).then(function(countryExist) {
+                                            var DeviceCountry = null;
+                                            if (countryExist) {
+                                                DeviceCountry = countryExist.Country;
+                                            }
+                                            CreateOrderServiceGlobal(DeviceCountry, objVehicle.iduser, rDeviceAgentRetailer.deviceId, UserExist.username, UserExist.idApp, function(orderresponse) {
+                                                AppInfo.findOne({ where: { id: UserExist.idApp } }).then(function(AppinfoExist) {
+                                                    if (AppinfoExist.AppName == 'Maark') {
                                                         res.json({
                                                             success: true,
                                                             message: 'Device activated!',
                                                             data: rDeviceAgentRetailer
                                                         });
-                                                    })
-                                                }
+                                                    } else {
+                                                        CreateDabitWalletTransactionGlobal(DeviceCountry, rDeviceAgentRetailer.deviceId, UserExist.username, UserExist.idApp, function(resFlg) {
+                                                            res.json({
+                                                                success: true,
+                                                                message: 'Device activated!',
+                                                                data: rDeviceAgentRetailer
+                                                            });
+                                                        })
+                                                    }
+                                                })
                                             })
                                         })
+
                                     })
 
                                 })
-
-                            })
+                            }
                         })
                         .catch(function(err) {
                             console.log("err..", err);
