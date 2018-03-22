@@ -486,8 +486,8 @@ app.use('/favoriteplace', require('./controllers/favoriteplace'))
     //app.use('/petshop', require('./controllers/petShop'))
 
 app.use('/carrier', require('./controllers/carrier'))
-
-//CMS
+app.use('/deviceacc', require('./controllers/deviceacc'))
+    //CMS
 app.use('/media', require('./controllers/media'))
 app.use('/menu', require('./controllers/menu'))
 app.use('/banner', require('./controllers/banner'))
