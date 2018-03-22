@@ -8,6 +8,7 @@ var Module = models.tblmodulemgmt;
 var Role = models.tblrole;
 var UserInRole = models.tbluserinrole;
 var AuditLog = models.tblauditlog;
+var EmailSetting = models.tblemailsettingsys;
 //End of Tables
 
 //Global Message
