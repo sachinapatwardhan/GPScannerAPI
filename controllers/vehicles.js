@@ -9,6 +9,7 @@ var GPSData = models.tblgpsdata;
 var Alarm = models.tblalarm;
 var DefaultValue = models.tbldefaultvalue;
 var VehicleGroup = models.tblvehiclegroup;
+var LicenceManager = models.tbllicencemanager;
 //End of Tables
 
 router.get('/UpdateExpiryDate', function(req, res) {
@@ -27,6 +28,13 @@ router.get('/UpdateExpiryDate', function(req, res) {
                 Vehicle.findOne({ where: { id: req.query.id } }).then(function(vehicleExist) {
                     if (vehicleExist) {
                         vehicleExist.updateAttributes({ renewaldate: req.query.renewaldate }).then(function(response) {
+                            LicenceManager.findOne({ where: { DeviceId: vehicleExist.deviceid, IsDeleted: 0 } }).then(function(LicenceExist) {
+                                if (LicenceExist) {
+                                    LicenceExist.updateAttributes({ ExpiryDate: req.query.renewaldate }).then(function(UpdateExpiry) {
+
+                                    })
+                                }
+                            })
                             if (response) {
                                 res.json({ success: true, message: 'Expiry Date updated successfully..' })
                             } else {
