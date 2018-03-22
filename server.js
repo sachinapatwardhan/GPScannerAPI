@@ -583,5 +583,6 @@ app.use('/auditlog', require('./controllers/auditlog'));
 app.use('/routeplan', require('./controllers/routeplan'));
 app.use('/feedback', require('./controllers/feedback'))
 app.use('/assignretailer', require('./controllers/assignretailer'))
+app.use('/licence', require('./controllers/licence'))
 
 // MAARK Install App End
