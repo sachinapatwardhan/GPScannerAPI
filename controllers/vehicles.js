@@ -30,12 +30,11 @@ router.get('/UpdateExpiryDate', function(req, res) {
                         vehicleExist.updateAttributes({ renewaldate: req.query.renewaldate }).then(function(response) {
                             LicenceManager.findOne({ where: { DeviceId: vehicleExist.deviceid, IsDeleted: 0 } }).then(function(LicenceExist) {
                                 if (LicenceExist) {
-                                    LicenceExist.updateAttributes({ ExpiryDate: req.query.renewaldate }).then(function(UpdateExpiry) {
-
-                                    })
+                                    LicenceExist.updateAttributes({ ExpiryDate: req.query.renewaldate }).then(function(UpdateExpiry) {})
                                 }
                             })
                             if (response) {
+                                funAuditLog.CreateAuditLog('update ExpiryDate of Device (' + response.deviceid + ')', UserExist.usernam, 'update ExpiryDate of Device (' + response.deviceid + ')');
                                 res.json({ success: true, message: 'Expiry Date updated successfully..' })
                             } else {
                                 res.json({ success: false, message: 'Expiry Date not updated' })

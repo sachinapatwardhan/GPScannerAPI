@@ -4,6 +4,8 @@ var GPSData = models.tblgpsdata;
 var User = models.tbluserinformation;
 var AppInfo = models.tblappinfo;
 var GpsDevice = models.tblgpsdevice;
+var Vehicle = models.tblvehicle;
+
 router.get('/GetAllLicence', function(req, res) {
     var objParam = req.query;
     var objColumns = objParam.columns;
@@ -18,6 +20,7 @@ router.get('/GetAllLicence', function(req, res) {
         search = search + 'tl.ExpiryDate like "%' + objSearch + '%" or ';
         search = search + 'tl.CreatedDate like "%' + objSearch + '%" or ';
         search = search + 'tu.email like "%' + objSearch + '%" or ';
+        search = search + 'tu.username like "%' + objSearch + '%" or ';
         search = search + 'tv.Name like "%' + objSearch + '%") ';
     };
 
@@ -72,7 +75,7 @@ router.get('/SaveLicenceDetail', function(req, res) {
         }).then(function(UserExist) {
             if (UserExist != null) {
                 LicenceManager.findOne({ where: { DeviceId: req.query.DeviceId, IsDeleted: 0 } }).then(function(LicenceAssigned) {
-                    if (LicenceAssigned) {
+                    if (LicenceAssigned && LicenceAssigned.Id != req.query.Id) {
                         res.json({
                             success: false,
                             message: "Licence alerady assigned for this device",
@@ -93,6 +96,12 @@ router.get('/SaveLicenceDetail', function(req, res) {
                                                             CreatedDate: new Date(),
                                                         }).then(function(response) {
                                                             if (response) {
+                                                                Vehicle.findOne({ where: { deviceid: response.DeviceId, IsDelete: false } }).then(function(vehicleExist) {
+                                                                    if (vehicleExist) {
+                                                                        vehicleExist.updateAttributes({ renewaldate: response.ExpiryDate }).then(function(updateRenewDate) {})
+                                                                    }
+                                                                })
+                                                                funAuditLog.CreateAuditLog('update ExpiryDate of Device (' + response.DeviceId + ')', UserExist.usernam, 'update ExpiryDate of Device (' + response.DeviceId + ')');
                                                                 funAuditLog.CreateAuditLog('Assign device Licence (' + LicenceExist.LicenceNo + ')', UserExist.usernam, 'Assign Licence to (' + response.DeviceId + ')');
                                                                 res.json({
                                                                     success: true,
@@ -117,6 +126,12 @@ router.get('/SaveLicenceDetail', function(req, res) {
                                                             ModifiedDate: new Date(),
                                                         }).then(function(response) {
                                                             if (response) {
+                                                                Vehicle.findOne({ where: { deviceid: response.DeviceId, IsDelete: false } }).then(function(vehicleExist) {
+                                                                    if (vehicleExist) {
+                                                                        vehicleExist.updateAttributes({ renewaldate: response.ExpiryDate }).then(function(updateRenewDate) {})
+                                                                    }
+                                                                })
+                                                                funAuditLog.CreateAuditLog('update ExpiryDate of Device (' + response.DeviceId + ')', UserExist.usernam, 'update ExpiryDate of Device (' + response.DeviceId + ')');
                                                                 funAuditLog.CreateAuditLog('Update Licence device (' + LicenceExist.LicenceNo + ')', UserExist.username, 'update Device (' + OldDeviceId + ') to (' + response.DeviceId + ')');
                                                                 res.json({
                                                                     success: true,
