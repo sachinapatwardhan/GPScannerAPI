@@ -10,85 +10,95 @@ router.get('/GetAllCanbusData', function(req, res) {
     var objColumns = objParam.columns;
     var objOrderBy = objParam.order;
     var objSearch = objParam.search;
-    var Orderby = objColumns[parseInt(objOrderBy[0].column)].data + ' ' + objOrderBy[0].dir;
-    var search = "";
-    if (objSearch != '' && objSearch != null && objSearch != undefined) {
-        search = 'Where (tcb.Datetime like "%' + objSearch + '%" or ';
-        search = search + 'tcb.BatteryVoltage like "%' + objSearch + '%" or ';
-        search = search + 'tcb.DeviceId like "%' + objSearch + '%" or ';
-        search = search + 'tcb.EngineSpeed like "%' + objSearch + '%" or ';
-        search = search + 'tcb.RunningSpeed like "%' + objSearch + '%" or ';
-        search = search + 'tcb.CoolantTemperature like "%' + objSearch + '%" or ';
-        search = search + 'tcb.ThrottleOpeningWidth like "%' + objSearch + '%" or ';
-        search = search + 'tcb.EngineLoad like "%' + objSearch + '%" or ';
-        search = search + 'tcb.InstantaneousFuelConsumption like "%' + objSearch + '%" or ';
-        search = search + 'tcb.AverageFuelConsumption like "%' + objSearch + '%" or ';
-        search = search + 'tcb.DrivingRange like "%' + objSearch + '%" or ';
-        search = search + 'tcb.TotalMileage like "%' + objSearch + '%" or ';
-        search = search + 'tcb.SingleFuelConsumptionVolume like "%' + objSearch + '%" or ';
-        search = search + 'tcb.CurrentErrorCodeNumbers like "%' + objSearch + '%" or ';
-        search = search + 'tcb.HarshAccelerationNo like "%' + objSearch + '%" or ';
-        search = search + 'tcb.HarshBrakeNo like "%' + objSearch + '%") ';
-    }
-
     var DeviceId = objParam.DeviceId;
-    if (DeviceId != null && DeviceId != '' && DeviceId != 'All' && DeviceId != undefined) {
-        if (search != "") {
-            search += ' and tcb.DeviceId = ' + DeviceId;
-        } else {
-            search += ' where tcb.DeviceId = ' + DeviceId;
+    if (DeviceId != null && DeviceId != undefined && DeviceId != '') {
+        var Orderby = objColumns[parseInt(objOrderBy[0].column)].data + ' ' + objOrderBy[0].dir;
+        var search = "";
+        if (objSearch != '' && objSearch != null && objSearch != undefined) {
+            search = 'Where (tcb.Datetime like "%' + objSearch + '%" or ';
+            search = search + 'tcb.BatteryVoltage like "%' + objSearch + '%" or ';
+            search = search + 'tcb.DeviceId like "%' + objSearch + '%" or ';
+            search = search + 'tcb.EngineSpeed like "%' + objSearch + '%" or ';
+            search = search + 'tcb.RunningSpeed like "%' + objSearch + '%" or ';
+            search = search + 'tcb.CoolantTemperature like "%' + objSearch + '%" or ';
+            search = search + 'tcb.ThrottleOpeningWidth like "%' + objSearch + '%" or ';
+            search = search + 'tcb.EngineLoad like "%' + objSearch + '%" or ';
+            search = search + 'tcb.InstantaneousFuelConsumption like "%' + objSearch + '%" or ';
+            search = search + 'tcb.AverageFuelConsumption like "%' + objSearch + '%" or ';
+            search = search + 'tcb.DrivingRange like "%' + objSearch + '%" or ';
+            search = search + 'tcb.TotalMileage like "%' + objSearch + '%" or ';
+            search = search + 'tcb.SingleFuelConsumptionVolume like "%' + objSearch + '%" or ';
+            search = search + 'tcb.CurrentErrorCodeNumbers like "%' + objSearch + '%" or ';
+            search = search + 'tcb.HarshAccelerationNo like "%' + objSearch + '%" or ';
+            search = search + 'tcb.HarshBrakeNo like "%' + objSearch + '%") ';
         }
-    }
 
-    var StartDate = convertdateUTCformat(objParam.StartDate);
-    var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
 
-    var EndDate = convertdateUTCformat(objParam.EndDate);
-    var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
-
-    if (objParam.StartDate != '') {
-        if (search != "") {
-            search += ' and tcb.Datetime >= ' + unixStartdate;
-        } else {
-            search += ' where tcb.Datetime >= ' + unixStartdate;
+        if (DeviceId != null && DeviceId != '' && DeviceId != 'All' && DeviceId != undefined) {
+            if (search != "") {
+                search += ' and tcb.DeviceId = ' + DeviceId;
+            } else {
+                search += ' where tcb.DeviceId = ' + DeviceId;
+            }
         }
-    }
-    if (objParam.EndDate != '') {
-        if (search != "") {
-            search += ' and tcb.Datetime <= ' + unixEndDate;
-        } else {
-            search += ' where tcb.Datetime <= ' + unixEndDate;
+
+        var StartDate = convertdateUTCformat(objParam.StartDate);
+        var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
+
+        var EndDate = convertdateUTCformat(objParam.EndDate);
+        var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
+
+        if (objParam.StartDate != '') {
+            if (search != "") {
+                search += ' and tcb.Datetime >= ' + unixStartdate;
+            } else {
+                search += ' where tcb.Datetime >= ' + unixStartdate;
+            }
         }
-    }
+        if (objParam.EndDate != '') {
+            if (search != "") {
+                search += ' and tcb.Datetime <= ' + unixEndDate;
+            } else {
+                search += ' where tcb.Datetime <= ' + unixEndDate;
+            }
+        }
 
-    if (search != "") {
-        search += ' and tu.idApp = ' + objParam.idApp;
-    } else {
-        search += ' where tu.idApp = ' + objParam.idApp;
-    }
+        if (search != "") {
+            search += ' and tu.idApp = ' + objParam.idApp;
+        } else {
+            search += ' where tu.idApp = ' + objParam.idApp;
+        }
 
-    var query = "SELECT tcb.*,CONVERT_TZ(tcb.CreatedDate,'+00:00','" + CurrentOffset + "') as DisplayCreatedDate, tv.iduser, tu.idApp FROM tblcanbusdata as tcb left join tblvehicle as tv on tv.deviceid = tcb.DeviceId left join tbluserinformation as tu on tv.idUser = tu.id " + search +
-        " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
-    var Countqry = "SELECT count(tcb.id) as TotalRecord FROM tblcanbusdata as tcb left join tblvehicle as tv on tv.deviceid = tcb.DeviceId left join tbluserinformation as tu on tv.idUser = tu.id " + search;
-    connection.query(query, function(err, response) {
-        if (response != undefined) {
-            connection.query(Countqry, function(err, lstCount, fields) {
+        var query = "SELECT tcb.*,CONVERT_TZ(tcb.CreatedDate,'+00:00','" + CurrentOffset + "') as DisplayCreatedDate, tv.iduser, tu.idApp FROM tblcanbusdata as tcb left join tblvehicle as tv on tv.deviceid = tcb.DeviceId left join tbluserinformation as tu on tv.idUser = tu.id " + search +
+            " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
+        var Countqry = "SELECT count(tcb.id) as TotalRecord FROM tblcanbusdata as tcb left join tblvehicle as tv on tv.deviceid = tcb.DeviceId left join tbluserinformation as tu on tv.idUser = tu.id " + search;
+        connection.query(query, function(err, response) {
+            if (response != undefined) {
+                connection.query(Countqry, function(err, lstCount, fields) {
+                    var response1 = new Object();
+                    response1.draw = objParam.draw;
+                    response1.recordsTotal = lstCount[0].TotalRecord;
+                    response1.recordsFiltered = lstCount[0].TotalRecord;
+                    response1.data = response;
+                    res.json(response1);
+                });
+            } else {
                 var response1 = new Object();
                 response1.draw = objParam.draw;
-                response1.recordsTotal = lstCount[0].TotalRecord;
-                response1.recordsFiltered = lstCount[0].TotalRecord;
-                response1.data = response;
+                response1.recordsTotal = 0;
+                response1.recordsFiltered = 0;
+                response1.data = [];
                 res.json(response1);
-            });
-        } else {
-            var response1 = new Object();
-            response1.draw = objParam.draw;
-            response1.recordsTotal = 0;
-            response1.recordsFiltered = 0;
-            response1.data = [];
-            res.json(response1);
-        }
-    })
+            }
+        })
+    } else {
+        var response1 = new Object();
+        response1.draw = objParam.draw;
+        response1.recordsTotal = 0;
+        response1.recordsFiltered = 0;
+        response1.data = [];
+        res.json(response1);
+    }
 })
 
 router.get('/ExportAllCanbusData', function(req, res) {
@@ -328,79 +338,88 @@ router.get('/GetAllDrivingBehavior', function(req, res) {
     var objSearch = objParam.search;
     var Orderby = objColumns[parseInt(objOrderBy[0].column)].data + ' ' + objOrderBy[0].dir;
     var search = "";
-
-    if (objSearch != '' && objSearch != null && objSearch != undefined) {
-        search = 'Where (td.Datetime like "%' + objSearch + '%" or ';
-        search = search + 'td.DeviceId like "%' + objSearch + '%" or ';
-        search = search + 'td.TotalIgnition like "%' + objSearch + '%" or ';
-        search = search + 'td.TotalDrivingTime like "%' + objSearch + '%" or ';
-        search = search + 'td.TotalIdlingTime like "%' + objSearch + '%" or ';
-        search = search + 'td.AverageHotStartTime like "%' + objSearch + '%" or ';
-        search = search + 'td.AverageSpeed like "%' + objSearch + '%" or ';
-        search = search + 'td.HistoryHighestSpeed like "%' + objSearch + '%" or ';
-        search = search + 'td.HistoryHighestRotation like "%' + objSearch + '%" or ';
-        search = search + 'td.TotalHarshAcceleration like "%' + objSearch + '%" or ';
-        search = search + 'td.TotalHarshBrake like "%' + objSearch + '%") ';
-    }
-
     var DeviceId = objParam.DeviceId;
-    if (DeviceId != null && DeviceId != '' && DeviceId != 'All' && DeviceId != undefined) {
-        if (search != "") {
-            search += ' and td.DeviceId = ' + DeviceId;
-        } else {
-            search += ' where td.DeviceId = ' + DeviceId;
+    if (DeviceId != null && DeviceId != undefined && DeviceId != '') {
+        if (objSearch != '' && objSearch != null && objSearch != undefined) {
+            search = 'Where (td.Datetime like "%' + objSearch + '%" or ';
+            search = search + 'td.DeviceId like "%' + objSearch + '%" or ';
+            search = search + 'td.TotalIgnition like "%' + objSearch + '%" or ';
+            search = search + 'td.TotalDrivingTime like "%' + objSearch + '%" or ';
+            search = search + 'td.TotalIdlingTime like "%' + objSearch + '%" or ';
+            search = search + 'td.AverageHotStartTime like "%' + objSearch + '%" or ';
+            search = search + 'td.AverageSpeed like "%' + objSearch + '%" or ';
+            search = search + 'td.HistoryHighestSpeed like "%' + objSearch + '%" or ';
+            search = search + 'td.HistoryHighestRotation like "%' + objSearch + '%" or ';
+            search = search + 'td.TotalHarshAcceleration like "%' + objSearch + '%" or ';
+            search = search + 'td.TotalHarshBrake like "%' + objSearch + '%") ';
         }
-    }
 
-    var StartDate = convertdateUTCformat(objParam.StartDate);
-    var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
-
-    var EndDate = convertdateUTCformat(objParam.EndDate);
-    var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
-
-    if (objParam.StartDate != '') {
-        if (search != "") {
-            search += ' and td.Datetime >= ' + unixStartdate;
-        } else {
-            search += ' where td.Datetime >= ' + unixStartdate;
+        var DeviceId = objParam.DeviceId;
+        if (DeviceId != null && DeviceId != '' && DeviceId != 'All' && DeviceId != undefined) {
+            if (search != "") {
+                search += ' and td.DeviceId = ' + DeviceId;
+            } else {
+                search += ' where td.DeviceId = ' + DeviceId;
+            }
         }
-    }
-    if (objParam.EndDate != '') {
-        if (search != "") {
-            search += ' and td.Datetime <= ' + unixEndDate;
-        } else {
-            search += ' where td.Datetime <= ' + unixEndDate;
+
+        var StartDate = convertdateUTCformat(objParam.StartDate);
+        var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
+
+        var EndDate = convertdateUTCformat(objParam.EndDate);
+        var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
+
+        if (objParam.StartDate != '') {
+            if (search != "") {
+                search += ' and td.Datetime >= ' + unixStartdate;
+            } else {
+                search += ' where td.Datetime >= ' + unixStartdate;
+            }
         }
-    }
+        if (objParam.EndDate != '') {
+            if (search != "") {
+                search += ' and td.Datetime <= ' + unixEndDate;
+            } else {
+                search += ' where td.Datetime <= ' + unixEndDate;
+            }
+        }
 
-    if (search != "") {
-        search += ' and tu.idApp = ' + objParam.idApp;
-    } else {
-        search += ' where tu.idApp = ' + objParam.idApp;
-    }
+        if (search != "") {
+            search += ' and tu.idApp = ' + objParam.idApp;
+        } else {
+            search += ' where tu.idApp = ' + objParam.idApp;
+        }
 
-    var query = "SELECT td.*, tv.iduser, tu.idApp FROM tbldrivingdata as td left join tblvehicle as tv ON td.DeviceId = tv.deviceid left join tbluserinformation as tu ON tv.iduser = tu.id " + search +
-        " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
-    var Countqry = "SELECT count(*) as TotalRecord FROM tbldrivingdata as td left join tblvehicle as tv on tv.deviceid = td.DeviceId left join tbluserinformation as tu on tv.idUser = tu.id " + search;
-    connection.query(query, function(err, response) {
-        if (response != undefined) {
-            connection.query(Countqry, function(err, lstCount, fields) {
+        var query = "SELECT td.*, tv.iduser, tu.idApp FROM tbldrivingdata as td left join tblvehicle as tv ON td.DeviceId = tv.deviceid left join tbluserinformation as tu ON tv.iduser = tu.id " + search +
+            " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
+        var Countqry = "SELECT count(*) as TotalRecord FROM tbldrivingdata as td left join tblvehicle as tv on tv.deviceid = td.DeviceId left join tbluserinformation as tu on tv.idUser = tu.id " + search;
+        connection.query(query, function(err, response) {
+            if (response != undefined) {
+                connection.query(Countqry, function(err, lstCount, fields) {
+                    var response1 = new Object();
+                    response1.draw = objParam.draw;
+                    response1.recordsTotal = lstCount[0].TotalRecord;
+                    response1.recordsFiltered = lstCount[0].TotalRecord;
+                    response1.data = response;
+                    res.json(response1);
+                });
+            } else {
                 var response1 = new Object();
                 response1.draw = objParam.draw;
-                response1.recordsTotal = lstCount[0].TotalRecord;
-                response1.recordsFiltered = lstCount[0].TotalRecord;
-                response1.data = response;
+                response1.recordsTotal = 0;
+                response1.recordsFiltered = 0;
+                response1.data = [];
                 res.json(response1);
-            });
-        } else {
-            var response1 = new Object();
-            response1.draw = objParam.draw;
-            response1.recordsTotal = 0;
-            response1.recordsFiltered = 0;
-            response1.data = [];
-            res.json(response1);
-        }
-    })
+            }
+        })
+    } else {
+        var response1 = new Object();
+        response1.draw = objParam.draw;
+        response1.recordsTotal = 0;
+        response1.recordsFiltered = 0;
+        response1.data = [];
+        res.json(response1);
+    }
 })
 
 router.get('/ExportAllDrivingData', function(req, res) {
