@@ -85,7 +85,7 @@ router.get('/GetAllWorkingBike', function(req, res) {
                     obj.IsOnline = rows[i].IsOnline;
                     obj.AppName = rows[i].AppName;
 
-                    client.get(rows[i].deviceid, function(err, strgpsdata) {
+                    client.get(rows[i].DeviceId, function(err, strgpsdata) {
                         if (!err) {
                             if (strgpsdata != null & strgpsdata != '' && strgpsdata != undefined) {
                                 var objgps = JSON.parse(strgpsdata);
@@ -142,11 +142,12 @@ router.get('/GetAllWorkingBikeNew', function(req, res) {
     var search1 = '';
     if (req.query.AppName != null && req.query.AppName != undefined && req.query.AppName != '' && req.query.AppName != 'All') {
         // search = " and idApp=" + req.query.idApp;
-        search1 = " where  tgd.AppName=" + req.query.AppName;
+        search1 = " where  tgd.AppName='" + req.query.AppName + "'";
     }
     var query = "select tb.id,tb.Name,tb.IsOnline,tgd.AppName,tgd.DeviceId as deviceid " +
         "from tblgpsdevice tgd " +
         "left join tblvehicle tb on tb.deviceid=tgd.DeviceId and tb.IsDelete=false " + search1;
+
     //  var query ="SELECT tb.id,tb.deviceid,tb.Name,tb.IsOnline, tpg.IsEngine, tpg.Latitude,tpg.Longitude,tpg.Datetime, tpg.Date, tpg.Speed,tpg.Direction, tu.idApp FROM tblvehicle tb Left Join tbluserinformation as tu on tb.iduser = tu.id Left JOIN tblgpsdata tpg INNER JOIN (SELECT DeviceId,MAX(Date) Date FROM tblgpsdata GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId  AND tpg.Date = b.Date ON tb.deviceid=tpg.DeviceId WHERE IsDelete=false and idApp=" + req.query.idApp + " group by tb.DeviceId"
     connection.query(query, function(err, rows, fields) {
         if (!err) {
