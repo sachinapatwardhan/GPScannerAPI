@@ -248,8 +248,8 @@ router.get('/DeleteDeviceLicence', function(req, res) {
 
 
 //Private functions
-var maxLength = 15;
-var minLength = 15;
+var maxLength = 16;
+var minLength = 16;
 var uppercaseMinCount = 2;
 var lowercaseMinCount = 2;
 var numberMinCount = 2;
@@ -289,38 +289,70 @@ function customPassword1() {
 }
 var LicenceManager = models.tbllicencemanager;
 
-function insertLicenceno() {
+router.get('/CreateLicenceNumbers', function(req, res) {
+    req.setTimeout(3600000);
+    // function insertLicenceno() {
     // var coll = [];
     // for (var i = 0; i < 20; i++) {
     //     var calldata = [customPassword1()];
     //     console.log(i, "---", calldata)
     //     coll.push(calldata);
     // }
+    var Length = req.query.Length;
+    var CheckPass = req.query.Pass;
+    var SystemPassword = process.env.LicencePassword;
 
-    function uploder(i) {
-        if (i < 20) {
-            var LicenceNo = customPassword1();
-            LicenceManager.find({ where: { LicenceNo: LicenceNo } }).then(function(LicenceNoExits) {
-                if (LicenceNoExits) {
-                    uploder(i + 1);
-                } else {
-                    var obj = new Object();
-                    obj.LicenceNo = LicenceNo;
-                    LicenceManager.create(obj).then(function(response) {
-                        // console.log("###")
-                        uploder(i + 1);
-                    })
-                }
-            })
+    if (SystemPassword == CheckPass) {
+        try {
+            LicenceGenerateLength = parseInt(Length);
+        } catch (ex) {
+            LicenceGenerateLength = 0;
         }
 
+        if (LicenceGenerateLength == 0 || LicenceGenerateLength.toString() == 'NaN') {
+            res.json({
+                success: false,
+                message: "Please check Length. Licence number not Generated.",
+            });
+
+        } else {
+            function uploder(i) {
+                if (i < LicenceGenerateLength) {
+                    var LicenceNo = customPassword1();
+                    // LicenceManager.find({ where: { LicenceNo: LicenceNo } }).then(function(LicenceNoExits) {
+                    //     if (LicenceNoExits) {
+                    //         uploder(i + 1);
+                    //     } else {
+                    var obj = new Object();
+                    obj.LicenceNo = LicenceNo;
+                    LicenceManager.findOrCreate({ where: { LicenceNo: LicenceNo }, defaults: obj }).then(function(response) {
+                        // console.log("###")
+                        uploder(i + 1);
+                    });
+                    //     }
+                    // })
+                } else {
+                    res.json({
+                        success: true,
+                        message: "Licence number Generated successfully.",
+                    });
+                }
+
+            }
+            uploder(0)
+        }
+    } else {
+        res.json({
+            success: false,
+            message: "InvalidPassword. Licence number not Generated.",
+        });
     }
-    uploder(0)
-        // connection.query("INSERT INTO tbllicencemanager (LicenceNo) VALUES ?", [coll], function(err, res, fields) {
-        //     console.log("Err...", err);
-        //     console.log("res...", res);
-        // })
-}
+    // connection.query("INSERT INTO tbllicencemanager (LicenceNo) VALUES ?", [coll], function(err, res, fields) {
+    //     console.log("Err...", err);
+    //     console.log("res...", res);
+    // })
+    // }
+});
 // insertLicenceno();
 
 module.exports = router
