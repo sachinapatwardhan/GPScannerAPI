@@ -16,6 +16,7 @@ var SharedDevice = models.tblsharedevice;
 var SystemEmail = models.tblemailsettingsys;
 var EmailTemplate = models.tblemailtemplate;
 var Setting = models.tblsetting;
+var VehicleGroup = models.tblvehiclegroup;
 //End of Tables
 
 app.use(express.static(__dirname + '/../MediaUploads/PetUpload'));
@@ -739,6 +740,28 @@ function checkLicence(objVehicle, callback) {
     })
 }
 
+function checkGroup(objVehicle, callback) {
+    // console.log("deviceid.....")
+    // console.log(objVehicle)
+    if (objVehicle.IdGroup != null) {
+        VehicleGroup.findOne({ where: { Id: objVehicle.IdGroup, IdUser: objVehicle.iduser } }).then(function(objvehicleGroup) {
+            if (objvehicleGroup) {
+                return callback({
+                    success: true,
+                });
+            } else {
+                return callback({
+                    success: false,
+                });
+            }
+        })
+    } else {
+        return callback({
+            success: true,
+        });
+    }
+}
+
 function AssignLicenceNumber(objVehicle, UserName, callback) {
     LicenceManager.findOne({ where: { DeviceId: objVehicle.deviceid, IsDeleted: 0 } }).then(function(LicenceNoExist) {
         if (LicenceNoExist) {
@@ -1426,6 +1449,7 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                         deviceid: objVehicle.deviceid
                                     }
                                 }).then(function(objVehicleExist) {
+                                    objVehicle.IdGroup = objVehicleExist.IdGroup;
                                     if (objVehicleExist != null && objVehicleExist.id != objVehicle.id && objVehicleExist.IsDeleted == false) {
                                         res.json({
                                             success: false,
@@ -1437,29 +1461,34 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                             // console.log("1.2...3................", LicenceNores)
                                             if (LicenceNores.success == true) {
                                                 objVehicle.renewaldate = LicenceNores.data.ExpiryDate;
-                                                Vehicle.update(objVehicle, {
-                                                    where: {
-                                                        id: objVehicle.id
+                                                checkGroup(objVehicle, function(objcheckgroup) {
+                                                    if (objcheckgroup.success == false) {
+                                                        objVehicle.IdGroup = null;
                                                     }
-                                                }).then(function(response) {
-                                                    if (response[0]) {
-                                                        funAuditLog.CreateAuditLog('SaveVehicle', UserExist.username, 'Update Vehicle');
-                                                        changeSharedId(objVehicle.iduser, objVehicleExist.iduser, objVehicle.deviceid, function(shareuserupdate) {
+                                                    Vehicle.update(objVehicle, {
+                                                        where: {
+                                                            id: objVehicle.id
+                                                        }
+                                                    }).then(function(response) {
+                                                        if (response[0]) {
+                                                            funAuditLog.CreateAuditLog('SaveVehicle', UserExist.username, 'Update Vehicle');
+                                                            changeSharedId(objVehicle.iduser, objVehicleExist.iduser, objVehicle.deviceid, function(shareuserupdate) {
+                                                                res.json({
+                                                                    success: true,
+                                                                    message: "Vehicle updated successfully...",
+                                                                    data: objVehicle
+                                                                });
+                                                            })
+
+                                                        } else {
                                                             res.json({
-                                                                success: true,
-                                                                message: "Vehicle updated successfully...",
+                                                                success: false,
+                                                                message: "Vehicle is Not updated...",
                                                                 data: objVehicle
                                                             });
-                                                        })
-
-                                                    } else {
-                                                        res.json({
-                                                            success: false,
-                                                            message: "Vehicle is Not updated...",
-                                                            data: objVehicle
-                                                        });
-                                                    }
-                                                })
+                                                        }
+                                                    })
+                                                });
                                             } else {
                                                 res.json({
                                                     success: false,
@@ -1596,6 +1625,7 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                         deviceid: objVehicle.deviceid
                                     }
                                 }).then(function(objVehicleExist) {
+                                    objVehicle.IdGroup = objVehicleExist.IdGroup;
                                     if (objVehicleExist != null && objVehicleExist.id != objVehicle.id && objVehicleExist.IsDeleted == false) {
                                         res.json({
                                             success: false,
@@ -1607,29 +1637,34 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                             // console.log("1.2...3.....4......5....6.", LicenceNores)
                                             if (LicenceNores.success == true) {
                                                 objVehicle.renewaldate = LicenceNores.data.ExpiryDate;
-                                                Vehicle.update(objVehicle, {
-                                                    where: {
-                                                        id: objVehicle.id
+                                                checkGroup(objVehicle, function(objcheckgroup) {
+                                                    if (objcheckgroup.success == false) {
+                                                        objVehicle.IdGroup = null;
                                                     }
-                                                }).then(function(response) {
-                                                    if (response[0]) {
-                                                        funAuditLog.CreateAuditLog('SaveVehicle', UserExist.username, 'Update Vehicle');
-                                                        changeSharedId(objVehicle.iduser, objVehicleExist.iduser, objVehicle.deviceid, function(shareuserupdate) {
+                                                    Vehicle.update(objVehicle, {
+                                                        where: {
+                                                            id: objVehicle.id
+                                                        }
+                                                    }).then(function(response) {
+                                                        if (response[0]) {
+                                                            funAuditLog.CreateAuditLog('SaveVehicle', UserExist.username, 'Update Vehicle');
+                                                            changeSharedId(objVehicle.iduser, objVehicleExist.iduser, objVehicle.deviceid, function(shareuserupdate) {
+                                                                res.json({
+                                                                    success: true,
+                                                                    message: "Vehicle updated successfully...",
+                                                                    data: objVehicle
+                                                                });
+                                                            })
+
+                                                        } else {
                                                             res.json({
-                                                                success: true,
-                                                                message: "Vehicle updated successfully...",
+                                                                success: false,
+                                                                message: "Vehicle is Not updated...",
                                                                 data: objVehicle
                                                             });
-                                                        })
-
-                                                    } else {
-                                                        res.json({
-                                                            success: false,
-                                                            message: "Vehicle is Not updated...",
-                                                            data: objVehicle
-                                                        });
-                                                    }
-                                                })
+                                                        }
+                                                    })
+                                                });
                                             } else {
                                                 res.json({
                                                     success: false,
