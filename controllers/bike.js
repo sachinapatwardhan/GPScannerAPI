@@ -1537,7 +1537,7 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                                     }
                                                 }).then(function(response) {
                                                     if (response[0]) {
-                                                        funAuditLog.CreateAuditLog('Update Vehicle', UserExist.username, 'UpdateVehicle(IMEI:' + objVehicle.IMEI + ' , UserId : ' + objVehicle.iduser + ')');
+                                                        funAuditLog.CreateAuditLog('Update Vehicle', UserExist.username, 'UpdateVehicle(DeviceId:' + objVehicle.deviceid + ' , UserId : ' + objVehicle.iduser + ')');
                                                         changeSharedId(objVehicle.iduser, objVehicleExist.iduser, objVehicle.deviceid, function(shareuserupdate) {
                                                             res.json({
                                                                 success: true,
@@ -1583,7 +1583,7 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                                         objVehicle.renewaldate = LicenceNoExist.ExpiryDate;
                                                         Vehicle.create(objVehicle).then(function(response) {
                                                             if (response) {
-                                                                funAuditLog.CreateAuditLog('Create Vehicle', UserExist.username, 'SaveVehicle(IMEI:' + objVehicle.IMEI + ' , UserId : ' + objVehicle.iduser + ')');
+                                                                funAuditLog.CreateAuditLog('Create Vehicle', UserExist.username, 'SaveVehicle(DeviceId:' + objVehicle.deviceid + ' , UserId : ' + objVehicle.iduser + ')');
 
                                                                 //Insert DeviceId to Acc Value set table (if country !=Cambodia)
                                                                 if (objGpsDevice.CountryId != 30) {
@@ -1647,7 +1647,7 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                                         }
                                                     }).then(function(response) {
                                                         if (response[0]) {
-                                                            funAuditLog.CreateAuditLog('Update Vehicle', UserExist.username, 'UpdateVehicle(IMEI:' + objVehicle.IMEI + ' , UserId : ' + objVehicle.iduser + ')');
+                                                            funAuditLog.CreateAuditLog('Update Vehicle', UserExist.username, 'UpdateVehicle(DeviceId:' + objVehicle.deviceid + ' , UserId : ' + objVehicle.iduser + ')');
                                                             changeSharedId(objVehicle.iduser, objVehicleExist.iduser, objVehicle.deviceid, function(shareuserupdate) {
                                                                 res.json({
                                                                     success: true,
