@@ -434,7 +434,7 @@
                                             if (VehicleExist.IsDelete == true) {
                                                 objVehicle.IsDelete = false;
                                                 // var LicenceNo = objVehicle.Licence_No;
-                                                AssignLicenceNumber(objVehicle, userexits.username, function(LicenceNores) {
+                                                checkLicence(objVehicle, function(LicenceNores) {
                                                     if (LicenceNores.success == true) {
                                                         objVehicle.renewaldate = LicenceNores.data.ExpiryDate;
                                                         Vehicle.update(objVehicle, {
@@ -450,7 +450,7 @@
                                                     } else {
                                                         res.json({
                                                             success: false,
-                                                            message: "Invalid Licence Number",
+                                                            message: "Your Device has not licence. Please get your Licence first.",
                                                             data: null
                                                         });
                                                     }
@@ -460,7 +460,7 @@
                                             }
                                         } else {
                                             // var LicenceNo = objVehicle.Licence_No;
-                                            AssignLicenceNumber(objVehicle, userexits.username, function(LicenceNores) {
+                                            checkLicence(objVehicle, function(LicenceNores) {
                                                 if (LicenceNores.success == true) {
                                                     objVehicle.renewaldate = LicenceNores.data.ExpiryDate;
                                                     Vehicle.create(objVehicle).then(function(vehicleCreated) {
@@ -473,7 +473,7 @@
                                                 } else {
                                                     res.json({
                                                         success: false,
-                                                        message: "Invalid Licence Number",
+                                                        message: "Your Device has not licence. Please get your Licence first.",
                                                         data: null
                                                     });
                                                 }

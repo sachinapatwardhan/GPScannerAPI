@@ -714,8 +714,7 @@ function changeSharedId(VehicleUserId, SharedUserId, DeviceId, callback) {
 }
 
 var LicenceManager = models.tbllicencemanager;
-global.AssignLicenceNumber = AssignLicenceNumber;
-
+global.checkLicence = checkLicence;
 
 function checkLicence(objVehicle, callback) {
     // console.log("deviceid.....")
