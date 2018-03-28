@@ -337,7 +337,7 @@ router.get('/DeleteBike', function(req, res) {
                     }).then(function(response) {
                         if (response) {
                             response.updateAttributes({ IsDelete: true }).then(function(resUpdate) {
-                                funAuditLog.CreateAuditLog('DeleteBike', UserExist.username, 'Delete Vehicle');
+                                funAuditLog.CreateAuditLog('DeleteBike', UserExist.username, 'Delete Vehicle (DevicId:' + response.deviceid + ' and UserId:' + response.iduser + ')');
                                 res.json({
                                     success: true,
                                     message: "Vehicle deleted successfully",
@@ -353,7 +353,7 @@ router.get('/DeleteBike', function(req, res) {
                     if (req.query.BikeId != '' && req.query.BikeId != null) {
                         Vehicle.destroy({ where: { id: req.query.BikeId } }).then(function(response) {
                             if (response) {
-                                funAuditLog.CreateAuditLog('DeleteBike', UserExist.username, 'Delete Vehicle');
+                                funAuditLog.CreateAuditLog('DeleteBike', UserExist.username, 'Delete Vehicle (DevicId:' + response.deviceid + ' and UserId:' + response.iduser + ')');
                                 res.json({
                                     success: true,
                                     message: "Vehicle deleted successfully",
@@ -2192,6 +2192,7 @@ router.get('/UpdateVehicleName', jsonParser, function(req, res) {
 
     connection.query("Update tblvehicle set Name='" + req.query.Name + "' where deviceid='" + req.query.DeviceId + "'", function(err, rows, fields) {
         if (!err) {
+
             res.json({ success: true, message: 'Vehicle No. Save Successfully.' });
         } else {
             // console.log(err);

@@ -167,7 +167,7 @@ router.post('/SaveSharedUser', jsonParser, function(req, res) {
 
                     } else {
                         SharedDevice.create(objUser).then(function(response) {
-                            funAuditLog.CreateAuditLog('ShareDevice', decoded.username, 'Share Vehicle');
+                            funAuditLog.CreateAuditLog('Share Device', decoded.username, 'user (UserId:' + response.idSharedUser + ') share vehicle (DeviceId:' + response.DeviceId + ') to user (UserId:' + response.idUser + ')');
                             res.json({
                                 success: true,
                                 message: "Vehicle Shared successfully...",
@@ -219,7 +219,7 @@ router.post('/SaveSharedUserNew', jsonParser, function(req, res) {
 
                     } else {
                         SharedDevice.create(objUser).then(function(response) {
-                            funAuditLog.CreateAuditLog('ShareDevice', decoded.username, 'Share Vehicle');
+                            funAuditLog.CreateAuditLog('Share Device', decoded.username, 'user (UserId:' + response.idSharedUser + ') share vehicle (DeviceId:' + response.DeviceId + ') to user (UserId:' + response.idUser + ')');
                             res.json({
                                 success: true,
                                 message: "Vehicle Shared successfully...",
@@ -265,7 +265,6 @@ router.post('/InvitedNewUser', jsonParser, function(req, res) {
         User.findOne({ where: { username: decoded.username, password: decoded.password } }).then(function(UserExist) {
             if (UserExist != null) {
                 AppInfo.findOne({ where: { AppName: objUser.AppName } }).then(function(AppInfoExit) {
-                    console.log("@@@@...", AppInfoExit.WebAppUrl)
 
                     var ObjSharedEmail = new Object();
                     ObjSharedEmail.DeviceId = objUser.DeviceId;
@@ -473,7 +472,7 @@ router.get('/RemoveSharedUser', function(req, res) {
         var decoded = jwt.decode(token, TokenKey);
         SharedDevice.destroy({ where: { id: req.query.id } }).then(function(response) {
             if (response) {
-                funAuditLog.CreateAuditLog('DeleteSharedUser', decoded.username, 'Delete Shared User');
+                funAuditLog.CreateAuditLog('DeleteSharedUser', decoded.username, 'Delete Shared User(UserId:' + SharedDevice.idUser + ') and DeviceId (' + SharedDevice.DeviceId + ')');
                 res.json({ success: true, message: "User Removed successfully...", data: response });
 
                 var objConnection = {

@@ -415,7 +415,7 @@
                                         if (GPSDevicefound) {
                                             GPSDevicefound.updateAttributes({ idSim: req.body.idSim }).then(function(GPSDeviceupdated) {
                                                 if (GPSDeviceupdated) {
-                                                    funAuditLog.CreateAuditLog('update idSim GPSDevice ', userexits.username, 'update idSim GPSDevice throgth through  Device activation ');
+                                                    funAuditLog.CreateAuditLog('update idSim GPSDevice ', userexits.username, 'update idSim GPSDevice (DeviceId:' + GPSDevicefound.DeviceId + ') throgth Device activation ');
                                                 }
                                             })
                                         }
@@ -443,7 +443,7 @@
                                                             }
                                                         }).then(function(vehicleCreated) {
                                                             if (vehicleCreated) {
-                                                                funAuditLog.CreateAuditLog('Create Vehicle through device Activation', userexits.username, 'Save Vehicle  through device Activation');
+                                                                funAuditLog.CreateAuditLog('Create Vehicle through device Activation', userexits.username, 'Save Vehicle (DeviceId:' + vehicleCreated.deviceid + ') through device Activation');
                                                                 callActiveDevice()
                                                             }
                                                         })
@@ -465,7 +465,7 @@
                                                     objVehicle.renewaldate = LicenceNores.data.ExpiryDate;
                                                     Vehicle.create(objVehicle).then(function(vehicleCreated) {
                                                         if (vehicleCreated) {
-                                                            funAuditLog.CreateAuditLog('Create Vehicle Type', userexits.username, 'Save Vehicle Type');
+                                                            funAuditLog.CreateAuditLog('Create Vehicle through device Activation', userexits.username, 'Save Vehicle (DeviceId:' + vehicleCreated.deviceid + ') through device Activation');
                                                             callActiveDevice()
                                                         }
                                                     })

@@ -55,7 +55,6 @@ router.get('/Getvehicletype', function(req, res) {
 })
 
 router.post('/SaveVehicleType', jsonParser, function(req, res) {
-    console.log(req.body);
     var objVehicleType = req.body;
     objHeader = req.headers;
 

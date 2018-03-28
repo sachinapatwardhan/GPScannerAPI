@@ -188,16 +188,17 @@ router.post('/Savewallettransaction', jsonParser, function(req, res) {
                     objWalletTransaction.ExpiryDate = AddDate(objWalletTransaction.CreatedDate, 1, "Year");
                     WalletTransaction.create(objWalletTransaction).then(function(response) {
                         if (response != null) {
+                            funAuditLog.CreateAuditLog('Save Wallet Transaction', UserExist.username, "Wallet Transaction Created for Device (" + objWalletTransaction.DeviceId + ")");
                             res.json({
                                 success: true,
-                                message: "WalletTransaction Created Successfully...",
+                                message: "Wallet Transaction Created Successfully...",
                                 data: response
                             });
 
                         } else {
                             res.json({
                                 success: false,
-                                message: "WalletTransaction Does Not Created...",
+                                message: "Wallet Transaction Does Not Created...",
                             });
                         }
                     });
@@ -286,6 +287,7 @@ function GetUserNameFromDate() {
 
 
 }
+
 router.get('/ApproveTransaction', function(req, res) {
     try {
         var id = req.query.id;
@@ -320,6 +322,7 @@ router.get('/ApproveTransaction', function(req, res) {
                     ObjWallet.Createdby = username;
                     ObjWallet.CreatedDate = new Date();
                     Wallet.create(ObjWallet).then(function(resCreateWallet) {
+                        funAuditLog.CreateAuditLog('Approved Wallet Transaction', username, "Wallet Transaction Approved for Device (" + resWalletTransaction.DeviceId + ")");
                         res.json({
                             success: true,
                             message: "Wallet Transaction Approved successfully."
@@ -374,6 +377,7 @@ router.get('/VoidTransaction', function(req, res) {
                     //         message: "Wallet Transaction Approved successfully."
                     //     });
                     // });
+                    funAuditLog.CreateAuditLog('Void Wallet Transaction', username, "Wallet Transaction Void for Device (" + resWalletTransaction.DeviceId + ")");
                     res.json({
                         success: true,
                         message: "Wallet Transaction Void successfully."
@@ -435,6 +439,7 @@ router.get('/RenewTransaction', function(req, res) {
                 ObjRenewWalletTransaction.ModifiedBy = null;
                 ObjRenewWalletTransaction.PaymentReceipt = resWalletTransaction.PaymentReceipt;
                 WalletTransaction.create(ObjRenewWalletTransaction).then(function(responseTransaction) {
+                    funAuditLog.CreateAuditLog('Renew Wallet Transaction', username, "Wallet Transaction Renew for Device (" + resWalletTransaction.DeviceId + ")");
                     res.json({
                         success: true,
                         message: "Wallet Transaction Renew successfully.",

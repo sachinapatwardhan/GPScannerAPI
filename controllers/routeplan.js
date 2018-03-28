@@ -72,8 +72,6 @@ router.post('/SaveRoutePlan', jsonParser, function(req, res) {
                     objRoute.CreatedDate = new Date();
                     Route.create(objRoute).then(function(routerCreated) {
                         if (routerCreated) {
-                            console.log("@@@@@@@@@@@@@@@...", routerCreated.Id)
-                            console.log(Deviceidlist)
                             if (Deviceidlist.length > 0) {
                                 var colllist = [];
                                 for (var i = 0; i < Deviceidlist.length; i++) {
@@ -92,6 +90,7 @@ router.post('/SaveRoutePlan', jsonParser, function(req, res) {
                                                 if (datalist.length > 0) {
                                                     connection.query("INSERT INTO tblroutemarker (MarkerName,Lat,Lng,IdRoute) VALUES ?", [datalist], function(err, routePinMarkerCreated, fields) {
                                                         if (!err && routePinMarkerCreated) {
+                                                            funAuditLog.CreateAuditLog('Save Route plan', UserExist.username, 'Add New Route plan');
                                                             res.json({ success: true, message: 'Route Plan created successfully...' })
                                                         }
                                                     })
@@ -126,6 +125,7 @@ router.post('/SaveRoutePlan', jsonParser, function(req, res) {
                                 if (colllist.length > 0) {
                                     connection.query("INSERT INTO tblroutedevice (DeviceId,IdRoute) VALUES ?", [colllist], function(err, routeDeviceCreated, fields) {
                                         if (!err && routeDeviceCreated) {
+                                            funAuditLog.CreateAuditLog('Update Route plan', UserExist.username, 'Update Route plan');
                                             res.json({ success: true, message: 'Route Plan updated successfully..' })
                                         } else {
                                             res.json({ success: false, message: 'Route Plan not updated..' })
@@ -159,7 +159,6 @@ router.post('/updateRoutePlan', jsonParser, function(req, res) {
     objRoute = req.body.objRoute;
     var Deviceidlist = [];
     Deviceidlist = req.body.selectedlist;
-    console.log(req.body)
     var MarkerPinList = req.body.objMarkerPin;
     objHeader = req.headers;
     var token = getToken(objHeader);
@@ -185,6 +184,7 @@ router.post('/updateRoutePlan', jsonParser, function(req, res) {
                                     if (datalist.length > 0) {
                                         connection.query("INSERT INTO tblroutemarker (MarkerName,Lat,Lng,IdRoute) VALUES ?", [datalist], function(err, routePinMarkerCreated, fields) {
                                             if (!err && routePinMarkerCreated) {
+                                                funAuditLog.CreateAuditLog('Update Route plan', UserExist.username, 'Update Route plan');
                                                 res.json({ success: false, message: 'Route Plan updated successfully..' })
                                             }
                                         })
@@ -213,46 +213,62 @@ router.post('/updateRoutePlan', jsonParser, function(req, res) {
 
 
 router.get('/DeleteRouteById', function(req, res) {
-    console.log(req.query.Id)
-    RouteDevice.destroy({
-        where: {
-            IdRoute: req.query.Id
-        }
-    }).then(function(FenceDeleted) {
-        RouteMarker.destroy({
+
+    objHeader = req.headers;
+    var token = getToken(objHeader);
+    if (token) {
+        var decoded = jwt.decode(token, TokenKey);
+        User.findOne({
             where: {
-                IdRoute: req.query.Id
+                username: decoded.username,
+                password: decoded.password
             }
-        }).then(function(MarkerDeleted) {
-            Route.destroy({
-                where: {
-                    id: req.query.Id
-                }
-            }).then(function(response) {
-                if (response) {
+        }).then(function(UserExist) {
+            if (UserExist != null) {
+                RouteDevice.destroy({
+                    where: {
+                        IdRoute: req.query.Id
+                    }
+                }).then(function(RouteDeviceDeleted) {
+                    RouteMarker.destroy({
+                        where: {
+                            IdRoute: req.query.Id
+                        }
+                    }).then(function(MarkerDeleted) {
+                        Route.destroy({
+                            where: {
+                                id: req.query.Id
+                            }
+                        }).then(function(response) {
+                            if (response) {
+                                funAuditLog.CreateAuditLog('Delete Route plan', UserExist.username, 'Delete Route plan');
+                                res.json({
+                                    success: true,
+                                    message: "Route plan removed successfully...",
+                                    data: response
+                                });
+                            } else {
+                                res.json({ success: false, message: 'Route plan not Removed...' });
+                            }
+                        })
+                    })
 
-                    res.json({
-                        success: true,
-                        message: "Route plan removed successfully...",
-                        data: response
-                    });
-                } else {
-                    res.json({ success: false, message: 'Route plan not Removed...' });
-                }
-            })
+                })
+            } else {
+                res.json(InvalidToken);
+            }
         })
-
-    })
+    } else {
+        res.json(InvalidToken);
+    }
 });
 
 
 
 router.post('/SaveRoutemarker', jsonParser, function(req, res) {
-    console.log(req.body)
     objRouteMarker = req.body;
     var Deviceidlist = [];
     // Deviceidlist = req.body.selectedlist;
-    console.log(req.body)
 
     objHeader = req.headers;
     var token = getToken(objHeader);
@@ -269,6 +285,7 @@ router.post('/SaveRoutemarker', jsonParser, function(req, res) {
                     objRouteMarker.CreatedDate = new Date();
                     RouteMarker.create(objRouteMarker).then(function(routerMarkerCreated) {
                         if (routerMarkerCreated) {
+                            funAuditLog.CreateAuditLog('Save Route Marker', UserExist.username, 'Save Route Marker');
                             res.json({ success: true, message: 'Route Marker created successfully..' })
                         } else {
                             res.json({ success: false, message: 'Route Marker not created..' })
@@ -276,8 +293,8 @@ router.post('/SaveRoutemarker', jsonParser, function(req, res) {
                     })
                 } else {
                     RouteMarker.update(objRouteMarker, { where: { Id: objRouteMarker.Id } }).then(function(routerMarkerCreated) {
-                        console.log("##########################################")
                         if (routerMarkerCreated) {
+                            funAuditLog.CreateAuditLog('Update Route Marker', UserExist.username, 'Update Route Marker');
                             res.json({ success: true, message: 'Route Marker updated successfully..' })
                         } else {
                             res.json({ success: false, message: 'Route Marker not updated..' })
@@ -309,6 +326,7 @@ router.get('/DeleteRoutemarker', jsonParser, function(req, res) {
             if (UserExist != null) {
                 RouteMarker.destroy({ where: { Id: req.query.Id } }).then(function(response) {
                     if (response) {
+                        funAuditLog.CreateAuditLog('Delete Route Marker', UserExist.username, 'Delete Route Marker');
                         res.json({ success: true, message: 'Route Marker deleted successfully..' })
                     } else {
                         res.json({ success: false, message: 'Route Marker not created..' })

@@ -2933,6 +2933,7 @@ router.get('/DeleteCustomer', function(req, res) {
                                 UserInRole.destroy({ where: { userId: req.query.id } }).then(function(roledeleted) {
                                     User.destroy({ where: { id: req.query.id } }).then(function(response) {
                                         if (response) {
+                                            funAuditLog.CreateAuditLog('Delete Customer', UserExist.username, 'Delete Customer');
                                             res.json({
                                                 success: true,
                                                 message: "Customer deleted successfully.....",
@@ -2969,7 +2970,6 @@ router.get('/DeleteCustomer', function(req, res) {
 
 router.post('/UpdateCustomer', jsonParser, function(req, res) {
     objCustomer = req.body;
-    console.log(objCustomer);
     objHeader = req.headers;
     var token = getToken(objHeader);
     var obj = {};
@@ -2996,9 +2996,9 @@ router.post('/UpdateCustomer', jsonParser, function(req, res) {
                             } else {
                                 objCustomer.modifiedby = UserExist.username;
                                 objCustomer.modifieddate = new Date();
-                                console.log(objCustomer)
                                 userObject.update(objCustomer).then(function(response) {
                                     if (response) {
+                                        funAuditLog.CreateAuditLog('Update Customer', UserExist.username, 'Update Customer');
                                         res.json({
                                             success: true,
                                             message: "Customer updated successfully",

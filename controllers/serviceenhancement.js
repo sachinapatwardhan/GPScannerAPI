@@ -710,7 +710,7 @@ router.get('/CompleteSevice', function(req, res) {
 
                                             ServiceEnhacement.create(obj).then(function(response) {
                                                 if (response) {
-                                                    funAuditLog.CreateAuditLog('Craete Sevice Reminder', UserExist.username, 'Craete Sevcie Reminder');
+                                                    funAuditLog.CreateAuditLog('Create Sevice Reminder', UserExist.username, 'Create Sevcie Reminder');
                                                     res.json({ success: true, message: 'New service reminder created successfully' })
                                                 } else {
                                                     res.json({ success: false, message: 'New Service reminder not created successfully' })

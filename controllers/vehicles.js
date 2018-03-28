@@ -34,7 +34,7 @@ router.get('/UpdateExpiryDate', function(req, res) {
                                 }
                             })
                             if (response) {
-                                funAuditLog.CreateAuditLog('update ExpiryDate of Device (' + response.deviceid + ')', UserExist.usernam, 'update ExpiryDate of Device (' + response.deviceid + ')');
+                                funAuditLog.CreateAuditLog('Update ExpiryDate of vehicle', UserExist.usernam, 'Update ExpiryDate of Device (' + response.deviceid + ')');
                                 res.json({ success: true, message: 'Expiry Date updated successfully..' })
                             } else {
                                 res.json({ success: false, message: 'Expiry Date not updated' })
@@ -291,7 +291,7 @@ router.post('/SaveVehicleGroup', jsonParser, function(req, res) {
                         } else {
                             VehicleGroup.update(objGroup, { where: { Id: objGroup.Id } }).then(function(response) {
                                 if (response[0]) {
-                                    funAuditLog.CreateAuditLog('Update  vehicle group', UserExist.username, 'Update  vehicle group Data');
+                                    funAuditLog.CreateAuditLog('Update vehicle group', UserExist.username, 'Update vehicle group Data');
                                     res.json({ success: true, message: "Group updated successfully...", data: response });
                                 } else {
                                     res.json({ success: true, message: "Group is not updated successfully...", data: response });
@@ -425,7 +425,7 @@ router.post('/SaveVehicle', jsonParser, function(req, res) {
                     objVehicle.CreatedBy = decoded.username;
                     Vehicle.findOrCreate({ where: { deviceid: objVehicle.deviceid }, defaults: objVehicle }).then(function(response) {
                         if (response[0]) {
-                            funAuditLog.CreateAuditLog('SaveVehicle', decoded.username, 'Create Vehicle');
+                            funAuditLog.CreateAuditLog('SaveVehicle', decoded.username, 'Create Vehicle (DeviceId:' + response[0].deviceid + ' , UserId : ' + response[0].iduser + ')');
                             res.json({
                                 success: true,
                                 message: "Vehicle Detail created successfully...",
@@ -448,7 +448,7 @@ router.post('/SaveVehicle', jsonParser, function(req, res) {
                         }
                     }).then(function(response) {
                         if (response[0]) {
-                            funAuditLog.CreateAuditLog('SaveVehicle', decoded.username, 'Update Vehicle');
+                            funAuditLog.CreateAuditLog('SaveVehicle', decoded.username, 'Update Vehicle (DeviceId:' + response[0].deviceid + ' , UserId : ' + response[0].iduser + ')');
                             res.json({
                                 success: true,
                                 message: "Vehicle Detail updated successfully...",
@@ -517,7 +517,7 @@ router.get('/DeleteVehicle', function(req, res) {
                     }).then(function(response) {
                         if (response) {
                             response.updateAttributes({ IsDelete: true }).then(function(resUpdate) {
-                                funAuditLog.CreateAuditLog('DeleteVehicle', UserExist.username, 'Delete Vehicle');
+                                funAuditLog.CreateAuditLog('Delete Vehicle', UserExist.username, 'Delete Vehicle (DeviceId:' + response.deviceid + ' , UserId : ' + response.iduser + ')');
                                 res.json({
                                     success: true,
                                     message: "Vehicle Deleted Successfully",
