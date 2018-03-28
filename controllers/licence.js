@@ -58,7 +58,7 @@ router.get('/GetAllLicence', function (req, res) {
         " LEFT JOIN tblvehicle tv on tv.deviceid =tl.DeviceId where tl.IsDeleted=0  " + search +
         " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
 
-        console.log(query)
+    console.log(query)
 
     var countquery = "SELECT count(*) as TotalRecord " +
         " from tbllicencemanager as tl " +
@@ -122,7 +122,7 @@ router.get('/SaveLicenceDetail', function (req, res) {
                                                             CreatedDate: new Date(),
                                                         }).then(function (response) {
                                                             if (response) {
-                                                                Vehicle.findOne({ where: { deviceid: response.DeviceId, IsDelete: false } }).then(function (vehicleExist) {
+                                                                Vehicle.findOne({ where: { deviceid: response.DeviceId } }).then(function (vehicleExist) {
                                                                     if (vehicleExist) {
                                                                         vehicleExist.updateAttributes({ renewaldate: response.ExpiryDate }).then(function (updateRenewDate) { })
                                                                     }
@@ -290,13 +290,18 @@ router.get('/changestatusrenewal', function (req, res) {
                     }
                 }).then(function (isExist) {
                     var oldexpdate = isExist.ExpiryDate;
-                    //console.log(oldexpdate)
                     var date = new Date(isExist.ExpiryDate);
                     var updatedDate = convertdateformat(date.setMonth(date.getMonth() + 12), 3);
+
                     isExist.updateAttributes({ ExpiryDate: updatedDate }).then(function (response) {
                         var difference = (response.ExpiryDate.getFullYear() * 12 + response.ExpiryDate.getMonth()) - (oldexpdate.getFullYear() * 12 + oldexpdate.getMonth());
-                        //  console.log(difference)
                         funAuditLog.CreateAuditLog('Update ExpiryDate of Device (' + response.DeviceId + ')', UserExist.username, 'Updated ExpiryDate (' + convertdateformat(response.ExpiryDate, 4) + ') / Old ExpiryDate (' + convertdateformat(oldexpdate, 4) + ') / Updated for (' + difference + ') month)');
+                        Vehicle.findOne({ where: { DeviceId: isExist.DeviceId } }).then(function (vehicleExist) {    
+                            if (vehicleExist) {
+                                vehicleExist.updateAttributes({ renewaldate: updatedDate }).then(function (updateRenewDate) { })
+                            }
+                        })
+                        funAuditLog.CreateAuditLog('update ExpiryDate of Device (' + response.DeviceId + ')', UserExist.username, 'update ExpiryDate of Device (' + convertdateformat(response.ExpiryDate, 4) + ') / Old ExpiryDate (' + convertdateformat(oldexpdate, 4) + ') / Updated for (' + difference + ' month)');
                         res.json({
                             success: true,
                             message: " Device renewal successfully.",
