@@ -1,7 +1,7 @@
 var router = express.Router();
 var AuditLog = models.tblauditlog;
 
-router.get('/GetAllAditlog', function(req, res) {
+router.get('/GetAllAditlog', function (req, res) {
 
     var objParam = req.query;
     var objColumns = objParam.columns;
@@ -26,26 +26,56 @@ router.get('/GetAllAditlog', function(req, res) {
             };
         };
     }
+     search['$and'] = [];
+    var StartDate = req.query.StartDate;
+    var EndDate = req.query.EndDate;
+    if (StartDate != '' && EndDate != '') {
+        StartDate = convertdateformat(StartDate, 3);
+        EndDate = convertdateformat(EndDate, 3);
+
+        var obj = new Object();
+        obj['createddate'] = {
+            $between: [StartDate, EndDate]
+        };
+        search['$and'].push(obj);
+    } else if (StartDate != null && StartDate != '') {
+        StartDate = convertdateformat(StartDate, 3);
+        var obj = new Object();
+        obj['createddate'] = {
+            $gt: StartDate
+        };
+        search['$and'].push(obj);
+    } else if (EndDate != null && EndDate != '') {
+        EndDate = convertdateformat(EndDate, 3);
+        var obj = new Object();
+        obj['createddate'] = {
+            $lt: EndDate
+        };
+        search['$and'].push(obj);
+    }
+
+
+
     AuditLog.findAndCountAll({
         where: search,
         order: Orderby,
         offset: parseInt(objParam.start),
         limit: parseInt(objParam.length),
-    }).then(function(response) {
+    }).then(function (response) {
         var response1 = new Object();
         response1.draw = objParam.draw;
         response1.recordsTotal = response.count;
         response1.recordsFiltered = response.count;
         response1.data = response.rows;
         res.json(response1);
-    }).catch(function(error) {
+    }).catch(function (error) {
         res.json(error);
     })
 })
 
 
 
-router.get('/GetAllGPSDeleteData', function(req, res) {
+router.get('/GetAllGPSDeleteData', function (req, res) {
 
     var objParam = req.query;
     var objColumns = objParam.columns;
@@ -97,9 +127,9 @@ router.get('/GetAllGPSDeleteData', function(req, res) {
     var Countqry = "Select count(tblgpsdeletecash.Id) as TotalRecord from tblgpsdeletecash" +
         " Left join tblvehicle on tblgpsdeletecash.idVehicle = tblvehicle.id" +
         " Left join tbluserinformation on tblgpsdeletecash.idUser = tbluserinformation.id " + search;
-    connection.query(query, function(err, response) {
+    connection.query(query, function (err, response) {
         if (response != undefined) {
-            connection.query(Countqry, function(err, lstCount, fields) {
+            connection.query(Countqry, function (err, lstCount, fields) {
                 var response1 = new Object();
                 response1.draw = objParam.draw;
                 response1.recordsTotal = lstCount[0].TotalRecord;
@@ -120,6 +150,28 @@ router.get('/GetAllGPSDeleteData', function(req, res) {
 
 
 })
+
+function convertdateformat(date1, flg) {
+    var date = new Date(date1);
+    var firstdayMonth = date.getMonth() + 1;
+    var firstdayDay = date.getDate();
+    var firstdayYear = date.getFullYear();
+    var firstdayHours = date.getHours();
+    var firstdayMinutes = date.getMinutes();
+    var firstdaySeconds = date.getSeconds();
+
+    if (flg == 1) {
+        return ("0000" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("00" + firstdayDay.toString()).slice(-2) + " " + "23:59:59";
+
+    } else if (flg == 2) {
+        return ("0000" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("00" + firstdayDay.toString()).slice(-2) + " " + "00:00:00";
+    } else if (flg == 3) {
+        return ("0000" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("00" + firstdayDay.toString()).slice(-2) + " " + ("00" + firstdayHours.toString()).slice(-2) + ':' + ("00" + firstdayMinutes.toString()).slice(-2) + ':' + ("00" + firstdaySeconds.toString()).slice(-2);
+    } else {
+        return ("0000" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("00" + firstdayDay.toString()).slice(-2);
+    }
+}
+
 
 
 module.exports = router
