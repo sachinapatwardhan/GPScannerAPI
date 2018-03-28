@@ -264,8 +264,7 @@ router.get('/changestatusrenewal', function (req, res) {
                     var oldexpdate = isExist.ExpiryDate;
                     //console.log(oldexpdate)
                     var date = new Date(isExist.ExpiryDate);
-                    var updatedDate = convertdateformat(date.setMonth(date.getMonth() + 8), 3);
-                   // console.log(updatedDate)
+                    var updatedDate = convertdateformat(date.setMonth(date.getMonth() + 12), 3);
                     isExist.updateAttributes({ ExpiryDate: updatedDate }).then(function (response) {
                         var difference = (response.ExpiryDate.getFullYear()*12 + response.ExpiryDate.getMonth()) - (oldexpdate.getFullYear()*12 + oldexpdate.getMonth());
                       //  console.log(difference)
