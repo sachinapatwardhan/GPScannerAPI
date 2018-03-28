@@ -6,7 +6,7 @@ var AppInfo = models.tblappinfo;
 var GpsDevice = models.tblgpsdevice;
 var Vehicle = models.tblvehicle;
 
-router.get('/GetAllLicence', function(req, res) {
+router.get('/GetAllLicence', function (req, res) {
     var objParam = req.query;
     var objColumns = objParam.columns;
     var objOrder = objParam.order;
@@ -36,9 +36,9 @@ router.get('/GetAllLicence', function(req, res) {
         " from tbllicencemanager as tl " +
         " LEFT JOIN tbluserinformation as tu ON tl.IdUser = tu.id " +
         " LEFT JOIN tblvehicle tv on tv.deviceid =tl.DeviceId  where tl.IsDeleted=0  " + search;
-    connection.query(query, function(err, response) {
+    connection.query(query, function (err, response) {
         if (response != undefined) {
-            connection.query(countquery, function(err, lstCount, fields) {
+            connection.query(countquery, function (err, lstCount, fields) {
                 var response1 = new Object();
                 response1.draw = objParam.draw;
                 response1.recordsTotal = lstCount[0].TotalRecord;
@@ -58,9 +58,7 @@ router.get('/GetAllLicence', function(req, res) {
     })
 })
 
-
-
-router.get('/SaveLicenceDetail', function(req, res) {
+router.get('/SaveLicenceDetail', function (req, res) {
     objHeader = req.headers;
     var token = getToken(objHeader);
 
@@ -72,33 +70,33 @@ router.get('/SaveLicenceDetail', function(req, res) {
                 username: decoded.username,
                 password: decoded.password
             }
-        }).then(function(UserExist) {
+        }).then(function (UserExist) {
             if (UserExist != null) {
-                LicenceManager.findOne({ where: { DeviceId: req.query.DeviceId, IsDeleted: 0 } }).then(function(LicenceAssigned) {
+                LicenceManager.findOne({ where: { DeviceId: req.query.DeviceId, IsDeleted: 0 } }).then(function (LicenceAssigned) {
                     if (LicenceAssigned && LicenceAssigned.Id != req.query.Id) {
                         res.json({
                             success: false,
                             message: "Licence alerady assigned for this device",
                         });
                     } else {
-                        User.findOne({ where: { id: req.query.IdUser } }).then(function(DeviceUserExist) {
+                        User.findOne({ where: { id: req.query.IdUser } }).then(function (DeviceUserExist) {
                             if (DeviceUserExist) {
-                                AppInfo.findOne({ where: { Id: DeviceUserExist.idApp } }).then(function(AppExits) {
+                                AppInfo.findOne({ where: { Id: DeviceUserExist.idApp } }).then(function (AppExits) {
                                     GpsDevice.findOne({ where: { DeviceId: req.query.DeviceId, AppName: AppExits.AppName }, })
-                                        .then(function(objGpsDevice) {
+                                        .then(function (objGpsDevice) {
                                             if (objGpsDevice != null) {
-                                                LicenceManager.findOne({ where: { Id: req.query.Id } }).then(function(LicenceExist) {
+                                                LicenceManager.findOne({ where: { Id: req.query.Id } }).then(function (LicenceExist) {
                                                     if (LicenceExist.DeviceId == null || LicenceExist.DeviceId == '' || LicenceExist.DeviceId == undefined) {
                                                         LicenceExist.updateAttributes({
                                                             IdUser: req.query.IdUser,
                                                             DeviceId: req.query.DeviceId,
                                                             ExpiryDate: req.query.ExpiryDate,
                                                             CreatedDate: new Date(),
-                                                        }).then(function(response) {
+                                                        }).then(function (response) {
                                                             if (response) {
-                                                                Vehicle.findOne({ where: { deviceid: response.DeviceId, IsDelete: false } }).then(function(vehicleExist) {
+                                                                Vehicle.findOne({ where: { deviceid: response.DeviceId, IsDelete: false } }).then(function (vehicleExist) {
                                                                     if (vehicleExist) {
-                                                                        vehicleExist.updateAttributes({ renewaldate: response.ExpiryDate }).then(function(updateRenewDate) {})
+                                                                        vehicleExist.updateAttributes({ renewaldate: response.ExpiryDate }).then(function (updateRenewDate) { })
                                                                     }
                                                                 })
                                                                 funAuditLog.CreateAuditLog('update ExpiryDate of Device (' + response.DeviceId + ')', UserExist.usernam, 'update ExpiryDate of Device (' + response.DeviceId + ')');
@@ -124,11 +122,11 @@ router.get('/SaveLicenceDetail', function(req, res) {
                                                             DeviceId: req.query.DeviceId,
                                                             ExpiryDate: req.query.ExpiryDate,
                                                             ModifiedDate: new Date(),
-                                                        }).then(function(response) {
+                                                        }).then(function (response) {
                                                             if (response) {
-                                                                Vehicle.findOne({ where: { deviceid: response.DeviceId, IsDelete: false } }).then(function(vehicleExist) {
+                                                                Vehicle.findOne({ where: { deviceid: response.DeviceId, IsDelete: false } }).then(function (vehicleExist) {
                                                                     if (vehicleExist) {
-                                                                        vehicleExist.updateAttributes({ renewaldate: response.ExpiryDate }).then(function(updateRenewDate) {})
+                                                                        vehicleExist.updateAttributes({ renewaldate: response.ExpiryDate }).then(function (updateRenewDate) { })
                                                                     }
                                                                 })
                                                                 funAuditLog.CreateAuditLog('update ExpiryDate of Device (' + response.DeviceId + ')', UserExist.usernam, 'update ExpiryDate of Device (' + response.DeviceId + ')');
@@ -177,9 +175,7 @@ router.get('/SaveLicenceDetail', function(req, res) {
     }
 })
 
-
-
-router.get('/DeleteDeviceLicence', function(req, res) {
+router.get('/DeleteDeviceLicence', function (req, res) {
     objHeader = req.headers;
     var token = getToken(objHeader);
     var obj = {};
@@ -195,12 +191,12 @@ router.get('/DeleteDeviceLicence', function(req, res) {
                 username: decoded.username,
                 password: decoded.password
             }
-        }).then(function(UserExist) {
+        }).then(function (UserExist) {
             if (UserExist != null) {
                 if (req.query.Id != '' && req.query.Id != null) {
-                    LicenceManager.findOne({ where: { Id: req.query.Id } }).then(function(LicenceExist) {
+                    LicenceManager.findOne({ where: { Id: req.query.Id } }).then(function (LicenceExist) {
                         if (LicenceExist.DeviceId != null && LicenceExist.DeviceId != undefined && LicenceExist.DeviceId != '') {
-                            LicenceExist.updateAttributes({ IsDeleted: 1 }).then(function(response) {
+                            LicenceExist.updateAttributes({ IsDeleted: 1 }).then(function (response) {
                                 if (response) {
                                     res.json({
                                         success: true,
@@ -214,7 +210,7 @@ router.get('/DeleteDeviceLicence', function(req, res) {
                                 }
                             })
                         } else {
-                            LicenceManager.destroy({ where: { Id: req.query.Id } }).then(function(response) {
+                            LicenceManager.destroy({ where: { Id: req.query.Id } }).then(function (response) {
                                 if (response) {
                                     res.json({
                                         success: true,
@@ -245,6 +241,72 @@ router.get('/DeleteDeviceLicence', function(req, res) {
     }
 
 });
+
+router.get('/changestatusrenewal', function (req, res) {
+    objHeader = req.headers;
+    var token = getToken(objHeader);
+
+    if (token) {
+        var decoded = jwt.decode(token, TokenKey);
+
+        User.findOne({
+            where: {
+                username: decoded.username,
+                password: decoded.password
+            }
+        }).then(function (UserExist) {
+            if (UserExist != null) {
+                LicenceManager.findOne({
+                    where: {
+                        Id: req.query.id,
+                    }
+                }).then(function (isExist) {
+                    var oldexpdate = isExist.ExpiryDate;
+                    //console.log(oldexpdate)
+                    var date = new Date(isExist.ExpiryDate);
+                    var updatedDate = convertdateformat(date.setMonth(date.getMonth() + 8), 3);
+                   // console.log(updatedDate)
+                    isExist.updateAttributes({ ExpiryDate: updatedDate }).then(function (response) {
+                        var difference = (response.ExpiryDate.getFullYear()*12 + response.ExpiryDate.getMonth()) - (oldexpdate.getFullYear()*12 + oldexpdate.getMonth());
+                      //  console.log(difference)
+                        funAuditLog.CreateAuditLog('Update ExpiryDate of Device (' + response.DeviceId + ')', UserExist.username, 'Updated ExpiryDate (' + convertdateformat(response.ExpiryDate, 4) + ') / Old ExpiryDate (' + convertdateformat(oldexpdate, 4) + ') / Updated for (' + difference + ') month)');
+                        res.json({
+                            success: true,
+                            message: " Device renewal successfully.",
+                            data: response
+                        })
+                    })
+                })
+            } else {
+                res.json(InvalidToken);
+            }
+        })
+    } else {
+        res.json(InvalidToken);
+    }
+})
+
+
+function convertdateformat(date1, flg) {
+    var date = new Date(date1);
+    var firstdayMonth = date.getMonth() + 1;
+    var firstdayDay = date.getDate();
+    var firstdayYear = date.getFullYear();
+    var firstdayHours = date.getHours();
+    var firstdayMinutes = date.getMinutes();
+    var firstdaySeconds = date.getSeconds();
+
+    if (flg == 1) {
+        return ("0000" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("00" + firstdayDay.toString()).slice(-2) + " " + "23:59:59";
+
+    } else if (flg == 2) {
+        return ("0000" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("00" + firstdayDay.toString()).slice(-2) + " " + "00:00:00";
+    } else if (flg == 3) {
+        return ("0000" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("00" + firstdayDay.toString()).slice(-2) + " " + ("00" + firstdayHours.toString()).slice(-2) + ':' + ("00" + firstdayMinutes.toString()).slice(-2) + ':' + ("00" + firstdaySeconds.toString()).slice(-2);
+    } else {
+        return ("0000" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("00" + firstdayDay.toString()).slice(-2);
+    }
+}
 
 
 //Private functions
@@ -289,7 +351,7 @@ function customPassword1() {
 }
 var LicenceManager = models.tbllicencemanager;
 
-router.get('/CreateLicenceNumbers', function(req, res) {
+router.get('/CreateLicenceNumbers', function (req, res) {
     req.setTimeout(3600000);
     // function insertLicenceno() {
     // var coll = [];
@@ -325,7 +387,7 @@ router.get('/CreateLicenceNumbers', function(req, res) {
                     //     } else {
                     var obj = new Object();
                     obj.LicenceNo = LicenceNo;
-                    LicenceManager.findOrCreate({ where: { LicenceNo: LicenceNo }, defaults: obj }).then(function(response) {
+                    LicenceManager.findOrCreate({ where: { LicenceNo: LicenceNo }, defaults: obj }).then(function (response) {
                         // console.log("###")
                         uploder(i + 1);
                     });
