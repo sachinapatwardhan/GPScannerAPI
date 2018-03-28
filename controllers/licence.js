@@ -14,6 +14,8 @@ router.get('/GetAllLicence', function (req, res) {
     var Orderby = objColumns[parseInt(objOrder[0].column)].data + ' ' + objOrder[0].dir;
     var search = '';
 
+    console.log(objParam)
+
     if (objSearch != null && objSearch != '') {
         search = ' and (tl.DeviceId like "%' + objSearch + '%" or ';
         search = search + 'tl.LicenceNo like "%' + objSearch + '%" or ';
@@ -24,6 +26,29 @@ router.get('/GetAllLicence', function (req, res) {
         search = search + 'tv.Name like "%' + objSearch + '%") ';
     };
 
+    if (req.query.StartDate != '' && req.query.EndDate != '') {
+        if (search == '') {
+            search = " AND tl.ExpiryDate between  '" + convertdateformat(req.query.StartDate, 3) + "' AND '" + convertdateformat(req.query.EndDate, 3) + "'";
+        } else {
+            search = search + " AND   tl.ExpiryDate between  '" + convertdateformat(req.query.StartDate, 3) + "' AND '" + convertdateformat(req.query.EndDate, 3) + "'";
+        }
+    }
+    else if (req.query.StartDate != null && req.query.StartDate != '' && req.query.StartDate != undefined) {
+        if (search == '') {
+            search += " AND  tl.ExpiryDate >= '" + convertdateformat(req.query.StartDate, 3) + "'";
+        } else {
+            search += " AND tl.ExpiryDate >= '" + convertdateformat(req.query.StartDate, 3) + "'";
+        }
+    }
+
+    else if (req.query.EndDate != null && req.query.EndDate != '' && req.query.EndDate != undefined) {
+        if (search == '') {
+            search += " AND tl.ExpiryDate <= '" + convertdateformat(req.query.EndDate, 3) + "'";
+        } else {
+            search += " AND tl.ExpiryDate <= '" + convertdateformat(req.query.EndDate, 3) + "'";
+        }
+    }
+
     var query = "SELECT tl.Id, tu.email,tl.DeviceId,tl.LicenceNo,tl.IdUser,tu.username,tv.Name as VehicleName, " +
         "CONVERT_TZ(tl.CreatedDate,'+00:00','" + CurrentOffset + "') as CreatedDate, " +
         "CONVERT_TZ(tl.ExpiryDate,'+00:00','" + CurrentOffset + "') as ExpiryDate, " +
@@ -32,6 +57,9 @@ router.get('/GetAllLicence', function (req, res) {
         " LEFT JOIN tbluserinformation as tu ON tl.IdUser = tu.id " +
         " LEFT JOIN tblvehicle tv on tv.deviceid =tl.DeviceId where tl.IsDeleted=0  " + search +
         " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
+
+        console.log(query)
+
     var countquery = "SELECT count(*) as TotalRecord " +
         " from tbllicencemanager as tl " +
         " LEFT JOIN tbluserinformation as tu ON tl.IdUser = tu.id " +
@@ -266,8 +294,8 @@ router.get('/changestatusrenewal', function (req, res) {
                     var date = new Date(isExist.ExpiryDate);
                     var updatedDate = convertdateformat(date.setMonth(date.getMonth() + 12), 3);
                     isExist.updateAttributes({ ExpiryDate: updatedDate }).then(function (response) {
-                        var difference = (response.ExpiryDate.getFullYear()*12 + response.ExpiryDate.getMonth()) - (oldexpdate.getFullYear()*12 + oldexpdate.getMonth());
-                      //  console.log(difference)
+                        var difference = (response.ExpiryDate.getFullYear() * 12 + response.ExpiryDate.getMonth()) - (oldexpdate.getFullYear() * 12 + oldexpdate.getMonth());
+                        //  console.log(difference)
                         funAuditLog.CreateAuditLog('Update ExpiryDate of Device (' + response.DeviceId + ')', UserExist.username, 'Updated ExpiryDate (' + convertdateformat(response.ExpiryDate, 4) + ') / Old ExpiryDate (' + convertdateformat(oldexpdate, 4) + ') / Updated for (' + difference + ') month)');
                         res.json({
                             success: true,
