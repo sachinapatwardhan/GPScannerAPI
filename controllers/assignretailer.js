@@ -153,7 +153,7 @@ router.get('/SaveAssignRetailer', function(req, res) {
                     if (!AgentretailerExist) {
                         AgentRetailer.create(objAssignRetailer).then(function(response) {
                             if (response) {
-                                funAuditLog.CreateAuditLog('Save SIM', UserExist.username, 'Cerate New SIM Data');
+                                funAuditLog.CreateAuditLog('Save SIM', UserExist.username, 'Cerate New SIM Data- RetailerId('+ response.retailerId+')');
                                 res.json({ success: true, message: "Agent Retailer created successfully...", data: response });
                             } else {
                                 res.json({ success: false, message: "Agent Retailer not created...", data: response });
@@ -189,7 +189,7 @@ router.get('/removeAssignRetailer', function(req, res) {
             if (UserExist != null) {
                 AgentRetailer.destroy({ where: { agentId: objAssignRetailer.agentId, retailerId: objAssignRetailer.retailerId } }).then(function(response) {
                     if (response) {
-                        funAuditLog.CreateAuditLog('Delete  retailer', UserExist.username, 'Delete  retailer');
+                        funAuditLog.CreateAuditLog('Delete  retailer', UserExist.username, 'Delete  retailer - UserID ('+ UserExist.id+')');
                         res.json({ success: true, message: "Agent Retailer removed successfully...", data: response });
                     } else {
                         res.json({ success: false, message: "Agent Retailer not remove...", data: response });

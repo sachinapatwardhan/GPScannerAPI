@@ -1046,18 +1046,18 @@ router.post('/SaveOrderService', jsonParser, function(req, res) {
                                                         }
                                                     }).then(function(vehicleCreated) {
                                                         if (vehicleCreated) {
-                                                            funAuditLog.CreateAuditLog('Create Vehicle through Create Oder service', UserExist.username, 'Save Vehicle  through Create Oder service');
+                                                            funAuditLog.CreateAuditLog('Create Vehicle through Create Oder service', UserExist.username, 'Save Vehicle  through Create Oder service / DeviceID ('+ VehicleExist.deviceid+') ');
                                                         }
                                                     })
                                                 } else {
                                                     VehicleExist.updateAttributes({ renewaldate: AddDate(objVehicle.CreatedDate, 1, "Year") }).then(function(vehicleupdated) {
-                                                        funAuditLog.CreateAuditLog('update Vehicle Expiry date through Create Oder service', UserExist.username, 'update Vehicle Expiry date through Create Oder service');
+                                                        funAuditLog.CreateAuditLog('update Vehicle Expiry date through Create Oder service', UserExist.username, 'update Vehicle Expiry date through Create Oder service / DeviceID ('+ VehicleExist.deviceid+')');
                                                     });
                                                 }
                                             } else {
                                                 Vehicle.create(objVehicle).then(function(vehicleCreated) {
                                                     if (vehicleCreated) {
-                                                        funAuditLog.CreateAuditLog('Create Vehicle through Create Oder service', UserExist.username, 'Save Vehicle Type through Create Oder service');
+                                                        funAuditLog.CreateAuditLog('Create Vehicle through Create Oder service', UserExist.username, 'Save Vehicle Type through Create Oder service / DeviceID ('+ vehicleCreated.deviceid+')');
                                                     }
                                                 })
                                             }

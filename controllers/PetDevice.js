@@ -933,8 +933,9 @@ router.get('/GetAllPetbyCountry', function(req, res) {
 
 router.get('/DeleteDeviceById', function(req, res) {
     GPSDevice.destroy({ where: { id: req.query.id } }).then(function(response) {
+        console.log(response)
         if (response) {
-            funAuditLog.CreateAuditLog('DeleteGPSDevice', 'Admin', 'Delete GPS Device');
+            funAuditLog.CreateAuditLog('DeleteGPSDevice', 'Admin', 'Delete GPS Device ');
             res.json({ success: true, message: "GPS Device deleted successfully...", data: response });
         } else {
             res.json({ success: false, message: "Requested Record not Exist....", data: response });
@@ -969,7 +970,7 @@ router.post('/SaveGPSDevice', jsonParser, function(req, res) {
                             objGPSDevice.CreatedBy = decoded.username;
                             GPSDevice.findOrCreate({ where: { DeviceId: objGPSDevice.DeviceId }, defaults: objGPSDevice }).then(function(response) {
                                 if ((response[1])) {
-                                    funAuditLog.CreateAuditLog('SaveGPSDevice', UserExist.username, 'Create GPS Tracker Device');
+                                    funAuditLog.CreateAuditLog('SaveGPSDevice', UserExist.username, 'Create GPS Tracker Device / IMEI : ('+ response[1].IMEI +')');
                                     res.json({ success: true, message: "Tracker created successfully...", data: response });
                                 } else {
                                     res.json({ success: false, message: "Tracker already exist...", data: response });
@@ -996,7 +997,7 @@ router.post('/SaveGPSDevice', jsonParser, function(req, res) {
                                 } else {
                                     GPSDevice.update(objGPSDevice, { where: { id: objGPSDevice.id } }).then(function(response) {
                                         if (response[0]) {
-                                            funAuditLog.CreateAuditLog('SaveGPSDevice', UserExist.username, 'Update GPS Tracker Device');
+                                            funAuditLog.CreateAuditLog('SaveGPSDevice', UserExist.username, 'Update GPS Tracker Device  IMEI : ('+ objGPSDeviceExit.IMEI +')');
                                             Vehicle.findOne({ where: { deviceid: objGPSDevice.DeviceId } }).then(function(vehicleExits) {
                                                 vehicleExits.updateAttributes({ DeviceType: objGPSDevice.Type }).then(function(VehicleDeviceTypeupdate) {})
                                             })
@@ -1116,7 +1117,7 @@ router.get('/UpdateStatus', function(req, res) {
                                 ActivationDate: ActivationDate
                             }).then(function(response) {
                                 if (response) {
-                                    funAuditLog.CreateAuditLog('update tracker status', UserExist.username, 'update tracker status IsActive');
+                                    funAuditLog.CreateAuditLog('update tracker status', UserExist.username, 'update tracker status IsActive / IMEI: ('+ ObjExist.IMEI+')');
                                     res.json({ success: true, message: "Tracker Status Updated successfully", data: response });
                                 } else {
                                     res.json({ success: false, message: "Tacker Status not updated successfully" })
@@ -1129,7 +1130,7 @@ router.get('/UpdateStatus', function(req, res) {
                                 IsActive: req.query.IsActive,
                             }).then(function(response) {
                                 if (response) {
-                                    funAuditLog.CreateAuditLog('update tracker status', UserExist.username, 'update tracker status IsActive');
+                                    funAuditLog.CreateAuditLog('update tracker status', UserExist.username, 'update tracker status IsActive / IMEI: ('+ ObjExist.IMEI+')');
                                     res.json({ success: true, message: "Tracker Status Updated successfully", data: response });
                                 } else {
                                     res.json({ success: false, message: "Tracker Status not Updated successfully", data: response });

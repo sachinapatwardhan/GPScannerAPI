@@ -176,7 +176,7 @@ router.post('/SaveCity', jsonParser, function(req, res) {
 
                             City.findOrCreate({ where: { Name: objCity.Name, idState: objCity.idState }, defaults: objCity }).then(function(response) {
                                 if ((response[1])) {
-                                    funAuditLog.CreateAuditLog('SaveCity', UserExist.username, 'Create City');
+                                  //  funAuditLog.CreateAuditLog('SaveCity', UserExist.username, 'Create City ('+ response[1].Name +')');
                                     res.json({ success: true, message: "City created successfully...", data: response });
                                 } else {
                                     res.json({ success: false, message: "City is already Exist...", data: response });
@@ -205,7 +205,7 @@ router.post('/SaveCity', jsonParser, function(req, res) {
                                 } else {
                                     City.update(objCity, { where: { id: objCity.id } }).then(function(response) {
                                         if (response[0]) {
-                                            funAuditLog.CreateAuditLog('SaveCity', UserExist.username, 'Update City');
+                                         //   funAuditLog.CreateAuditLog('Update City', UserExist.username, 'Update City ('+objCityExist.Name+') ');
                                             res.json({ success: true, message: "City updated successfully...", data: response });
                                         }
                                     })
@@ -247,7 +247,7 @@ router.get('/DeleteCity', function(req, res) {
                     if (UserExist != null) {
                         City.destroy({ where: { id: req.query.CityId } }).then(function(response) {
                             if (response) {
-                                funAuditLog.CreateAuditLog('DeleteCity', UserExist.username, 'Delete City');
+                               // funAuditLog.CreateAuditLog('DeleteCity', UserExist.username, 'Delete City ('+ response.Name +')');
                                 res.json({ success: true, message: "City deleted successfully...", data: response });
                             } else {
                                 res.json({ success: false, message: "Requested Record not Exist....", data: response });

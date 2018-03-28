@@ -27,7 +27,7 @@ router.post('/SaveSetting', jsonParser, function(req, res) {
                     //set Parameter
                     Setting.findOrCreate({ where: { Name: objSetting.Name }, defaults: objSetting }).then(function(response) {
                         if ((response[1])) {
-                            funAuditLog.CreateAuditLog('Create Setting', UserExist.username, 'Save Setting');
+                            funAuditLog.CreateAuditLog('Create Setting', UserExist.username, 'Save Setting ('+ response[1].Name +')');
                             res.json({ success: true, message: "Setting created successfully...", data: response });
                         } else {
                             res.json({ success: false, message: "Setting is already Exist...", data: response });
@@ -46,7 +46,7 @@ router.post('/SaveSetting', jsonParser, function(req, res) {
                             obj.StoreId = objSetting.StoreId;
                             Setting.update(obj, { where: { Name: { $like: '%' + objSetting.Name + '%' } } }).then(function(response) {
                                 if (response[0]) {
-                                    funAuditLog.CreateAuditLog('Update Setting ', UserExist.username, 'Update Seting');
+                                    funAuditLog.CreateAuditLog('Update Setting ', UserExist.username, 'Update Seting ('+ objSettingExist.Name +')');
                                     res.json({ success: true, message: "Setting updated successfully...", data: response });
                                 } else {
                                     res.json({ success: false, message: "Setting not updated successfully...", data: response });

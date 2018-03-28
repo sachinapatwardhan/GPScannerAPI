@@ -91,7 +91,7 @@ router.post('/SavePetAlarm', jsonParser, function(req, res) {
                         defaults: objPetAlarm
                     }).then(function(response) {
                         if ((response[1])) {
-                            funAuditLog.CreateAuditLog('SavePetAlarm', UserExist.username, 'Create Pet Alarm');
+                            funAuditLog.CreateAuditLog('SavePetAlarm', UserExist.username, 'Create Pet Alarm / DeviceId ('+ response[1].DeviceId+')');
                             res.json({
                                 success: true,
                                 message: "Pet Alarm created successfully...",
@@ -125,7 +125,7 @@ router.post('/SavePetAlarm', jsonParser, function(req, res) {
                                 }
                             }).then(function(response) {
                                 if (response[0]) {
-                                    funAuditLog.CreateAuditLog('SavePetAlarm', UserExist.username, 'Update Pet Alarm');
+                                    funAuditLog.CreateAuditLog('UpdatePetAlarm', UserExist.username, 'Update Pet Alarm / ('+ objPetAlarmExist.DeviceId +')');
                                     res.json({
                                         success: true,
                                         message: "Pet Alarm updated successfully...",
@@ -183,7 +183,7 @@ router.get('/DeleteVehicleAlarm', function(req, res) {
                                     DeleteBike(i + 1);
                                 })
                             } else {
-                                funAuditLog.CreateAuditLog('DeleteVehicleAlarm', UserExist.username, 'Delete Vehicle Alarm');
+                                funAuditLog.CreateAuditLog('DeleteVehicleAlarm', UserExist.username, 'Delete Vehicle Alarm / DeviceId ('+ resBike.DeviceId+')');
                                 res.json(msg);
                             }
                         }

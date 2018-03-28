@@ -78,7 +78,7 @@ router.post('/saveUserfeedBack', jsonParser, function(req, res) {
                     if (FeedBackExits) {
                         FeedBack.update(objfeedback, { where: { IdUser: objfeedback.IdUser } }).then(function(response) {
                             if (response) {
-                                funAuditLog.CreateAuditLog('update Feedback', UserExist.username, 'Update Feedback');
+                                funAuditLog.CreateAuditLog('update Feedback', UserExist.username, 'Update Feedback ID: ('+ FeedBackExits.Id+')');
                                 res.json({ success: true, message: "FeedBack updated successfully...", data: response });
                             } else {
                                 res.json({ success: false, message: "FeedBack not updated...", data: response });
@@ -89,7 +89,7 @@ router.post('/saveUserfeedBack', jsonParser, function(req, res) {
                         objfeedback.CreatedBy = UserExist.username;
                         FeedBack.create(objfeedback).then(function(response) {
                             if (response) {
-                                funAuditLog.CreateAuditLog('feedback cerate', UserExist.username, 'Cerate New feedback');
+                                funAuditLog.CreateAuditLog('feedback cerate', UserExist.username, 'Cerate New feedback ID: ('+ response.Id +')');
                                 res.json({ success: true, message: "FeedBack created successfully...", data: response });
                             } else {
                                 res.json({ success: false, message: "FeedBack is already Exist...", data: response });

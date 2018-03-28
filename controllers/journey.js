@@ -60,7 +60,7 @@ router.post('/StartJourney', jsonParser, function(req, res) {
                             JourneyName: objJourney.JourneyName,
                         }).then(function(response) {
                             if (response) {
-                                funAuditLog.CreateAuditLog('update Journey', UserExist.username, 'Stop Journey');
+                                funAuditLog.CreateAuditLog('update Journey', UserExist.username, 'Stop Journey / DeviceID: ('+ JourneyRouteExist.DeviceId +')');
                                 res.json({ success: true, message: 'Journey stop successfully..' });
                             } else {
                                 res.json({ success: false, message: 'Journey can not stop. Try again later.' });
@@ -73,7 +73,7 @@ router.post('/StartJourney', jsonParser, function(req, res) {
 
                         JourneyRoute.create(objJourney).then(function(response) {
                             if (response) {
-                                funAuditLog.CreateAuditLog('Create Journey', UserExist.username, 'Start Journey');
+                                funAuditLog.CreateAuditLog('Create Journey', UserExist.username, 'Start Journey / DeviceID: ('+ response.DeviceId +')');
                                 res.json({ success: true, message: 'Journey started successfully..' });
                             } else {
                                 res.json({ success: false, message: 'Journey can not start. Try again later.' });
@@ -125,7 +125,7 @@ router.get('/deleteJourneyById', function(req, res) {
                             // }).then(function(JouryGpsDataDeleted) {
                             JourneyRouteExist.updateAttributes({ IsDelete: 1 }).then(function(response) {
                                 if (response) {
-                                    funAuditLog.CreateAuditLog('Delete journey route', UserExist.username, 'Delete journey route');
+                                    funAuditLog.CreateAuditLog('Delete journey route', UserExist.username, 'Delete journey route/ DeviceId ('+ JourneyRouteExist.DeviceId +')');
                                     res.json({
                                         success: true,
                                         message: "journey deleted successfully...",

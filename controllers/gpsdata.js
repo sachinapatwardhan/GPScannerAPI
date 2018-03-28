@@ -5394,7 +5394,7 @@ router.get('/DeleteGPSdatabyVehicleId', function(req, res) {
                             if (response) {
                                 response.updateAttributes({ IsDelete: true }).then(function(resUpdate) {
                                     if (resUpdate) {
-                                        funAuditLog.CreateAuditLog('Delete vehicle', decoded.username, 'Update IsDelete Status 1');
+                                        funAuditLog.CreateAuditLog('Delete vehicle', decoded.username, 'Update IsDelete Status 1/ DeviceID: ('+ response.deviceid +')');
                                         if (req.query.flg == true || req.query.flg == 'true') {
                                             var obj = new Object();
                                             obj.idVehicle = response.id;
@@ -5414,7 +5414,7 @@ router.get('/DeleteGPSdatabyVehicleId', function(req, res) {
                                                 defaults: obj
                                             }).then(function(CashCreate) {
                                                 if (CashCreate[1]) {
-                                                    funAuditLog.CreateAuditLog('Create GpsDeleteCash data', decoded.username, 'Save GpsDeleteCash data');
+                                                    funAuditLog.CreateAuditLog('Create GpsDeleteCash data', decoded.username, 'Save GpsDeleteCash data DeviceId: ('+CashCreate[1].DeviceId+')');
                                                     res.json({
                                                         success: true,
                                                         message: "Vehicle Deleted Successfully",
@@ -5504,7 +5504,7 @@ router.get('/DeleteAccount', function(req, res) {
                     obj.RequestType = "AccountDelete";
                     GpsDeleteCash.create(obj).then(function(CashCreate) {
                         if (CashCreate) {
-                            funAuditLog.CreateAuditLog('Create GpsDeleteCash data', decoded.username, 'Save GpsDeleteCash data');
+                            funAuditLog.CreateAuditLog('Create GpsDeleteCash data', decoded.username, 'Save GpsDeleteCash data vehicleId: ('+ CashCreate.idVehicle +')');
                             res.json({
                                 success: true,
                                 message: "Account Deleted Successfully",

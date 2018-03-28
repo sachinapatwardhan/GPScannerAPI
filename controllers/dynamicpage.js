@@ -46,7 +46,7 @@ router.post('/SaveDynamicPage', jsonParser, function (req, res) {
                     DynamicPage.findOrCreate({ where: { Slug: objDynamicPage.Slug }, defaults: objDynamicPage }).then(function (response) {
                         if ((response[1])) {
                             //res.json("DynamicPage created successfully...");
-                            funAuditLog.CreateAuditLog('SaveDynamicPage', UserExist.username , 'Create DynamicPage');
+                            funAuditLog.CreateAuditLog('SaveDynamicPage', UserExist.username , 'Create DynamicPage: ('+response[1].Name+')');
                             res.json({ success: true, message: "DynamicPage created successfully...", data: response });
                         }
                         else {
@@ -63,7 +63,7 @@ router.post('/SaveDynamicPage', jsonParser, function (req, res) {
                         else {
                             DynamicPage.update(objDynamicPage, { where: { id: objDynamicPage.id } }).then(function (response) {
                                 if (response[0]) {
-                                    funAuditLog.CreateAuditLog('SaveDynamicPage', UserExist.username , 'Update DynamicPage');
+                                    funAuditLog.CreateAuditLog('Update DynamicPage', UserExist.username , 'Update DynamicPage: ('+objDynamicPageExist.Name+')');
                                     res.json({ success: true, message: "DynamicPage updated successfully...", data: response });
                                 }
                             })

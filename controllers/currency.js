@@ -36,7 +36,7 @@ router.post('/ManageCurrency', jsonParser, function(req, res) {
                         if (AccessPermission) {
 
                             Currency.create(objCurrency).then(function(response) {
-                                funAuditLog.CreateAuditLog('ManageCurrency', UserExist.username , 'Create Currency');
+                            //    funAuditLog.CreateAuditLog('ManageCurrency', UserExist.username , 'Create Currency');
                                 res.json({
                                     success: true,
                                     message: "Currency created successfully...",

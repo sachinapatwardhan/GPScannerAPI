@@ -71,7 +71,7 @@
                                  defaults: objBanner
                              }).then(function(response) {
                                  if (response[1]) {
-                                     funAuditLog.CreateAuditLog('SaveBanner', UserExist.username, 'Create Banner');
+                                     funAuditLog.CreateAuditLog('SaveBanner', UserExist.username, 'Create Banner ('+ response[1].Name +')');
                                      res.json({
                                          success: true,
                                          message: "Banner created successfully...",
@@ -118,7 +118,7 @@
                                          }
                                      }).then(function(response) {
                                          if (response[0]) {
-                                             funAuditLog.CreateAuditLog('SaveBanner', UserExist.username, 'Update Banner');
+                                             funAuditLog.CreateAuditLog('UpdateBanner', UserExist.username, 'Update Banner ('+ objBannerExist.Name +')');
                                              res.json({
                                                  success: true,
                                                  message: "Banner updated successfully...",
@@ -177,7 +177,7 @@
                                      }
                                  }).then(function(response) {
                                      if (response) {
-                                         funAuditLog.CreateAuditLog('DeleteBanner', UserExist.username, 'Delete Banner');
+                                         funAuditLog.CreateAuditLog('DeleteBanner', UserExist.username, 'Delete Banner ID ('+ resBannerMgmt.BannerId +')');
                                          res.json({
                                              success: true,
                                              message: "Banner deleted successfully...",
@@ -275,7 +275,7 @@
                                  defaults: objBannerMgmt
                              }).then(function(response) {
                                  if ((response[1])) {
-                                     funAuditLog.CreateAuditLog('SaveBannerMgmt', UserExist.username, 'Create Banner Management');
+                                     funAuditLog.CreateAuditLog('SaveBannerMgmt', UserExist.username, 'Create Banner Management BId : ('+ response[1].id +')');
                                      res.json({
                                          success: true,
                                          message: "BannerMgmt created successfully...",
@@ -324,7 +324,7 @@
                                          }
                                      }).then(function(response) {
                                          if (response[0]) {
-                                             funAuditLog.CreateAuditLog('SaveBannerMgmt', UserExist.username, 'Update Banner Management');
+                                             funAuditLog.CreateAuditLog('UpdateBannerMgmt', UserExist.username, 'Update Banner Management  BId : ('+ responseBannerMgmt.id +')');
                                              res.json({
                                                  success: true,
                                                  message: "BannerMgmt updated successfully...",
@@ -384,7 +384,7 @@
                              }
                          }).then(function(response) {
                              if (response) {
-                                 funAuditLog.CreateAuditLog('DeleteBannerMgmt', UserExist.username, 'Delete Banner Management');
+                                 funAuditLog.CreateAuditLog('DeleteBannerMgmt', UserExist.username, 'Delete Banner Management ');
                                  res.json({
                                      success: true,
                                      message: "BannerMgmt deleted successfully...",
