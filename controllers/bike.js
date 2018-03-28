@@ -907,21 +907,21 @@ router.get('/SaveVehicleold', jsonParser, function(req, res) {
                                         }).then(function(response) {
                                             if (response[0]) {
 
-                                                funAuditLog.CreateAuditLog('SaveVehicle(IMEI:' + objVehicle.IMEI + ')', UserExist.username, 'Create Vehicle');
-                                                GpsDevice.findOne({ where: { DeviceId: objVehicle.deviceid } }).then(function(GpsDataExist) {
-                                                        if (GpsDataExist) {
-                                                            funAuditLog.CreateAuditLog('SaveDate', UserExist.username, 'Save Vehicle Expiry & Activation Date');
-                                                            GpsDataExist.updateAttributes({
-                                                                IsActive: 1,
-                                                                ExpiryDate: ExpiryDate,
-                                                                ActivationDate: ActivationDate,
-                                                            }).then(function(response1) {
+                                                funAuditLog.CreateAuditLog('Update Vehicle', UserExist.username, 'UpdateVehicle(IMEI:' + objVehicle.IMEI + ' , UserId : ' + objVehicle.iduser + ')');
+                                                // GpsDevice.findOne({ where: { DeviceId: objVehicle.deviceid } }).then(function(GpsDataExist) {
+                                                //         if (GpsDataExist) {
+                                                //             funAuditLog.CreateAuditLog('SaveDate', UserExist.username, 'Save Vehicle Expiry & Activation Date');
+                                                //             GpsDataExist.updateAttributes({
+                                                //                 IsActive: 1,
+                                                //                 ExpiryDate: ExpiryDate,
+                                                //                 ActivationDate: ActivationDate,
+                                                //             }).then(function(response1) {
 
-                                                            })
-                                                        }
-                                                    })
-                                                    // if (objGpsDevice.AppName == 'Maark') {
-                                                    // CreateOrderServiceGlobal(UserExist.country, UserExist.id, objVehicle.deviceid, UserExist.username, UserExist.idApp, function(orderresponse) {
+                                                //             })
+                                                //         }
+                                                //     })
+                                                // if (objGpsDevice.AppName == 'Maark') {
+                                                // CreateOrderServiceGlobal(UserExist.country, UserExist.id, objVehicle.deviceid, UserExist.username, UserExist.idApp, function(orderresponse) {
                                                 changeSharedId(objVehicle.iduser, objVehicleExist.iduser, objVehicle.deviceid, function(shareuserupdate) {
                                                     // console.log("0....1...................................", shareuserupdate)
                                                     res.json({
@@ -965,30 +965,30 @@ router.get('/SaveVehicleold', jsonParser, function(req, res) {
                                                 objVehicle.renewaldate = ExpiryDate;
                                                 Vehicle.create(objVehicle).then(function(response) {
                                                     if (response) {
-                                                        funAuditLog.CreateAuditLog('SaveVehicle(IMEI:' + objVehicle.IMEI + ')', UserExist.username, 'Create Vehicle');
+                                                        funAuditLog.CreateAuditLog('Create Vehicle', UserExist.username, 'SaveVehicle(IMEI:' + objVehicle.IMEI + ' , UserId : ' + objVehicle.iduser + ')');
 
-                                                        GpsDevice.findOne({ where: { DeviceId: response.deviceid } }).then(function(GpsDataExist) {
-                                                            if (GpsDataExist) {
-                                                                funAuditLog.CreateAuditLog('SaveDate', UserExist.username, 'Save Vehicle Expiry & Activation Date');
+                                                        // GpsDevice.findOne({ where: { DeviceId: response.deviceid } }).then(function(GpsDataExist) {
+                                                        //     if (GpsDataExist) {
+                                                        //         funAuditLog.CreateAuditLog('SaveDate', UserExist.username, 'Save Vehicle Expiry & Activation Date');
 
-                                                                // var ExpiryDate = null;
-                                                                // var ActivationDate = null;
-                                                                // var d = new Date();
-                                                                // var year = d.getFullYear();
-                                                                // var month = d.getMonth();
-                                                                // var day = d.getDate();
-                                                                // var c = new Date(year + 1, month, day)
-                                                                // ExpiryDate = c;
-                                                                // ActivationDate = d;
-                                                                GpsDataExist.updateAttributes({
-                                                                    IsActive: 1,
-                                                                    ExpiryDate: ExpiryDate,
-                                                                    ActivationDate: ActivationDate,
-                                                                }).then(function(response1) {
+                                                        //         // var ExpiryDate = null;
+                                                        //         // var ActivationDate = null;
+                                                        //         // var d = new Date();
+                                                        //         // var year = d.getFullYear();
+                                                        //         // var month = d.getMonth();
+                                                        //         // var day = d.getDate();
+                                                        //         // var c = new Date(year + 1, month, day)
+                                                        //         // ExpiryDate = c;
+                                                        //         // ActivationDate = d;
+                                                        //         GpsDataExist.updateAttributes({
+                                                        //             IsActive: 1,
+                                                        //             ExpiryDate: ExpiryDate,
+                                                        //             ActivationDate: ActivationDate,
+                                                        //         }).then(function(response1) {
 
-                                                                })
-                                                            }
-                                                        })
+                                                        //         })
+                                                        //     }
+                                                        // })
 
                                                         //Insert DeviceId to Acc Value set table (if country !=Cambodia)
                                                         if (objGpsDevice.CountryId != 30) {
@@ -1045,7 +1045,7 @@ router.get('/SaveVehicleold', jsonParser, function(req, res) {
                                             }
                                         }).then(function(response) {
                                             if (response[0]) {
-                                                funAuditLog.CreateAuditLog('SaveVehicle', UserExist.username, 'Update Vehicle');
+                                                funAuditLog.CreateAuditLog('Update Vehicle', UserExist.username, 'UpdateVehicle(IMEI:' + objVehicle.IMEI + ' , UserId : ' + objVehicle.iduser + ')');
                                                 changeSharedId(objVehicle.iduser, objVehicleExist.iduser, objVehicle.deviceid, function(shareuserupdate) {
                                                     // console.log("1...2................................", shareuserupdate)
                                                     res.json({
@@ -1098,7 +1098,7 @@ router.get('/SaveVehicleold', jsonParser, function(req, res) {
                                             }
                                         }).then(function(response) {
                                             if (response[0]) {
-                                                funAuditLog.CreateAuditLog('SaveVehicle', UserExist.username, 'Create Vehicle');
+                                                funAuditLog.CreateAuditLog('Update Vehicle', UserExist.username, 'UpdateVehicle(IMEI:' + objVehicle.IMEI + ' , UserId : ' + objVehicle.iduser + ')');
                                                 // console.log("***********")
                                                 // console.log("country...........", UserExist.country)
                                                 // console.log("id................", UserExist.id)
@@ -1155,7 +1155,7 @@ router.get('/SaveVehicleold', jsonParser, function(req, res) {
                                                 objVehicle.renewaldate = ExpiryDate;
                                                 Vehicle.create(objVehicle).then(function(response) {
                                                     if (response) {
-                                                        funAuditLog.CreateAuditLog('SaveVehicle', UserExist.username, 'Create Vehicle');
+                                                        funAuditLog.CreateAuditLog('Create Vehicle', UserExist.username, 'SaveVehicle(IMEI:' + objVehicle.IMEI + ' , UserId : ' + objVehicle.iduser + ')');
 
                                                         //Insert DeviceId to Acc Value set table (if country !=Cambodia)
                                                         if (objGpsDevice.CountryId != 30) {
@@ -1224,7 +1224,7 @@ router.get('/SaveVehicleold', jsonParser, function(req, res) {
                                             }
                                         }).then(function(response) {
                                             if (response[0]) {
-                                                funAuditLog.CreateAuditLog('SaveVehicle', UserExist.username, 'Update Vehicle');
+                                                funAuditLog.CreateAuditLog('Update Vehicle', UserExist.username, 'UpdateVehicle(IMEI:' + objVehicle.IMEI + ' , UserId : ' + objVehicle.iduser + ')');
                                                 changeSharedId(objVehicle.iduser, objVehicleExist.iduser, objVehicle.deviceid, function(shareuserupdate) {
                                                     // console.log("1...2.......3........4.................", shareuserupdate)
                                                     res.json({
@@ -1334,19 +1334,20 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                                 }).then(function(response) {
                                                     if (response[0]) {
 
-                                                        funAuditLog.CreateAuditLog('SaveVehicle(IMEI:' + objVehicle.IMEI + ')', UserExist.username, 'Create Vehicle');
-                                                        GpsDevice.findOne({ where: { DeviceId: objVehicle.deviceid } }).then(function(GpsDataExist) {
-                                                            if (GpsDataExist) {
-                                                                funAuditLog.CreateAuditLog('SaveDate', UserExist.username, 'Save Vehicle Expiry & Activation Date');
-                                                                GpsDataExist.updateAttributes({
-                                                                    IsActive: 1,
-                                                                    ExpiryDate: ExpiryDate,
-                                                                    ActivationDate: ActivationDate,
-                                                                }).then(function(response1) {
+                                                        funAuditLog.CreateAuditLog('Update Vehicle', UserExist.username, 'SaveVehicle(IMEI:' + objVehicle.IMEI + ' , UserId : ' + objVehicle.iduser + ')');
+                                                        // GpsDevice.findOne({ where: { DeviceId: objVehicle.deviceid } }).then(function(GpsDataExist) {
+                                                        //     if (GpsDataExist) {
+                                                        //         funAuditLog.CreateAuditLog('SaveDate', UserExist.username, 'Save Vehicle Expiry & Activation Date');
+                                                        //         GpsDataExist.updateAttributes({
+                                                        //             IsActive: 1,
+                                                        //             ExpiryDate: ExpiryDate,
+                                                        //             ActivationDate: ActivationDate,
+                                                        //         }).then(function(response1) {
 
-                                                                })
-                                                            }
-                                                        })
+                                                        //         })
+                                                        //     }
+                                                        // })
+
                                                         changeSharedId(objVehicle.iduser, objVehicleExist.iduser, objVehicle.deviceid, function(shareuserupdate) {
                                                             res.json({
                                                                 success: true,
@@ -1392,21 +1393,21 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                                         objVehicle.renewaldate = LicenceNores.data.ExpiryDate;
                                                         Vehicle.create(objVehicle).then(function(response) {
                                                             if (response) {
-                                                                funAuditLog.CreateAuditLog('SaveVehicle(IMEI:' + objVehicle.IMEI + ')', UserExist.username, 'Create Vehicle');
+                                                                funAuditLog.CreateAuditLog('Create Vehicle', UserExist.username, 'SaveVehicle(IMEI:' + objVehicle.IMEI + ' , UserId : ' + objVehicle.iduser + ')');
 
-                                                                GpsDevice.findOne({ where: { DeviceId: response.deviceid } }).then(function(GpsDataExist) {
-                                                                    if (GpsDataExist) {
-                                                                        funAuditLog.CreateAuditLog('SaveDate', UserExist.username, 'Save Vehicle Expiry & Activation Date');
+                                                                // GpsDevice.findOne({ where: { DeviceId: response.deviceid } }).then(function(GpsDataExist) {
+                                                                //     if (GpsDataExist) {
+                                                                //         funAuditLog.CreateAuditLog('SaveDate', UserExist.username, 'Save Vehicle Expiry & Activation Date');
 
-                                                                        GpsDataExist.updateAttributes({
-                                                                            IsActive: 1,
-                                                                            ExpiryDate: ExpiryDate,
-                                                                            ActivationDate: ActivationDate,
-                                                                        }).then(function(response1) {
+                                                                //         GpsDataExist.updateAttributes({
+                                                                //             IsActive: 1,
+                                                                //             ExpiryDate: ExpiryDate,
+                                                                //             ActivationDate: ActivationDate,
+                                                                //         }).then(function(response1) {
 
-                                                                        })
-                                                                    }
-                                                                })
+                                                                //         })
+                                                                //     }
+                                                                // })
 
                                                                 //Insert DeviceId to Acc Value set table (if country !=Cambodia)
                                                                 if (objGpsDevice.CountryId != 30) {
@@ -1470,7 +1471,7 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                                         }
                                                     }).then(function(response) {
                                                         if (response[0]) {
-                                                            funAuditLog.CreateAuditLog('SaveVehicle', UserExist.username, 'Update Vehicle');
+                                                            funAuditLog.CreateAuditLog('Update Vehicle', UserExist.username, 'UpdateVehicle(IMEI:' + objVehicle.IMEI + ' , UserId : ' + objVehicle.iduser + ')');
                                                             changeSharedId(objVehicle.iduser, objVehicleExist.iduser, objVehicle.deviceid, function(shareuserupdate) {
                                                                 res.json({
                                                                     success: true,
@@ -1536,7 +1537,7 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                                     }
                                                 }).then(function(response) {
                                                     if (response[0]) {
-                                                        funAuditLog.CreateAuditLog('SaveVehicle', UserExist.username, 'Create Vehicle');
+                                                        funAuditLog.CreateAuditLog('Update Vehicle', UserExist.username, 'UpdateVehicle(IMEI:' + objVehicle.IMEI + ' , UserId : ' + objVehicle.iduser + ')');
                                                         changeSharedId(objVehicle.iduser, objVehicleExist.iduser, objVehicle.deviceid, function(shareuserupdate) {
                                                             res.json({
                                                                 success: true,
@@ -1582,7 +1583,7 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                                         objVehicle.renewaldate = LicenceNoExist.ExpiryDate;
                                                         Vehicle.create(objVehicle).then(function(response) {
                                                             if (response) {
-                                                                funAuditLog.CreateAuditLog('SaveVehicle', UserExist.username, 'Create Vehicle');
+                                                                funAuditLog.CreateAuditLog('Create Vehicle', UserExist.username, 'SaveVehicle(IMEI:' + objVehicle.IMEI + ' , UserId : ' + objVehicle.iduser + ')');
 
                                                                 //Insert DeviceId to Acc Value set table (if country !=Cambodia)
                                                                 if (objGpsDevice.CountryId != 30) {
@@ -1646,7 +1647,7 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                                         }
                                                     }).then(function(response) {
                                                         if (response[0]) {
-                                                            funAuditLog.CreateAuditLog('SaveVehicle', UserExist.username, 'Update Vehicle');
+                                                            funAuditLog.CreateAuditLog('Update Vehicle', UserExist.username, 'UpdateVehicle(IMEI:' + objVehicle.IMEI + ' , UserId : ' + objVehicle.iduser + ')');
                                                             changeSharedId(objVehicle.iduser, objVehicleExist.iduser, objVehicle.deviceid, function(shareuserupdate) {
                                                                 res.json({
                                                                     success: true,
