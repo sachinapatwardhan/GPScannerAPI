@@ -840,14 +840,6 @@ global.Command9955 = function(line, Callback) {
         var timediffernce = parseInt((DeviceTime - systemtime) / 1000);
         console.log("Time Diff = " + timediffernce)
 
-        connection.query("Update tblvehicle set HandshakDatetime='" + CurrentDate + "',IsOnline=true where deviceid=" + DeviceId, function(err, rows1, fields) {
-            var objConnection = {
-                DeviceId: DeviceId,
-                Status: true
-            }
-            io.sockets.emit(DeviceId + 'BikeDeviceStatus', JSON.stringify(objConnection));
-        });
-
         if (timediffernce <= 3600) {
 
             // //Insert data in gps
