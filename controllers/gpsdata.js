@@ -5504,7 +5504,7 @@ router.get('/DeleteAccount', function(req, res) {
                     obj.RequestType = "AccountDelete";
                     GpsDeleteCash.create(obj).then(function(CashCreate) {
                         if (CashCreate) {
-                            funAuditLog.CreateAuditLog('Create GpsDeleteCash data', decoded.username, 'Save GpsDeleteCash data vehicleId: ('+ CashCreate.idVehicle +')');
+                            funAuditLog.CreateAuditLog('Delete Account', decoded.username, 'Save GpsDeleteCash data Userid: (' + CashCreate.idUser + ')');
                             res.json({
                                 success: true,
                                 message: "Account Deleted Successfully",
