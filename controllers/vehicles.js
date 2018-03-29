@@ -27,6 +27,8 @@ router.get('/UpdateExpiryDate', function(req, res) {
             if (UserExist != null) {
                 Vehicle.findOne({ where: { id: req.query.id } }).then(function(vehicleExist) {
                     if (vehicleExist) {
+                        var oldexpdate = vehicleExist.renewaldate;
+
                         vehicleExist.updateAttributes({ renewaldate: req.query.renewaldate }).then(function(response) {
                             LicenceManager.findOne({ where: { DeviceId: vehicleExist.deviceid, IsDeleted: 0 } }).then(function(LicenceExist) {
                                 if (LicenceExist) {
@@ -34,7 +36,9 @@ router.get('/UpdateExpiryDate', function(req, res) {
                                 }
                             })
                             if (response) {
-                                funAuditLog.CreateAuditLog('Update ExpiryDate of vehicle', UserExist.usernam, 'Update ExpiryDate of Device (' + response.deviceid + ')');
+                                var difference = (response.renewaldate.getFullYear() * 12 + response.renewaldate.getMonth()) - (oldexpdate.getFullYear() * 12 + oldexpdate.getMonth());
+                                // funAuditLog.CreateAuditLog('Update ExpiryDate of Device', UserExist.usernam, 'Update vehicle ExpiryDate of Device (' + response.deviceid + ')');
+                                funAuditLog.CreateAuditLog('update ExpiryDate of Device', UserExist.username, 'DeviceID(' + response.deviceid + ') / update vehicle ExpiryDate of Device (' + convertdateformat1(response.renewaldate, 4) + ') / Old ExpiryDate (' + convertdateformat1(vehicleExist.renewaldate, 4) + ') / Updated for (' + difference + ' month)');
                                 res.json({ success: true, message: 'Expiry Date updated successfully..' })
                             } else {
                                 res.json({ success: false, message: 'Expiry Date not updated' })
@@ -936,9 +940,33 @@ function ConvertDateFormat(today, flg) {
     var firstdaySeconds = today.getUTCSeconds();
 
     //return year + "-" + month + "-" + day + " " + hour + ":" + min + ":" + sec;
+
     if (flg) {
         return ("00" + year.toString()).slice(-4) + "-" + ("00" + month.toString()).slice(-2) + "-" + ("0000" + day.toString()).slice(-2) + " " + ("00" + firstdayHours.toString()).slice(-2) + ':' + ("00" + firstdayMinutes.toString()).slice(-2) + ':' + ("00" + firstdaySeconds.toString()).slice(-2);
     } else { return ("0000" + year.toString()).slice(-4) + "-" + ("00" + month.toString()).slice(-2) + "-" + ("00" + day.toString()).slice(-2); }
 }
 
+
+
+
+function convertdateformat1(date1, flg) {
+    var date = new Date(date1);
+    var firstdayMonth = date.getMonth() + 1;
+    var firstdayDay = date.getDate();
+    var firstdayYear = date.getFullYear();
+    var firstdayHours = date.getHours();
+    var firstdayMinutes = date.getMinutes();
+    var firstdaySeconds = date.getSeconds();
+
+    if (flg == 1) {
+        return ("0000" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("00" + firstdayDay.toString()).slice(-2) + " " + "23:59:59";
+
+    } else if (flg == 2) {
+        return ("0000" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("00" + firstdayDay.toString()).slice(-2) + " " + "00:00:00";
+    } else if (flg == 3) {
+        return ("0000" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("00" + firstdayDay.toString()).slice(-2) + " " + ("00" + firstdayHours.toString()).slice(-2) + ':' + ("00" + firstdayMinutes.toString()).slice(-2) + ':' + ("00" + firstdaySeconds.toString()).slice(-2);
+    } else {
+        return ("0000" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("00" + firstdayDay.toString()).slice(-2);
+    }
+}
 module.exports = router
