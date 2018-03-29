@@ -718,7 +718,6 @@ global.checkLicence = checkLicence;
 
 function checkLicence(objVehicle, callback) {
     // console.log("deviceid.....")
-    // console.log(objVehicle)
     LicenceManager.findOne({ where: { DeviceId: objVehicle.deviceid, IdUser: objVehicle.iduser, IsDeleted: 0 } }).then(function(LicenceNoExist) {
         if (LicenceNoExist) {
             LicenceNoExist.updateAttributes({
