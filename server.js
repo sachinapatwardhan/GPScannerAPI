@@ -484,7 +484,7 @@ app.use('/petalarm', require('./controllers/petAlarm'))
 app.use('/favoriteplace', require('./controllers/favoriteplace'))
     //app.use('/petFeedback', require('./controllers/petFeedback'))
     //app.use('/petshop', require('./controllers/petShop'))
-
+app.use('/vehiclegroup', require('./controllers/vehiclegroup'))
 app.use('/carrier', require('./controllers/carrier'))
 app.use('/deviceacc', require('./controllers/deviceacc'))
     //CMS
