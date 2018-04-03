@@ -84,7 +84,7 @@ router.post('/SaveAppInfo', jsonParser, function(req, res) {
                         if (response[0]) {
 
                             DefultAppSetting(response[0].Id);
-                            funAuditLog.CreateAuditLog('SaveApp', decoded.username, 'Create App Info ('+ response[1].AppName +')');
+                            funAuditLog.CreateAuditLog('SaveApp', decoded.username, 'Create App Info (' + response[0].AppName + ')');
                             res.json({
                                 success: true,
                                 message: "App Info created successfully...",
@@ -109,7 +109,7 @@ router.post('/SaveAppInfo', jsonParser, function(req, res) {
                         }
                     }).then(function(response) {
                         if (response[0]) {
-                            funAuditLog.CreateAuditLog('Update App', decoded.username, 'Update App Info ('+ response.AppName +')');
+                            funAuditLog.CreateAuditLog('Update App', decoded.username, 'Update App Info (' + objAppInfo.AppName + ')');
                             res.json({
                                 success: true,
                                 message: "App Info updated successfully...",
@@ -178,7 +178,7 @@ router.get('/DeleteAppInfo', function(req, res) {
                         if (response) {
                             // response.updateAttributes({ IsDelete: true }).then(function(resUpdate) {
                             response.destroy().then(function(resUpdate) {
-                                funAuditLog.CreateAuditLog('DeleteApp', UserExist.username, 'Delete App Info ('+ response.AppName +')');
+                                funAuditLog.CreateAuditLog('DeleteApp', UserExist.username, 'Delete App Info (' + response.AppName + ')');
                                 res.json({
                                     success: true,
                                     message: "App Info Deleted Successfully",
