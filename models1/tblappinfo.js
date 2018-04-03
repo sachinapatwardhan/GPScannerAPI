@@ -59,6 +59,14 @@ module.exports = function(sequelize, DataTypes) {
     WebAppHeaderLogo: {
       type: DataTypes.STRING,
       allowNull: true
+    },
+    LicenceRenewalType: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    LicenceType: {
+      type: DataTypes.STRING,
+      allowNull: true
     }
   }, {
     tableName: 'tblappinfo'
