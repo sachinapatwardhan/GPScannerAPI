@@ -1746,9 +1746,7 @@ router.post('/SaveCustomer', jsonParser, function(req, res) {
                                     }
                                 } else {
                                     var UserPassword = objUser.password;
-                                    console.log(UserPassword)
                                     var EncryptUserpassword = jwt.encode(UserPassword, "bugz");
-                                    console.log(EncryptUserpassword)
                                     User.findOrCreate({
                                         where: {
                                             username: objUser.username,
