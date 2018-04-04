@@ -393,6 +393,7 @@ function hex2byteCRC(hexx) {
         lst.push(parseInt(hex.substr(i, 2), 16));
     return lst;
 }
+global.hexToBinary = hexToBinary;
 
 function hexToBinary(s) {
     var i, k, part, ret = '';
@@ -871,7 +872,8 @@ global.Command9955 = function(line, Callback) {
                     IsDoor: IsDoor,
                     IsEngine: IsPatchEngine,
                     IsOriginalSirenTriggeringStatus: IsOriginalSirenTriggeringStatus,
-                    Date: unixDateStemp
+                    Date: unixDateStemp,
+                    AD2: hexToBinary(AD2),
                 }
 
                 if (Position == 'A') {

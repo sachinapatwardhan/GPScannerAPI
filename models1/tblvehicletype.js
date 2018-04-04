@@ -15,7 +15,7 @@ module.exports = function(sequelize, DataTypes) {
     IsActive: {
       type: DataTypes.INTEGER(2),
       allowNull: true,
-      defaultValue: '0'
+      defaultValue: "0"
     },
     CreatedDate: {
       type: DataTypes.DATE,
@@ -37,6 +37,10 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING,
       allowNull: true
     },
+    PowerCuttIcon: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
     LocateOnIcon: {
       type: DataTypes.STRING,
       allowNull: true
@@ -49,10 +53,14 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING,
       allowNull: true
     },
+    LocatePowerCuttIcon: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
     LocateIsRotate: {
-      type: DataTypes.BOOLEAN,
+      type: DataTypes.INTEGER(1),
       allowNull: true,
-      defaultValue: '1'
+      defaultValue: "1"
     }
   }, {
     tableName: 'tblvehicletype'

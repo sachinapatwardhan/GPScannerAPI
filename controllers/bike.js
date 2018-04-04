@@ -383,8 +383,6 @@ router.get('/GetVehicleCurrentLocation', function(req, res) {
     // var unixStartdate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
     // // var unixStartdate = Startdate.getTime() / 1000;
 
-
-
     client.get(req.query.DeviceId, function(err, strgpsdata) {
         if (!err) {
             if (strgpsdata != null && strgpsdata != '' && strgpsdata != undefined) {
@@ -399,7 +397,6 @@ router.get('/GetVehicleCurrentLocation', function(req, res) {
 
     function GetdbCurrentLocation() {
         var Startdate = new Date();
-
         var convertDate = convertdateformatForUnix(Startdate);
         var unixStartdate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
         // var unixStartdate = Startdate.getTime() / 1000;
@@ -414,7 +411,7 @@ router.get('/GetVehicleCurrentLocation', function(req, res) {
             if (response != null) {
                 //Use Patch Engine
                 response.IsEngine = response.IsPatchEngine;
-
+                response.AD2 = hexToBinary(response.AD2);
                 client.set(req.query.DeviceId, JSON.stringify(response), function(err, replies) {});
                 res.json({ success: true, data: response });
             } else {
@@ -2453,6 +2450,7 @@ router.get('/GetAllWorkingBikeWebAppNew', function(req, res) {
                     obj.AlertCount = rows[i].AlertCount;
                     obj.IsShared = rows[i].IsShared;
                     obj.IdSharedGroup = rows[i].IdSharedGroup;
+                    obj.AD2 = rows[i].AD2;
                     client.get(rows[i].deviceid, function(err, strgpsdata) {
                         if (!err) {
                             if (strgpsdata != null & strgpsdata != '' && strgpsdata != undefined) {
@@ -2465,6 +2463,7 @@ router.get('/GetAllWorkingBikeWebAppNew', function(req, res) {
                                 obj.Speed = objgps.Speed;
                                 obj.Direction = objgps.Direction;
                                 obj.OdoMeter = objgps.OdoMeter;
+                                obj.AD2 = objgps.AD2;
                                 lstAllVehicle.push(obj);
                                 getData(i + 1);
                             } else {
@@ -2476,6 +2475,7 @@ router.get('/GetAllWorkingBikeWebAppNew', function(req, res) {
                                 obj.Speed = null;
                                 obj.Direction = null;
                                 obj.OdoMeter = null;
+                                obj.AD2 = null;
                                 lstAllVehicle.push(obj);
                                 getData(i + 1);
                             }
@@ -2488,11 +2488,11 @@ router.get('/GetAllWorkingBikeWebAppNew', function(req, res) {
                             obj.Speed = null;
                             obj.Direction = null;
                             obj.OdoMeter = null;
+                            obj.AD2 = null;
                             lstAllVehicle.push(obj);
                             getData(i + 1);
                         }
                     });
-
                 } else {
                     res.json({ success: true, data: lstAllVehicle });
                 }
