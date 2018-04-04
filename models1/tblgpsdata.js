@@ -3,10 +3,9 @@
 module.exports = function(sequelize, DataTypes) {
   return sequelize.define('tblgpsdata', {
     Id: {
-      type: DataTypes.INTEGER(11),
+      type: DataTypes.BIGINT,
       allowNull: false,
-      primaryKey: true,
-      autoIncrement: true
+      primaryKey: true
     },
     Datetime: {
       type: DataTypes.DATE,
