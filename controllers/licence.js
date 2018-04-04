@@ -25,7 +25,7 @@ router.get('/GetAllLicence', function(req, res) {
         search = search + 'tl.ExpiryDate like "%' + objSearch + '%" or ';
         search = search + 'tl.CreatedDate like "%' + objSearch + '%" or ';
         search = search + 'tu.email like "%' + objSearch + '%" or ';
-        search = search + 'tu.username like "%' + objSearch + '%" or ';
+        search = search + 'tu.phone like "%' + objSearch + '%" or ';
         search = search + 'ta.AppName like "%' + objSearch + '%" or ';
         search = search + 'tl.LicenceType like "%' + objSearch + '%" or ';
         search = search + 'tl.LicenceRenewalType like "%' + objSearch + '%" or ';
@@ -56,7 +56,7 @@ router.get('/GetAllLicence', function(req, res) {
         search = " and ta.Id=" + req.query.idApp + " ";
     }
 
-    var query = "SELECT tl.Id, tu.email,tl.DeviceId,tl.LicenceNo,tl.IdUser,tu.username,tv.Name as VehicleName,ta.AppName,tl.LicenceRenewalType,tl.LicenceType, " +
+    var query = "SELECT tl.Id, tu.email,tl.DeviceId,tl.LicenceNo,tl.IdUser,tu.phone,tv.Name as VehicleName,ta.AppName,tl.LicenceRenewalType,tl.LicenceType, " +
         "CONVERT_TZ(tl.CreatedDate,'+00:00','" + CurrentOffset + "') as CreatedDate, " +
         "CONVERT_TZ(tl.ExpiryDate,'+00:00','" + CurrentOffset + "') as ExpiryDate, " +
         "CONVERT_TZ(tl.ModifiedDate,'+00:00','" + CurrentOffset + "') as ModifiedDate " +
@@ -124,8 +124,6 @@ router.get('/SaveLicenceDetail', function(req, res) {
                                 if (objGpsDevice != null) {
                                     AppInfo.findOne({ where: { AppName: objGpsDevice.AppName } }).then(function(AppExits) {
                                         LicenceManager.findOne({ where: { Id: req.query.Id } }).then(function(LicenceExist) {
-                                            console.log(AppExits.Id, "--", LicenceExist.idApp)
-                                            console.log(AppExits.Id == LicenceExist.idApp)
                                             if (AppExits.Id == LicenceExist.idApp) {
                                                 if (LicenceExist.DeviceId == null || LicenceExist.DeviceId == '' || LicenceExist.DeviceId == undefined) {
                                                     LicenceExist.updateAttributes({
