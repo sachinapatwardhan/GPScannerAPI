@@ -28,10 +28,6 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE,
       allowNull: true
     },
-    DateDiff: {
-      type: DataTypes.STRING,
-      allowNull: true
-    },
     CreatedDate: {
       type: DataTypes.DATE,
       allowNull: true
