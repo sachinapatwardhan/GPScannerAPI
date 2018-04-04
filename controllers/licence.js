@@ -53,7 +53,7 @@ router.get('/GetAllLicence', function(req, res) {
         "CONVERT_TZ(tl.ModifiedDate,'+00:00','" + CurrentOffset + "') as ModifiedDate " +
         " from tbllicencemanager as tl " +
         " LEFT JOIN tbluserinformation as tu ON tl.IdUser = tu.id " +
-        " LEFT JOIN tblappinfo as ta ON ta.Id= tu.idApp" +
+        " LEFT JOIN tblappinfo as ta ON ta.Id= tl.idApp" +
         " LEFT JOIN tblvehicle tv on tv.deviceid =tl.DeviceId where tl.IsDeleted=0  " + search +
         " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
 
@@ -61,7 +61,7 @@ router.get('/GetAllLicence', function(req, res) {
     var countquery = "SELECT count(*) as TotalRecord " +
         " from tbllicencemanager as tl " +
         " LEFT JOIN tbluserinformation as tu ON tl.IdUser = tu.id " +
-        " LEFT JOIN tblappinfo as ta ON ta.Id= tu.idApp" +
+        " LEFT JOIN tblappinfo as ta ON ta.Id= tl.idApp" +
         " LEFT JOIN tblvehicle tv on tv.deviceid =tl.DeviceId  where tl.IsDeleted=0  " + search;
     connection.query(query, function(err, response) {
         if (response != undefined) {
@@ -412,6 +412,7 @@ router.get('/CreateLicenceNumbers', function(req, res) {
     // }
     var Length = req.query.Length;
     var CheckPass = req.query.Pass;
+    var AppName = req.query.AppName;
     var SystemPassword = process.env.LicencePassword;
 
     if (SystemPassword == CheckPass) {
@@ -428,30 +429,40 @@ router.get('/CreateLicenceNumbers', function(req, res) {
             });
 
         } else {
-            function uploder(i) {
-                if (i < LicenceGenerateLength) {
-                    var LicenceNo = customPassword1();
-                    // LicenceManager.find({ where: { LicenceNo: LicenceNo } }).then(function(LicenceNoExits) {
-                    //     if (LicenceNoExits) {
-                    //         uploder(i + 1);
-                    //     } else {
-                    var obj = new Object();
-                    obj.LicenceNo = LicenceNo;
-                    LicenceManager.findOrCreate({ where: { LicenceNo: LicenceNo }, defaults: obj }).then(function(response) {
-                        // console.log("###")
-                        uploder(i + 1);
-                    });
-                    //     }
-                    // })
+            AppInfo.findOne({ where: { AppName: AppName } }).then(function(AppExits) {
+                if (AppExits != null) {
+                    function uploder(i) {
+                        if (i < LicenceGenerateLength) {
+                            var LicenceNo = customPassword1();
+                            // LicenceManager.find({ where: { LicenceNo: LicenceNo } }).then(function(LicenceNoExits) {
+                            //     if (LicenceNoExits) {
+                            //         uploder(i + 1);
+                            //     } else {
+                            var obj = new Object();
+                            obj.LicenceNo = LicenceNo;
+                            obj.idApp = AppExits.Id;
+                            LicenceManager.findOrCreate({ where: { LicenceNo: LicenceNo }, defaults: obj }).then(function(response) {
+                                // console.log("###")
+                                uploder(i + 1);
+                            });
+                            //     }
+                            // })
+                        } else {
+                            res.json({
+                                success: true,
+                                message: "Licence number Generated successfully.",
+                            });
+                        }
+
+                    }
+                    uploder(0)
                 } else {
                     res.json({
-                        success: true,
-                        message: "Licence number Generated successfully.",
+                        success: false,
+                        message: "Please check AppName. Licence number not Generated.",
                     });
                 }
-
-            }
-            uploder(0)
+            });
         }
     } else {
         res.json({
