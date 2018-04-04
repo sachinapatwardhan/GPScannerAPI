@@ -22,6 +22,8 @@ router.get('/GetAllAppInfo', function(req, res) {
         search = search + 'IOSKey like "%' + objSearch + '%" or ';
         search = search + 'AndroidId like "%' + objSearch + '%" or ';
         search = search + 'AndroidSenderId like "%' + objSearch + '%" or ';
+        search = search + 'LicenceRenewalType like "%' + objSearch + '%" or ';
+        search = search + 'LicenceType like "%' + objSearch + '%" or ';
         search = search + 'CreatedBy like "%' + objSearch + '%" or ';
         search = search + 'CreatedDate like "%' + objSearch + '%") ';
     }

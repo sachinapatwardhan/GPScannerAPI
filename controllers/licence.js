@@ -5,6 +5,10 @@ var User = models.tbluserinformation;
 var AppInfo = models.tblappinfo;
 var GpsDevice = models.tblgpsdevice;
 var Vehicle = models.tblvehicle;
+var User = models.tbluserinformation;
+var UserInRole = models.tbluserinrole;
+var Role = models.tblrole;
+
 
 router.get('/GetAllLicence', function(req, res) {
     var objParam = req.query;
@@ -23,7 +27,8 @@ router.get('/GetAllLicence', function(req, res) {
         search = search + 'tu.email like "%' + objSearch + '%" or ';
         search = search + 'tu.username like "%' + objSearch + '%" or ';
         search = search + 'ta.AppName like "%' + objSearch + '%" or ';
-        search = search + 'ta.LicenceType like "%' + objSearch + '%" or ';
+        search = search + 'tl.LicenceType like "%' + objSearch + '%" or ';
+        search = search + 'tl.LicenceRenewalType like "%' + objSearch + '%" or ';
         search = search + 'tv.Name like "%' + objSearch + '%") ';
     };
 
@@ -47,22 +52,27 @@ router.get('/GetAllLicence', function(req, res) {
         }
     }
 
-    var query = "SELECT tl.Id, tu.email,tl.DeviceId,tl.LicenceNo,tl.IdUser,tu.username,tv.Name as VehicleName,ta.AppName,ta.LicenceType, " +
+    if (req.query.idApp != null && req.query.idApp != undefined && req.query.idApp != '') {
+        search = " and ta.Id=" + req.query.idApp + " ";
+    }
+
+    var query = "SELECT tl.Id, tu.email,tl.DeviceId,tl.LicenceNo,tl.IdUser,tu.username,tv.Name as VehicleName,ta.AppName,tl.LicenceRenewalType,tl.LicenceType, " +
         "CONVERT_TZ(tl.CreatedDate,'+00:00','" + CurrentOffset + "') as CreatedDate, " +
         "CONVERT_TZ(tl.ExpiryDate,'+00:00','" + CurrentOffset + "') as ExpiryDate, " +
         "CONVERT_TZ(tl.ModifiedDate,'+00:00','" + CurrentOffset + "') as ModifiedDate " +
         " from tbllicencemanager as tl " +
-        " LEFT JOIN tbluserinformation as tu ON tl.IdUser = tu.id " +
         " LEFT JOIN tblappinfo as ta ON ta.Id= tl.idApp" +
-        " LEFT JOIN tblvehicle tv on tv.deviceid =tl.DeviceId where tl.IsDeleted=0  " + search +
+        " LEFT JOIN tblvehicle tv on tv.deviceid =tl.DeviceId " +
+        " LEFT JOIN tbluserinformation as tu ON tv.iduser = tu.id " +
+        " where tl.IsDeleted=0  " + search +
         " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
-
 
     var countquery = "SELECT count(*) as TotalRecord " +
         " from tbllicencemanager as tl " +
-        " LEFT JOIN tbluserinformation as tu ON tl.IdUser = tu.id " +
         " LEFT JOIN tblappinfo as ta ON ta.Id= tl.idApp" +
-        " LEFT JOIN tblvehicle tv on tv.deviceid =tl.DeviceId  where tl.IsDeleted=0  " + search;
+        " LEFT JOIN tblvehicle tv on tv.deviceid =tl.DeviceId " +
+        " LEFT JOIN tbluserinformation as tu ON tv.iduser = tu.id " +
+        " where tl.IsDeleted=0  " + search;
     connection.query(query, function(err, response) {
         if (response != undefined) {
             connection.query(countquery, function(err, lstCount, fields) {
@@ -106,73 +116,78 @@ router.get('/SaveLicenceDetail', function(req, res) {
                             message: "Licence alerady assigned for this device",
                         });
                     } else {
-                        User.findOne({ where: { id: req.query.IdUser } }).then(function(DeviceUserExist) {
-                            if (DeviceUserExist) {
-                                AppInfo.findOne({ where: { Id: DeviceUserExist.idApp } }).then(function(AppExits) {
-                                    GpsDevice.findOne({ where: { DeviceId: req.query.DeviceId, AppName: AppExits.AppName }, })
-                                        .then(function(objGpsDevice) {
-                                            if (objGpsDevice != null) {
-                                                LicenceManager.findOne({ where: { Id: req.query.Id } }).then(function(LicenceExist) {
-                                                    if (LicenceExist.DeviceId == null || LicenceExist.DeviceId == '' || LicenceExist.DeviceId == undefined) {
-                                                        LicenceExist.updateAttributes({
-                                                            IdUser: req.query.IdUser,
-                                                            DeviceId: req.query.DeviceId,
-                                                            ExpiryDate: req.query.ExpiryDate,
-                                                            CreatedDate: new Date(),
-                                                        }).then(function(response) {
-                                                            if (response) {
-                                                                Vehicle.findOne({ where: { deviceid: response.DeviceId } }).then(function(vehicleExist) {
-                                                                        if (vehicleExist) {
-                                                                            vehicleExist.updateAttributes({ renewaldate: response.ExpiryDate }).then(function(updateRenewDate) {})
-                                                                        }
-                                                                    })
-                                                                    // funAuditLog.CreateAuditLog('update ExpiryDate of Device ', UserExist.username, 'update ExpiryDate of Device (' + response.DeviceId + ')');
-                                                                funAuditLog.CreateAuditLog('Assign device Licence ', UserExist.username, 'Licence No (' + LicenceExist.LicenceNo + ') / Assign Licence to (' + response.DeviceId + ') ');
-                                                                res.json({
-                                                                    success: true,
-                                                                    message: "Licence assign for device successfully.",
-                                                                    data: response
-                                                                });
-                                                            } else {
-                                                                res.json({
-                                                                    success: false,
-                                                                    message: "Licence not assign for device.",
-                                                                    data: response
-                                                                });
-                                                            }
-                                                        })
+                        // User.findOne({ where: { id: req.query.IdUser } }).then(function(DeviceUserExist) {
+                        //     if (DeviceUserExist) {
+                        // AppInfo.findOne({ where: { Id: DeviceUserExist.idApp } }).then(function(AppExits) {
+                        GpsDevice.findOne({ where: { DeviceId: req.query.DeviceId }, })
+                            .then(function(objGpsDevice) {
+                                if (objGpsDevice != null) {
+                                    AppInfo.findOne({ where: { AppName: objGpsDevice.AppName } }).then(function(AppExits) {
+                                        LicenceManager.findOne({ where: { Id: req.query.Id } }).then(function(LicenceExist) {
+                                            console.log(AppExits.Id, "--", LicenceExist.idApp)
+                                            console.log(AppExits.Id == LicenceExist.idApp)
+                                            if (AppExits.Id == LicenceExist.idApp) {
+                                                if (LicenceExist.DeviceId == null || LicenceExist.DeviceId == '' || LicenceExist.DeviceId == undefined) {
+                                                    LicenceExist.updateAttributes({
+                                                        IdUser: req.query.IdUser,
+                                                        DeviceId: req.query.DeviceId,
+                                                        ExpiryDate: req.query.ExpiryDate,
+                                                        CreatedDate: new Date(),
+                                                        LicenceRenewalType: AppExits.LicenceRenewalType,
+                                                        LicenceType: AppExits.LicenceType
+                                                    }).then(function(response) {
+                                                        if (response) {
+                                                            Vehicle.findOne({ where: { deviceid: response.DeviceId } }).then(function(vehicleExist) {
+                                                                    if (vehicleExist) {
+                                                                        vehicleExist.updateAttributes({ renewaldate: response.ExpiryDate }).then(function(updateRenewDate) {})
+                                                                    }
+                                                                })
+                                                                // funAuditLog.CreateAuditLog('update ExpiryDate of Device ', UserExist.username, 'update ExpiryDate of Device (' + response.DeviceId + ')');
+                                                            funAuditLog.CreateAuditLog('Assign device Licence ', UserExist.username, 'Licence No (' + LicenceExist.LicenceNo + ') / Assign Licence to (' + response.DeviceId + ') ');
+                                                            res.json({
+                                                                success: true,
+                                                                message: "Licence assign for device successfully.",
+                                                                data: response
+                                                            });
+                                                        } else {
+                                                            res.json({
+                                                                success: false,
+                                                                message: "Licence not assign for device.",
+                                                                data: response
+                                                            });
+                                                        }
+                                                    })
 
-                                                    } else {
-                                                        var OldDeviceId = LicenceExist.DeviceId;
-                                                        LicenceExist.updateAttributes({
-                                                            IdUser: req.query.IdUser,
-                                                            DeviceId: req.query.DeviceId,
-                                                            ExpiryDate: req.query.ExpiryDate,
-                                                            ModifiedDate: new Date(),
-                                                        }).then(function(response) {
-                                                            if (response) {
-                                                                Vehicle.findOne({ where: { deviceid: response.DeviceId, IsDelete: false } }).then(function(vehicleExist) {
-                                                                        if (vehicleExist) {
-                                                                            vehicleExist.updateAttributes({ renewaldate: response.ExpiryDate }).then(function(updateRenewDate) {})
-                                                                        }
-                                                                    })
-                                                                    // funAuditLog.CreateAuditLog('update ExpiryDate of Device ', UserExist.username, 'update ExpiryDate of Device (' + response.DeviceId + ')');
-                                                                funAuditLog.CreateAuditLog('Update Licence device ', UserExist.username, 'update Device (' + OldDeviceId + ') to (' + response.DeviceId + ') / Licence No (' + LicenceExist.LicenceNo + ')');
-                                                                res.json({
-                                                                    success: true,
-                                                                    message: "Licence assign for device successfully.",
-                                                                    data: response
-                                                                });
-                                                            } else {
-                                                                res.json({
-                                                                    success: false,
-                                                                    message: "Licence not assign for device.",
-                                                                    data: response
-                                                                });
-                                                            }
-                                                        })
-                                                    }
-                                                })
+                                                } else {
+                                                    var OldDeviceId = LicenceExist.DeviceId;
+                                                    LicenceExist.updateAttributes({
+                                                        IdUser: req.query.IdUser,
+                                                        DeviceId: req.query.DeviceId,
+                                                        ExpiryDate: req.query.ExpiryDate,
+                                                        ModifiedDate: new Date(),
+                                                    }).then(function(response) {
+                                                        if (response) {
+                                                            Vehicle.findOne({ where: { deviceid: response.DeviceId, IsDelete: false } }).then(function(vehicleExist) {
+                                                                    if (vehicleExist) {
+                                                                        vehicleExist.updateAttributes({ renewaldate: response.ExpiryDate }).then(function(updateRenewDate) {})
+                                                                    }
+                                                                })
+                                                                // funAuditLog.CreateAuditLog('update ExpiryDate of Device ', UserExist.username, 'update ExpiryDate of Device (' + response.DeviceId + ')');
+                                                            funAuditLog.CreateAuditLog('Update Licence device ', UserExist.username, 'update Device (' + OldDeviceId + ') to (' + response.DeviceId + ') / Licence No (' + LicenceExist.LicenceNo + ')');
+                                                            res.json({
+                                                                success: true,
+                                                                message: "Licence assign for device successfully.",
+                                                                data: response
+                                                            });
+                                                        } else {
+                                                            res.json({
+                                                                success: false,
+                                                                message: "Licence not assign for device.",
+                                                                data: response
+                                                            });
+                                                        }
+                                                    })
+                                                }
                                             } else {
                                                 res.json({
                                                     success: false,
@@ -181,15 +196,25 @@ router.get('/SaveLicenceDetail', function(req, res) {
                                                 });
                                             }
                                         })
-                                })
-                            } else {
-                                res.json({
-                                    success: false,
-                                    message: "Invalid User Name., Please insert valid User Name.",
-                                    data: ""
-                                });
-                            }
-                        })
+                                    })
+
+                                } else {
+                                    res.json({
+                                        success: false,
+                                        message: "Invalid Device Id., Please insert valid Device Id.",
+                                        data: ""
+                                    });
+                                }
+                            })
+                            // })
+                            //     } else {
+                            //         res.json({
+                            //             success: false,
+                            //             message: "Invalid User Name., Please insert valid User Name.",
+                            //             data: ""
+                            //         });
+                            //     }
+                            // })
                     }
                 })
 

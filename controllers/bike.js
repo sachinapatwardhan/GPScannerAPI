@@ -716,23 +716,79 @@ function changeSharedId(VehicleUserId, SharedUserId, DeviceId, callback) {
 var LicenceManager = models.tbllicencemanager;
 global.checkLicence = checkLicence;
 
+// function checkLicence(objVehicle, callback) {
+//     // console.log("deviceid.....")
+//     LicenceManager.findOne({ where: { DeviceId: objVehicle.deviceid, IdUser: objVehicle.iduser, IsDeleted: 0 } }).then(function(LicenceNoExist) {
+//         if (LicenceNoExist) {
+//             LicenceNoExist.updateAttributes({
+//                 IdUser: objVehicle.iduser,
+//                 // DeviceId: objVehicle.deviceid,
+//                 ModifiedDate: new Date(),
+//             }).then(function(response) {
+//                 return callback({
+//                     success: true,
+//                     data: LicenceNoExist
+//                 });
+//             })
+//         } else {
+//             return callback({
+//                 success: false,
+//             });
+//         }
+//     })
+// }
+
 function checkLicence(objVehicle, callback) {
-    // console.log("deviceid.....")
-    LicenceManager.findOne({ where: { DeviceId: objVehicle.deviceid, IdUser: objVehicle.iduser, IsDeleted: 0 } }).then(function(LicenceNoExist) {
-        if (LicenceNoExist) {
-            LicenceNoExist.updateAttributes({
-                IdUser: objVehicle.iduser,
-                // DeviceId: objVehicle.deviceid,
-                ModifiedDate: new Date(),
-            }).then(function(response) {
-                return callback({
-                    success: true,
-                    data: LicenceNoExist
-                });
+    var query = "select tblappinfo.* from tblappinfo inner join tblgpsdevice on tblappinfo.AppName=tblgpsdevice.AppName where tblgpsdevice.DeviceId='" + objVehicle.deviceid + "'";
+    connection.query(query, function(err, DeviceExist) {
+        if (DeviceExist) {
+            LicenceManager.findOne({ where: { DeviceId: objVehicle.deviceid, IsDeleted: 0, idApp: DeviceExist[0].Id } }).then(function(LicenceAssined) {
+                if (LicenceAssined) {
+                    return callback({
+                        success: true,
+                        data: LicenceAssined
+                    });
+                } else {
+                    LicenceManager.findOne({ where: { DeviceId: { $eq: null }, IsDeleted: 0, idApp: DeviceExist[0].Id } }).then(function(LicenceNoExist) {
+                        if (LicenceNoExist) {
+                            if (DeviceExist[0].LicenceRenewalType == 'Monthly') {
+                                AddMonth = 1;
+                            } else if (DeviceExist[0].LicenceRenewalType == 'Quarterly') {
+                                AddMonth = 6;
+                            } else if (DeviceExist[0].LicenceRenewalType == 'Yearly') {
+                                AddMonth = 12;
+                            }
+                            var date = new Date();
+                            var updatedDate = convertdateformatLicenceExpiry(date.setMonth(date.getMonth() + AddMonth), 3)
+                            LicenceNoExist.updateAttributes({
+                                // IdUser: objVehicle.iduser,
+                                DeviceId: objVehicle.deviceid,
+                                // ModifiedDate: new Date(),
+                                CreatedDate: new Date(),
+                                ExpiryDate: updatedDate,
+                                LicenceRenewalType: DeviceExist[0].LicenceRenewalType,
+                                LicenceType: DeviceExist[0].LicenceType,
+                            }).then(function(response) {
+                                return callback({
+                                    success: true,
+                                    data: LicenceNoExist
+                                });
+                            })
+                        } else {
+                            return callback({
+                                success: false,
+                                message: "No more Licence avilable to assign Device. Please contact administrator",
+                                data: null,
+                            });
+                        }
+                    })
+                }
             })
         } else {
             return callback({
                 success: false,
+                message: "Invalid Tracker No., Please insert valid Tracker No.",
+                data: null,
             });
         }
     })
@@ -1366,7 +1422,7 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                             } else {
                                                 res.json({
                                                     success: false,
-                                                    message: "Your Device has not licence. Please get your Licence first.",
+                                                    message: LicenceNores.message,
                                                     data: null
                                                 });
                                             }
@@ -1433,7 +1489,7 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                                     } else {
                                                         res.json({
                                                             success: false,
-                                                            message: "Your Device has not licence. Please get your Licence first.",
+                                                            message: LicenceNores.message,
                                                             data: null
                                                         });
                                                     }
@@ -1491,7 +1547,7 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                             } else {
                                                 res.json({
                                                     success: false,
-                                                    message: "Your Device has not licence. Please get your Licence first.",
+                                                    message: LicenceNores.message,
                                                     data: null
                                                 });
                                             }
@@ -1555,7 +1611,7 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                             } else {
                                                 res.json({
                                                     success: false,
-                                                    message: "Your Device has not licence. Please get your Licence first.",
+                                                    message: LicenceNores.message,
                                                     data: null
                                                 });
                                             }
@@ -1609,7 +1665,7 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                                     } else {
                                                         res.json({
                                                             success: false,
-                                                            message: "Your Device has not licence. Please get your Licence first.",
+                                                            message: LicenceNores.message,
                                                             data: null
                                                         });
                                                     }
@@ -1667,7 +1723,7 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                             } else {
                                                 res.json({
                                                     success: false,
-                                                    message: "Your Device has not licence. Please get your Licence first.",
+                                                    message: LicenceNores.message,
                                                     data: null
                                                 });
                                             }
@@ -2669,6 +2725,28 @@ function convertdateformatForUnix(date1) {
 
     return ("00" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("0000" + firstdayDay.toString()).slice(-2) + " " + ("00" + firstdayHours.toString()).slice(-2) + ':' + ("00" + firstdayMinutes.toString()).slice(-2) + ':' + ("00" + firstdaySeconds.toString()).slice(-2);
 
+}
+
+
+function convertdateformatLicenceExpiry(date1, flg) {
+    var date = new Date(date1);
+    var firstdayMonth = date.getMonth() + 1;
+    var firstdayDay = date.getDate();
+    var firstdayYear = date.getFullYear();
+    var firstdayHours = date.getHours();
+    var firstdayMinutes = date.getMinutes();
+    var firstdaySeconds = date.getSeconds();
+
+    if (flg == 1) {
+        return ("0000" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("00" + firstdayDay.toString()).slice(-2) + " " + "23:59:59";
+
+    } else if (flg == 2) {
+        return ("0000" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("00" + firstdayDay.toString()).slice(-2) + " " + "00:00:00";
+    } else if (flg == 3) {
+        return ("0000" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("00" + firstdayDay.toString()).slice(-2) + " " + ("00" + firstdayHours.toString()).slice(-2) + ':' + ("00" + firstdayMinutes.toString()).slice(-2) + ':' + ("00" + firstdaySeconds.toString()).slice(-2);
+    } else {
+        return ("0000" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("00" + firstdayDay.toString()).slice(-2);
+    }
 }
 
 module.exports = router

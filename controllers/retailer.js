@@ -450,7 +450,7 @@
                                                     } else {
                                                         res.json({
                                                             success: false,
-                                                            message: "Your Device has not licence. Please get your Licence first.",
+                                                            message: LicenceNores.message,
                                                             data: null
                                                         });
                                                     }
@@ -473,7 +473,7 @@
                                                 } else {
                                                     res.json({
                                                         success: false,
-                                                        message: "Your Device has not licence. Please get your Licence first.",
+                                                        message: LicenceNores.message,
                                                         data: null
                                                     });
                                                 }
