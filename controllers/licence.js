@@ -56,7 +56,7 @@ router.get('/GetAllLicence', function(req, res) {
         search = " and ta.Id=" + req.query.idApp + " ";
     }
 
-    var query = "SELECT tl.Id, tu.email,tl.DeviceId,tl.LicenceNo,tl.IdUser,tu.phone,tv.Name as VehicleName,ta.AppName,tl.LicenceRenewalType,tl.LicenceType, " +
+    var query = "SELECT tl.Id, tu.email,tl.DeviceId,tl.LicenceNo,tl.IdUser,tu.phone,tv.Name as VehicleName,ta.AppName,tl.LicenceRenewalType,tl.LicenceType,ta.LicenceRenewalType as appLicenceRenewalType,ta.LicenceType as appLicenceType, " +
         "CONVERT_TZ(tl.CreatedDate,'+00:00','" + CurrentOffset + "') as CreatedDate, " +
         "CONVERT_TZ(tl.ExpiryDate,'+00:00','" + CurrentOffset + "') as ExpiryDate, " +
         "CONVERT_TZ(tl.ModifiedDate,'+00:00','" + CurrentOffset + "') as ModifiedDate " +
@@ -141,7 +141,8 @@ router.get('/SaveLicenceDetail', function(req, res) {
                                                                     }
                                                                 })
                                                                 // funAuditLog.CreateAuditLog('update ExpiryDate of Device ', UserExist.username, 'update ExpiryDate of Device (' + response.DeviceId + ')');
-                                                            funAuditLog.CreateAuditLog('Assign device Licence ', UserExist.username, 'Licence No (' + LicenceExist.LicenceNo + ') / Assign Licence to (' + response.DeviceId + ') ');
+                                                            funAuditLogLicence.CreateAuditLogLicence('Assign Licence', LicenceExist.LicenceNo, response.DeviceId, response.ExpiryDate, null, UserExist.username, 'Assign through update licence number');
+                                                            // funAuditLogLicence.CreateAuditLogLicence('Assign Licence', UserExist.username, 'Licence No (' + LicenceExist.LicenceNo + ') / Assign Licence to (' + response.DeviceId + ') ');
                                                             res.json({
                                                                 success: true,
                                                                 message: "Licence assign for device successfully.",
@@ -158,10 +159,13 @@ router.get('/SaveLicenceDetail', function(req, res) {
 
                                                 } else {
                                                     var OldDeviceId = LicenceExist.DeviceId;
+                                                    var oldexpdate = LicenceExist.ExpiryDate;
                                                     LicenceExist.updateAttributes({
                                                         IdUser: req.query.IdUser,
                                                         DeviceId: req.query.DeviceId,
                                                         ExpiryDate: req.query.ExpiryDate,
+                                                        LicenceRenewalType: req.query.LicenceRenewalType,
+                                                        LicenceType: req.query.LicenceType,
                                                         ModifiedDate: new Date(),
                                                     }).then(function(response) {
                                                         if (response) {
@@ -170,8 +174,8 @@ router.get('/SaveLicenceDetail', function(req, res) {
                                                                         vehicleExist.updateAttributes({ renewaldate: response.ExpiryDate }).then(function(updateRenewDate) {})
                                                                     }
                                                                 })
-                                                                // funAuditLog.CreateAuditLog('update ExpiryDate of Device ', UserExist.username, 'update ExpiryDate of Device (' + response.DeviceId + ')');
-                                                            funAuditLog.CreateAuditLog('Update Licence device ', UserExist.username, 'update Device (' + OldDeviceId + ') to (' + response.DeviceId + ') / Licence No (' + LicenceExist.LicenceNo + ')');
+                                                                // funAuditLog.CreateAuditLog('Update Licence device ', UserExist.username, 'update Device (' + OldDeviceId + ') to (' + response.DeviceId + ') / Licence No (' + LicenceExist.LicenceNo + ')');
+                                                            funAuditLogLicence.CreateAuditLogLicence('Update Licence', LicenceExist.LicenceNo, req.query.DeviceId, req.query.ExpiryDate, oldexpdate, UserExist.username, 'Update licence (old deviceId :' + OldDeviceId + ')');
                                                             res.json({
                                                                 success: true,
                                                                 message: "Licence assign for device successfully.",
@@ -312,28 +316,28 @@ router.get('/changestatusrenewal', function(req, res) {
                     }
                 }).then(function(isExist) {
 
-                    AppInfo.findOne({ where: { AppName: req.query.AppName } }).then(function(AppInfo) {
-                        var AddMonth = 0;
-                        if (AppInfo.LicenceRenewalType == 'Monthly') {
-                            AddMonth = 1;
-                        } else if (AppInfo.LicenceRenewalType == 'Quarterly') {
-                            AddMonth = 6;
-                        } else if (AppInfo.LicenceRenewalType == 'Yearly') {
-                            AddMonth = 12;
-                        }
-                        var oldexpdate = isExist.ExpiryDate;
-                        var date = new Date(isExist.ExpiryDate);
-                        var updatedDate = convertdateformat(date.setMonth(date.getMonth() + AddMonth), 3);
+                    // AppInfo.findOne({ where: { AppName: req.query.AppName } }).then(function(AppInfo) {
+                    var AddMonth = 0;
+                    if (isExist.LicenceRenewalType == 'Monthly') {
+                        AddMonth = 1;
+                    } else if (isExist.LicenceRenewalType == 'Quarterly') {
+                        AddMonth = 3;
+                    } else if (isExist.LicenceRenewalType == 'Yearly') {
+                        AddMonth = 12;
+                    }
+                    var oldexpdate = isExist.ExpiryDate;
+                    var date = new Date(isExist.ExpiryDate);
+                    var updatedDate = convertdateformat(date.setMonth(date.getMonth() + AddMonth), 3);
 
-                        var timeDiff = (new Date(oldexpdate)).getTime() - (new Date()).getTime();
-                        var diffDays = Math.round(timeDiff / (1000 * 3600 * 24));
-                        days = diffDays
-                        if (days < 0) {
-                            date = new Date();
-                            updatedDate = convertdateformat(date.setMonth(date.getMonth() + AddMonth), 3);
-                        }
+                    var timeDiff = (new Date(oldexpdate)).getTime() - (new Date()).getTime();
+                    var diffDays = Math.round(timeDiff / (1000 * 3600 * 24));
+                    days = diffDays
+                    if (days < 0) {
+                        date = new Date();
+                        updatedDate = convertdateformat(date.setMonth(date.getMonth() + AddMonth), 3);
+                    }
 
-                        isExist.updateAttributes({ ExpiryDate: updatedDate }).then(function(response) {
+                    isExist.updateAttributes({ ExpiryDate: updatedDate }).then(function(response) {
                             var difference = (response.ExpiryDate.getFullYear() * 12 + response.ExpiryDate.getMonth()) - (oldexpdate.getFullYear() * 12 + oldexpdate.getMonth());
                             // funAuditLog.CreateAuditLog('Update Licecence ExpiryDate of Device ', UserExist.username, 'DeviceID(' + response.DeviceId + ') / Updated ExpiryDate (' + convertdateformat(response.ExpiryDate, 4) + ') / Old ExpiryDate (' + convertdateformat(oldexpdate, 4) + ') / Updated for (' + difference + ') month)');
                             Vehicle.findOne({ where: { DeviceId: isExist.DeviceId } }).then(function(vehicleExist) {
@@ -341,14 +345,14 @@ router.get('/changestatusrenewal', function(req, res) {
                                     vehicleExist.updateAttributes({ renewaldate: updatedDate }).then(function(updateRenewDate) {})
                                 }
                             })
-                            funAuditLog.CreateAuditLog('update ExpiryDate of Device', UserExist.username, 'DeviceID(' + response.DeviceId + ') / update Licence ExpiryDate of Device (' + convertdateformat(response.ExpiryDate, 4) + ') / Old ExpiryDate (' + convertdateformat(oldexpdate, 4) + ') / Updated for (' + difference + ' month)');
+                            funAuditLogLicence.CreateAuditLogLicence('Renew Licence', isExist.LicenceNo, isExist.DeviceId, updatedDate, oldexpdate, UserExist.username, 'Renew licence Expiry date');
                             res.json({
                                 success: true,
                                 message: " Device renewal successfully.",
                                 data: response
                             })
                         })
-                    })
+                        // })
                 })
             } else {
                 res.json(InvalidToken);

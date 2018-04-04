@@ -306,6 +306,24 @@ function CheckUserAccessPermission(ObjParams, callback) {
 
 //End Permission
 
+global.funAuditLogLicence = new Object();
+global.funAuditLogLicence.CreateAuditLogLicence = CreateAuditLogLicence;
+var AuditLogLicence = models.tblauditloglicence;
+
+function CreateAuditLogLicence(Type, LicenceNo, DeviceId, ExpiryDate, OldExpiryDate, CreatedBy, Message) {
+    var objAuditLicence = new Object();
+    objAuditLicence.Type = Type;
+    objAuditLicence.LicenceNo = LicenceNo;
+    objAuditLicence.DeviceId = DeviceId;
+    objAuditLicence.ExpiryDate = ExpiryDate;
+    objAuditLicence.OldExpiryDate = OldExpiryDate;
+    objAuditLicence.CreatedDate = new Date();
+    objAuditLicence.CreatedBy = CreatedBy;
+    objAuditLicence.Message = Message;
+
+    AuditLogLicence.create(objAuditLicence).then(function(objAuditLicence) {});
+}
+
 //Create Audit Log
 global.funAuditLog = new Object();
 global.funAuditLog.CreateAuditLog = CreateAuditLog;
