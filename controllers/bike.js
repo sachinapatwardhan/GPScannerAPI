@@ -735,7 +735,7 @@ global.checkLicence = checkLicence;
 //     })
 // }
 
-function checkLicence(objVehicle, callback) {
+function checkLicence(objVehicle, username, callback) {
     var query = "select tblappinfo.* from tblappinfo inner join tblgpsdevice on tblappinfo.AppName=tblgpsdevice.AppName where tblgpsdevice.DeviceId='" + objVehicle.deviceid + "'";
     connection.query(query, function(err, DeviceExist) {
         if (DeviceExist) {
@@ -766,6 +766,7 @@ function checkLicence(objVehicle, callback) {
                                 LicenceRenewalType: DeviceExist[0].LicenceRenewalType,
                                 LicenceType: DeviceExist[0].LicenceType,
                             }).then(function(response) {
+                                funAuditLogLicence.CreateAuditLogLicence('Assign Licence', LicenceNoExist.LicenceNo, response.DeviceId, response.ExpiryDate, null, username, 'Assign through create vehicle or activate device');
                                 return callback({
                                     success: true,
                                     data: LicenceNoExist
@@ -1376,7 +1377,7 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                 }).then(function(objVehicleExist) {
                                     if (objVehicleExist) {
                                         objVehicle.id = objVehicleExist.id;
-                                        checkLicence(objVehicle, function(LicenceNores) {
+                                        checkLicence(objVehicle, UserExist.username, function(LicenceNores) {
                                             if (LicenceNores.success == true) {
                                                 objVehicle.renewaldate = LicenceNores.data.ExpiryDate;
                                                 Vehicle.update(objVehicle, {
@@ -1439,7 +1440,7 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                                 });
                                             } else {
                                                 objVehicle.renewaldate = ExpiryDate;
-                                                checkLicence(objVehicle, function(LicenceNores) {
+                                                checkLicence(objVehicle, UserExist.username, function(LicenceNores) {
                                                     // console.log("1.2...................")
                                                     if (LicenceNores.success == true) {
                                                         objVehicle.renewaldate = LicenceNores.data.ExpiryDate;
@@ -1509,7 +1510,7 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                             data: objVehicleExist
                                         });
                                     } else {
-                                        checkLicence(objVehicle, function(LicenceNores) {
+                                        checkLicence(objVehicle, UserExist.username, function(LicenceNores) {
                                             // console.log("1.2...3................", LicenceNores)
                                             if (LicenceNores.success == true) {
                                                 objVehicle.renewaldate = LicenceNores.data.ExpiryDate;
@@ -1579,7 +1580,7 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                     if (objVehicleExist) {
                                         objVehicle.id = objVehicleExist.id;
                                         // console.log("1.2...3.....4...........")
-                                        checkLicence(objVehicle, function(LicenceNores) {
+                                        checkLicence(objVehicle, UserExist.username, function(LicenceNores) {
                                             // console.log("1.2...3.....4...........", LicenceNores)
                                             if (LicenceNores.success == true) {
                                                 objVehicle.renewaldate = LicenceNores.data.ExpiryDate;
@@ -1629,7 +1630,7 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                             } else {
                                                 objVehicle.renewaldate = ExpiryDate;
                                                 // console.log("1.2...3.....4......5.....")
-                                                checkLicence(objVehicle, function(LicenceNores) {
+                                                checkLicence(objVehicle, UserExist.username, function(LicenceNores) {
                                                     objVehicle.renewaldate = LicenceNores.data.ExpiryDate;
                                                     if (LicenceNores.success == true) {
                                                         objVehicle.renewaldate = LicenceNoExist.ExpiryDate;
@@ -1685,7 +1686,7 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                             data: objVehicleExist
                                         });
                                     } else {
-                                        checkLicence(objVehicle, function(LicenceNores) {
+                                        checkLicence(objVehicle, UserExist.username, function(LicenceNores) {
                                             // console.log("1.2...3.....4......5....6.", LicenceNores)
                                             if (LicenceNores.success == true) {
                                                 objVehicle.renewaldate = LicenceNores.data.ExpiryDate;

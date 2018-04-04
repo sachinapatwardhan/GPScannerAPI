@@ -31,8 +31,14 @@ router.get('/UpdateExpiryDate', function(req, res) {
 
                         vehicleExist.updateAttributes({ renewaldate: req.query.renewaldate }).then(function(response) {
                             LicenceManager.findOne({ where: { DeviceId: vehicleExist.deviceid, IsDeleted: 0 } }).then(function(LicenceExist) {
+                                var oldExpiry = LicenceExist.ExpiryDate;
                                 if (LicenceExist) {
-                                    LicenceExist.updateAttributes({ ExpiryDate: req.query.renewaldate }).then(function(UpdateExpiry) {})
+                                    LicenceExist.updateAttributes({ ExpiryDate: req.query.renewaldate }).then(function(UpdateExpiry) {
+                                        if (UpdateExpiry) {
+                                            funAuditLogLicence.CreateAuditLogLicence('Update Licence Expiry date', LicenceExist.LicenceNo, LicenceExist.DeviceId, req.query.renewaldate, oldExpiry, UserExist.username, 'Update Licence Expiry date througth vehicle expiry update');
+
+                                        }
+                                    })
                                 }
                             })
                             if (response) {
@@ -1043,10 +1049,12 @@ router.get('/GetAllNotUseDevcie', function(req, res) {
     connection.query(qry, function(err, response) {
 
         var listdata = [];
-        if (response.length > 0) {
-            for (i = 0; i < response.length; i++) {
-                if (response[i].Date < date[0]) {
-                    listdata.push(response[i]);
+        if (!err && response) {
+            if (response.length > 0) {
+                for (i = 0; i < response.length; i++) {
+                    if (response[i].Date < date[0]) {
+                        listdata.push(response[i]);
+                    }
                 }
             }
         }

@@ -434,7 +434,7 @@
                                             if (VehicleExist.IsDelete == true) {
                                                 objVehicle.IsDelete = false;
                                                 // var LicenceNo = objVehicle.Licence_No;
-                                                checkLicence(objVehicle, function(LicenceNores) {
+                                                checkLicence(objVehicle, userexits.username, function(LicenceNores) {
                                                     if (LicenceNores.success == true) {
                                                         objVehicle.renewaldate = LicenceNores.data.ExpiryDate;
                                                         Vehicle.update(objVehicle, {
@@ -460,7 +460,7 @@
                                             }
                                         } else {
                                             // var LicenceNo = objVehicle.Licence_No;
-                                            checkLicence(objVehicle, function(LicenceNores) {
+                                            checkLicence(objVehicle, userexits.username, function(LicenceNores) {
                                                 if (LicenceNores.success == true) {
                                                     objVehicle.renewaldate = LicenceNores.data.ExpiryDate;
                                                     Vehicle.create(objVehicle).then(function(vehicleCreated) {

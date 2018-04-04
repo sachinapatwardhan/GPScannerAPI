@@ -136,11 +136,12 @@ router.get('/SaveLicenceDetail', function(req, res) {
                                                     }).then(function(response) {
                                                         if (response) {
                                                             Vehicle.findOne({ where: { deviceid: response.DeviceId } }).then(function(vehicleExist) {
-                                                                    if (vehicleExist) {
-                                                                        vehicleExist.updateAttributes({ renewaldate: response.ExpiryDate }).then(function(updateRenewDate) {})
-                                                                    }
-                                                                })
-                                                                // funAuditLog.CreateAuditLog('update ExpiryDate of Device ', UserExist.username, 'update ExpiryDate of Device (' + response.DeviceId + ')');
+                                                                if (vehicleExist) {
+                                                                    vehicleExist.updateAttributes({ renewaldate: response.ExpiryDate }).then(function(updateRenewDate) {})
+                                                                }
+                                                            })
+
+                                                            // funAuditLog.CreateAuditLog('update ExpiryDate of Device ', UserExist.username, 'update ExpiryDate of Device (' + response.DeviceId + ')');
                                                             funAuditLogLicence.CreateAuditLogLicence('Assign Licence', LicenceExist.LicenceNo, response.DeviceId, response.ExpiryDate, null, UserExist.username, 'Assign through update licence number');
                                                             // funAuditLogLicence.CreateAuditLogLicence('Assign Licence', UserExist.username, 'Licence No (' + LicenceExist.LicenceNo + ') / Assign Licence to (' + response.DeviceId + ') ');
                                                             res.json({
@@ -252,6 +253,7 @@ router.get('/DeleteDeviceLicence', function(req, res) {
                         if (LicenceExist.DeviceId != null && LicenceExist.DeviceId != undefined && LicenceExist.DeviceId != '') {
                             LicenceExist.updateAttributes({ IsDeleted: 1 }).then(function(response) {
                                 if (response) {
+                                    funAuditLogLicence.CreateAuditLogLicence('Delete Licence', LicenceExist.LicenceNo, LicenceExist.DeviceId, LicenceExist.ExpiryDate, null, UserExist.username, 'update IsDeleted true');
                                     res.json({
                                         success: true,
                                         message: "Licence number deleted successfully.",
@@ -265,6 +267,7 @@ router.get('/DeleteDeviceLicence', function(req, res) {
                             })
                         } else {
                             LicenceManager.destroy({ where: { Id: req.query.Id } }).then(function(response) {
+                                funAuditLogLicence.CreateAuditLogLicence('Delete Licence', LicenceExist.LicenceNo, null, null, null, UserExist.username, 'Delete licence');
                                 if (response) {
                                     res.json({
                                         success: true,
@@ -345,7 +348,7 @@ router.get('/changestatusrenewal', function(req, res) {
                                     vehicleExist.updateAttributes({ renewaldate: updatedDate }).then(function(updateRenewDate) {})
                                 }
                             })
-                            funAuditLogLicence.CreateAuditLogLicence('Renew Licence', isExist.LicenceNo, isExist.DeviceId, updatedDate, oldexpdate, UserExist.username, 'Renew licence Expiry date');
+                            funAuditLogLicence.CreateAuditLogLicence('Renew Licence', isExist.LicenceNo, isExist.DeviceId, updatedDate, oldexpdate, UserExist.username, 'Renew licence Expiry date for month:(' + difference + ')');
                             res.json({
                                 success: true,
                                 message: " Device renewal successfully.",
