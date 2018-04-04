@@ -754,7 +754,7 @@ function checkLicence(objVehicle, callback) {
                             if (DeviceExist[0].LicenceRenewalType == 'Monthly') {
                                 AddMonth = 1;
                             } else if (DeviceExist[0].LicenceRenewalType == 'Quarterly') {
-                                AddMonth = 6;
+                                AddMonth = 3;
                             } else if (DeviceExist[0].LicenceRenewalType == 'Yearly') {
                                 AddMonth = 12;
                             }
