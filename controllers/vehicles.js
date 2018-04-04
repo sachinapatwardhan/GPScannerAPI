@@ -358,6 +358,7 @@ router.get('/GetAllDynamicVehicle', function(req, res) {
             search += ' Where user.idApp =' + objParam.appId;
         }
     }
+    var AdvanceSearch = objParam.AdvanceSearch;
     if (AdvanceSearch != null && AdvanceSearch != '' && AdvanceSearch != undefined) {
         if (AdvanceSearch.idType != '' && AdvanceSearch.idType != undefined && AdvanceSearch.idType != '') {
             search += " and vehicle.idType=" + AdvanceSearch.idType;
@@ -371,9 +372,12 @@ router.get('/GetAllDynamicVehicle', function(req, res) {
         if (AdvanceSearch.StartDate != '' && AdvanceSearch.EndDate != '') {
             search += " and Date(vehicle.renewaldate)>='" + ConvertDateFormat(new Date(AdvanceSearch.StartDate)) + "' and Date(vehicle.renewaldate) <= '" + ConvertDateFormat(new Date(AdvanceSearch.EndDate)) + "'";
         }
+        if (AdvanceSearch.IsOnline != '' && AdvanceSearch.IsOnline != '') {
+            search += " and vehicle.IsOnline =" + AdvanceSearch.IsOnline;
+        }
     }
 
-
+    console.log(search)
     var qry = "Select vehicle.*,vehicletype.Type,gpsdevice.IMEI,CONVERT_TZ(vehicle.HandshakDatetime,'+00:00','" + CurrentOffset + "') as DisplyHandshakDate, CONVERT_TZ(vehicle.renewaldate,'+00:00','" + CurrentOffset + "') as Displyrenewaldate,  " +
         "user.username AS username " +
         "FROM tblvehicle AS vehicle " +
@@ -410,6 +414,167 @@ router.get('/GetAllDynamicVehicle', function(req, res) {
         }
     })
 });
+
+
+router.get('/ExportVehicle', function(req, res) {
+    var conf = {};
+    conf.name = "Sheet1";
+    conf.cols = [{
+            caption: 'User Name',
+            type: 'string'
+        }, {
+            caption: 'Vehicle',
+            type: 'string'
+        }, {
+            caption: 'Tracker Id',
+            type: 'string'
+        },
+        {
+            caption: 'Device Type',
+            type: 'string'
+        }, {
+            caption: 'Type',
+            type: 'string'
+        }, {
+            caption: 'Expiry Date',
+            type: 'string'
+        },
+        {
+            caption: 'HandShake Time',
+            type: 'string'
+        },
+        {
+            caption: 'Is Online',
+            type: 'string'
+        },
+    ];
+
+    var objParam = req.query;
+    var search = "";
+    if (objParam.IsTrackingApp == 'true' || objParam.IsTrackingApp == true) {
+        conf.cols.splice(3, 1);
+    }
+    console.log(objParam)
+    if (objParam.UserId != null && objParam.UserId != '' && objParam.UserId != undefined) {
+        if (search != "") {
+            search += ' and vehicle.idSalesAgent = ' + objParam.UserId;
+        } else {
+            search += ' where vehicle.idSalesAgent = ' + objParam.UserId;
+        }
+    }
+
+    if (search != "") {
+        search += ' and vehicle.IsDelete = 0 ';
+    } else {
+        search += ' where vehicle.IsDelete = 0 ';
+    }
+    if (objParam.appId != null && objParam.appId != '' && objParam.appId != undefined) {
+        if (search != "") {
+            search += ' and user.idApp =' + objParam.appId;
+        } else {
+            search += ' Where user.idApp =' + objParam.appId;
+        }
+    }
+    if (objParam.IsOnline != null && objParam.IsOnline != '' && objParam.IsOnline != undefined) {
+        if (search != "") {
+            search += ' and vehicle.IsOnline =' + objParam.IsOnline;
+        } else {
+            search += ' Where vehicle.IsOnline =' + objParam.IsOnline;
+        }
+    }
+    if (objParam.idType != null && objParam.idType != '' && objParam.idType != undefined) {
+        if (search != "") {
+            search += ' and vehicle.idType=' + objParam.idType;
+        } else {
+            search += ' Where vehicle.idType=' + objParam.idType;
+        }
+    }
+    if (objParam.StartDate != '' && objParam.EndDate == '') {
+        if (search != "") {
+            search += " and Date(vehicle.renewaldate)>='" + ConvertDateFormat(new Date(objParam.StartDate)) + "'";
+        } else {
+            search += " Where Date(vehicle.renewaldate)>='" + ConvertDateFormat(new Date(objParam.StartDate)) + "'";
+        }
+    }
+    if (objParam.StartDate == '' && objParam.EndDate != '') {
+        if (search != "") {
+            search += " and Date(vehicle.renewaldate)<'" + ConvertDateFormat(new Date(objParam.EndDate)) + "'";
+        } else {
+            search += " Where Date(vehicle.renewaldate)<'" + ConvertDateFormat(new Date(objParam.EndDate)) + "'";
+        }
+    }
+    if (objParam.StartDate != '' && objParam.EndDate != '') {
+        if (search != "") {
+            search += " and Date(vehicle.renewaldate)>='" + ConvertDateFormat(new Date(objParam.StartDate)) + "' and Date(vehicle.renewaldate) <= '" + ConvertDateFormat(new Date(objParam.EndDate)) + "'";
+        } else {
+            search += " where Date(vehicle.renewaldate)>='" + ConvertDateFormat(new Date(objParam.StartDate)) + "' and Date(vehicle.renewaldate) <= '" + ConvertDateFormat(new Date(objParam.EndDate)) + "'";
+        }
+    }
+
+    var qry = "Select vehicle.*,vehicletype.Type,gpsdevice.IMEI,CONVERT_TZ(vehicle.HandshakDatetime,'+00:00','" + CurrentOffset + "') as DisplyHandshakDate, CONVERT_TZ(vehicle.renewaldate,'+00:00','" + CurrentOffset + "') as Displyrenewaldate,  " +
+        "user.username AS username " +
+        "FROM tblvehicle AS vehicle " +
+        " left join tblvehicletype  as vehicletype on vehicletype.id = vehicle.idType " +
+        " left join tblgpsdevice as gpsdevice on gpsdevice.DeviceId =vehicle.deviceid " +
+        " LEFT JOIN tbluserinformation AS user ON vehicle.iduser = user.id " + search +
+        " order by id desc";
+    console.log("@@@@@@@@@@@@", qry)
+    connection.query(qry, function(err, response) {
+        if (response != undefined) {
+            conf.rows = [];
+            var username = '';
+            var Name = '';
+            var deviceid = '';
+            var Type = '';
+            var DeviceType = '';
+            var Displyrenewaldate = '';
+            var DisplyHandshakDate = '';
+            var IsOnline = 0;
+
+            function GetVehiclesData(i) {
+                if (i < response.length) {
+                    var row = [];
+                    if (response[i].username != null && response[i].username != '' && response[i].username != undefined) {
+                        username = response[i].username;
+                    }
+                    if (response[i].Name != null && response[i].Name != '' && response[i].Name != undefined) {
+                        Name = response[i].Name;
+                    }
+                    if (response[i].deviceid != null && response[i].deviceid != '' && response[i].deviceid != undefined) {
+                        deviceid = response[i].deviceid;
+                    }
+                    if (response[i].DeviceType != null && response[i].DeviceType != '' && response[i].DeviceType != undefined) {
+                        DeviceType = response[i].DeviceType;
+                    }
+                    if (response[i].Type != null && response[i].Type != '' && response[i].Type != undefined) {
+                        Type = response[i].Type;
+                    }
+                    if (response[i].Displyrenewaldate != null && response[i].Displyrenewaldate != '' && response[i].Displyrenewaldate != undefined) {
+                        Displyrenewaldate = moment(response[i].Displyrenewaldate).format('DD-MM-YYYY');
+                    }
+                    if (response[i].DisplyHandshakDate != null && response[i].DisplyHandshakDate != '' && response[i].DisplyHandshakDate != undefined) {
+                        DisplyHandshakDate = moment(response[i].DisplyHandshakDate).format(' hh:mm:ss a');
+                    }
+                    IsOnline = response[i].IsOnline == true || response[i].IsOnline == 1 || response[i].IsOnline == '1' ? '1' : '0';
+                    if (objParam.IsTrackingApp == 'true' || objParam.IsTrackingApp == true) {
+                        row.push(username, Name, deviceid, Type, Displyrenewaldate, DisplyHandshakDate, IsOnline);
+                    } else {
+                        row.push(username, Name, deviceid, DeviceType, Type, Displyrenewaldate, DisplyHandshakDate, IsOnline);
+                    }
+                    conf.rows.push(row);
+                    GetVehiclesData(i + 1);
+                } else {
+                    var result = nodeExcel.execute(conf);
+                    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+                    res.setHeader("Content-Disposition", "attachment; filename=Vehicles.xlsx");
+                    res.end(result, 'binary');
+                }
+            }
+            GetVehiclesData(0);
+
+        }
+    })
+})
 
 router.post('/SaveVehicle', jsonParser, function(req, res) {
     objVehicle = req.body;
