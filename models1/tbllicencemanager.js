@@ -36,6 +36,18 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.BOOLEAN,
       allowNull: true,
       defaultValue: '0'
+    },
+    idApp: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true
+    },
+    LicenceRenewalType: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    LicenceType: {
+      type: DataTypes.STRING,
+      allowNull: true
     }
   }, {
     tableName: 'tbllicencemanager'
