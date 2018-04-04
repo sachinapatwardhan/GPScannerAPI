@@ -470,6 +470,7 @@ app.use('/mobileV1/user', require('./mobile_controllers/user'))
 app.use('/mobileV1/vehicles', require('./mobile_controllers/vehicles'))
 app.use('/mobileV1/vehicletype', require('./mobile_controllers/vehicletype'))
 
+
 // Main API
 app.use('/customer', require('./controllers/customers'))
 app.use('/dashboard', require('./controllers/dashboard'))
@@ -512,8 +513,9 @@ app.use('/currency', require('./controllers/currency'))
 //End of User
 
 //Setting
+app.use('/apiaccess', require('./controllers/apiaccess'))
 app.use('/module', require('./controllers/module'))
-app.use('/country', require('./controllers/country'))
+//app.use('/country', require('./controllers/country'))
 app.use('/state', require('./controllers/state'))
 app.use('/city', require('./controllers/city'))
 
