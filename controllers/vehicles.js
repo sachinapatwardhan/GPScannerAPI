@@ -523,21 +523,21 @@ router.get('/ExportVehicle', function(req, res) {
         " left join tblvehicletype  as vehicletype on vehicletype.id = vehicle.idType " +
         " left join tblgpsdevice as gpsdevice on gpsdevice.DeviceId =vehicle.deviceid " +
         " LEFT JOIN tbluserinformation AS user ON vehicle.iduser = user.id " + search +
-        " order by id desc";
+        " order by username desc";
     // console.log("@@@@@@@@@@@@", qry)
     connection.query(qry, function(err, response) {
         if (response != undefined) {
             conf.rows = [];
-            var username = '';
-            var Name = '';
-            var deviceid = '';
-            var Type = '';
-            var DeviceType = '';
-            var Displyrenewaldate = '';
-            var DisplyHandshakDate = '';
-            var IsOnline = 0;
 
             function GetVehiclesData(i) {
+                var username = '';
+                var Name = '';
+                var deviceid = '';
+                var Type = '';
+                var DeviceType = '';
+                var Displyrenewaldate = '';
+                var DisplyHandshakDate = '';
+                var IsOnline = 0;
                 if (i < response.length) {
                     var row = [];
                     if (response[i].username != null && response[i].username != '' && response[i].username != undefined) {
