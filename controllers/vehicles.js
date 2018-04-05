@@ -517,7 +517,8 @@ router.get('/ExportVehicle', function(req, res) {
         }
     }
 
-    var qry = "Select vehicle.*,vehicletype.Type,gpsdevice.IMEI,CONVERT_TZ(vehicle.HandshakDatetime,'+00:00','" + CurrentOffset + "') as DisplyHandshakDate, CONVERT_TZ(vehicle.renewaldate,'+00:00','" + CurrentOffset + "') as Displyrenewaldate,  " +
+    objParam.CurrentOffset = objParam.CurrentOffset.charAt(0) == 'p' ? objParam.CurrentOffset.replace('p', '+') : objParam.CurrentOffset.replace('p', '-');
+    var qry = "Select vehicle.*,vehicletype.Type,gpsdevice.IMEI,DATE_FORMAT(CONVERT_TZ(vehicle.HandshakDatetime,'+00:00','" + objParam.CurrentOffset + "'),'%d-%m-%Y %r') as DisplyHandshakDate, DATE_FORMAT(CONVERT_TZ(vehicle.renewaldate,'+00:00','" + objParam.CurrentOffset + "'),'%d-%m-%Y') as Displyrenewaldate,  " +
         "user.username AS username " +
         "FROM tblvehicle AS vehicle " +
         " left join tblvehicletype  as vehicletype on vehicletype.id = vehicle.idType " +
@@ -555,11 +556,14 @@ router.get('/ExportVehicle', function(req, res) {
                     if (response[i].Type != null && response[i].Type != '' && response[i].Type != undefined) {
                         Type = response[i].Type;
                     }
+
                     if (response[i].Displyrenewaldate != null && response[i].Displyrenewaldate != '' && response[i].Displyrenewaldate != undefined) {
-                        Displyrenewaldate = moment(response[i].Displyrenewaldate).format('DD-MM-YYYY');
+                        // Displyrenewaldate = moment(response[i].Displyrenewaldate).format('DD-MM-YYYY');
+                        Displyrenewaldate = response[i].Displyrenewaldate;
                     }
                     if (response[i].DisplyHandshakDate != null && response[i].DisplyHandshakDate != '' && response[i].DisplyHandshakDate != undefined) {
-                        DisplyHandshakDate = moment(response[i].DisplyHandshakDate).format('DD-MM-YYYY hh:mm:ss a');
+                        //DisplyHandshakDate = moment(response[i].DisplyHandshakDate).format('DD-MM-YYYY hh:mm:ss a');
+                        DisplyHandshakDate = response[i].DisplyHandshakDate;
                     }
                     IsOnline = response[i].IsOnline == true || response[i].IsOnline == 1 || response[i].IsOnline == '1' ? '1' : '0';
                     if (objParam.IsTrackingApp == 'true' || objParam.IsTrackingApp == true) {
