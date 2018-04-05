@@ -383,7 +383,7 @@ router.get('/GetAllDynamicVehicle', function(req, res) {
         }
     }
 
-    console.log(search)
+    // console.log(search)
     var qry = "Select vehicle.*,vehicletype.Type,gpsdevice.IMEI,CONVERT_TZ(vehicle.HandshakDatetime,'+00:00','" + CurrentOffset + "') as DisplyHandshakDate, CONVERT_TZ(vehicle.renewaldate,'+00:00','" + CurrentOffset + "') as Displyrenewaldate,  " +
         "user.username AS username " +
         "FROM tblvehicle AS vehicle " +
@@ -460,7 +460,7 @@ router.get('/ExportVehicle', function(req, res) {
     if (objParam.IsTrackingApp == 'true' || objParam.IsTrackingApp == true) {
         conf.cols.splice(3, 1);
     }
-    console.log(objParam)
+    // console.log(objParam)
     if (objParam.UserId != null && objParam.UserId != '' && objParam.UserId != undefined) {
         if (search != "") {
             search += ' and vehicle.idSalesAgent = ' + objParam.UserId;
@@ -524,7 +524,7 @@ router.get('/ExportVehicle', function(req, res) {
         " left join tblgpsdevice as gpsdevice on gpsdevice.DeviceId =vehicle.deviceid " +
         " LEFT JOIN tbluserinformation AS user ON vehicle.iduser = user.id " + search +
         " order by id desc";
-    console.log("@@@@@@@@@@@@", qry)
+    // console.log("@@@@@@@@@@@@", qry)
     connection.query(qry, function(err, response) {
         if (response != undefined) {
             conf.rows = [];
@@ -559,7 +559,7 @@ router.get('/ExportVehicle', function(req, res) {
                         Displyrenewaldate = moment(response[i].Displyrenewaldate).format('DD-MM-YYYY');
                     }
                     if (response[i].DisplyHandshakDate != null && response[i].DisplyHandshakDate != '' && response[i].DisplyHandshakDate != undefined) {
-                        DisplyHandshakDate = moment(response[i].DisplyHandshakDate).format(' hh:mm:ss a');
+                        DisplyHandshakDate = moment(response[i].DisplyHandshakDate).format('DD-MM-YYYY hh:mm:ss a');
                     }
                     IsOnline = response[i].IsOnline == true || response[i].IsOnline == 1 || response[i].IsOnline == '1' ? '1' : '0';
                     if (objParam.IsTrackingApp == 'true' || objParam.IsTrackingApp == true) {
