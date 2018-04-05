@@ -76,7 +76,7 @@ module.exports = function(sequelize, DataTypes) {
     Notification: {
       type: DataTypes.BOOLEAN,
       allowNull: true,
-      defaultValue: '0'
+      defaultValue: '1'
     },
     LastLogin: {
       type: DataTypes.DATE,
