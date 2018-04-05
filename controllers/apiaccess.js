@@ -17,11 +17,11 @@ router.get('/GetAllAccessClient', function (req, res) {
             if (objColumns[i].data != null && objColumns[i].data != '') {
                 var columnName = objColumns[i].data;
                 var obj = new Object();
-                if(columnName != 'CreatedDate'){
+                if (columnName != 'CreatedDate') {
                     columnName = columnName == 'Key' ? '`Key`' : columnName;
                     search['$or'].push([columnName + ' like ?', "%" + objSearch + "%"]);
                 }
-                
+
             };
         };
     }
@@ -88,7 +88,6 @@ router.post('/SaveAccessClient', jsonParser, function (req, res) {
                                         return AccessClient.findOne({
                                             where: {
                                                 $or: {
-                                                    Name: objClient.Name,
                                                     Token: objClient.Token,
                                                     Key: objClient.Key,
                                                 }
@@ -138,7 +137,8 @@ router.post('/SaveAccessClient', jsonParser, function (req, res) {
                                 return AccessClient.findOne({
                                     where: {
                                         $or: {
-                                            Name: objClient.Name,
+                                            Token: objClient.Token,
+                                            Key: objClient.Key,
                                         }
                                     }
                                 }).then(function (result) {
