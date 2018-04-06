@@ -873,7 +873,8 @@ global.Command9955 = function(line, Callback) {
                     IsEngine: IsPatchEngine,
                     IsOriginalSirenTriggeringStatus: IsOriginalSirenTriggeringStatus,
                     Date: unixDateStemp,
-                    AD2: hexToBinary(AD2),
+                    AD1: AD1,
+                    AD2: AD2,
                 }
 
                 if (Position == 'A') {

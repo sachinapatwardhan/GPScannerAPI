@@ -999,7 +999,9 @@ router.post('/SaveGPSDevice', jsonParser, function(req, res) {
                                         if (response[0]) {
                                             funAuditLog.CreateAuditLog('SaveGPSDevice', UserExist.username, 'Update GPS Tracker Device  IMEI : (' + objGPSDeviceExit.IMEI + ')');
                                             Vehicle.findOne({ where: { deviceid: objGPSDevice.DeviceId } }).then(function(vehicleExits) {
-                                                vehicleExits.updateAttributes({ DeviceType: objGPSDevice.Type }).then(function(VehicleDeviceTypeupdate) {})
+                                                if (vehicleExits) {
+                                                    vehicleExits.updateAttributes({ DeviceType: objGPSDevice.Type }).then(function(VehicleDeviceTypeupdate) {})
+                                                }
                                             })
                                             res.json({ success: true, message: "Tracker updated successfully", data: response });
                                         } else {
