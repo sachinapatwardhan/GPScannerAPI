@@ -485,7 +485,7 @@ app.use('/petalarm', require('./controllers/petAlarm'))
 app.use('/favoriteplace', require('./controllers/favoriteplace'))
     //app.use('/petFeedback', require('./controllers/petFeedback'))
     //app.use('/petshop', require('./controllers/petShop'))
-app.use('/vehiclegroup', require('./controllers/vehiclegroup'))
+//app.use('/vehiclegroup', require('./controllers/vehiclegroup'))
 app.use('/carrier', require('./controllers/carrier'))
 app.use('/deviceacc', require('./controllers/deviceacc'))
     //CMS
@@ -572,6 +572,7 @@ app.use('/mainsetting', require('./controllers/mainsetting'));
 app.use('/DeviceStock', require('./controllers/DeviceStock'));
 app.use('/serviceenhancement', require('./controllers/serviceenhancement'));
 app.use('/advancefence', require('./controllers/advancefence'))
+app.use('/last7GPSdata',require('./controllers/last7GPSdata') )
     //socket API End
 
 //Wallet Transaction
