@@ -19,9 +19,8 @@ router.get('/GetAllLicence', function(req, res) {
     var Orderby = objColumns[parseInt(objOrder[0].column)].data + ' ' + objOrder[0].dir;
     var search = '';
 
-
     if (objSearch != null && objSearch != '') {
-        search = ' and (tl.DeviceId like "%' + objSearch + '%" or ';
+        search += ' and (tl.DeviceId like "%' + objSearch + '%" or ';
         search = search + 'tl.LicenceNo like "%' + objSearch + '%" or ';
         search = search + 'tl.ExpiryDate like "%' + objSearch + '%" or ';
         search = search + 'tl.CreatedDate like "%' + objSearch + '%" or ';
@@ -35,9 +34,9 @@ router.get('/GetAllLicence', function(req, res) {
 
     if (req.query.StartDate != '' && req.query.EndDate != '') {
         if (search == '') {
-            search = " AND tl.ExpiryDate between  '" + convertdateformat(req.query.StartDate, 3) + "' AND '" + convertdateformat(req.query.EndDate, 3) + "'";
+            search += " AND tl.ExpiryDate between  '" + convertdateformat(req.query.StartDate, 3) + "' AND '" + convertdateformat(req.query.EndDate, 3) + "'";
         } else {
-            search = search + " AND   tl.ExpiryDate between  '" + convertdateformat(req.query.StartDate, 3) + "' AND '" + convertdateformat(req.query.EndDate, 3) + "'";
+            search += search + " AND   tl.ExpiryDate between  '" + convertdateformat(req.query.StartDate, 3) + "' AND '" + convertdateformat(req.query.EndDate, 3) + "'";
         }
     } else if (req.query.StartDate != null && req.query.StartDate != '' && req.query.StartDate != undefined) {
         if (search == '') {
@@ -54,7 +53,7 @@ router.get('/GetAllLicence', function(req, res) {
     }
 
     if (req.query.idApp != null && req.query.idApp != undefined && req.query.idApp != '') {
-        search = " and ta.Id=" + req.query.idApp + " ";
+        search += " and ta.Id=" + req.query.idApp + " ";
     }
 
     var query = "SELECT tl.Id, tu.email,tl.DeviceId,tl.LicenceNo,tl.IdUser,tu.phone,tv.Name as VehicleName,ta.AppName,tl.LicenceRenewalType,tl.LicenceType,ta.LicenceRenewalType as appLicenceRenewalType,ta.LicenceType as appLicenceType, " +
@@ -67,7 +66,6 @@ router.get('/GetAllLicence', function(req, res) {
         " LEFT JOIN tbluserinformation as tu ON tv.iduser = tu.id " +
         " where tl.IsDeleted=0  " + search +
         " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
-
     var countquery = "SELECT count(*) as TotalRecord " +
         " from tbllicencemanager as tl " +
         " LEFT JOIN tblappinfo as ta ON ta.Id= tl.idApp" +
@@ -366,6 +364,7 @@ router.get('/changestatusrenewal', function(req, res) {
         res.json(InvalidToken);
     }
 })
+
 
 
 function convertdateformat(date1, flg) {
