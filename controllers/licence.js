@@ -538,6 +538,8 @@ router.get('/CreateLicenceNumbers', function(req, res) {
                             var obj = new Object();
                             obj.LicenceNo = LicenceNo;
                             obj.idApp = AppExits.Id;
+                            obj.LicenceRenewalType = AppExits.LicenceRenewalType;
+                            obj.LicenceType = AppExits.LicenceType;
                             LicenceManager.findOrCreate({ where: { LicenceNo: LicenceNo }, defaults: obj }).then(function(response) {
                                 // console.log("###")
                                 uploder(i + 1);
