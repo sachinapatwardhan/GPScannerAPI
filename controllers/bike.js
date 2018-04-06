@@ -412,7 +412,7 @@ router.get('/GetVehicleCurrentLocation', function(req, res) {
             if (response != null) {
                 //Use Patch Engine
                 response.IsEngine = response.IsPatchEngine;
-                response.AD2 = hexToBinary(response.AD2);
+                response.AD2 = response.AD2;
                 client.set(req.query.DeviceId, JSON.stringify(response), function(err, replies) {});
                 res.json({ success: true, data: response });
             } else {
