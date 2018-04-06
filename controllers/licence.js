@@ -130,8 +130,8 @@ router.get('/SaveLicenceDetail', function(req, res) {
                                                         DeviceId: req.query.DeviceId,
                                                         ExpiryDate: req.query.ExpiryDate,
                                                         CreatedDate: new Date(),
-                                                        LicenceRenewalType: AppExits.LicenceRenewalType,
-                                                        LicenceType: AppExits.LicenceType
+                                                        LicenceRenewalType: req.query.LicenceRenewalType,
+                                                        LicenceType: req.query.LicenceType,
                                                     }).then(function(response) {
                                                         if (response) {
                                                             Vehicle.findOne({ where: { deviceid: response.DeviceId } }).then(function(vehicleExist) {
