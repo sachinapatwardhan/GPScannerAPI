@@ -17,6 +17,7 @@ var SystemEmail = models.tblemailsettingsys;
 var EmailTemplate = models.tblemailtemplate;
 var Setting = models.tblsetting;
 var VehicleGroup = models.tblvehiclegroup;
+var VehicleType = models.tblvehicletype;
 //End of Tables
 
 app.use(express.static(__dirname + '/../MediaUploads/PetUpload'));
