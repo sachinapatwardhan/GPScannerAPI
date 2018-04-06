@@ -515,7 +515,7 @@ app.use('/currency', require('./controllers/currency'))
 //Setting
 app.use('/apiaccess', require('./controllers/apiaccess'))
 app.use('/module', require('./controllers/module'))
-//app.use('/country', require('./controllers/country'))
+app.use('/country', require('./controllers/country'))
 app.use('/state', require('./controllers/state'))
 app.use('/city', require('./controllers/city'))
 
