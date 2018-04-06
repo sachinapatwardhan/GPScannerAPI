@@ -747,7 +747,15 @@ function checkLicence(objVehicle, username, callback) {
                         data: LicenceAssined
                     });
                 } else {
-                    LicenceManager.findOne({ where: { DeviceId: { $eq: null }, IsDeleted: 0, idApp: DeviceExist[0].Id } }).then(function(LicenceNoExist) {
+                    LicenceManager.findOne({
+                        where: {
+                            DeviceId: { $eq: null },
+                            IsDeleted: 0,
+                            idApp: DeviceExist[0].Id,
+                            LicenceRenewalType: DeviceExist[0].LicenceRenewalType,
+                            LicenceType: DeviceExist[0].LicenceType,
+                        }
+                    }).then(function(LicenceNoExist) {
                         if (LicenceNoExist) {
                             if (DeviceExist[0].LicenceRenewalType == 'Monthly') {
                                 AddMonth = 1;
