@@ -7,6 +7,7 @@ var GpsDevice = models.tblgpsdevice;
 var Vehicle = models.tblvehicle;
 var User = models.tbluserinformation;
 var UserInRole = models.tbluserinrole;
+var AuditLogLicence = models.tblauditloglicence;
 var Role = models.tblrole;
 
 
@@ -387,6 +388,73 @@ function convertdateformat(date1, flg) {
         return ("0000" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("00" + firstdayDay.toString()).slice(-2);
     }
 }
+
+
+//Liacence Audit Log
+router.get('/GetAllLiacenceAuditlog', function(req, res) {
+    var objParam = req.query;
+    var objColumns = objParam.columns;
+    var objOrder = objParam.order;
+    var objSearch = objParam.search;
+
+    var Orderby = objColumns[parseInt(objOrder[0].column)].data + ' ' + objOrder[0].dir;
+    var search = {};
+    if (objSearch != null && objSearch != '') {
+        search['$or'] = [];
+
+        for (var i = 0; i < objColumns.length; i++) {
+            if (objColumns[i].data != null && objColumns[i].data != '') {
+                var columnName = objColumns[i].data;
+                if (columnName != 'createddate') {
+                    search['$or'].push([columnName + ' like ?', "%" + objSearch + "%"]);
+                }
+
+            };
+        };
+    }
+    search['$and'] = [];
+    var StartDate = req.query.StartDate;
+    var EndDate = req.query.EndDate;
+    if (StartDate != '' && EndDate != '') {
+        StartDate = convertdateformat(StartDate, 3);
+        EndDate = convertdateformat(EndDate, 3);
+
+        var obj = new Object();
+        obj['createddate'] = {
+            $between: [StartDate, EndDate]
+        };
+        search['$and'].push(obj);
+    } else if (StartDate != null && StartDate != '') {
+        StartDate = convertdateformat(StartDate, 3);
+        var obj = new Object();
+        obj['createddate'] = {
+            $gt: StartDate
+        };
+        search['$and'].push(obj);
+    } else if (EndDate != null && EndDate != '') {
+        EndDate = convertdateformat(EndDate, 3);
+        var obj = new Object();
+        obj['createddate'] = {
+            $lt: EndDate
+        };
+        search['$and'].push(obj);
+    }
+    AuditLogLicence.findAndCountAll({
+        where: search,
+        order: Orderby,
+        offset: parseInt(objParam.start),
+        limit: parseInt(objParam.length),
+    }).then(function(response) {
+        var response1 = new Object();
+        response1.draw = objParam.draw;
+        response1.recordsTotal = response.count;
+        response1.recordsFiltered = response.count;
+        response1.data = response.rows;
+        res.json(response1);
+    }).catch(function(error) {
+        res.json(error);
+    })
+})
 
 
 //Private functions
