@@ -6,14 +6,8 @@ var AppInfo = models.tblappinfo;
 var GPS = models.tblgpsdata;
 var GPSDevice = models.tblgpsdevice;
 
-router.get('/getlast7gpsdata', function (req, res) {
-    objHeader = req.headers;
-    console.log(objHeader)
-    var token = getToken(objHeader);
-    // if (token) {
-    //     var decoded = jwt.decode(token, TokenKey);
-    //     User.findOne({ where: { username: decoded.username, password: decoded.password } }).then(function (UserExist) {
-    //         if (UserExist != null) {
+router.get('/getlast7gpsdata', function(req, res) {
+
     AccessClient.findOne({
         where: {
             $and: {
@@ -22,7 +16,7 @@ router.get('/getlast7gpsdata', function (req, res) {
                 IsActive: 1,
             }
         }
-    }).then(function (AccessClientExist) {
+    }).then(function(AccessClientExist) {
         if (AccessClientExist != null) {
             GPSDevice.belongsTo(AppInfo, {
                 foreignKey: 'AppName',
@@ -36,11 +30,11 @@ router.get('/getlast7gpsdata', function (req, res) {
                     model: AppInfo,
                     required: true,
                 }],
-            }).then(function (IsDeviceExist) {
+            }).then(function(IsDeviceExist) {
                 if (IsDeviceExist != null) {
                     if (IsDeviceExist.tblappinfo.Id == AccessClientExist.AppName) {
-                        query = "SELECT DeviceId,Date,Latitude,Longitude,Speed,Direction,GPSPositioning,IsPatchEngine,Altitude from tblgpsdata order By Date desc limit 7";
-                        connection.query(query, function (err, lstRecord, fields) {
+                        query = "SELECT DeviceId,Date,Latitude,Longitude,Speed,Direction,GPSPositioning as Position,IsPatchEngine as Engine,Altitude from tblgpsdata order By Date desc limit 7";
+                        connection.query(query, function(err, lstRecord, fields) {
                             if (!err) {
                                 for (var i = 0; i < lstRecord.length; i++) {
                                     lstRecord[i].Date = moment.unix(lstRecord[i].Date).utc().format('DD-MM-YYYY HH:mm:ss ') + '(UTC)';
@@ -54,12 +48,10 @@ router.get('/getlast7gpsdata', function (req, res) {
                                 res.json(response)
                             }
                         })
+                    } else {
+                        res.json({ success: false, message: "Invalid Device." });
                     }
-                    else {
-                        res.json({ success: false, message: "AppName invalid " });
-                    }
-                }
-                else {
+                } else {
                     res.json({ success: false, message: "Device not exist" });
                 }
             })
@@ -68,14 +60,6 @@ router.get('/getlast7gpsdata', function (req, res) {
         }
 
     })
-
-    //         } else {
-    //             res.json(InvalidToken);
-    //         }
-    //     })
-    // } else {
-    //     res.json(InvalidToken);
-    // }
 })
 
 
