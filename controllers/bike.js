@@ -2737,18 +2737,18 @@ function convertdateformat(date1) {
 
 }
 
-function convertdateformatForUnix(date1) {
-    var date = new Date(date1);
-    var firstdayMonth = date.getMonth() + 1;
-    var firstdayDay = date.getDate();
-    var firstdayYear = date.getFullYear();
-    var firstdayHours = 0;
-    var firstdayMinutes = 0;
-    var firstdaySeconds = 0;
+// function convertdateformatForUnix(date1) {
+//     var date = new Date(date1);
+//     var firstdayMonth = date.getMonth() + 1;
+//     var firstdayDay = date.getDate();
+//     var firstdayYear = date.getFullYear();
+//     var firstdayHours = 0;
+//     var firstdayMinutes = 0;
+//     var firstdaySeconds = 0;
 
-    return ("00" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("0000" + firstdayDay.toString()).slice(-2) + " " + ("00" + firstdayHours.toString()).slice(-2) + ':' + ("00" + firstdayMinutes.toString()).slice(-2) + ':' + ("00" + firstdaySeconds.toString()).slice(-2);
+//     return ("00" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("0000" + firstdayDay.toString()).slice(-2) + " " + ("00" + firstdayHours.toString()).slice(-2) + ':' + ("00" + firstdayMinutes.toString()).slice(-2) + ':' + ("00" + firstdaySeconds.toString()).slice(-2);
 
-}
+// }
 
 
 function convertdateformatLicenceExpiry(date1, flg) {
