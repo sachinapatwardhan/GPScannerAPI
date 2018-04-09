@@ -1891,6 +1891,7 @@ global.SendSpeedData = function(objdata, Callback) {
                 client.destroy(); // kill client after server's response
                 if (StatusCode == '01') {
                     connection.query("Update tblvehicle set MaxSpeed=" + objdata.Speed + " where deviceid=" + DeviceId, function(err, rows, fields) {
+                        funAuditLog.CreateAuditLog('Speed Setting', null, 'Change vehicle (DeviceId:' + DeviceId + ') max speed setting at (time:' + convertdateformat(new Date()) + ').');
                         Callback({ success: true, message: 'Speed Settings Save Successfully.' });
                     });
                 } else {
@@ -1968,6 +1969,7 @@ global.SendMovementData = function(objdata, Callback) {
                 client.destroy(); // kill client after server's response
                 if (StatusCode == '01') {
                     connection.query("Update tblvehicle set Movement=" + objdata.Movement + " where deviceid=" + DeviceId, function(err, rows, fields) {
+                        funAuditLog.CreateAuditLog('Movement Setting', null, 'Change vehicle (DeviceId:' + DeviceId + ') Movement Setting at (time:' + convertdateformat(new Date()) + ').');
                         Callback({ success: true, message: 'Movement Settings Save Successfully.' });
                     });
                 } else {
@@ -2169,6 +2171,7 @@ global.SetGPRSInterval = function(objdata, Callback) {
                 client.destroy(); // kill client after server's response
                 if (StatusCode == '01') {
                     connection.query("Update tblvehicle set GPRSInterval=" + objdata.TimeInterval + " where deviceid=" + DeviceId, function(err, rows, fields) {
+                        funAuditLog.CreateAuditLog('GPRS Interval Settings', null, 'Change vehicle (DeviceId:' + DeviceId + ') GPRS Interval Settings at (time:' + convertdateformat(new Date()) + ').');
                         Callback({ success: true, message: 'GPRS Interval Settings Save Successfully.' });
                     });
                 } else {
@@ -2377,6 +2380,7 @@ global.SetSleepMode = function(objdata, Callback) {
                 client.destroy(); // kill client after server's response
                 if (StatusCode == '01') {
                     connection.query("Update tblvehicle set SleepMode=" + objdata.SleepMode + " where deviceid=" + DeviceId, function(err, rows, fields) {
+                        funAuditLog.CreateAuditLog('Sleep Mode Setting', null, 'Change vehicle (DeviceId:' + DeviceId + ') Sleep Mode Setting at (time:' + convertdateformat(new Date()) + ').');
                         Callback({ success: true, message: 'Sleep Mode Save Successfully.' });
                     });
                 } else {
@@ -2420,6 +2424,7 @@ router.get('/SetOutputControl', function(req, res) {
         } else {
             updateQuery += ", Relay=" + req.query.Relay;
         }
+        funAuditLog.CreateAuditLog('Relay Setting', null, 'Change vehicle (DeviceId:' + req.query.DeviceId + ') Relay Setting at (time:' + convertdateformat(new Date()) + ').');
     }
 
     if (req.query.Siren != undefined) {
@@ -2429,6 +2434,7 @@ router.get('/SetOutputControl', function(req, res) {
         } else {
             updateQuery += ", Siren=" + req.query.Siren;
         }
+        funAuditLog.CreateAuditLog('Siren Setting', null, 'Change vehicle (DeviceId:' + req.query.DeviceId + ') Siren Setting at (time:' + convertdateformat(new Date()) + ').');
     }
 
     if (req.query.UserDefined != undefined) {
@@ -2438,6 +2444,7 @@ router.get('/SetOutputControl', function(req, res) {
         } else {
             updateQuery += ", UserDefined=" + req.query.UserDefined;
         }
+        funAuditLog.CreateAuditLog('User Defined setting', null, 'Change vehicle (DeviceId:' + req.query.DeviceId + ') User Defined Setting at (time:' + convertdateformat(new Date()) + ').');
     }
 
     if (req.query.DoorLock != undefined) {
@@ -2447,6 +2454,7 @@ router.get('/SetOutputControl', function(req, res) {
         } else {
             updateQuery += ", DoorLock =" + req.query.DoorLock;
         }
+        funAuditLog.CreateAuditLog('Door Lock setting', null, 'Change vehicle (DeviceId:' + req.query.DeviceId + ') User Door Lock Setting at (time:' + convertdateformat(new Date()) + ').');
     }
 
     if (req.query.DoorUnlock != undefined) {
@@ -2456,6 +2464,7 @@ router.get('/SetOutputControl', function(req, res) {
         } else {
             updateQuery += ", DoorUnlock=" + req.query.DoorUnlock;
         }
+        funAuditLog.CreateAuditLog('Door Unlock setting', null, 'Change vehicle (DeviceId:' + req.query.DeviceId + ') User Door Unlock Setting at (time:' + convertdateformat(new Date()) + ').');
     }
 
     // console.log(updateQuery);
@@ -2638,6 +2647,7 @@ router.get('/SetArmSettings', function(req, res) {
                         obj.ArmStatus = 1;
                     }
                     SetArmSettings(obj, function(data) {});
+                    funAuditLog.CreateAuditLog('Arm Setting', null, 'Change vehicle (DeviceId:' + DeviceId + ') Arm Setting at (time:' + convertdateformat(new Date()) + ').');
                     res.json({ success: true, message: 'Arm Settings Save Successfully.' });
 
                 } else {
@@ -2698,6 +2708,7 @@ global.SetArmSettings = function(objdata, Callback) {
                 client.destroy(); // kill client after server's response
                 if (StatusCode == '01') {
                     connection.query("Update tblvehicle set Arm=" + objdata.Arm + ", LastArmSetting=" + objdata.ArmStatus + " where deviceid=" + DeviceId, function(err, rows, fields) {
+                        funAuditLog.CreateAuditLog('Arm Setting', null, 'Change vehicle (DeviceId:' + DeviceId + ') Arm Setting at (time:' + convertdateformat(new Date()) + ').');
                         Callback({ success: true, message: 'Arm Settings Save Successfully.' });
                     });
                 } else {
@@ -2775,6 +2786,7 @@ global.SetGPRSIntervalStopCar = function(objdata, Callback) {
                 client.destroy(); // kill client after server's response
                 if (StatusCode == '01') {
                     connection.query("Update tblvehicle set GPRSStopInterval=" + objdata.TimeInterval + " where deviceid=" + DeviceId, function(err, rows, fields) {
+                        funAuditLog.CreateAuditLog('GPRS Interval Setting', null, 'Change vehicle (DeviceId:' + DeviceId + ') GPRS Interval Setting at (time:' + convertdateformat(new Date()) + ').');
                         Callback({ success: true, message: 'GPRS Interval Settings for Stop Car Save Successfully.' });
                     });
                 } else {
@@ -2927,6 +2939,8 @@ global.SetOdometerSetting = function(objdata, Callback) {
                 client.destroy(); // kill client after server's response
                 if (StatusCode == '01') {
                     connection.query("Update tblvehicle set OdoMeter=" + objdata.odometer + " where deviceid=" + DeviceId, function(err, rows, fields) {
+                        funAuditLog.CreateAuditLog('Odometer Setting', null, 'Change vehicle (DeviceId:' + DeviceId + ') Odometer Setting at (time:' + convertdateformat(new Date()) + ').');
+
                         Callback({ success: true, message: 'Odometer settings Save Successfully.' });
                     });
                 } else {
@@ -3007,6 +3021,8 @@ global.SetACCSetting = function(objdata, Callback) {
                 client.destroy(); // kill client after server's response
                 if (StatusCode == '01') {
                     connection.query("Update tblvehicle set ACC=" + objdata.ACC + " where deviceid=" + DeviceId, function(err, rows, fields) {
+                        funAuditLog.CreateAuditLog('ACC Setting', null, 'Change vehicle (DeviceId:' + DeviceId + ') ACC Setting at (time:' + convertdateformat(new Date()) + ').');
+
                         Callback({ success: true, message: 'ACC settings Save Successfully.' });
                     });
                 } else {
@@ -3090,6 +3106,7 @@ global.SetHeartBeatInterval = function(objdata, Callback) {
                 client.destroy(); // kill client after server's response
                 if (StatusCode == '01') {
                     connection.query("Update tblvehicle set HeartbeatInterval=" + objdata.TimeInterval + " where deviceid=" + DeviceId, function(err, rows, fields) {
+                        funAuditLog.CreateAuditLog('HeartBeat Interval Setting', null, 'Change vehicle (DeviceId:' + DeviceId + ') HeartBeat Interval Setting at (time:' + convertdateformat(new Date()) + ').');
                         Callback({ success: true, message: 'HeartBeat Interval Settings Save Successfully.' });
                     });
                 } else {
