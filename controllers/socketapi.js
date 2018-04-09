@@ -1655,7 +1655,8 @@ global.Command9999 = function(line, Callback) {
                                     Datetime: GPSDateTime,
                                     Date: unixDateStemp,
                                     IdUser: lstAllUser[i],
-                                    Name: objVehicle.Name
+                                    Name: objVehicle.Name,
+                                    Speed: Speed
                                 }
 
                                 io.sockets.emit(lstAllUser[i] + 'DeviceAlarm', JSON.stringify(objConnection));
