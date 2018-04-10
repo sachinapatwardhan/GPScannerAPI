@@ -436,7 +436,7 @@ io.sockets.on('connection', function(socket) {
     socket.on('UpdateDeviceStatus', function(data) {
         // console.log('socket.io server received : ' + data);
         var objdata = JSON.parse(data);
-        UpdateDeviceStatus(objdata);
+        UpdateDeviceStatus(objdata, function(objres) {});
     });
 
     // Journey Route Complete
