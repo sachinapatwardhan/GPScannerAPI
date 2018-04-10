@@ -647,25 +647,25 @@ router.get('/Command5000', function(req, res) {
     var CurrentDate = GetCurrentDate();
     var response = '40400012' + DeviceId + '400001';
     response = response + CalculateCRCbyHex(response) + '0D0A';
-    connection.query("SELECT * from tblgpsdevice where DeviceId=" + DeviceId, function(err, rows, fields) {
-        if (!err) {
-            //if (rows.length > 0) {
-            //tblapisresponse Entry
-            // var ResponceQuery = "INSERT INTO tblapisresponse (Code,Response,Datetime) VALUES ('5000', '" + response + "', '" + CurrentDate + "');";
-            // connection.query(ResponceQuery, function(err, rows1, fields) {
-            res.send(response);
-            // });
-            // } else {
-            //     //tblPetgps Entry
+    // connection.query("SELECT * from tblgpsdevice where DeviceId=" + DeviceId, function(err, rows, fields) {
+    //     if (!err) {
+    //if (rows.length > 0) {
+    //tblapisresponse Entry
+    // var ResponceQuery = "INSERT INTO tblapisresponse (Code,Response,Datetime) VALUES ('5000', '" + response + "', '" + CurrentDate + "');";
+    // connection.query(ResponceQuery, function(err, rows1, fields) {
+    res.send(response);
+    // });
+    // } else {
+    //     //tblPetgps Entry
 
-            //     var ResponceQuery = "INSERT INTO tblgpsdevice (Code,Response,Datetime) VALUES ('5000', '" + response + "', '" + CurrentDate + "');";
-            //     connection.query(ResponceQuery, function(err, rows1, fields) {
-            //         res.json(response);
-            //     });
-            //     //});
-            // }
-        }
-    })
+    //     var ResponceQuery = "INSERT INTO tblgpsdevice (Code,Response,Datetime) VALUES ('5000', '" + response + "', '" + CurrentDate + "');";
+    //     connection.query(ResponceQuery, function(err, rows1, fields) {
+    //         res.json(response);
+    //     });
+    //     //});
+    // }
+    //     }
+    // })
 
 
 })
@@ -692,8 +692,7 @@ global.Command5001 = function(line, Callback) {
         //tblPetgps Entry
         var query = "INSERT INTO tblhandshake (DeviceId,Datetime ) VALUES ('" + DeviceId + "', '" + CurrentDate + "');";
         connection.query(query, function(err, rows, fields) {
-
-            connection.query("Update tblvehicle set HandshakDatetime='" + CurrentDate + "',IsOnline=true where deviceid=" + DeviceId, function(err, rows1, fields) {
+            connection.query("Update tblvehicle set HandshakDatetime='" + CurrentDate + "',IsOnline=true where deviceid='" + DeviceId + "'", function(err, rows1, fields) {
                 var objConnection = {
                         DeviceId: DeviceId,
                         Status: true
@@ -844,52 +843,52 @@ global.Command9955 = function(line, Callback) {
         if (timediffernce <= 3600) {
 
 
-            var NewDeviceId = DeviceId.substring(DeviceId.length - 7);
-            // var unixDateStemp = new Date(resData1[j].CreatedDate).getTime() / 1000;
-            var unixDateStempNew = parseInt((new Date()).getTime() / 1000) + unixDateStemp;
-            // var Ids = resData1[j].Date.toString() + NewDeviceId;
-            var Ids = unixDateStempNew.toString() + NewDeviceId;
-            // //Insert data in gps
-            var query = "INSERT INTO tblgpsdata (Id,Datetime,Latitude,Longitude,GPSPositioning,Speed,Direction,Status,DeviceId,IsRelayToStopTheCar,IsSirenSound,IsUserDefined,IsLockTheDoor,IsUnlockTheDoor,IsSOS,IsWiringForAntiTamper,IsDoor,IsEngine,IsOriginalSirenTriggeringStatus,CreatedDate,HDOP,Altitude,AD1,AD2,OdoMeter,Date,IsPatchEngine ) " +
-                "VALUES (" + Ids + ",'" + GPSDateTime + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + inputoutputSTatus + "', '" + DeviceId + "'," + IsRelayToStopTheCar + "," + IsSirenSound + "," + IsUserDefined + "," + IsLockTheDoor + "," + IsUnlockTheDoor + "," + IsSOS + "," + IsWiringForAntiTamper + "," + IsDoor + "," + IsEngine + "," + IsOriginalSirenTriggeringStatus + ",'" + CurrentDate + "','" + HDOP + "','" + altitude + "','" + AD1 + "','" + AD2 + "','" + Odometer + "','" + unixDateStemp + "'," + IsPatchEngine + ");";
-            connection.query(query, function(err, rows, fields) {
-                // console.log(err);
-                var objConnection = {
-                    Position: Position,
-                    Speed: Speed,
-                    Deviceid: DeviceId,
-                    Latitude: Latitude,
-                    Longitude: Longitude,
-                    Direction: Direction,
-                    OdoMeter: Odometer,
-                    IsRelayToStopTheCar: IsRelayToStopTheCar,
-                    IsSirenSound: IsSirenSound,
-                    IsUserDefined: IsUserDefined,
-                    IsLockTheDoor: IsLockTheDoor,
-                    IsUnlockTheDoor: IsUnlockTheDoor,
-                    IsSOS: IsSOS,
-                    IsWiringForAntiTamper: IsWiringForAntiTamper,
-                    IsDoor: IsDoor,
-                    IsEngine: IsPatchEngine,
-                    IsOriginalSirenTriggeringStatus: IsOriginalSirenTriggeringStatus,
-                    Date: unixDateStemp,
-                    AD1: AD1,
-                    AD2: AD2,
-                }
+            // var NewDeviceId = DeviceId.substring(DeviceId.length - 7);
+            // // var unixDateStemp = new Date(resData1[j].CreatedDate).getTime() / 1000;
+            // var unixDateStempNew = parseInt((new Date()).getTime() / 1000) + unixDateStemp;
+            // // var Ids = resData1[j].Date.toString() + NewDeviceId;
+            // var Ids = unixDateStempNew.toString() + NewDeviceId;
+            // // //Insert data in gps
+            // var query = "INSERT INTO tblgpsdata (Id,Datetime,Latitude,Longitude,GPSPositioning,Speed,Direction,Status,DeviceId,IsRelayToStopTheCar,IsSirenSound,IsUserDefined,IsLockTheDoor,IsUnlockTheDoor,IsSOS,IsWiringForAntiTamper,IsDoor,IsEngine,IsOriginalSirenTriggeringStatus,CreatedDate,HDOP,Altitude,AD1,AD2,OdoMeter,Date,IsPatchEngine ) " +
+            //     "VALUES (" + Ids + ",'" + GPSDateTime + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + inputoutputSTatus + "', '" + DeviceId + "'," + IsRelayToStopTheCar + "," + IsSirenSound + "," + IsUserDefined + "," + IsLockTheDoor + "," + IsUnlockTheDoor + "," + IsSOS + "," + IsWiringForAntiTamper + "," + IsDoor + "," + IsEngine + "," + IsOriginalSirenTriggeringStatus + ",'" + CurrentDate + "','" + HDOP + "','" + altitude + "','" + AD1 + "','" + AD2 + "','" + Odometer + "','" + unixDateStemp + "'," + IsPatchEngine + ");";
+            // connection.query(query, function(err, rows, fields) {
+            // console.log(err);
+            var objConnection = {
+                Position: Position,
+                Speed: Speed,
+                Deviceid: DeviceId,
+                Latitude: Latitude,
+                Longitude: Longitude,
+                Direction: Direction,
+                OdoMeter: Odometer,
+                IsRelayToStopTheCar: IsRelayToStopTheCar,
+                IsSirenSound: IsSirenSound,
+                IsUserDefined: IsUserDefined,
+                IsLockTheDoor: IsLockTheDoor,
+                IsUnlockTheDoor: IsUnlockTheDoor,
+                IsSOS: IsSOS,
+                IsWiringForAntiTamper: IsWiringForAntiTamper,
+                IsDoor: IsDoor,
+                IsEngine: IsPatchEngine,
+                IsOriginalSirenTriggeringStatus: IsOriginalSirenTriggeringStatus,
+                Date: unixDateStemp,
+                AD1: AD1,
+                AD2: AD2,
+            }
 
-                if (Position == 'A') {
-                    client.set(DeviceId, JSON.stringify(objConnection), function(err, replies) {});
-                    // io.sockets.emit('BikeRoute', JSON.stringify(objConnection));
-                    io.sockets.emit(DeviceId + 'BikeRoute', JSON.stringify(objConnection));
-                }
-            });
+            if (Position == 'A') {
+                client.set(DeviceId, JSON.stringify(objConnection), function(err, replies) {});
+                // io.sockets.emit('BikeRoute', JSON.stringify(objConnection));
+                io.sockets.emit(DeviceId + 'BikeRoute', JSON.stringify(objConnection));
+            }
+            //});
 
             if (IsPatchEngine == true) {
                 if (Position == 'A') {
                     //Fence
-                    connection.query("SELECT * from tblfence where deviceId=" + DeviceId + " and IsFenceOnline=true", function(err, rows, fields) {
+                    connection.query("SELECT * from tblfence where deviceId='" + DeviceId + "' and IsFenceOnline=true", function(err, rows, fields) {
                         if (!err && rows.length > 0) {
-                            connection.query("SELECT id,Name,iduser,deviceid from tblvehicle where deviceid=" + DeviceId + " and IsDelete=false", function(err, Bikerows, fields) {
+                            connection.query("SELECT id,Name,iduser,deviceid from tblvehicle where deviceid='" + DeviceId + "' and IsDelete=false", function(err, Bikerows, fields) {
                                 if (!err && Bikerows.length > 0) {
                                     var objVehicle = Bikerows[0];
 
@@ -1094,7 +1093,7 @@ global.Command9955 = function(line, Callback) {
                         "where DeviceId='" + DeviceId + "';";
                     connection.query(RouteQuery, function(err, rows, fields) {
                         if (!err && rows.length > 0) {
-                            connection.query("SELECT id,Name,iduser,deviceid from tblvehicle where deviceid=" + DeviceId + " and IsDelete=false", function(err, Bikerows, fields) {
+                            connection.query("SELECT id,Name,iduser,deviceid from tblvehicle where deviceid='" + DeviceId + "' and IsDelete=false", function(err, Bikerows, fields) {
                                 if (!err && Bikerows.length > 0) {
                                     var objVehicle = Bikerows[0];
 
@@ -1316,7 +1315,7 @@ global.Command9955 = function(line, Callback) {
             }
 
             //check Arm settings
-            connection.query("SELECT * from tblvehicle where deviceid=" + DeviceId + " and IsDelete=false", function(err, Bikerows, fields) {
+            connection.query("SELECT * from tblvehicle where deviceid='" + DeviceId + "' and IsDelete=false", function(err, Bikerows, fields) {
                 if (!err) {
                     if (Bikerows.length > 0) {
                         if (Bikerows[0].Arm == 2) {
@@ -1346,7 +1345,7 @@ global.Command9955 = function(line, Callback) {
             } else {
                 var Relay = 0;
             }
-            connection.query("Update tblvehicle set Relay = " + Relay + " where deviceid=" + DeviceId + " and IsDelete=false", function(err, relayData, fields) {
+            connection.query("Update tblvehicle set Relay = " + Relay + " where deviceid='" + DeviceId + "' and IsDelete=false", function(err, relayData, fields) {
                 if (!err) {
                     var objRelay = {
                         DeviceId: DeviceId,
@@ -1568,7 +1567,7 @@ global.Command9999 = function(line, Callback) {
         connection.query(query, function(err, rows, fields) {
 
 
-            connection.query("SELECT id,Name,iduser,deviceid from tblvehicle where deviceid=" + DeviceId + " and IsDelete=false", function(err, lstVehicle, fields) {
+            connection.query("SELECT id,Name,iduser,deviceid from tblvehicle where deviceid='" + DeviceId + "' and IsDelete=false", function(err, lstVehicle, fields) {
                 if (!err && lstVehicle.length > 0) {
                     var objVehicle = lstVehicle[0];
                     connection.query("SELECT * from tblsharedevice where idVehicle=" + objVehicle.id + " and IsSharedUserNotification=true and IsNotification=true", function(err, lstShareUser, fields) {
@@ -1890,7 +1889,7 @@ global.SendSpeedData = function(objdata, Callback) {
                 // res.json(objNavigation);
                 client.destroy(); // kill client after server's response
                 if (StatusCode == '01') {
-                    connection.query("Update tblvehicle set MaxSpeed=" + objdata.Speed + " where deviceid=" + DeviceId, function(err, rows, fields) {
+                    connection.query("Update tblvehicle set MaxSpeed=" + objdata.Speed + " where deviceid='" + DeviceId + "'", function(err, rows, fields) {
                         funAuditLog.CreateAuditLog('Speed Setting', null, 'Change vehicle (DeviceId:' + DeviceId + ') max speed setting at (time:' + convertdateformat(new Date()) + ').');
                         Callback({ success: true, message: 'Speed Settings Save Successfully.' });
                     });
@@ -1968,7 +1967,7 @@ global.SendMovementData = function(objdata, Callback) {
                 // res.json(objNavigation);
                 client.destroy(); // kill client after server's response
                 if (StatusCode == '01') {
-                    connection.query("Update tblvehicle set Movement=" + objdata.Movement + " where deviceid=" + DeviceId, function(err, rows, fields) {
+                    connection.query("Update tblvehicle set Movement=" + objdata.Movement + " where deviceid='" + DeviceId + "'", function(err, rows, fields) {
                         funAuditLog.CreateAuditLog('Movement Setting', null, 'Change vehicle (DeviceId:' + DeviceId + ') Movement Setting at (time:' + convertdateformat(new Date()) + ').');
                         Callback({ success: true, message: 'Movement Settings Save Successfully.' });
                     });
@@ -2170,7 +2169,7 @@ global.SetGPRSInterval = function(objdata, Callback) {
                 // res.json(objNavigation);
                 client.destroy(); // kill client after server's response
                 if (StatusCode == '01') {
-                    connection.query("Update tblvehicle set GPRSInterval=" + objdata.TimeInterval + " where deviceid=" + DeviceId, function(err, rows, fields) {
+                    connection.query("Update tblvehicle set GPRSInterval=" + objdata.TimeInterval + " where deviceid='" + DeviceId + "'", function(err, rows, fields) {
                         funAuditLog.CreateAuditLog('GPRS Interval Settings', null, 'Change vehicle (DeviceId:' + DeviceId + ') GPRS Interval Settings at (time:' + convertdateformat(new Date()) + ').');
                         Callback({ success: true, message: 'GPRS Interval Settings Save Successfully.' });
                     });
@@ -2379,7 +2378,7 @@ global.SetSleepMode = function(objdata, Callback) {
                 // res.json(objNavigation);
                 client.destroy(); // kill client after server's response
                 if (StatusCode == '01') {
-                    connection.query("Update tblvehicle set SleepMode=" + objdata.SleepMode + " where deviceid=" + DeviceId, function(err, rows, fields) {
+                    connection.query("Update tblvehicle set SleepMode=" + objdata.SleepMode + " where deviceid='" + DeviceId + "'", function(err, rows, fields) {
                         funAuditLog.CreateAuditLog('Sleep Mode Setting', null, 'Change vehicle (DeviceId:' + DeviceId + ') Sleep Mode Setting at (time:' + convertdateformat(new Date()) + ').');
                         Callback({ success: true, message: 'Sleep Mode Save Successfully.' });
                     });
@@ -2618,7 +2617,7 @@ router.get('/SetArmSettings', function(req, res) {
         obj.DeviceId = DeviceId;
         obj.Arm = req.query.Arm;
 
-        connection.query("Update tblvehicle set Arm=" + obj.Arm + " where deviceid=" + DeviceId, function(err, rows, fields) {
+        connection.query("Update tblvehicle set Arm=" + obj.Arm + " where deviceid='" + DeviceId + "'", function(err, rows, fields) {
             var Startdate = new Date();
 
             var convertDate = convertdateformatForUnix(Startdate);
@@ -2707,7 +2706,7 @@ global.SetArmSettings = function(objdata, Callback) {
 
                 client.destroy(); // kill client after server's response
                 if (StatusCode == '01') {
-                    connection.query("Update tblvehicle set Arm=" + objdata.Arm + ", LastArmSetting=" + objdata.ArmStatus + " where deviceid=" + DeviceId, function(err, rows, fields) {
+                    connection.query("Update tblvehicle set Arm=" + objdata.Arm + ", LastArmSetting=" + objdata.ArmStatus + " where deviceid='" + DeviceId + "'", function(err, rows, fields) {
                         funAuditLog.CreateAuditLog('Arm Setting', null, 'Change vehicle (DeviceId:' + DeviceId + ') Arm Setting at (time:' + convertdateformat(new Date()) + ').');
                         Callback({ success: true, message: 'Arm Settings Save Successfully.' });
                     });
@@ -2785,7 +2784,7 @@ global.SetGPRSIntervalStopCar = function(objdata, Callback) {
                 // res.json(objNavigation);
                 client.destroy(); // kill client after server's response
                 if (StatusCode == '01') {
-                    connection.query("Update tblvehicle set GPRSStopInterval=" + objdata.TimeInterval + " where deviceid=" + DeviceId, function(err, rows, fields) {
+                    connection.query("Update tblvehicle set GPRSStopInterval=" + objdata.TimeInterval + " where deviceid='" + DeviceId + "'", function(err, rows, fields) {
                         funAuditLog.CreateAuditLog('GPRS Interval Setting', null, 'Change vehicle (DeviceId:' + DeviceId + ') GPRS Interval Setting at (time:' + convertdateformat(new Date()) + ').');
                         Callback({ success: true, message: 'GPRS Interval Settings for Stop Car Save Successfully.' });
                     });
@@ -2857,7 +2856,7 @@ router.get('/SetTimeZone', function(req, res) {
                 // res.json(objNavigation);
                 client.destroy(); // kill client after server's response
                 if (StatusCode == '01') {
-                    connection.query("Update tblvehicle set TimeZone=" + req.query.TimeZone + " where deviceid=" + DeviceId, function(err, rows, fields) {
+                    connection.query("Update tblvehicle set TimeZone=" + req.query.TimeZone + " where deviceid='" + DeviceId + "'", function(err, rows, fields) {
                         res.json({ success: true, message: 'TimeZone Save Successfully.' });
                     });
                 } else {
@@ -2938,7 +2937,7 @@ global.SetOdometerSetting = function(objdata, Callback) {
                 // res.json(objNavigation);
                 client.destroy(); // kill client after server's response
                 if (StatusCode == '01') {
-                    connection.query("Update tblvehicle set OdoMeter=" + objdata.odometer + " where deviceid=" + DeviceId, function(err, rows, fields) {
+                    connection.query("Update tblvehicle set OdoMeter=" + objdata.odometer + " where deviceid='" + DeviceId + "'", function(err, rows, fields) {
                         funAuditLog.CreateAuditLog('Odometer Setting', null, 'Change vehicle (DeviceId:' + DeviceId + ') Odometer Setting at (time:' + convertdateformat(new Date()) + ').');
 
                         Callback({ success: true, message: 'Odometer settings Save Successfully.' });
@@ -3020,7 +3019,7 @@ global.SetACCSetting = function(objdata, Callback) {
                 // res.json(objNavigation);
                 client.destroy(); // kill client after server's response
                 if (StatusCode == '01') {
-                    connection.query("Update tblvehicle set ACC=" + objdata.ACC + " where deviceid=" + DeviceId, function(err, rows, fields) {
+                    connection.query("Update tblvehicle set ACC=" + objdata.ACC + " where deviceid='" + DeviceId + "'", function(err, rows, fields) {
                         funAuditLog.CreateAuditLog('ACC Setting', null, 'Change vehicle (DeviceId:' + DeviceId + ') ACC Setting at (time:' + convertdateformat(new Date()) + ').');
 
                         Callback({ success: true, message: 'ACC settings Save Successfully.' });
@@ -3105,7 +3104,7 @@ global.SetHeartBeatInterval = function(objdata, Callback) {
                 // res.json(objNavigation);
                 client.destroy(); // kill client after server's response
                 if (StatusCode == '01') {
-                    connection.query("Update tblvehicle set HeartbeatInterval=" + objdata.TimeInterval + " where deviceid=" + DeviceId, function(err, rows, fields) {
+                    connection.query("Update tblvehicle set HeartbeatInterval=" + objdata.TimeInterval + " where deviceid='" + DeviceId + "'", function(err, rows, fields) {
                         funAuditLog.CreateAuditLog('HeartBeat Interval Setting', null, 'Change vehicle (DeviceId:' + DeviceId + ') HeartBeat Interval Setting at (time:' + convertdateformat(new Date()) + ').');
                         Callback({ success: true, message: 'HeartBeat Interval Settings Save Successfully.' });
                     });
@@ -3665,71 +3664,78 @@ router.get('/UpdateDeviceStatus', function(req, res) {
     // deviceID = '075034903863';
     var Status = req.query.Status;
     // var Status = true;
+    var objData = {
+        DeviceId: DeviceId,
+        Status: Status
+    }
+    UpdateDeviceStatus(objData, function(objres) {
+        res.json(objres);
+    })
 
-    connection.query("SELECT * from tblvehicle where deviceid=" + DeviceId + " and IsDelete=false", function(err, Vehiclerows, fields) {
-        //tblPetgps Entry
-        if (!err && Vehiclerows.length > 0) {
-            var objVehicle = Vehiclerows[0];
+    // connection.query("SELECT * from tblvehicle where deviceid=" + DeviceId + " and IsDelete=false", function(err, Vehiclerows, fields) {
+    //     //tblPetgps Entry
+    //     if (!err && Vehiclerows.length > 0) {
+    //         var objVehicle = Vehiclerows[0];
 
-            var flgOnline = false;
-            if (objVehicle.IsOnline == 1) {
-                flgOnline = true;
-            }
-            if (Status.toString() != flgOnline.toString()) {
-                var query = "Update tblvehicle set IsOnline=" + Status + " where deviceid='" + DeviceId + "';";
-                connection.query(query, function(err, rows, fields) {
-                    //tblapisresponse Entry
-                    // if (objVehicle.IsDelete == false) {
-                    //     if (!Status) {
-                    //         var PushNotificationdata = {
-                    //             title: 'Alert',
-                    //             message: 'Vehicle ' + objVehicle.Name + ' Device offline alert! Please check!',
-                    //             Fence: 'Default',
-                    //             otherfields: {
-                    //                 deviceid: DeviceId,
-                    //                 PetId: objVehicle.id,
-                    //                 PetName: objVehicle.Name
-                    //             }
-                    //         };
-                    //     } else {
-                    //         var PushNotificationdata = {
-                    //             title: 'Alert',
-                    //             message: 'Vehicle ' + objVehicle.Name + ' Device online alert! Please check!',
-                    //             Fence: 'Default',
-                    //             otherfields: {
-                    //                 deviceid: DeviceId,
-                    //                 PetId: objVehicle.id,
-                    //                 PetName: objVehicle.Name
-                    //             }
-                    //         };
-                    //     }
+    //         var flgOnline = false;
+    //         if (objVehicle.IsOnline == 1) {
+    //             flgOnline = true;
+    //         }
+    //         if (Status.toString() != flgOnline.toString()) {
+    //             var query = "Update tblvehicle set IsOnline=" + Status + " where deviceid='" + DeviceId + "';";
+    //             connection.query(query, function(err, rows, fields) {
+    //                 //tblapisresponse Entry
+    //                 // if (objVehicle.IsDelete == false) {
+    //                 //     if (!Status) {
+    //                 //         var PushNotificationdata = {
+    //                 //             title: 'Alert',
+    //                 //             message: 'Vehicle ' + objVehicle.Name + ' Device offline alert! Please check!',
+    //                 //             Fence: 'Default',
+    //                 //             otherfields: {
+    //                 //                 deviceid: DeviceId,
+    //                 //                 PetId: objVehicle.id,
+    //                 //                 PetName: objVehicle.Name
+    //                 //             }
+    //                 //         };
+    //                 //     } else {
+    //                 //         var PushNotificationdata = {
+    //                 //             title: 'Alert',
+    //                 //             message: 'Vehicle ' + objVehicle.Name + ' Device online alert! Please check!',
+    //                 //             Fence: 'Default',
+    //                 //             otherfields: {
+    //                 //                 deviceid: DeviceId,
+    //                 //                 PetId: objVehicle.id,
+    //                 //                 PetName: objVehicle.Name
+    //                 //             }
+    //                 //         };
+    //                 //     }
 
-                    //     SendPushNotification(PushNotificationdata, objVehicle.iduser, 'Owner', 'OwnerDeviceStatusPushNotification');
-                    // }
-                    res.json("No Response");
-                    strResponce = "No Response";
+    //                 //     SendPushNotification(PushNotificationdata, objVehicle.iduser, 'Owner', 'OwnerDeviceStatusPushNotification');
+    //                 // }
+    //                 res.json("No Response");
+    //                 strResponce = "No Response";
 
-                    var ConnectionStatus = false;
-                    if (Status == 'true' || Status == true) {
-                        ConnectionStatus = true;
-                    }
-                    var objConnection = {
-                        DeviceId: DeviceId,
-                        // PetId: objVehicle.id,
-                        Status: ConnectionStatus
-                    }
-                    io.sockets.emit('BikeDeviceStatus', JSON.stringify(objConnection));
-                    io.sockets.emit(DeviceId + 'BikeDeviceStatus', JSON.stringify(objConnection));
-                });
-            } else {
-                res.json("No Response");
-                strResponce = "No Response";
-            }
-        } else {
-            res.json("No Response");
-            strResponce = "No Response";
-        }
-    });
+    //                 var ConnectionStatus = false;
+    //                 if (Status == 'true' || Status == true) {
+    //                     ConnectionStatus = true;
+    //                 }
+    //                 var objConnection = {
+    //                         DeviceId: DeviceId,
+    //                         // PetId: objVehicle.id,
+    //                         Status: ConnectionStatus
+    //                     }
+    //                     // io.sockets.emit('BikeDeviceStatus', JSON.stringify(objConnection));
+    //                 io.sockets.emit(DeviceId + 'BikeDeviceStatus', JSON.stringify(objConnection));
+    //             });
+    //         } else {
+    //             res.json("No Response");
+    //             strResponce = "No Response";
+    //         }
+    //     } else {
+    //         res.json("No Response");
+    //         strResponce = "No Response";
+    //     }
+    // });
 
 
     // res.json("No Response");
@@ -3745,6 +3751,49 @@ router.get('/UpdateDeviceStatus', function(req, res) {
     // io.sockets.emit('BikeRoute', JSON.stringify(objConnection));
 
 })
+
+global.UpdateDeviceStatus = function(obj, Callback) {
+    var DeviceId = obj.DeviceId;
+    // deviceID = '075034903863';
+    var Status = obj.Status;
+    // var Status = true;
+
+    // connection.query("SELECT * from tblvehicle where deviceid=" + DeviceId + " and IsDelete=false", function(err, Vehiclerows, fields) {
+    //     //tblPetgps Entry
+    //     if (!err && Vehiclerows.length > 0) {
+    //         var objVehicle = Vehiclerows[0];
+
+    //         var flgOnline = false;
+    //         if (objVehicle.IsOnline == 1) {
+    //             flgOnline = true;
+    //         }
+    //         if (Status.toString() != flgOnline.toString()) {
+    var query = "Update tblvehicle set IsOnline=" + Status + " where deviceid='" + DeviceId + "';";
+    connection.query(query, function(err, rows, fields) {
+
+        Callback("No Response");
+        strResponce = "No Response";
+
+        var ConnectionStatus = false;
+        if (Status == 'true' || Status == true) {
+            ConnectionStatus = true;
+        }
+        var objConnection = {
+            DeviceId: DeviceId,
+            Status: ConnectionStatus
+        }
+        io.sockets.emit(DeviceId + 'BikeDeviceStatus', JSON.stringify(objConnection));
+    });
+    //         } else {
+    //             res.json("No Response");
+    //             strResponce = "No Response";
+    //         }
+    //     } else {
+    //         res.json("No Response");
+    //         strResponce = "No Response";
+    //     }
+    // });
+}
 
 // function FakeAlarm() {
 //     var myArray = ['04', '11', '30', '50', '6', '66'];

@@ -137,9 +137,11 @@ router.get('/GetAllWorkingBike', function(req, res) {
 
 })
 
+var IsDashboardTakingLoad = false;
 router.get('/GetAllWorkingBikeNew', function(req, res) {
     var search = '';
     var search1 = '';
+    var systemStarttime = new Date();
     if (req.query.AppName != null && req.query.AppName != undefined && req.query.AppName != '' && req.query.AppName != 'All') {
         // search = " and idApp=" + req.query.idApp;
         search1 = " where  tgd.AppName='" + req.query.AppName + "'";
@@ -152,6 +154,33 @@ router.get('/GetAllWorkingBikeNew', function(req, res) {
     connection.query(query, function(err, rows, fields) {
         if (!err) {
             // res.json({ success: true, data: rows });
+            var systemEndtime = new Date();
+
+            var timediffernce = parseInt((systemEndtime - systemStarttime) / 1000);
+
+            if (timediffernce >= 5) {
+                if (IsDashboardTakingLoad == false) {
+                    IsDashboardTakingLoad = true;
+
+                    var mail = {
+                        from: 'noreply@maark.my',
+                        // to: 'pmt@bugzstudio.com',
+                        to: 'soham.patel@bugzstudio.com;dhaval.bhanderi@bugzstudio.com',
+                        subject: 'Maark API taking Load. Please check',
+                        text: 'Maark API taking Load; load time = ' + timediffernce + ' sec. Please check'
+                    };
+                    transporter.sendMail(mail, function(error, response) {
+                        if (error) {
+                            console.log("Maark API taking Load Email (Error). ===== ", error);
+                        } else {
+                            console.log("Maark API taking Load Email Send Successfully.===== ");
+                        }
+                    });
+
+                }
+            } else {
+                IsDashboardTakingLoad = false;
+            }
 
             var lstAllVehicle = [];
 
