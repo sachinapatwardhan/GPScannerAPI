@@ -12,6 +12,93 @@ var VehicleGroup = models.tblvehiclegroup;
 var LicenceManager = models.tbllicencemanager;
 //End of Tables
 
+var AppInfo = models.tblappinfo;
+router.get('/AssignLicenceToExistVehicle', function(req, res) {
+
+    objHeader = req.headers;
+    // var DeviceList = req.query.DeviceList;
+    var token = getToken(objHeader);
+    if (token) {
+        var decoded = jwt.decode(token, TokenKey);
+        User.findOne({
+            where: {
+                username: decoded.username,
+                password: decoded.password
+            }
+        }).then(function(UserExist) {
+            if (UserExist != null) {
+                var AppName = req.query.AppName;
+                var query = "Select tv.deviceid,CONVERT_TZ(tv.renewaldate,'+00:00','" + CurrentOffset + "') as renewaldate,ta.Id as AppId " +
+                    "from tblvehicle as tv inner join tbluserinformation tu on tu.id=tv.iduser inner join tblappinfo ta on ta.Id = tu.idApp " +
+                    "where tv.renewaldate is not null and tv.IsDelete=0 and tv.deviceid not in (select DeviceId from tbllicencemanager where IsDeleted=0 and DeviceID is not null) and ta.AppName='" + AppName + "'";
+
+                connection.query(query, function(err, VehicleList) {
+                    if (!err && VehicleList) {
+                        if (VehicleList.length > 0) {
+                            var AppId = VehicleList[0].AppId;
+
+                            function uploder(i) {
+                                if (VehicleList.length > i) {
+                                    LicenceManager.findOne({ where: { DeviceID: VehicleList[i].deviceid, idApp: AppId } }).then(function(LicenceExits) {
+                                        if (LicenceExits) {
+                                            uploder(i + 1);
+                                        } else {
+                                            LicenceManager.findOne({
+                                                where: {
+                                                    DeviceID: { $eq: null },
+                                                    IsDeleted: 0,
+                                                    idApp: AppId,
+                                                }
+                                            }).then(function(LicenceNew) {
+                                                if (LicenceNew) {
+                                                    // console.log(VehicleList[i].deviceid)
+                                                    // uploder(i + 1);
+                                                    LicenceNew.updateAttributes({
+                                                        DeviceId: VehicleList[i].deviceid,
+                                                        ExpiryDate: VehicleList[i].renewaldate,
+                                                        CreatedDate: new Date(),
+                                                    }).then(function(response) {
+                                                        funAuditLogLicence.CreateAuditLogLicence('Assign Licence', LicenceNew.LicenceNo, VehicleList[i].deviceid, VehicleList[i].renewaldate, null, UserExist.username, 'Assign Exist vehicle');
+                                                        uploder(i + 1);
+                                                    })
+                                                } else {
+                                                    res.json({
+                                                        success: false,
+                                                        message: "Licence assign to " + i + " Vehilce successfully. No more Licence avilable to assign Device. Please contact administrator",
+                                                    })
+                                                }
+                                            })
+                                        }
+                                    })
+                                } else {
+                                    res.json({
+                                        success: true,
+                                        message: 'Licence assigned to all vehicle successfully '
+                                    })
+                                }
+                            }
+                            uploder(0);
+
+                        } else {
+                            res.json({
+                                success: false,
+                                message: 'Licence alerady assigned for this vehicle '
+                            })
+                        }
+                    }
+                })
+            } else {
+                res.json(InvalidToken);
+            }
+        })
+    } else {
+        res.json(InvalidToken);
+    }
+
+})
+
+// setVehicleLicence();
+
 router.get('/UpdateExpiryDate', function(req, res) {
     objHeader = req.headers;
     // var DeviceList = req.query.DeviceList;
