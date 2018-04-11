@@ -3013,6 +3013,100 @@ router.get('/GetAllDynamicOwnerCustomer', function(req, res) {
 
 })
 
+router.get('/ExportOwnerCustomer', function(req, res) {
+    //for excel
+    var conf = {};
+    conf.name = "Sheet1";
+    conf.cols = [{
+            caption: 'Email',
+            type: 'string'
+        }, {
+            caption: 'Phone',
+            type: 'string'
+        }, {
+            caption: 'Country',
+            type: 'string'
+        },
+        {
+            caption: 'Total Device',
+            type: 'string'
+        }, {
+            caption: 'App Name',
+            type: 'string'
+        }, {
+            caption: 'Last Login Date',
+            type: 'string'
+        },
+    ];
+
+    var objParam = req.query;
+    var search = '';
+    if (objParam.appId != null && objParam.appId != undefined && objParam.appId != '') {
+        if (search != "") {
+            search += ' and tbluserinformation.idApp = "' + objParam.appId + '"';
+        } else {
+            search += ' where tbluserinformation.idApp = "' + objParam.appId + '"';
+        }
+    }
+    if (objParam.UserRoles != 'Super Admin') {
+        conf.cols.splice(4, 1);
+    }
+    objParam.CurrentOffset = objParam.CurrentOffset.charAt(0) == 'p' ? objParam.CurrentOffset.replace('p', '+') : objParam.CurrentOffset.replace('m', '-');
+    var query = "select tbluserinformation.CreatedDate, tblappinfo.AppName,tbluserinformation.id,tbluserinformation.username,tbluserinformation.idApp,tbluserinformation.email,tbluserinformation.phone,tbluserinformation.country,tbluserinformation.OTP,tbluserinformation.IsMobileVerify,DATE_FORMAT(CONVERT_TZ(tbluserinformation.LastLogin,'+00:00','" + objParam.CurrentOffset + "'),'%d-%m-%Y %r') as LastLogin, " +
+        "(select count(tblvehicle.deviceid) from tblvehicle where iduser = tbluserinformation.id and tblvehicle.IsDelete=0 and tblvehicle.deviceid !='' ) as TotalDevice " +
+        "from tbluserinformation left join tblappinfo on tbluserinformation.idApp = tblappinfo.id " + search +
+        " order by CreatedDate desc";
+
+    connection.query(query, function(err, response) {
+        if (response != undefined) {
+            conf.rows = [];
+
+            function GetUserData(i) {
+                var Email = '';
+                var Phone = '';
+                var Country = '';
+                var TotalDevice = '0';
+                var AppName = '';
+                var LastLoginDate = '';
+                if (i < response.length) {
+
+                    var row = [];
+                    if (response[i].email != null && response[i].email != '' && response[i].email != undefined) {
+                        Email = response[i].email.toString();
+                    }
+                    if (response[i].phone != null && response[i].phone != '' && response[i].phone != undefined) {
+                        Phone = response[i].phone.toString();
+                    }
+                    if (response[i].country != null && response[i].country != '' && response[i].country != undefined) {
+                        Country = response[i].country.toString();
+                    }
+                    if (response[i].TotalDevice != null && response[i].TotalDevice != '' && response[i].TotalDevice != undefined) {
+                        TotalDevice = response[i].TotalDevice.toString();
+                    }
+                    if (response[i].AppName != null && response[i].AppName != '' && response[i].AppName != undefined) {
+                        AppName = response[i].AppName.toString();
+                    }
+                    if (response[i].LastLogin != null && response[i].LastLogin != '' && response[i].LastLogin != undefined) {
+                        LastLoginDate = response[i].LastLogin.toString();
+                    }
+                    if (objParam.UserRoles == 'Super Admin') {
+                        row.push(Email, Phone, Country, TotalDevice, AppName, LastLoginDate);
+                    } else {
+                        row.push(Email, Phone, Country, TotalDevice, LastLoginDate);
+                    }
+                    conf.rows.push(row);
+                    GetUserData(i + 1);
+                } else {
+                    var result = nodeExcel.execute(conf);
+                    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+                    res.setHeader("Content-Disposition", "attachment; filename=Customer.xlsx");
+                    res.end(result, 'binary');
+                }
+            }
+            GetUserData(0);
+        }
+    })
+})
 
 router.get('/GetAllDynamicShopperCustomer', function(req, res) {
 
