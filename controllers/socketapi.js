@@ -675,8 +675,8 @@ global.Command5001 = function(line, Callback) {
     console.log("HandShak = " + line);
     try {
         //Server Reconnet If Disconneted
-        if (connection.state == 'disconnected') {
-            global.connection = mysql.createConnection({
+        if (connectionhandshake.state == 'disconnected') {
+            global.connectionhandshake = mysql.createConnection({
                 host: MysqlHost,
                 user: Mysqluser,
                 password: Mysqlpassword,
@@ -691,8 +691,8 @@ global.Command5001 = function(line, Callback) {
 
         //tblPetgps Entry
         var query = "INSERT INTO tblhandshake (DeviceId,Datetime ) VALUES ('" + DeviceId + "', '" + CurrentDate + "');";
-        connection.query(query, function(err, rows, fields) {
-            connection.query("Update tblvehicle set HandshakDatetime='" + CurrentDate + "',IsOnline=true where deviceid='" + DeviceId + "'", function(err, rows1, fields) {
+        connectionhandshake.query(query, function(err, rows, fields) {
+            connectionhandshake.query("Update tblvehicle set HandshakDatetime='" + CurrentDate + "',IsOnline=true where deviceid='" + DeviceId + "'", function(err, rows1, fields) {
                 var objConnection = {
                         DeviceId: DeviceId,
                         Status: true
@@ -1345,7 +1345,7 @@ global.Command9955 = function(line, Callback) {
             } else {
                 var Relay = 0;
             }
-            connection.query("Update tblvehicle set Relay = " + Relay + " where deviceid='" + DeviceId + "' and IsDelete=false", function(err, relayData, fields) {
+            connectionhandshake.query("Update tblvehicle set Relay = " + Relay + " where deviceid='" + DeviceId + "'", function(err, relayData, fields) {
                 if (!err) {
                     var objRelay = {
                         DeviceId: DeviceId,
