@@ -373,7 +373,6 @@ router.get('/changestatusrenewal', function(req, res) {
 
 
 router.get('/SwipeDeviceAdmin', function(req, res) {
-    console.log(req.query)
     sequelize.transaction(function(t) {
             return GpsDevice.findOne({
                     where: {
