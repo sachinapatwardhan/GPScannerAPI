@@ -737,6 +737,7 @@ global.checkLicence = checkLicence;
 // }
 
 function checkLicence(objVehicle, username, callback) {
+
     var query = "select tblappinfo.* from tblappinfo inner join tblgpsdevice on tblappinfo.AppName=tblgpsdevice.AppName where tblgpsdevice.DeviceId='" + objVehicle.deviceid + "'";
     connection.query(query, function(err, DeviceExist) {
         if (DeviceExist) {
@@ -752,9 +753,10 @@ function checkLicence(objVehicle, username, callback) {
                             DeviceId: { $eq: null },
                             IsDeleted: 0,
                             idApp: DeviceExist[0].Id,
-                            LicenceRenewalType: DeviceExist[0].LicenceRenewalType,
-                            LicenceType: DeviceExist[0].LicenceType,
-                        }
+                            // LicenceRenewalType: DeviceExist[0].LicenceRenewalType,
+                            // LicenceType: DeviceExist[0].LicenceType,
+                        },
+                        order: 'Id asc',
                     }).then(function(LicenceNoExist) {
                         if (LicenceNoExist) {
                             if (DeviceExist[0].LicenceRenewalType == 'Monthly') {
@@ -1374,7 +1376,8 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                     if (VehicleTypeExits) {
                         idType = VehicleTypeExits.id;
                     }
-                    if (objVehicle.AppName == 'HC CARGO') {
+
+                    if (objVehicle.AppName == 'HC CARGO' && (objVehicle.idType == null || objVehicle.idType == undefined || objVehicle.idType == '' || objVehicle.idType == 0)) {
                         objVehicle.idType = idType;
                     }
                     if (objVehicle.IMEI != '' && objVehicle.IMEI != null) {
