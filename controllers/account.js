@@ -216,6 +216,7 @@ router.get('/loginNew', jsonParser, function(req, res) {
                 UserRoles: lstRole,
                 RolewiseCountryList: lstRolewiseCountryList,
                 appId: response.idApp,
+                UserName: response.username,
                 message: "Login Successfully..."
             });
         } else {
@@ -267,6 +268,7 @@ router.get('/loginNew', jsonParser, function(req, res) {
                             UserRoles: lstRole,
                             RolewiseCountryList: lstRolewiseCountryList,
                             appId: resUser.idApp,
+                            UserName: resUser.username,
                             message: "Login Successfully..."
                         });
                     }
@@ -917,7 +919,7 @@ router.post('/changepasswordNew', jsonParser, function(req, res) {
                     chkUserExist.updateAttributes({
                         password: EncryptNewpassword
                     }).then(function(response) {
-                        funAuditLog.CreateAuditLog('changepassword', chkUserExist.username, 'Change User Password-ID: ('+ chkUserExist.id +')');
+                        funAuditLog.CreateAuditLog('changepassword', chkUserExist.username, 'Change User Password-ID: (' + chkUserExist.id + ')');
                         SystemEmail.findOne({ where: { IdApp: chkUserExist.idApp } }).then(function(objSystemEmail) {
                             EmailTemplate.findOne({
                                 where: {
@@ -954,7 +956,7 @@ router.post('/changepasswordNew', jsonParser, function(req, res) {
                                         //         // funAuditLog.CreateAuditLog('change password', chkUserExist.username, 'change password');
                                         //     }
                                         // });
-                                        funAuditLog.CreateAuditLog('change password', chkUserExist.username, 'change password-ID: ('+ chkUserExist.id +')');
+                                        funAuditLog.CreateAuditLog('change password', chkUserExist.username, 'change password-ID: (' + chkUserExist.id + ')');
                                         res.json({
                                             success: true,
                                             message: "New Password email sent. password has been changed....",
@@ -1055,7 +1057,7 @@ router.post('/changepassword', jsonParser, function(req, res) {
                     chkUserExist.updateAttributes({
                         password: EncryptNewpassword
                     }).then(function(response) {
-                        funAuditLog.CreateAuditLog('changepassword', chkUserExist.username, 'Change User Password - ID: ('+ chkUserExist.id +')');
+                        funAuditLog.CreateAuditLog('changepassword', chkUserExist.username, 'Change User Password - ID: (' + chkUserExist.id + ')');
                         res.json({
                             success: true,
                             message: "Password changed successfully..."
@@ -1127,7 +1129,7 @@ router.post('/changeUserPassword', jsonParser, function(req, res) {
                 }
                 if (EncryptOldpassword == Password) {
                     chkUserExist.updateAttributes(search).then(function(response) {
-                        funAuditLog.CreateAuditLog('changepassword', chkUserExist.username, 'Change User Password- ID: ('+ chkUserExist.id +')');
+                        funAuditLog.CreateAuditLog('changepassword', chkUserExist.username, 'Change User Password- ID: (' + chkUserExist.id + ')');
                         res.json({
                             success: true,
                             message: "Password changed successfully..."
@@ -1204,7 +1206,7 @@ router.get('/forgotpassword', function(req, res) {
                                     //     if (error) {
                                     //         res.json(error);
                                     //     } else {
-                                    funAuditLog.CreateAuditLog('forgotpassword', objUser.username, 'forgot User Password - ID: ('+ objUser.id +')');
+                                    funAuditLog.CreateAuditLog('forgotpassword', objUser.username, 'forgot User Password - ID: (' + objUser.id + ')');
                                     res.json({
                                         success: true,
                                         message: "Password sent to your email successfully...",
@@ -1310,7 +1312,7 @@ router.get('/forgotpasswordNew', function(req, res) {
                                             // });
                                             console.log(EmailSettingCreated)
                                         })
-                                        funAuditLog.CreateAuditLog('forgotpassword', response.email, 'forgot User Password - ID: ('+ response.id +')');
+                                        funAuditLog.CreateAuditLog('forgotpassword', response.email, 'forgot User Password - ID: (' + response.id + ')');
                                         res.json({
                                             success: true,
                                             message: "Password sent to your email successfully...",
@@ -1509,7 +1511,7 @@ router.get('/forgotpasswordfromOwnerCustomer', function(req, res) {
                                             //     if (error) {
                                             //         res.json(error);
                                             //     } else {
-                                        funAuditLog.CreateAuditLog('forgotpassword', objUser.username, 'forgot User Password - ID: ('+ objUser.id +')');
+                                        funAuditLog.CreateAuditLog('forgotpassword', objUser.username, 'forgot User Password - ID: (' + objUser.id + ')');
                                         res.json({
                                             success: true,
                                             message: "Password sent to your email successfully...",
@@ -1624,7 +1626,7 @@ router.get('/forgotpasswordfromOwnerCustomerNew', jsonParser, function(req, res)
 
                                                             //     }
                                                             // });
-                                                            funAuditLog.CreateAuditLog('forgotpassword', objUser.username, 'forgot User Password - ID: ('+ objUser.id +')');
+                                                            funAuditLog.CreateAuditLog('forgotpassword', objUser.username, 'forgot User Password - ID: (' + objUser.id + ')');
                                                             res.json({
                                                                 success: true,
                                                                 message: "Reset Password email sent.",
@@ -1790,7 +1792,7 @@ router.post('/MobileRegister', jsonParser, function(req, res) {
                     roleId: objRole.id,
                 }
                 UserInRole.create(objUserInRole).then(function(resUserInRole) {
-                    funAuditLog.CreateAuditLog('register', resUserReg.username, 'Create New User - ID: ('+ resUserReg.id +')');
+                    funAuditLog.CreateAuditLog('register', resUserReg.username, 'Create New User - ID: (' + resUserReg.id + ')');
 
                     //Send OTP
                     // var objOTP = new Object();
@@ -1817,7 +1819,7 @@ router.post('/MobileRegister', jsonParser, function(req, res) {
                         roleId: resRole.id,
                     }
                     UserInRole.create(objUserInRole).then(function(resUserInRole) {
-                        funAuditLog.CreateAuditLog('register', resUserReg.username, 'Create New User - ID: ('+ resUserReg.id +')');
+                        funAuditLog.CreateAuditLog('register', resUserReg.username, 'Create New User - ID: (' + resUserReg.id + ')');
 
                         //Send OTP
                         // var objOTP = new Object();
@@ -1883,7 +1885,7 @@ router.get('/MobileForgotPassword', function(req, res) {
                                             data: error
                                         });
                                     } else {
-                                        funAuditLog.CreateAuditLog('forgotpassword', objUser.username, 'forgot User Password - ID: ('+ objUser.id +')');
+                                        funAuditLog.CreateAuditLog('forgotpassword', objUser.username, 'forgot User Password - ID: (' + objUser.id + ')');
                                         res.json({
                                             success: true,
                                             message: "Password sent to your email successfully...",
@@ -1942,7 +1944,7 @@ router.post('/changeMobileUserPassword', jsonParser, function(req, res) {
                 var search = { password: EncryptNewpassword };
                 if (EncryptOldpassword == Password) {
                     chkUserExist.updateAttributes(search).then(function(response) {
-                        funAuditLog.CreateAuditLog('changepassword', chkUserExist.username, 'Change User Password - ID: ('+ chkUserExist.id +')');
+                        funAuditLog.CreateAuditLog('changepassword', chkUserExist.username, 'Change User Password - ID: (' + chkUserExist.id + ')');
                         res.json({
                             success: true,
                             message: "Password changed successfully..."
@@ -2146,7 +2148,7 @@ router.post('/MobileRegisterNew', jsonParser, function(req, res) {
                     roleId: objRole.id,
                 }
                 UserInRole.create(objUserInRole).then(function(resUserInRole) {
-                    funAuditLog.CreateAuditLog('register', resUserReg.username, 'Create New User - ID: ('+ resUserReg.id +')');
+                    funAuditLog.CreateAuditLog('register', resUserReg.username, 'Create New User - ID: (' + resUserReg.id + ')');
 
                     //Send OTP
                     // var objOTP = new Object();
@@ -2177,7 +2179,7 @@ router.post('/MobileRegisterNew', jsonParser, function(req, res) {
                         roleId: resRole.id,
                     }
                     UserInRole.create(objUserInRole).then(function(resUserInRole) {
-                        funAuditLog.CreateAuditLog('register', resUserReg.username, 'Create New User - ID: ('+ resUserReg.id +')');
+                        funAuditLog.CreateAuditLog('register', resUserReg.username, 'Create New User - ID: (' + resUserReg.id + ')');
 
                         //Send OTP
                         // var objOTP = new Object();
@@ -2243,7 +2245,7 @@ function AddNewShareDevice(objparam, callback) {
 
                                         if (ShareDeviceCreated) {
                                             SharedEmailExit[i].updateAttributes({ Status: 'Complete', ModifiedDate: new Date(), ModifiedBy: objparam.username }).then(function(SharedEmailupdate) {
-                                                funAuditLog.CreateAuditLog('update SharedEmailExit', objparam.username, 'Update SharedEmailExit  UserID: ('+ SharedEmailExit.idUser +') -> SharedID: ('+SharedEmailExit.Id +') ');
+                                                funAuditLog.CreateAuditLog('update SharedEmailExit', objparam.username, 'Update SharedEmailExit  UserID: (' + SharedEmailExit.idUser + ') -> SharedID: (' + SharedEmailExit.Id + ') ');
                                                 uploader(i + 1);
 
                                             })
@@ -2333,7 +2335,7 @@ router.get('/MobileForgotPasswordNew', function(req, res) {
                                         //             data: error
                                         //         });
                                         //     } else {
-                                        funAuditLog.CreateAuditLog('forgotpassword', objUser.username, 'forgot User Password - ID: ('+ objUser.id +') ');
+                                        funAuditLog.CreateAuditLog('forgotpassword', objUser.username, 'forgot User Password - ID: (' + objUser.id + ') ');
                                         res.json({
                                             success: true,
                                             message: "Password sent to your email successfully...",
@@ -2400,7 +2402,7 @@ router.post('/changeMobileUserPasswordNew', jsonParser, function(req, res) {
                 var search = { password: EncryptNewpassword };
                 if (EncryptOldpassword == Password) {
                     chkUserExist.updateAttributes(search).then(function(response) {
-                        funAuditLog.CreateAuditLog('changepassword', chkUserExist.username, 'Change User Password - ID: ('+ chkUserExist.id +')  ');
+                        funAuditLog.CreateAuditLog('changepassword', chkUserExist.username, 'Change User Password - ID: (' + chkUserExist.id + ')  ');
                         res.json({
                             success: true,
                             message: "Password changed successfully..."
