@@ -136,7 +136,7 @@ router.post('/SaveCountry', jsonParser, function(req, res) {
 
                             Country.findOrCreate({ where: { Country: objCountry.Country }, defaults: objCountry }).then(function(response) {
                                 if ((response[1])) {
-                                   // funAuditLog.CreateAuditLog('SaveCountry', UserExist.username, 'Create Country');
+                                    // funAuditLog.CreateAuditLog('SaveCountry', UserExist.username, 'Create Country');
                                     res.json({ success: true, message: "Country created successfully...", data: response });
                                 } else {
                                     res.json({ success: false, message: "Country is already Exist...", data: response });
@@ -166,7 +166,7 @@ router.post('/SaveCountry', jsonParser, function(req, res) {
                                 } else {
                                     Country.update(objCountry, { where: { id: objCountry.id } }).then(function(response) {
                                         if (response[0]) {
-                                         //   funAuditLog.CreateAuditLog('SaveCountry', UserExist.username, 'Update Country');
+                                            //   funAuditLog.CreateAuditLog('SaveCountry', UserExist.username, 'Update Country');
                                             res.json({ success: true, message: "Country updated successfully...", data: response });
                                         }
                                     })
@@ -214,7 +214,7 @@ router.get('/DeleteCountry', function(req, res) {
                                             if (resState == null && resAddress == null && resBillingAddress == null && resDeliveryAddress == null && resOrder == null) {
                                                 Country.destroy({ where: { id: req.query.idCountry } }).then(function(response) {
                                                     if (response) {
-                                                      //  funAuditLog.CreateAuditLog('DeleteCountry', UserExist.username, 'Delete Country');
+                                                        //  funAuditLog.CreateAuditLog('DeleteCountry', UserExist.username, 'Delete Country');
                                                         res.json({ success: true, message: "Country deleted successfully...", data: response });
                                                     } else {
                                                         res.json({ success: false, message: "Requested Country not Exist...", data: response });
@@ -285,7 +285,7 @@ router.post('/SaveLagaugeInCountry', jsonParser, function(req, res) {
                             LanguageInCountry.destroy({ where: { IdLanguage: objlagCountry.IdLanguage } }).then(function(resposeDelete) {
                                 LanguageInCountry.create(objlagCountry).then(function(response) {
                                     if (response) {
-                                      //  funAuditLog.CreateAuditLog('Add language country', UserExist.username, 'Create Add language country');
+                                        //  funAuditLog.CreateAuditLog('Add language country', UserExist.username, 'Create Add language country');
                                         res.json({ success: true, message: "Language add for all country successfully...", data: response });
                                     } else {
                                         res.json({ success: false, message: "Language is already exist in country...", data: response });
@@ -297,7 +297,7 @@ router.post('/SaveLagaugeInCountry', jsonParser, function(req, res) {
                         } else {
                             LanguageInCountry.findOrCreate({ where: { IdLanguage: objlagCountry.IdLanguage, Country: objlagCountry.Country }, defaults: objlagCountry }).then(function(response) {
                                 if ((response[1])) {
-                                   // funAuditLog.CreateAuditLog('Add language country', UserExist.username, 'Create Add language country');
+                                    // funAuditLog.CreateAuditLog('Add language country', UserExist.username, 'Create Add language country');
                                     res.json({ success: true, message: "Language add in country successfully...", data: response });
                                 } else {
                                     res.json({ success: false, message: "Language is already exist in country...", data: response });
@@ -342,7 +342,7 @@ router.get('/DeleteLagauagefromCountry', function(req, res) {
 
                         LanguageInCountry.destroy({ where: { IdLanguage: req.query.IdLanguage, Country: req.query.Country } }).then(function(response) {
                             if (response) {
-                               // funAuditLog.CreateAuditLog('Delete language from country', UserExist.username, 'Delete language from country');
+                                // funAuditLog.CreateAuditLog('Delete language from country', UserExist.username, 'Delete language from country');
                                 res.json({ success: true, message: "Language remove from country successfully...", data: response });
                             } else {
                                 res.json({ success: true, message: "Language not remove from country successfully...", data: response });

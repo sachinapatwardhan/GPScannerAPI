@@ -676,13 +676,14 @@ global.Command5001 = function(line, Callback) {
     try {
         //Server Reconnet If Disconneted
         if (connectionhandshake.state == 'disconnected') {
-            global.connectionhandshake = mysql.createConnection({
-                host: MysqlHost,
-                user: Mysqluser,
-                password: Mysqlpassword,
-                database: Mysqldatabase,
-                multipleStatements: true
-            });
+            // global.connectionhandshake = mysql.createConnection({
+            //     host: MysqlHost,
+            //     user: Mysqluser,
+            //     password: Mysqlpassword,
+            //     database: Mysqldatabase,
+            //     multipleStatements: true
+            // });
+            handleDisconnecthandshake();
         }
 
         var DeviceId = line.substring(8, 22);

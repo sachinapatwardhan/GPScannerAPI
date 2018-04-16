@@ -146,9 +146,9 @@ router.get('/GetAllGpsData', function(req, res) {
         " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
 
     var Countqry = "SELECT count(tgps.id) as TotalRecord FROM tblgpsdata as tgps left Join tblvehicle as tv on tgps.DeviceId = tv.deviceid left join tbluserinformation as tu on tv.idUser = tu.id " + search;
-    connection.query(qry, function(err, response) {
+    connectionreport.query(qry, function(err, response) {
         if (response != undefined) {
-            connection.query(Countqry, function(err, lstCount, fields) {
+            connectionreport.query(Countqry, function(err, lstCount, fields) {
                 var response1 = new Object();
                 response1.draw = objParam.draw;
                 response1.recordsTotal = lstCount[0].TotalRecord;
@@ -263,7 +263,7 @@ router.get('/GetAllGpsDataNew', function(req, res) {
             search;
         var StartDatet = new Date()
             // console.log(StartDatet)
-        connection.query(qry, function(err, response) {
+        connectionreport.query(qry, function(err, response) {
             // console.log(response)
             // console.log(new Date())
             if (response != undefined) {
@@ -449,9 +449,9 @@ router.get('/GetAllAlarm', function(req, res) {
     var query = "SELECT ta.*, CONVERT_TZ(ta.CreatedDate,'+00:00','" + CurrentOffset + "') as CreatedDate,tv.idUser, tu.idApp FROM tblalarm as ta left join tblvehicle as tv on tv.deviceid = ta.DeviceId left join tbluserinformation as tu on tv.idUser = tu.id " + search +
         " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
     var Countqry = "SELECT count(ta.id) as TotalRecord FROM tblalarm as ta left Join tblvehicle as tv on ta.DeviceId = tv.deviceid left join tbluserinformation as tu on tv.idUser = tu.id " + search;
-    connection.query(query, function(err, response) {
+    connectionreport.query(query, function(err, response) {
         if (response != undefined) {
-            connection.query(Countqry, function(err, lstCount, fields) {
+            connectionreport.query(Countqry, function(err, lstCount, fields) {
                 var response1 = new Object();
                 response1.draw = objParam.draw;
                 response1.recordsTotal = lstCount[0].TotalRecord;
@@ -540,9 +540,9 @@ router.get('/GetAllAlarmNew', function(req, res) {
     var query = "SELECT ta.*, CONVERT_TZ(ta.CreatedDate,'+00:00','" + CurrentOffset + "') as CreatedDate FROM tblalarm as ta inner join tblgpsdevice as tgd  on tgd.DeviceId = ta.DeviceId " + search +
         " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
     var Countqry = "SELECT count(ta.id) as TotalRecord FROM tblalarm as ta inner join tblgpsdevice as tgd  on tgd.DeviceId = ta.DeviceId " + search;
-    connection.query(query, function(err, response) {
+    connectionreport.query(query, function(err, response) {
         if (response != undefined) {
-            connection.query(Countqry, function(err, lstCount, fields) {
+            connectionreport.query(Countqry, function(err, lstCount, fields) {
                 var response1 = new Object();
                 response1.draw = objParam.draw;
                 response1.recordsTotal = lstCount[0].TotalRecord;
@@ -563,7 +563,7 @@ router.get('/GetAllAlarmNew', function(req, res) {
 
 router.get('/GetAllGpsDevice', function(req, res) {
     var query = "SELECT tgdevice.*, tv.iduser,tu.idApp FROM tblgpsdevice as tgdevice LEFT JOIN tblvehicle as tv ON tgdevice.DeviceId = tv.deviceid LEFT JOIN tbluserinformation AS tu ON tv.iduser = tu.id where tu.idApp = " + req.query.idApp;
-    connection.query(query, function(err, response) {
+    connectionreport.query(query, function(err, response) {
         if (response != undefined) {
             res.json(response);
         } else {
@@ -942,7 +942,7 @@ router.get('/ExportAllGpsDataNew', function(req, res) {
         "inner join tblgpsdevice as tgd  on tgd.DeviceId = tgps.DeviceId " +
         search +
         " order by tgps.Date desc";
-    connection.query(qry, function(err, response) {
+    connectionreport.query(qry, function(err, response) {
         conf.rows = [];
         var DeviceId = '';
         var Datetime = '';
@@ -1147,7 +1147,7 @@ router.get('/ExportAlarm', function(req, res) {
 
     var query = "SELECT ta.*,CONVERT_TZ(ta.CreatedDate,'+00:00','" + req.query.CurrentOffset + "') as CreatedDate, tv.idUser, tu.idApp FROM tblalarm as ta left join tblvehicle as tv on tv.deviceid = ta.DeviceId left join tbluserinformation as tu on tv.idUser = tu.id " + search +
         " order by " + Orderby;
-    connection.query(query, function(err, response) {
+    connectionreport.query(query, function(err, response) {
         if (response != undefined) {
             conf.rows = [];
             var AlarmCode = '';
@@ -1390,9 +1390,9 @@ router.get('/GetAllSpeedDataReport', function(req, res) {
     var query = "SELECT User.username,Bike.MaxSpeed,Bike.Name,Bike.IsOnline,Gps.* FROM tblvehicle  AS Bike left join  tblgpsdata AS Gps on Gps.DeviceId = Bike.deviceid left join  tbluserinformation AS User on Bike.iduser = User.id " + WhereCondition + " order by Gps.Date asc LIMIT " + req.query.length + " OFFSET " + req.query.start + ";";
     // console.log(query);
     var count = "SELECT count(*) AS Totalrecord FROM tblvehicle  AS Bike left join  tblgpsdata AS Gps on Gps.DeviceId = Bike.deviceid left join  tbluserinformation AS User on Bike.iduser = User.id " + WhereCondition + ";";
-    connection.query(query, function(err, response, fields) {
+    connectionreport.query(query, function(err, response, fields) {
         if (!err) {
-            connection.query(count, function(err1, response1, fields) {
+            connectionreport.query(count, function(err1, response1, fields) {
                 var obj = new Object();
                 obj.data = response;
                 obj.Totalrecord = response1[0].Totalrecord;
@@ -1454,7 +1454,7 @@ router.get('/ExportAllSpeedDataReport', function(req, res) {
     WhereCondition += ' and Gps.IsEngine = 1'
 
     var query = "SELECT User.username,Bike.MaxSpeed,Bike.Name,Bike.IsOnline,Gps.* FROM tblvehicle  AS Bike left join  tblgpsdata AS Gps on Gps.DeviceId = Bike.deviceid left join  tbluserinformation AS User on Bike.iduser = User.id " + WhereCondition + " order by Gps.Date asc";
-    connection.query(query, function(err, response, fields) {
+    connectionreport.query(query, function(err, response, fields) {
         conf.rows = [];
         var Name = '';
         var DisplayDate = '';
@@ -1526,7 +1526,7 @@ router.get('/GetAllWoringHourForReportOld', function(req, res) {
         WhereCondition +
         " order by gps.Date Asc";
     //  console.log(query);
-    connection.query(query, function(err, response, fields) {
+    connectionreport.query(query, function(err, response, fields) {
         if (!err) {
             var GroupByDevice = u.groupBy(response, function(data) { return data.DeviceId; });
 
@@ -1652,10 +1652,10 @@ router.get('/GetAllWoringHourForReport', function(req, res) {
         WhereCondition +
         " order by gps.Date Asc";
     // console.log(query)
-    connection.query(query, function(err, response, fields) {
+    connectionreport.query(query, function(err, response, fields) {
         if (!err) {
             var query1 = "select tblalarm.*,tblvehicle.deviceid from tblalarm left join tblvehicle on tblalarm.deviceid = tblvehicle.deviceid Where tblvehicle.iduser=" + req.query.idUser + "  and tblalarm.Date >= '" + unixStartdate + "' and tblalarm.Date <= '" + unixEndDate + "'" + wherecondition1 + ";"
-            connection.query(query1, function(alarmerr, alarmresponse, alarmfields) {
+            connectionreport.query(query1, function(alarmerr, alarmresponse, alarmfields) {
 
                 var GroupByDevice = u.groupBy(response, function(data) { return data.DeviceId; });
 
@@ -1851,10 +1851,10 @@ router.get('/GetAllWoringHourForReportNew', function(req, res) {
         "gps.DeviceId = Bike.deviceid " +
         WhereCondition +
         " order by gps.Date Asc";
-    connection.query(query, function(err, response, fields) {
+    connectionreport.query(query, function(err, response, fields) {
         if (!err) {
             var query1 = "select tblalarm.*,tblvehicle.deviceid from tblalarm left join tblvehicle on tblalarm.deviceid = tblvehicle.deviceid Where tblvehicle.iduser=" + req.query.idUser + "  and tblalarm.Date >= '" + unixStartdate + "' and tblalarm.Date <= '" + unixEndDate + "'" + wherecondition1 + ";"
-            connection.query(query1, function(alarmerr, alarmresponse, alarmfields) {
+            connectionreport.query(query1, function(alarmerr, alarmresponse, alarmfields) {
 
                 var GroupByDevice = u.groupBy(response, function(data) { return data.DeviceId; });
                 var TotalAllDrivingTime = 0;
@@ -2076,9 +2076,9 @@ router.get('/ExportAllWoringHourForReport', function(req, res) {
         "gps.DeviceId = Bike.deviceid " +
         WhereCondition +
         " order by gps.Date Asc";
-    connection.query(query, function(err, response, fields) {
+    connectionreport.query(query, function(err, response, fields) {
         var query1 = "select tblalarm.*,tblvehicle.deviceid from tblalarm left join tblvehicle on tblalarm.deviceid = tblvehicle.deviceid Where tblvehicle.iduser=" + req.query.idUser + "  and tblalarm.Date >= '" + unixStartdate + "' and tblalarm.Date <= '" + unixEndDate + "'" + wherecondition1 + ";"
-        connection.query(query1, function(alarmerr, alarmresponse, alarmfields) {
+        connectionreport.query(query1, function(alarmerr, alarmresponse, alarmfields) {
             var DeviceId = null;
             var response1 = [];
 
@@ -2437,9 +2437,9 @@ router.get('/ExportAllWoringHourForReportNew', function(req, res) {
         "gps.DeviceId = Bike.deviceid " +
         WhereCondition +
         " order by gps.Date Asc";
-    connection.query(query, function(err, response, fields) {
+    connectionreport.query(query, function(err, response, fields) {
         var query1 = "select tblalarm.*,tblvehicle.deviceid from tblalarm left join tblvehicle on tblalarm.deviceid = tblvehicle.deviceid Where tblvehicle.iduser=" + req.query.idUser + "  and tblalarm.Date >= '" + unixStartdate + "' and tblalarm.Date <= '" + unixEndDate + "'" + wherecondition1 + ";"
-        connection.query(query1, function(alarmerr, alarmresponse, alarmfields) {
+        connectionreport.query(query1, function(alarmerr, alarmresponse, alarmfields) {
             var DeviceId = null;
             var response1 = [];
 
@@ -2637,9 +2637,9 @@ router.get('/PrintAllWoringHourForReportNew', function(req, res) {
         "gps.DeviceId = Bike.deviceid " +
         WhereCondition +
         " order by gps.Date Asc";
-    connection.query(query, function(err, response, fields) {
+    connectionreport.query(query, function(err, response, fields) {
         var query1 = "select tblalarm.*,tblvehicle.deviceid from tblalarm left join tblvehicle on tblalarm.deviceid = tblvehicle.deviceid Where tblvehicle.iduser=" + req.query.idUser + "  and tblalarm.Date >= '" + unixStartdate + "' and tblalarm.Date <= '" + unixEndDate + "'" + wherecondition1 + ";"
-        connection.query(query1, function(alarmerr, alarmresponse, alarmfields) {
+        connectionreport.query(query1, function(alarmerr, alarmresponse, alarmfields) {
             var DeviceId = null;
             var response1 = [];
 
@@ -2981,7 +2981,7 @@ router.get('/GetAllEngineidleReport', function(req, res) {
         WhereCondition +
         " order by gps.DeviceId,gps.Date";
 
-    connection.query(query, function(err, response, fields) {
+    connectionreport.query(query, function(err, response, fields) {
 
         if (response.length > 0) {
 
@@ -3091,7 +3091,7 @@ router.get('/GetAllDriverReportOld', function(req, res) {
         "gps.DeviceId = Bike.deviceid " +
         WhereCondition +
         " order by gps.Date Asc";
-    connection.query(query, function(err, response, fields) {
+    connectionreport.query(query, function(err, response, fields) {
         if (response.length > 0) {
             var groups = u.groupBy(response, function(o) {
                 return o.DeviceId;
@@ -3295,9 +3295,9 @@ router.get('/GetAllDriverReport', function(req, res) {
     // console.log(query);
     var query1 = "select ta.Datetime, ta.Date, ta.deviceid from tblalarm as ta left join tblvehicle As Bike on ta.deviceid = Bike.deviceid " + wherecondition1 + ";"
         // console.log(query1)
-    connection.query(query, function(err, response, fields) {
+    connectionreport.query(query, function(err, response, fields) {
         if (response.length > 0) {
-            connection.query(query1, function(alarmerr, alarmresponse, alarmfields) {
+            connectionreport.query(query1, function(alarmerr, alarmresponse, alarmfields) {
                 var groups = u.groupBy(response, function(o) {
                     return o.DeviceId;
                 });
@@ -3582,9 +3582,9 @@ router.get('/GetAllDriverReportNew', function(req, res) {
     // console.log(query);
     var query1 = "select ta.Datetime, ta.Date, ta.deviceid from tblalarm as ta left join tblvehicle As Bike on ta.deviceid = Bike.deviceid " + wherecondition1 + ";"
         // console.log(query1)
-    connection.query(query, function(err, response, fields) {
+    connectionreport.query(query, function(err, response, fields) {
         if (response.length > 0) {
-            connection.query(query1, function(alarmerr, alarmresponse, alarmfields) {
+            connectionreport.query(query1, function(alarmerr, alarmresponse, alarmfields) {
                 var groups = u.groupBy(response, function(o) {
                     return o.DeviceId;
                 });
@@ -3946,9 +3946,9 @@ router.get('/ExportDriverReport', function(req, res) {
         " order by gps.Date Asc";
     var query1 = "select ta.Datetime, ta.Date, ta.deviceid from tblalarm as ta left join tblvehicle As Bike on ta.deviceid = Bike.deviceid " + wherecondition1 + ";"
 
-    connection.query(query, function(err, response, fields) {
+    connectionreport.query(query, function(err, response, fields) {
         conf.rows = [];
-        connection.query(query1, function(alarmerr, alarmresponse, alarmfields) {
+        connectionreport.query(query1, function(alarmerr, alarmresponse, alarmfields) {
             if (response.length > 0) {
 
                 var groups = u.groupBy(response, function(o) {
@@ -4500,8 +4500,8 @@ router.get('/PrintDriverReportNew', function(req, res) {
         " order by gps.Date Asc";
     var query1 = "select ta.Datetime, ta.Date, ta.deviceid from tblalarm as ta left join tblvehicle As Bike on ta.deviceid = Bike.deviceid " + wherecondition1 + ";"
 
-    connection.query(query, function(err, response, fields) {
-        connection.query(query1, function(alarmerr, alarmresponse, alarmfields) {
+    connectionreport.query(query, function(err, response, fields) {
+        connectionreport.query(query1, function(alarmerr, alarmresponse, alarmfields) {
             if (response.length > 0) {
 
                 var groups = u.groupBy(response, function(o) {
@@ -5007,9 +5007,9 @@ router.get('/ExportDriverReportNew', function(req, res) {
         " order by gps.Date Asc";
     var query1 = "select ta.Datetime, ta.Date, ta.deviceid from tblalarm as ta left join tblvehicle As Bike on ta.deviceid = Bike.deviceid " + wherecondition1 + ";"
 
-    connection.query(query, function(err, response, fields) {
+    connectionreport.query(query, function(err, response, fields) {
         conf.rows = [];
-        connection.query(query1, function(alarmerr, alarmresponse, alarmfields) {
+        connectionreport.query(query1, function(alarmerr, alarmresponse, alarmfields) {
             if (response.length > 0) {
 
                 var groups = u.groupBy(response, function(o) {

@@ -72,9 +72,9 @@ router.get('/GetAllCanbusData', function(req, res) {
         var query = "SELECT tcb.*,CONVERT_TZ(tcb.CreatedDate,'+00:00','" + CurrentOffset + "') as DisplayCreatedDate, tv.iduser, tu.idApp FROM tblcanbusdata as tcb left join tblvehicle as tv on tv.deviceid = tcb.DeviceId left join tbluserinformation as tu on tv.idUser = tu.id " + search +
             " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
         var Countqry = "SELECT count(tcb.id) as TotalRecord FROM tblcanbusdata as tcb left join tblvehicle as tv on tv.deviceid = tcb.DeviceId left join tbluserinformation as tu on tv.idUser = tu.id " + search;
-        connection.query(query, function(err, response) {
+        connectionCanbus.query(query, function(err, response) {
             if (response != undefined) {
-                connection.query(Countqry, function(err, lstCount, fields) {
+                connectionCanbus.query(Countqry, function(err, lstCount, fields) {
                     var response1 = new Object();
                     response1.draw = objParam.draw;
                     response1.recordsTotal = lstCount[0].TotalRecord;
@@ -223,7 +223,7 @@ router.get('/ExportAllCanbusData', function(req, res) {
     }
 
     var query = "SELECT tcb.*, tv.iduser, tu.idApp FROM tblcanbusdata as tcb left join tblvehicle as tv on tv.deviceid = tcb.DeviceId left join tbluserinformation as tu on tv.idUser = tu.id " + search + " order by " + Orderby;
-    connection.query(query, function(err, response) {
+    connectionCanbus.query(query, function(err, response) {
         if (response != undefined) {
             conf.rows = [];
             var DeviceId = '';
@@ -393,9 +393,9 @@ router.get('/GetAllDrivingBehavior', function(req, res) {
         var query = "SELECT td.*, tv.iduser, tu.idApp FROM tbldrivingdata as td left join tblvehicle as tv ON td.DeviceId = tv.deviceid left join tbluserinformation as tu ON tv.iduser = tu.id " + search +
             " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
         var Countqry = "SELECT count(*) as TotalRecord FROM tbldrivingdata as td left join tblvehicle as tv on tv.deviceid = td.DeviceId left join tbluserinformation as tu on tv.idUser = tu.id " + search;
-        connection.query(query, function(err, response) {
+        connectionCanbus.query(query, function(err, response) {
             if (response != undefined) {
-                connection.query(Countqry, function(err, lstCount, fields) {
+                connectionCanbus.query(Countqry, function(err, lstCount, fields) {
                     var response1 = new Object();
                     response1.draw = objParam.draw;
                     response1.recordsTotal = lstCount[0].TotalRecord;
@@ -528,7 +528,7 @@ router.get('/ExportAllDrivingData', function(req, res) {
         " td.TotalHarshAcceleration, td.TotalHarshBrake, td.Datetime, tu.idApp FROM tbldrivingdata as td left join tblvehicle as tv ON td.DeviceId = tv.deviceid left join tbluserinformation as tu ON tv.iduser = tu.id " + search +
         " order by " + objOrderBy;
 
-    connection.query(query, function(err, response) {
+    connectionCanbus.query(query, function(err, response) {
         if (response != undefined) {
             conf.rows = [];
             var DeviceId = '';
