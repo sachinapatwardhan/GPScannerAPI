@@ -3,6 +3,8 @@ var sequelize = models.sequelize;
 var User = models.tbluserinformation;
 var AccessClient = models.tblapiaccessclient;
 var AppInfo = models.tblappinfo;
+var GPSDevice = models.tblgpsdevice;
+
 
 router.get('/GetAllAccessClient', function (req, res) {
     var objParam = req.query;
@@ -25,19 +27,8 @@ router.get('/GetAllAccessClient', function (req, res) {
             };
         };
     }
-    AccessClient.belongsTo(AppInfo, {
-        foreignKey: {
-            name: 'AppName',
-            allowNull: false
-        }
-    });
     AccessClient.findAndCountAll({
         where: search,
-        include: [{
-            model: AppInfo,
-            required: true,
-        }],
-
         order: [
             [objColumns[parseInt(objOrderBy[0].column)].data, objOrderBy[0].dir]
         ],
@@ -269,6 +260,103 @@ router.get('/DelAccessClient', function (req, res) {
             res.json(NoAccessPermission);
         }
     });
+})
+
+router.get('/getAllDeviceFromAppName', function (req, res) {
+    var objParam = req.query;
+    var objColumns = objParam.columns;
+    var objOrderBy = objParam.order;
+    var objSearch = objParam.search;
+    var Orderby = objColumns[parseInt(objOrderBy[0].column)].data + ' ' + objOrderBy[0].dir;
+    var search = {};
+    if (objSearch != null && objSearch != '') {
+        search['$or'] = [];
+        for (var i = 0; i < objColumns.length; i++) {
+            if (objColumns[i].data != null && objColumns[i].data != '') {
+                var columnName = objColumns[i].data;
+                var obj = new Object();
+                    columnName = columnName == 'DeviceId' ? 'tblgpsdevice.DeviceId' : columnName;
+                    search['$or'].push([columnName + ' like ?', "%" + objSearch + "%"]);
+            };
+        };
+    }
+    search['$and'] = [];
+    var obj1 = new Object();
+    obj1['AppName'] = objParam.AppName;
+    search['$and'].push(obj1);
+
+    GPSDevice.belongsTo(AccessClient, {
+        foreignKey: 'AppName',
+        targetKey: 'AppName',
+    });
+
+    GPSDevice.findAndCountAll({
+        where: search,
+        include: [{
+            model: AccessClient,
+            required: true,
+        }],
+        order: [
+            [objColumns[parseInt(objOrderBy[0].column)].data, objOrderBy[0].dir]
+        ],
+        offset: parseInt(objParam.start),
+        limit: parseInt(objParam.length),
+    }).then(function (response) {
+        var response1 = new Object();
+        response1.draw = objParam.draw;
+        response1.recordsTotal = response.count;
+        response1.recordsFiltered = response.count;
+        response1.data = response.rows;
+        res.json(response1);
+    }).catch(function (err) {
+        res.json(err);
+    })
+})
+
+router.get('/giveAccess', function (req, res) {
+    var objParam = req.query;
+    AccessClient.findOne({
+        where: {
+            id: objParam.id,
+        }
+    }).then(function (IsDeviceExist) {
+        if (IsDeviceExist) {
+            var DeviceId = '';
+            if (IsDeviceExist.DeviceId != null && IsDeviceExist.DeviceId != '' && IsDeviceExist.DeviceId != undefined) {
+                var devicelist = IsDeviceExist.DeviceId.split(',');
+                var Exist = u.find(devicelist, function (i) {
+                    if (i == objParam.DeviceId) {
+                        return i;
+                    }
+                });
+                if (Exist != '' && Exist != null && Exist != undefined) {
+                    var obj = u.without(devicelist, objParam.DeviceId);
+                    DeviceId = obj.toString();
+                }
+                else {
+                    devicelist.push(objParam.DeviceId);
+                    DeviceId = devicelist.toString();
+                }
+            }
+            else {
+                DeviceId = objParam.DeviceId
+            }
+            AccessClient.update({ DeviceId: DeviceId }, { where: { id: objParam.id } }).then(function (response) {
+                res.json({
+                    success: true,
+                    message: "Device added successfully",
+                    data: response
+                });
+            })
+        }
+        else {
+            res.json({
+                success: false,
+                message: "Device added successfully",
+                data: response
+            });
+        }
+    })
 })
 
 function GetRandomToken(callback) {

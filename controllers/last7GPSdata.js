@@ -6,61 +6,45 @@ var AppInfo = models.tblappinfo;
 var GPS = models.tblgpsdata;
 var GPSDevice = models.tblgpsdevice;
 
-router.get('/getlast7gpsdata', function(req, res) {
+router.get('/getlast7gpsdata', function (req, res) {
 
     AccessClient.findOne({
         where: {
             $and: {
-                Token: req.query.Token, //'FV6AGM0YHU',
-                Key: req.query.Key, //'ml4xZQgvfzZwpr4u',
+                Token: req.query.Token,
+                Key: req.query.Key,
                 IsActive: 1,
             }
         }
-    }).then(function(AccessClientExist) {
+    }).then(function (AccessClientExist) {
         if (AccessClientExist != null) {
-            GPSDevice.belongsTo(AppInfo, {
-                foreignKey: 'AppName',
-                targetKey: 'AppName',
-            });
-            GPSDevice.findOne({
-                where: {
-                    DeviceId: req.query.DeviceId //59197080005615
-                },
-                include: [{
-                    model: AppInfo,
-                    required: true,
-                }],
-            }).then(function(IsDeviceExist) {
-                if (IsDeviceExist != null) {
-                    if (IsDeviceExist.tblappinfo.Id == AccessClientExist.AppName) {
-                        query = "SELECT DeviceId,Date,Latitude,Longitude,Speed,Direction,GPSPositioning as Position,IsPatchEngine as Engine,Altitude from tblgpsdata order By Date desc limit 7";
-                        connection.query(query, function(err, lstRecord, fields) {
-                            if (!err) {
-                                for (var i = 0; i < lstRecord.length; i++) {
-                                    lstRecord[i].Date = moment.unix(lstRecord[i].Date).utc().format('DD-MM-YYYY HH:mm:ss ') + '(UTC)';
-                                }
-                                var response = new Object();
-                                response.data = lstRecord;
-                                res.json(response)
-                            } else {
-                                var response = new Object();
-                                response.data = [];
-                                res.json(response)
-                            }
-                        })
-                    } else {
-                        res.json({ success: false, message: "Invalid Device." });
+            if (AccessClientExist.DeviceId.indexOf(req.query.DeviceId) >= 0) {
+                client.get(req.query.DeviceId + "Last7Records", function (err, strLast7Record) {
+                    var lstlast7record = [];
+                    if (!err) {
+                        if (strLast7Record != null && strLast7Record != undefined && strLast7Record != '') {
+                            lstlast7record = JSON.parse(strLast7Record);
+                        }
                     }
-                } else {
-                    res.json({ success: false, message: "Device not exist" });
-                }
-            })
+                    for (var i = 0; i < lstlast7record.length; i++) {
+                        lstlast7record[i].Date = moment.unix(lstlast7record[i].Date).utc().format('DD-MM-YYYY HH:mm:ss ') + '(UTC)';
+                    }
+                    res.json(lstlast7record)
+                });
+
+
+            } else {
+                res.json({ success: false, message: "Device Permission is not given" });
+            }
+
         } else {
             res.json({ success: false, message: "Invalid Token/Key Or API Access Inactive.." });
         }
 
     })
 })
+
+
 
 
 
