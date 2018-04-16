@@ -690,6 +690,13 @@ global.Command5001 = function(line, Callback) {
 
         var CurrentDate = GetCurrentDate();
 
+        var objConnection = {
+            DeviceId: DeviceId,
+            Status: true
+        }
+
+        io.sockets.emit(DeviceId + 'BikeDeviceStatus', JSON.stringify(objConnection));
+
         //tblPetgps Entry
         var query = "INSERT INTO tblhandshake (DeviceId,Datetime ) VALUES ('" + DeviceId + "', '" + CurrentDate + "');";
         connectionhandshake.query(query, function(err, rows, fields) {
@@ -706,12 +713,7 @@ global.Command5001 = function(line, Callback) {
                 if (CheckOnline == false) {
                     client.set(DeviceId + "Online", "true", function(err, replies) {});
                     connectionhandshake.query("Update tblvehicle set HandshakDatetime='" + CurrentDate + "',IsOnline=true where deviceid='" + DeviceId + "'", function(err, rows1, fields) {
-                        var objConnection = {
-                                DeviceId: DeviceId,
-                                Status: true
-                            }
-                            // io.sockets.emit('BikeDeviceStatus', JSON.stringify(objConnection));
-                        io.sockets.emit(DeviceId + 'BikeDeviceStatus', JSON.stringify(objConnection));
+
                     });
                 }
 
@@ -894,6 +896,23 @@ global.Command9955 = function(line, Callback) {
             }
 
             if (Position == 'A') {
+
+                client.get(DeviceId + "Last7Records", function(err, strLast7Record) {
+                    var lstlast7record = [];
+                    if (!err) {
+                        if (strLast7Record != null && strLast7Record != undefined && strLast7Record != '') {
+                            lstlast7record = JSON.parse(strLast7Record);
+                        }
+                    }
+
+                    if (lstlast7record.length >= 7) {
+                        lstlast7record.splice(0, 1);
+                    }
+
+                    lstlast7record.push(objConnection);
+
+                    client.set(DeviceId + "Last7Records", JSON.stringify(lstlast7record), function(err, replies) {});
+                });
                 client.set(DeviceId, JSON.stringify(objConnection), function(err, replies) {});
                 // io.sockets.emit('BikeRoute', JSON.stringify(objConnection));
                 io.sockets.emit(DeviceId + 'BikeRoute', JSON.stringify(objConnection));
@@ -3869,21 +3888,23 @@ global.UpdateDeviceStatus = function(obj, Callback) {
                 Callback("No Response");
                 strResponce = "No Response";
 
-                var ConnectionStatus = false;
-                if (Status == 'true' || Status == true) {
-                    ConnectionStatus = true;
-                }
-                var objConnection = {
-                    DeviceId: DeviceId,
-                    Status: ConnectionStatus
-                }
-                io.sockets.emit(DeviceId + 'BikeDeviceStatus', JSON.stringify(objConnection));
+
             });
         } else {
             Callback("No Response");
         }
 
     });
+
+    var ConnectionStatus = false;
+    if (Status == 'true' || Status == true) {
+        ConnectionStatus = true;
+    }
+    var objConnection = {
+        DeviceId: DeviceId,
+        Status: ConnectionStatus
+    }
+    io.sockets.emit(DeviceId + 'BikeDeviceStatus', JSON.stringify(objConnection));
 
 
 

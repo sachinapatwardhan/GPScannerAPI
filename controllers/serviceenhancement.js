@@ -500,7 +500,7 @@ rule.minute = new schedule.Range(0, 59, 0);
 
 
 var AddAllServiceNotification = schedule.scheduleJob(rule, function() {
-    console.log("Call Alert Notification Every 01:00 Minute", new Date());
+    // console.log("Call Alert Notification Every 01:00 Minute", new Date());
     var date = new Date();
     date.setUTCDate((new Date()).getDate() - 1);
     date.setUTCHours(0);
