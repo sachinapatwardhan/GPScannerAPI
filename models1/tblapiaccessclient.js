@@ -52,6 +52,10 @@ module.exports = function(sequelize, DataTypes) {
     ModifiedBy: {
       type: DataTypes.STRING,
       allowNull: true
+    },
+    DeviceId: {
+      type: DataTypes.TEXT,
+      allowNull: true
     }
   }, {
     tableName: 'tblapiaccessclient'
