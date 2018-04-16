@@ -60,21 +60,21 @@ global.Mysqldatabase = process.env.Mysqldatabase;
 global.IsProduction = process.env.IsProduction;
 
 //mysql connection
-global.connection = mysql.createConnection({
-    host: MysqlHost,
-    user: Mysqluser,
-    password: Mysqlpassword,
-    database: Mysqldatabase,
-    multipleStatements: true
-});
-global.connectionhandshake = mysql.createConnection({
-    host: MysqlHost,
-    user: Mysqluser,
-    password: Mysqlpassword,
-    database: Mysqldatabase,
-    multipleStatements: true
-});
-global.RoutePath = process.env.RoutePath;
+// global.connection = mysql.createConnection({
+//     host: MysqlHost,
+//     user: Mysqluser,
+//     password: Mysqlpassword,
+//     database: Mysqldatabase,
+//     multipleStatements: true
+// });
+// global.connectionhandshake = mysql.createConnection({
+//     host: MysqlHost,
+//     user: Mysqluser,
+//     password: Mysqlpassword,
+//     database: Mysqldatabase,
+//     multipleStatements: true
+// });
+// global.RoutePath = process.env.RoutePath;
 
 
 //======= PWA Notification ============================
@@ -452,6 +452,8 @@ io.sockets.on('connection', function(socket) {
         io.sockets.emit(data + 'JourneyRouteComplete', "Complete");
     });
 });
+
+app.use('/connection', require('./controllers/connection'))
 
 //Maark Mobile API
 app.use('/mobileV1/customer', require('./mobile_controllers/customers'))
