@@ -2766,18 +2766,18 @@ global.SetArmSettings = function(objdata, Callback) {
     var Data = "40400012" + DeviceId + "4116" + Arm;
     Data = Data + CalculateCRCbyHex(Data) + '0D0A';
 
-    var client = new net.Socket();
+    var client1 = new net.Socket();
     var Sendflag = false;
 
-    client.connect(SocketPort, SocketIPAddress, function() {
+    client1.connect(SocketPort, SocketIPAddress, function() {
         // console.log('G-Sensor send to ' + DeviceId);
-        client.write(Data, 'hex');
+        client1.write(Data, 'hex');
 
-        client.setTimeout(10000, function() {
+        client1.setTimeout(10000, function() {
             if (Sendflag == false) {
                 Sendflag = true;
 
-                client.destroy();
+                client1.destroy();
                 Callback({ success: false, message: 'Device not connected. Try after 5 minute.' });
                 // SendGSensorCommand(i + 1);
             };
@@ -2785,7 +2785,7 @@ global.SetArmSettings = function(objdata, Callback) {
         });
     });
 
-    client.on('data', function(data) {
+    client1.on('data', function(data) {
         var line = data.toString();
         if (Sendflag == false) {
             if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4116') {
@@ -2793,7 +2793,7 @@ global.SetArmSettings = function(objdata, Callback) {
                 var StatusCode = line.substring(26, 28);
                 Sendflag = true;
 
-                client.destroy(); // kill client after server's response
+                client1.destroy(); // kill client after server's response
                 if (StatusCode == '01') {
                     connection.query("Update tblvehicle set Arm=" + objdata.Arm + ", LastArmSetting=" + objdata.ArmStatus + " where deviceid='" + DeviceId + "'", function(err, rows, fields) {
                         var objarmredis = {
@@ -2812,7 +2812,7 @@ global.SetArmSettings = function(objdata, Callback) {
             } else {
                 Sendflag = true;
 
-                client.destroy();
+                client1.destroy();
                 Callback({ success: false, message: 'Arm Settings could not save. Try again later.' });
                 // SendGSensorCommand(i + 1);
             }
@@ -2821,7 +2821,7 @@ global.SetArmSettings = function(objdata, Callback) {
 
     });
 
-    client.on('close', function() {
+    client1.on('close', function() {
         console.log('Connection closed');
     });
 }

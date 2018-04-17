@@ -63,14 +63,14 @@ function handleDisconnecthandshake() {
     connectionhandshake.connect(function(err) {
         if (err) {
             console.log('error when connecting to db for handshake:', err);
-            setTimeout(handleDisconnect, 2000);
+            setTimeout(handleDisconnecthandshake, 2000);
         }
     });
 
     connectionhandshake.on('error', function(err) {
         console.log('db error', err);
         if (err.code === 'PROTOCOL_CONNECTION_LOST') {
-            handleDisconnect();
+            handleDisconnecthandshake();
         } else {
             throw err;
         }
@@ -90,14 +90,14 @@ function handleDisconnectbikedata() {
     connectionbikedata.connect(function(err) {
         if (err) {
             console.log('error when connecting to db for bike.js data:', err);
-            setTimeout(handleDisconnect, 2000);
+            setTimeout(handleDisconnectbikedata, 2000);
         }
     });
 
     connectionbikedata.on('error', function(err) {
         console.log('db error', err);
         if (err.code === 'PROTOCOL_CONNECTION_LOST') {
-            handleDisconnect();
+            handleDisconnectbikedata();
         } else {
             throw err;
         }
@@ -118,14 +118,14 @@ function handleDisconnectreport() {
     connectionreport.connect(function(err) {
         if (err) {
             console.log('error when connecting to db for report data:', err);
-            setTimeout(handleDisconnect, 2000);
+            setTimeout(handleDisconnectreport, 2000);
         }
     });
 
     connectionreport.on('error', function(err) {
         console.log('db error', err);
         if (err.code === 'PROTOCOL_CONNECTION_LOST') {
-            handleDisconnect();
+            handleDisconnectreport();
         } else {
             throw err;
         }
@@ -146,14 +146,14 @@ function handleDisconnectDashboard() {
     connectionDashboard.connect(function(err) {
         if (err) {
             console.log('error when connecting to db for dashbord data:', err);
-            setTimeout(handleDisconnect, 2000);
+            setTimeout(handleDisconnectDashboard, 2000);
         }
     });
 
     connectionDashboard.on('error', function(err) {
         console.log('db error', err);
         if (err.code === 'PROTOCOL_CONNECTION_LOST') {
-            handleDisconnect();
+            handleDisconnectDashboard();
         } else {
             throw err;
         }
@@ -174,14 +174,14 @@ function handleDisconnectGpsData() {
     connectionGpsData.connect(function(err) {
         if (err) {
             console.log('error when connecting to db for dashbord data:', err);
-            setTimeout(handleDisconnect, 2000);
+            setTimeout(handleDisconnectGpsData, 2000);
         }
     });
 
     connectionGpsData.on('error', function(err) {
         console.log('db error', err);
         if (err.code === 'PROTOCOL_CONNECTION_LOST') {
-            handleDisconnect();
+            handleDisconnectGpsData();
         } else {
             throw err;
         }
@@ -203,14 +203,14 @@ function handleDisconnectCanbus() {
     connectionCanbus.connect(function(err) {
         if (err) {
             console.log('error when connecting to db for canbus data:', err);
-            setTimeout(handleDisconnect, 2000);
+            setTimeout(handleDisconnectCanbus, 2000);
         }
     });
 
     connectionCanbus.on('error', function(err) {
         console.log('db error', err);
         if (err.code === 'PROTOCOL_CONNECTION_LOST') {
-            handleDisconnect();
+            handleDisconnectCanbus();
         } else {
             throw err;
         }
