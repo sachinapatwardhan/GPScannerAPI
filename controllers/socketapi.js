@@ -3864,11 +3864,13 @@ global.UpdateDeviceStatus = function(obj, Callback) {
     //         }
     //         if (Status.toString() != flgOnline.toString()) {
 
-
-
+    console.log("#################################################################")
+    console.log(DeviceId)
+    console.log(Status)
     var CheckOnline = false;
     var GetOldOnline = false;
     client.get(DeviceId + "Online", function(err, response) {
+        console.log(response)
         if (!err) {
             if (response != null && response != undefined && response != '') {
                 GetOldOnline = true;
@@ -3879,12 +3881,15 @@ global.UpdateDeviceStatus = function(obj, Callback) {
                 }
             }
         }
-
+        console.log("GetOldOnline", GetOldOnline)
+        console.log("CheckOnline", CheckOnline)
         if (GetOldOnline == false || CheckOnline != Status) {
+            console.log("Go Inside")
             client.set(DeviceId + "Online", Status.toString(), function(err, replies) {});
             var query = "Update tblvehicle set IsOnline=" + Status + " where deviceid='" + DeviceId + "';";
+            console.log(query)
             connection.query(query, function(err, rows, fields) {
-
+                console.log(err);
                 Callback("No Response");
                 strResponce = "No Response";
 
@@ -3893,8 +3898,9 @@ global.UpdateDeviceStatus = function(obj, Callback) {
         } else {
             Callback("No Response");
         }
-
+        console.log("################################################################")
     });
+
 
     var ConnectionStatus = false;
     if (Status == 'true' || Status == true) {
