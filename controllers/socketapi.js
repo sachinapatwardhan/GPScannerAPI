@@ -897,22 +897,22 @@ global.Command9955 = function(line, Callback) {
 
             if (Position == 'A') {
 
-                client.get(DeviceId + "Last7Records", function(err, strLast7Record) {
-                    var lstlast7record = [];
-                    if (!err) {
-                        if (strLast7Record != null && strLast7Record != undefined && strLast7Record != '') {
-                            lstlast7record = JSON.parse(strLast7Record);
-                        }
-                    }
+                // client.get(DeviceId + "Last7Records", function(err, strLast7Record) {
+                //     var lstlast7record = [];
+                //     if (!err) {
+                //         if (strLast7Record != null && strLast7Record != undefined && strLast7Record != '') {
+                //             lstlast7record = JSON.parse(strLast7Record);
+                //         }
+                //     }
 
-                    if (lstlast7record.length >= 7) {
-                        lstlast7record.splice(0, 1);
-                    }
+                //     if (lstlast7record.length >= 7) {
+                //         lstlast7record.splice(0, 1);
+                //     }
 
-                    lstlast7record.push(objConnection);
+                //     lstlast7record.push(objConnection);
 
-                    client.set(DeviceId + "Last7Records", JSON.stringify(lstlast7record), function(err, replies) {});
-                });
+                //     client.set(DeviceId + "Last7Records", JSON.stringify(lstlast7record), function(err, replies) {});
+                // });
                 client.set(DeviceId, JSON.stringify(objConnection), function(err, replies) {});
                 // io.sockets.emit('BikeRoute', JSON.stringify(objConnection));
                 io.sockets.emit(DeviceId + 'BikeRoute', JSON.stringify(objConnection));
@@ -3864,13 +3864,13 @@ global.UpdateDeviceStatus = function(obj, Callback) {
     //         }
     //         if (Status.toString() != flgOnline.toString()) {
 
-    console.log("#################################################################")
-    console.log(DeviceId)
-    console.log(Status)
+    // console.log("#################################################################")
+    // console.log(DeviceId)
+    // console.log(Status)
     var CheckOnline = false;
     var GetOldOnline = false;
     client.get(DeviceId + "Online", function(err, response) {
-        console.log(response)
+        // console.log(response)
         if (!err) {
             if (response != null && response != undefined && response != '') {
                 GetOldOnline = true;
@@ -3881,15 +3881,15 @@ global.UpdateDeviceStatus = function(obj, Callback) {
                 }
             }
         }
-        console.log("GetOldOnline", GetOldOnline)
-        console.log("CheckOnline", CheckOnline)
+        // console.log("GetOldOnline", GetOldOnline)
+        // console.log("CheckOnline", CheckOnline)
         if (GetOldOnline == false || CheckOnline != Status) {
-            console.log("Go Inside")
+            // console.log("Go Inside")
             client.set(DeviceId + "Online", Status.toString(), function(err, replies) {});
             var query = "Update tblvehicle set IsOnline=" + Status + " where deviceid='" + DeviceId + "';";
-            console.log(query)
+            // console.log(query)
             connection.query(query, function(err, rows, fields) {
-                console.log(err);
+                // console.log(err);
                 Callback("No Response");
                 strResponce = "No Response";
 
@@ -3898,7 +3898,7 @@ global.UpdateDeviceStatus = function(obj, Callback) {
         } else {
             Callback("No Response");
         }
-        console.log("################################################################")
+        // console.log("################################################################")
     });
 
 

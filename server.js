@@ -581,7 +581,7 @@ app.use('/mainsetting', require('./controllers/mainsetting'));
 app.use('/DeviceStock', require('./controllers/DeviceStock'));
 app.use('/serviceenhancement', require('./controllers/serviceenhancement'));
 app.use('/advancefence', require('./controllers/advancefence'))
-app.use('/last7GPSdata', require('./controllers/last7GPSdata'))
+app.use('/lastGPSdata', require('./controllers/lastGPSdata'))
     //socket API End
 
 //Wallet Transaction
