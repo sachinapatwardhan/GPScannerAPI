@@ -36,6 +36,8 @@ global.CountryLanguage = require('country-language');
 global.moment = require('moment');
 global.crc = require('crc');
 global.net = require('net');
+global.Sequelize = require('sequelize');
+global.sequelize = require('./models1').sequelize;
 
 global.NodeGeocoder = require('node-geocoder');
 var options = {
@@ -596,5 +598,6 @@ app.use('/routeplan', require('./controllers/routeplan'));
 app.use('/feedback', require('./controllers/feedback'))
 app.use('/assignretailer', require('./controllers/assignretailer'))
 app.use('/licence', require('./controllers/licence'))
+app.use('/billing', require('./controllers/billing'))
 
 // MAARK Install App End
