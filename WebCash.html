@@ -1,0 +1,97 @@
+<!doctype html>
+<html>
+
+<head>
+    <title></title>
+    <meta name="viewport" content="width=device-width">
+</head>
+
+<body>
+    <form name="myform" method="post" id="formPayment" action="" style="display: none" novalidate>
+        <input type="hidden" name="ord_date" value="">
+        <input type="hidden" name="ord_totalamt" value="" />
+        <input type="hidden" name="ord_gstamt" value="" />
+        <input type="hidden" name="ord_shipname" value="">
+        <input type="hidden" name="ord_shipcountry" value="">
+        <input type="hidden" name="ord_mercref" value="">
+        <input type="hidden" name="ord_telephone" value="">
+        <input type="hidden" name="ord_email" value="">
+        <input type="hidden" name="ord_delcharges" value="">
+        <input type="hidden" name="ord_svccharges" value="">
+        <input type="hidden" name="ord_mercID" value="">
+        <input type="hidden" name="merchant_hashvalue" value="">
+        <input type="hidden" name="ord_returnURL" value="">
+        <!-- <input type="submit" name="submit" value="Pay with Webcash"> -->
+    </form>
+    <div class="PleasewaitCustom">
+        Please Wait..
+    </div>
+    <style>
+        .PleasewaitCustom {
+            text-align: center;
+            font-size: 22px;
+            margin-top: 50px;
+        }
+    </style>
+    <script src="js/jquery-1.11.1.js" type="text/javascript"></script>
+    <script type="text/javascript">
+        $(document).ready(function() {
+            try {
+                var url = window.location.href;
+                var objparams = {};
+                url.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(str, key, value) {
+                    objparams[key] = value;
+                });
+                var params = {
+                    data: objparams.Message
+                }
+                $.get(
+                    objparams.ApiRoutePath + "billing/GetBillingdata", params,
+                    function(data) {
+
+                        if (data.success == true) {
+
+                            console.log(data.ObjTokenData)
+                            document.myform.action = data.ObjTokenData.WebCaseUrl;
+
+                            var monthNames = [
+                                "January", "February", "March",
+                                "April", "May", "June", "July",
+                                "August", "September", "October",
+                                "November", "December"
+                            ];
+
+                            var day = new Date(data.ObjTokenData.ord_date).getDate();
+                            var monthIndex = new Date(data.ObjTokenData.ord_date).getMonth();
+                            var year = new Date(data.ObjTokenData.ord_date).getFullYear();
+
+
+                            $('input[name="ord_date"]').val(day + ' ' + monthNames[monthIndex] + ' ' + year);
+                            $('input[name="ord_totalamt"]').val(parseFloat(data.ObjTokenData.ord_totalamt).toFixed(2));
+                            $('input[name="ord_gstamt"]').val(data.ObjTokenData.ord_gstamt);
+                            $('input[name="ord_shipname"]').val(data.ObjTokenData.ord_shipname);
+                            $('input[name="ord_shipcountry"]').val(data.ObjTokenData.ord_shipcountry);
+                            $('input[name="ord_mercref"]').val(data.ObjTokenData.ord_mercref);
+                            $('input[name="ord_telephone"]').val(data.ObjTokenData.ord_telephone);
+                            $('input[name="ord_email"]').val(data.ObjTokenData.ord_email);
+                            $('input[name="ord_delcharges"]').val(data.ObjTokenData.ord_delcharges);
+                            $('input[name="ord_svccharges"]').val(data.ObjTokenData.ord_svccharges);
+                            $('input[name="merchant_hashvalue"]').val(data.ObjTokenData.merchant_hashvalue);
+                            $('input[name="ord_mercID"]').val(data.ObjTokenData.ord_mercID);
+                            $('input[name="ord_returnURL"]').val(data.ObjTokenData.ord_returnURL);
+
+                            if (document.getElementsByName("ord_totalamt")[0].value > 0) {
+                                $('#formPayment').trigger('submit');
+                            }
+                        }
+
+                    }
+                );
+            } catch (ex) {
+
+            }
+        })
+    </script>
+</body>
+
+</html>
