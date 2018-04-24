@@ -139,6 +139,8 @@ router.post('/SaveOrderService', jsonParser, function(req, res) {
                 objOrderDetail.Attribute = lstProduct[i].LicenceNo;
                 objOrderDetail.AttributeValue = lstProduct[i].LicenceRenewalType;
                 objOrderDetail.AttributeDescription = lstProduct[i].Name;
+                objOrderDetail.AttributesXml = lstProduct[i].ExpireDate;
+                objOrderDetail.ItemWeight = lstProduct[i].NextExpireDate;
 
                 lstOrderServiceItem.push(objOrderDetail);
                 lstLicenceId.push(lstProduct[i].LicenceId);
@@ -305,7 +307,7 @@ router.get('/GetAllVehicleOrderbyUser', jsonParser, function(req, res) {
         wherestatus = wherestatus + ' and OrderStatusId = ' + objParam.Status
     }
 
-    var query = "select tos.*,tosi.id as OrderdetailId, tosi.ProductName, tosi.PriceInclTax, tosi.AttributeDescription, tosi.UOM, tosi.sku, tosi.Attribute, tosi.AttributeValue,toss.OrderStatus from ( " +
+    var query = "select tos.*,tosi.id as OrderdetailId, tosi.ProductName, tosi.PriceInclTax, tosi.AttributeDescription, tosi.AttributesXml, tosi.ItemWeight, tosi.UOM, tosi.sku, tosi.Attribute, tosi.AttributeValue,toss.OrderStatus from ( " +
         "SELECT id, CustomerId, ShippAddress1, OrderNotes, OrderStatusId, OrderTotal, PurchaseOrderNumber, CONVERT_TZ(CreatedOnUtc,'+00:00','" + objParam.TimeOffset + "') as CreatedOnUtc FROM tblorderservice " + wherestatus + " ORDER BY CreatedOnUtc desc LIMIT " + objParam.start + ", " + objParam.length + ") as tos " +
         "inner join tblorderserviceitem tosi on tos.id=tosi.OrderId " +
         "inner join tblorderservicestatus toss on tos.OrderStatusId=toss.id;";
@@ -333,6 +335,8 @@ router.get('/GetAllVehicleOrderbyUser', jsonParser, function(req, res) {
                     obj.sku = group[i].sku;
                     obj.Attribute = group[i].Attribute;
                     obj.AttributeValue = group[i].AttributeValue;
+                    obj.AttributesXml = group[i].AttributesXml;
+                    obj.ItemWeight = group[i].ItemWeight;
 
                     lstOrderdetail.push(obj);
                 }
