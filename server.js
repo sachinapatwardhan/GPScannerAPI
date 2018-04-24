@@ -380,6 +380,10 @@ app.get('/', function(req, res) {
     res.sendFile(__dirname + '/index.html');
 });
 
+app.get('/WebCash', function(req, res) {
+    res.redirect('/WebCash.html?Message=' + req.query.Message + "&ApiRoutePath=" + process.env.ApiRoutePath)
+});
+
 app.get('/loaderio-eecfb734fd04534c9d0a45668de1f60e', function(req, res) {
     res.send('loaderio-eecfb734fd04534c9d0a45668de1f60e');
 });
