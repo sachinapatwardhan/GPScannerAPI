@@ -448,7 +448,7 @@ router.post('/WebCashResponseUrl', jsonParser, function(req, res) {
 
     var MerchantID = '80000155'
     var MerchantKey = '123456'
-    var Merchantenquiry = 'http://staging.webcash.com.my/enquiry.php?'
+    var Merchantenquiry = 'https://staging.webcash.com.my/enquiry.php?'
 
     OrderService.findOne({
         where: { PurchaseOrderNumber: resdataparam.OrderNumber },
