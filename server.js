@@ -457,6 +457,38 @@ io.sockets.on('connection', function(socket) {
         // console.log('socket.io server received 5001 : ' + data);
         io.sockets.emit(data + 'JourneyRouteComplete', "Complete");
     });
+
+    //Command Concox GPS
+    socket.on('CommandConcoxGPS', function(data) {
+        // console.log('socket.io server received 5001 : ' + data);
+        CommandConcoxGPS(data, function(res) {
+
+        })
+    });
+
+    //Command Concox Alarm
+    socket.on('CommandConcoxAlarm', function(data) {
+        // console.log('socket.io server received 5001 : ' + data);
+        CommandConcoxAlarm(data, function(res) {
+
+        })
+    });
+
+    //Command Concox HeartBeat
+    socket.on('CommandConcoxHeartBeat', function(data) {
+        // console.log('socket.io server received 5001 : ' + data);
+        CommandConcoxHeartBeat(data, function(res) {
+
+        })
+    });
+
+
+    //Update Device Status
+    socket.on('CommandDeviceStatus', function(data) {
+        // console.log('socket.io server received : ' + data);
+        var objdata = JSON.parse(data);
+        CommandDeviceStatus(objdata);
+    });
 });
 
 app.use('/connection', require('./controllers/connection'))
@@ -568,6 +600,7 @@ app.use('/dynamicpage', require('./controllers/dynamicpage'))
 
 //socket API start
 app.use('/socketapi', require('./controllers/socketapi'))
+app.use('/socketapi_concox', require('./controllers/socketapi_concox'))
 
 app.use('/PetDevice', require('./controllers/PetDevice'))
 
