@@ -3,13 +3,25 @@ var router = express.Router();
 var VehicleType = models.tblvehicletype;
 var User = models.tbluserinformation;
 var Vehicle = models.tblvehicle;
+var AppInfo = models.tblappinfo;
 
 router.get('/GetAllActivevehicletype', function(req, res) {
-
-    VehicleType.findAll({ where: { IsActive: 1 } }).then(function(response) {
-        res.json(response);
+    var idApp = null;
+    if (req.query.idApp != null && req.query.idApp != undefined && req.query.idApp != '') {
+        idApp = req.query.idApp;
+    }
+    VehicleType.findAll({ where: { IsActive: 1, idApp: idApp } }).then(function(response) {
+        if (response.length == 0) {
+            VehicleType.findAll({ where: { IsActive: 1, idApp: null } }).then(function(response) {
+                res.json(response);
+            }).catch(function(err) {
+                res.json([]);
+            })
+        } else {
+            res.json(response);
+        }
     }).catch(function(err) {
-        res.json({ success: false, data: err });
+        res.json([]);
     })
 })
 
@@ -32,26 +44,38 @@ router.get('/Getvehicletype', function(req, res) {
             };
         };
     }
+
+    VehicleType.belongsTo(AppInfo, {
+        foreignKey: {
+            name: 'idApp',
+            allowNull: false
+        }
+    });
+
     VehicleType.findAndCountAll({
-            where: search,
-            order: Orderby,
-            offset: parseInt(objParam.start),
-            limit: parseInt(objParam.length),
-        }).then(function(response) {
-            var response1 = new Object();
-            response1.draw = objParam.draw;
-            response1.recordsTotal = response.count;
-            response1.recordsFiltered = response.count;
-            response1.data = response.rows;
-            res.json(response1);
-        }).catch(function(error) {
-            res.json(error);
-        })
-        // VehicleType.findAll().then(function(response) {
-        //     res.json(response);
-        // }).catch(function(err) {
-        //     res.json({ success: false, data: err });
-        // })
+        include: [{
+            model: AppInfo
+        }],
+        where: search,
+        order: Orderby,
+        offset: parseInt(objParam.start),
+        limit: parseInt(objParam.length),
+    }).then(function(response) {
+        var response1 = new Object();
+        response1.draw = objParam.draw;
+        response1.recordsTotal = response.count;
+        response1.recordsFiltered = response.count;
+        response1.data = response.rows;
+        res.json(response1);
+    }).catch(function(error) {
+        res.json(error);
+    })
+
+    // VehicleType.findAll().then(function(response) {
+    //     res.json(response);
+    // }).catch(function(err) {
+    //     res.json({ success: false, data: err });
+    // })
 })
 
 router.post('/SaveVehicleType', jsonParser, function(req, res) {
@@ -69,7 +93,7 @@ router.post('/SaveVehicleType', jsonParser, function(req, res) {
                     //set Parameter
                     objVehicleType.CreatedDate = new Date();
                     objVehicleType.CreatedBy = decoded.username;
-                    VehicleType.findOrCreate({ where: { Type: objVehicleType.Type }, defaults: objVehicleType }).then(function(response) {
+                    VehicleType.findOrCreate({ where: { Type: objVehicleType.Type, idApp: objVehicleType.idApp }, defaults: objVehicleType }).then(function(response) {
                         if ((response[1])) {
                             funAuditLog.CreateAuditLog('Create Vehicle Type', UserExist.username, 'Save Vehicle Type');
                             res.json({ success: true, message: "Vehicle Type created successfully...", data: response });
@@ -80,7 +104,7 @@ router.post('/SaveVehicleType', jsonParser, function(req, res) {
 
                 } else {
                     //set Parameter
-                    VehicleType.findOne({ where: { Type: objVehicleType.Type }, defaults: objVehicleType }).then(function(objVehicleTypeExist) {
+                    VehicleType.findOne({ where: { Type: objVehicleType.Type, idApp: objVehicleType.idApp }, defaults: objVehicleType }).then(function(objVehicleTypeExist) {
                         if (objVehicleTypeExist != null && objVehicleType.id != objVehicleTypeExist.id) {
                             res.json({ success: false, message: "Vehicle Type is already Exist...", data: objVehicleTypeExist });
                         } else {
@@ -206,13 +230,22 @@ router.post('/uploadFile', function(req, res) {
             NewName = parseInt(NewName) + 2;
             file.path = form.uploadDir + "/" + NewName + ext;
         } else if (strarr[1] == "OffIcon") {
+            NewName = parseInt(NewName) + 2;
+            file.path = form.uploadDir + "/" + NewName + ext;
+        } else if (strarr[1] == "PowerCuttIcon") {
+            NewName = parseInt(NewName) + 2;
             file.path = form.uploadDir + "/" + NewName + ext;
         } else if (strarr[1] == "LocateOnIcon") {
+            NewName = parseInt(NewName) + 2;
             file.path = form.uploadDir + "/" + NewName + ext;
         } else if (strarr[1] == "LocateActiveIcon") {
             NewName = parseInt(NewName) + 2;
             file.path = form.uploadDir + "/" + NewName + ext;
         } else if (strarr[1] == "LocateOffIcon") {
+            NewName = parseInt(NewName) + 2;
+            file.path = form.uploadDir + "/" + NewName + ext;
+        } else if (strarr[1] == "LocatePowerCuttIcon") {
+            NewName = parseInt(NewName) + 2;
             file.path = form.uploadDir + "/" + NewName + ext;
         }
         var obj = new Object();
@@ -225,8 +258,13 @@ router.post('/uploadFile', function(req, res) {
     form.on('end', function() {
         var i = 0;
         var OnIcon = '';
+        var PowerCuttIcon = '';
         var OffIcon = '';
         var ActiveIcon = '';
+        var LocateOnIcon = '';
+        var LocateOffIcon = '';
+        var LocateActiveIcon = '';
+        var LocatePowerCuttIcon = '';
         var id = parseInt(lstUser[i]);
         console.log("id...", id)
         VehicleType.findOne({ where: { id: id } }).then(function(response) {
@@ -266,6 +304,19 @@ router.post('/uploadFile', function(req, res) {
                             }
                             OffIcon = FileName[i].Name;
                         }
+
+                        if (FileName[i].Type == "PowerCuttIcon") {
+                            if (response.PowerCuttIcon != '' && response.PowerCuttIcon != null) {
+                                var oldFile = __dirname + '/../MediaUploads/FileUpload/' + response.PowerCuttIcon;
+                                fs.exists(oldFile, function(exists) {
+                                    if (exists) {
+                                        fs.unlink(oldFile);
+                                    }
+                                });
+                            }
+                            PowerCuttIcon = FileName[i].Name;
+                        }
+
                         if (FileName[i].Type == "LocateOnIcon") {
                             if (response.LocateOnIcon != '' && response.LocateOnIcon != null) {
                                 var oldFile = __dirname + '/../MediaUploads/FileUpload/' + response.LocateOnIcon;
@@ -300,15 +351,30 @@ router.post('/uploadFile', function(req, res) {
                             LocateOffIcon = FileName[i].Name;
                         }
 
+                        if (FileName[i].Type == "LocatePowerCuttIcon") {
+                            if (response.LocatePowerCuttIcon != '' && response.LocatePowerCuttIcon != null) {
+                                var oldFile = __dirname + '/../MediaUploads/FileUpload/' + response.LocatePowerCuttIcon;
+                                fs.exists(oldFile, function(exists) {
+                                    if (exists) {
+                                        fs.unlink(oldFile);
+                                    }
+                                });
+                            }
+                            LocatePowerCuttIcon = FileName[i].Name;
+                        }
+
                         uploader(i + 1);
                     } else {
+
                         var obj = new Object();
                         if (OnIcon != '') { obj.OnIcon = OnIcon; }
                         if (OffIcon != '') { obj.OffIcon = OffIcon; }
+                        if (PowerCuttIcon != '') { obj.PowerCuttIcon = PowerCuttIcon; }
                         if (ActiveIcon != '') { obj.ActiveIcon = ActiveIcon; }
                         if (LocateOnIcon != '') { obj.LocateOnIcon = LocateOnIcon; }
                         if (LocateOffIcon != '') { obj.LocateOffIcon = LocateOffIcon; }
                         if (LocateActiveIcon != '') { obj.LocateActiveIcon = LocateActiveIcon; }
+                        if (LocatePowerCuttIcon != '') { obj.LocatePowerCuttIcon = LocatePowerCuttIcon; }
                         console.log("obj......", obj)
                         response.updateAttributes(obj).then(function(resUpdate) {
                             if (resUpdate != null) {

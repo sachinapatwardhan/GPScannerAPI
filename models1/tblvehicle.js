@@ -178,6 +178,16 @@ module.exports = function(sequelize, DataTypes) {
     IdGroup: {
       type: DataTypes.INTEGER(11),
       allowNull: true
+    },
+    IsPowercutoff: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+      defaultValue: '0'
+    },
+    DeviceCompany: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      defaultValue: 'Maark'
     }
   }, {
     tableName: 'tblvehicle'

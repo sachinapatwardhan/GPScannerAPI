@@ -122,9 +122,9 @@ router.get('/GetVehicleDetailById', function(req, res) {
 // })
 
 router.post('/GetAllWorkingBike', jsonParser, function(req, res) {
-    var query = "select t4.id,t4.iduser,t4.Name,t4.deviceid,t4.IsOnline,t4.DeviceType,t4.IsACC,t4.VehicleType " +
+    var query = "select t4.id,t4.iduser,t4.Name,t4.deviceid,t4.IsOnline,t4.DeviceType,t4.DeviceCompany,t4.IsACC,t4.VehicleType " +
         "from " +
-        "  (select tb.iduser,tb.deviceid,tb.id,tb.Name,tb.DeviceType,tb.IsACC,tvt.Type as 'VehicleType',tb.IsOnline from tblvehicle tb " +
+        "  (select tb.iduser,tb.deviceid,tb.id,tb.Name,tb.DeviceType,tb.DeviceCompany,tb.IsACC,tvt.Type as 'VehicleType',tb.IsOnline from tblvehicle tb " +
         "   LEFT join tblsharedevice tsd on tb.id=tsd.idVehicle " +
         "   LEFT JOIN tblvehicletype tvt on tb.idType=tvt.id " +
         "   where (tb.iduser=" + req.query.idUser + " or tsd.iduser=" + req.query.idUser + ") and IsDelete = false " +
@@ -144,6 +144,7 @@ router.post('/GetAllWorkingBike', jsonParser, function(req, res) {
                     obj.deviceid = rows[i].deviceid;
                     obj.IsOnline = rows[i].IsOnline;
                     obj.DeviceType = rows[i].DeviceType;
+                    obj.DeviceCompany = rows[i].DeviceCompany;
                     obj.ShareId = rows[i].ShareId;
                     obj.VehicleType = rows[i].VehicleType;
                     obj.NotificationCount = rows[i].NotificationCount;
@@ -161,6 +162,9 @@ router.post('/GetAllWorkingBike', jsonParser, function(req, res) {
                                 obj.Speed = objgps.Speed;
                                 obj.Direction = objgps.Direction;
                                 obj.OdoMeter = objgps.OdoMeter;
+                                obj.AD1 = objgps.AD1;
+                                obj.AD2 = objgps.AD2;
+                                obj.IsWiringForAntiTamper = objgps.IsWiringForAntiTamper;
                                 lstAllVehicle.push(obj);
                                 getData(i + 1);
                             } else {
@@ -229,11 +233,11 @@ router.post('/GetAllWorkingBike', jsonParser, function(req, res) {
 
 router.get('/GetAllWorkingBikeWebApp', jsonParser, function(req, res) {
 
-    var query = "select t4.id,t4.iduser,t4.Name,t4.deviceid,t4.IsOnline,t4.DeviceType,t4.ShareId,t4.VehicleType,t4.CreatedDate,t4.IdGroup,t4.IdSharedGroup,  " +
+    var query = "select t4.id,t4.iduser,t4.Name,t4.deviceid,t4.IsOnline,t4.DeviceType,t4.DeviceCompany,t4.ShareId,t4.VehicleType,t4.CreatedDate,t4.IdGroup,t4.IdSharedGroup,  " +
         "(select count(*) from tblalarm  a where a.DeviceId =t4.deviceid and IsRead=false) as 'NotificationCount' ," +
         "(SELECT COUNT(*) FROM tblserviceenhancementnotification WHERE IsRead=false and idvehicle = t4.id) as 'AlertCount' " +
         "from " +
-        "  (select tb.iduser,tb.deviceid,tb.id,tb.Name,tb.DeviceType,tvt.Type as 'VehicleType',tb.CreatedDate,tsd.id as'ShareId',tb.IsOnline,tsd.IdSharedGroup as 'IdSharedGroup',tb.IdGroup from tblvehicle tb " +
+        "  (select tb.iduser,tb.deviceid,tb.id,tb.Name,tb.DeviceType,tb.DeviceCompany,tvt.Type as 'VehicleType',tb.CreatedDate,tsd.id as'ShareId',tb.IsOnline,tsd.IdSharedGroup as 'IdSharedGroup',tb.IdGroup from tblvehicle tb " +
         "   LEFT join tblsharedevice tsd on tb.id=tsd.idVehicle " +
         "   LEFT JOIN tblvehicletype tvt on tb.idType=tvt.id " +
         "   where (tb.iduser=" + req.query.idUser + " or tsd.iduser=" + req.query.idUser + ") and IsDelete = false " +
@@ -253,6 +257,7 @@ router.get('/GetAllWorkingBikeWebApp', jsonParser, function(req, res) {
                     obj.deviceid = rows[i].deviceid;
                     obj.IsOnline = rows[i].IsOnline;
                     obj.DeviceType = rows[i].DeviceType;
+                    obj.DeviceCompany = rows[i].DeviceCompany;
                     obj.ShareId = rows[i].ShareId;
                     obj.VehicleType = rows[i].VehicleType;
                     obj.NotificationCount = rows[i].NotificationCount;
@@ -272,6 +277,9 @@ router.get('/GetAllWorkingBikeWebApp', jsonParser, function(req, res) {
                                 obj.Speed = objgps.Speed;
                                 obj.Direction = objgps.Direction;
                                 obj.OdoMeter = objgps.OdoMeter;
+                                obj.AD1 = objgps.AD1;
+                                obj.AD2 = objgps.AD2;
+                                obj.IsWiringForAntiTamper = objgps.IsWiringForAntiTamper;
                                 lstAllVehicle.push(obj);
                                 getData(i + 1);
                             } else {
@@ -283,6 +291,9 @@ router.get('/GetAllWorkingBikeWebApp', jsonParser, function(req, res) {
                                 obj.Speed = null;
                                 obj.Direction = null;
                                 obj.OdoMeter = null;
+                                obj.AD1 = null;
+                                obj.AD2 = null;
+                                obj.IsWiringForAntiTamper = null;
                                 lstAllVehicle.push(obj);
                                 getData(i + 1);
                             }
@@ -295,6 +306,9 @@ router.get('/GetAllWorkingBikeWebApp', jsonParser, function(req, res) {
                             obj.Speed = null;
                             obj.Direction = null;
                             obj.OdoMeter = null;
+                            obj.AD1 = null;
+                            obj.AD2 = null;
+                            obj.IsWiringForAntiTamper = null;
                             lstAllVehicle.push(obj);
                             getData(i + 1);
                         }
@@ -630,7 +644,7 @@ router.get('/GetAllGPSByTimeZoneDateWithV', function(req, res) {
     var convertDate = convertdateformatForUnix(Enddate);
     var unixEnddate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
 
-    var query = "select Id,Datetime, Latitude, Longitude, GPSPositioning, Speed, Direction, DeviceId, IsPatchEngine as IsEngine, OdoMeter, Date from tblgpsdata where deviceid=" + req.query.DeviceId + " and Date >= '" + unixStartdate + "' and Date <= '" + unixEnddate + "' order by Date;"
+    var query = "select Id,Datetime, Latitude, Longitude, GPSPositioning, Speed, Direction, DeviceId, IsPatchEngine as IsEngine, OdoMeter, Date, IsOverSpeed from tblgpsdata where deviceid=" + req.query.DeviceId + " and Date >= '" + unixStartdate + "' and Date <= '" + unixEnddate + "' order by Date;"
     connectionGpsData.query(query, function(err, lstGPSData, fields) {
         res.json(lstGPSData);
     });
@@ -1397,12 +1411,13 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                 where: search
                             }).then(function(objGpsDevice) {
                                 if (objGpsDevice != null) {
-
+                                    objVehicle.DeviceType = objGpsDevice.Type;
+                                    objVehicle.DeviceCompany = objGpsDevice.Company;
                                     if (objVehicle.id == 0) {
                                         // objVehicle.IsOnline = false;
                                         // objVehicle.CreatedDate = GetCurrentDate();
                                         objVehicle.CreatedDate = new Date();
-                                        objVehicle.DeviceType = objGpsDevice.Type;
+
                                         Vehicle.findOne({
                                             where: {
                                                 deviceid: objVehicle.deviceid,
@@ -1600,10 +1615,12 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                 where: { AppName: objVehicle.AppName, DeviceId: objVehicle.deviceid }
                             }).then(function(objGpsDevice) {
                                 if (objGpsDevice != null) {
+                                    objVehicle.DeviceType = objGpsDevice.Type;
+                                    objVehicle.DeviceCompany = objGpsDevice.Company;
                                     if (objVehicle.id == 0) {
                                         // objVehicle.IsOnline = false;
                                         objVehicle.CreatedDate = new Date();
-                                        objVehicle.DeviceType = objGpsDevice.Type;
+
 
                                         Vehicle.findOne({
                                             where: {
@@ -2465,11 +2482,11 @@ router.get('/GetAllWorkingBikeWebAppNew1', jsonParser, function(req, res) {
 
 router.get('/GetAllWorkingBikeWebAppNew', function(req, res) {
 
-    var query = "select t4.id,t4.iduser,t4.Name,t4.deviceid,t4.IsOnline,t4.DeviceType,t4.ShareId,t4.VehicleType,t4.IsShared,t4.IdGroup,t4.IdSharedGroup, " +
+    var query = "select t4.id,t4.iduser,t4.Name,t4.deviceid,t4.IsOnline,t4.DeviceType,t4.DeviceCompany,t4.ShareId,t4.VehicleType,t4.IsShared,t4.IdGroup,t4.IdSharedGroup, " +
         "(select count(*) from tblalarm  a where a.DeviceId =t4.deviceid and IsRead=false) as 'NotificationCount' ," +
         "(SELECT COUNT(*) FROM tblserviceenhancementnotification WHERE IsRead=false and idvehicle = t4.id) as 'AlertCount' " +
         "from " +
-        "  (select tb.iduser,tb.deviceid,tb.id,tb.Name,tb.IdGroup,tb.DeviceType,tb.IsShared as 'IsShared',tsd.IdSharedGroup as 'IdSharedGroup',tvt.Type as 'VehicleType',tsd.id as'ShareId',tb.IsOnline from tblvehicle tb " +
+        "  (select tb.iduser,tb.deviceid,tb.id,tb.Name,tb.IdGroup,tb.DeviceType,tb.DeviceCompany,tb.IsShared as 'IsShared',tsd.IdSharedGroup as 'IdSharedGroup',tvt.Type as 'VehicleType',tsd.id as'ShareId',tb.IsOnline from tblvehicle tb " +
         "   LEFT join tblsharedevice tsd on tb.id=tsd.idVehicle " +
         "   LEFT JOIN tblvehicletype tvt on tb.idType=tvt.id " +
         "   where (tb.iduser=" + req.query.idUser + " or tsd.iduser=" + req.query.idUser + ") and IsDelete = false " +
@@ -2490,6 +2507,7 @@ router.get('/GetAllWorkingBikeWebAppNew', function(req, res) {
                     obj.deviceid = rows[i].deviceid;
                     obj.IsOnline = rows[i].IsOnline;
                     obj.DeviceType = rows[i].DeviceType;
+                    obj.DeviceCompany = rows[i].DeviceCompany;
                     obj.ShareId = rows[i].ShareId;
                     obj.VehicleType = rows[i].VehicleType;
                     obj.NotificationCount = rows[i].NotificationCount;
@@ -2509,7 +2527,9 @@ router.get('/GetAllWorkingBikeWebAppNew', function(req, res) {
                                 obj.Speed = objgps.Speed;
                                 obj.Direction = objgps.Direction;
                                 obj.OdoMeter = objgps.OdoMeter;
+                                obj.AD1 = objgps.AD1;
                                 obj.AD2 = objgps.AD2;
+                                obj.IsWiringForAntiTamper = objgps.IsWiringForAntiTamper;
                                 lstAllVehicle.push(obj);
                                 getData(i + 1);
                             } else {
@@ -2521,7 +2541,9 @@ router.get('/GetAllWorkingBikeWebAppNew', function(req, res) {
                                 obj.Speed = null;
                                 obj.Direction = null;
                                 obj.OdoMeter = null;
+                                obj.AD1 = null;
                                 obj.AD2 = null;
+                                obj.IsWiringForAntiTamper = null;
                                 lstAllVehicle.push(obj);
                                 getData(i + 1);
                             }
@@ -2534,7 +2556,9 @@ router.get('/GetAllWorkingBikeWebAppNew', function(req, res) {
                             obj.Speed = null;
                             obj.Direction = null;
                             obj.OdoMeter = null;
+                            obj.AD1 = null;
                             obj.AD2 = null;
+                            obj.IsWiringForAntiTamper = null;
                             lstAllVehicle.push(obj);
                             getData(i + 1);
                         }

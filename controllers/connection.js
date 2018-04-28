@@ -218,4 +218,32 @@ function handleDisconnectCanbus() {
 }
 handleDisconnectCanbus();
 
+function handleDisconnectdotrack() {
+    // console.log("Canbus data....")
+    global.connectiondotrackdata = mysql.createConnection({
+        host: MysqlHost,
+        user: Mysqluser,
+        password: Mysqlpassword,
+        database: Mysqldatabase,
+        multipleStatements: true
+    });
+
+    connectiondotrackdata.connect(function(err) {
+        if (err) {
+            console.log('error when connecting to db for canbus data:', err);
+            setTimeout(handleDisconnectdotrack, 2000);
+        }
+    });
+
+    connectiondotrackdata.on('error', function(err) {
+        console.log('db error', err);
+        if (err.code === 'PROTOCOL_CONNECTION_LOST') {
+            handleDisconnectdotrack();
+        } else {
+            throw err;
+        }
+    });
+}
+handleDisconnectdotrack();
+
 module.exports = router

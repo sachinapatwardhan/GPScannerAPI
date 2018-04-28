@@ -15,7 +15,7 @@ module.exports = function(sequelize, DataTypes) {
     IsActive: {
       type: DataTypes.INTEGER(2),
       allowNull: true,
-      defaultValue: "0"
+      defaultValue: '0'
     },
     CreatedDate: {
       type: DataTypes.DATE,
@@ -58,9 +58,13 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     LocateIsRotate: {
-      type: DataTypes.INTEGER(1),
+      type: DataTypes.BOOLEAN,
       allowNull: true,
-      defaultValue: "1"
+      defaultValue: '1'
+    },
+    idApp: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true
     }
   }, {
     tableName: 'tblvehicletype'

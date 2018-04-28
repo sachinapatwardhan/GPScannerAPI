@@ -294,7 +294,8 @@ router.get('/GetAllGPSDevice', function(req, res) {
         search = search + 'tblsimdetails.SerialNum like "%' + objSearch + '%" or ';
         search = search + 'tblsimdetails.PhoneNum like "%' + objSearch + '%" or ';
         search = search + 'tblcountrymgmt.Country like "%' + objSearch + '%" or ';
-        search = search + 'tblgpsdevice.AppName like "%' + objSearch + '%") ';
+        search = search + 'tblgpsdevice.AppName like "%' + objSearch + '%" or ';
+        search = search + 'tblgpsdevice.Company like "%' + objSearch + '%") ';
     };
     if (objParam.UserId != null && objParam.UserId != undefined && objParam.UserId != '') {
         if (search != "") {
@@ -357,80 +358,76 @@ router.get('/ExportTracker', function(req, res) {
     var conf = {};
     conf.name = "Sheet1";
     var UserRoles = objParam.UserRoles;
+    conf.cols = [];
+    conf.cols.push({
+        caption: 'Device Id',
+        type: 'string'
+    });
+
+    if (objParam.AppName == 'DoTrack' || UserRoles == 'Super Admin') {
+        conf.cols.push({
+            caption: 'Company',
+            type: 'string'
+        });
+    }
+
+    conf.cols.push({
+        caption: 'Type',
+        type: 'string'
+    });
+
+    conf.cols.push({
+        caption: 'IMEI',
+        type: 'string'
+    });
+
+    conf.cols.push({
+        caption: 'Version',
+        type: 'string'
+    });
+
+    conf.cols.push({
+        caption: 'SIM Serial Number',
+        type: 'string'
+    });
+
+    conf.cols.push({
+        caption: 'SIM Phone Number',
+        type: 'string'
+    });
+
+    conf.cols.push({
+        caption: 'Tel Company',
+        type: 'string'
+    });
+
+    conf.cols.push({
+        caption: 'Country',
+        type: 'string'
+    });
+
     if (UserRoles == 'Super Admin') {
-        conf.cols = [{
-            caption: 'Device Id',
-            type: 'string'
-        }, {
-            caption: 'Type',
-            type: 'string'
-        }, {
-            caption: 'IMEI',
-            type: 'String'
-        }, {
-            caption: 'Version',
-            type: 'string'
-        }, {
-            caption: 'SIM Serial Number',
-            type: 'string'
-        }, {
-            caption: 'SIM Phone Number',
-            type: 'string'
-        }, {
-            caption: 'Tel Company',
-            type: 'string'
-        }, {
-            caption: 'Country',
-            type: 'string'
-        }, {
+
+        conf.cols.push({
             caption: 'App Type',
             type: 'string'
-        }, {
-            caption: 'Expiry Date',
-            type: 'string'
-        }, {
-            caption: 'Date',
-            type: 'string'
-        }, {
-            caption: 'Created By',
-            type: 'string'
-        }];
-    } else {
-        conf.cols = [{
-            caption: 'Device Id',
-            type: 'string'
-        }, {
-            caption: 'Type',
-            type: 'string'
-        }, {
-            caption: 'IMEI',
-            type: 'String'
-        }, {
-            caption: 'Version',
-            type: 'string'
-        }, {
-            caption: 'SIM Serial Number',
-            type: 'string'
-        }, {
-            caption: 'SIM Phone Number',
-            type: 'string'
-        }, {
-            caption: 'Tel Company',
-            type: 'string'
-        }, {
-            caption: 'Country',
-            type: 'string'
-        }, {
-            caption: 'Expiry Date',
-            type: 'string'
-        }, {
-            caption: 'Date',
-            type: 'string'
-        }, {
-            caption: 'Created By',
-            type: 'string'
-        }];
+        });
     }
+
+    conf.cols.push({
+        caption: 'Expiry Date',
+        type: 'string'
+    });
+
+    conf.cols.push({
+        caption: 'Date',
+        type: 'string'
+    });
+
+    conf.cols.push({
+        caption: 'Created By',
+        type: 'string'
+    });
 
     var objColumns = objParam.columns;
     var objOrderBy = objParam.order;
@@ -465,6 +462,7 @@ router.get('/ExportTracker', function(req, res) {
         search = search + 'tblsimdetails.PhoneNum like "%' + objSearch + '%" or ';
         search = search + 'tblcountrymgmt.Country like "%' + objSearch + '%" or ';
         search = search + 'tblgpsdevice.AppName like "%' + objSearch + '%") ';
+        search = search + 'tblgpsdevice.Company like "%' + objSearch + '%") ';
     };
 
     if (objParam.UserId != null && objParam.UserId != undefined && objParam.UserId != '') {
@@ -501,6 +499,7 @@ router.get('/ExportTracker', function(req, res) {
             // function GetTrackerData(i) {
             for (var i = 0; i < response.length; i++) {
                 var DeviceId = '';
+                var Company = '';
                 var Type = '';
                 var IMEI = '';
                 var Version = '';
@@ -519,6 +518,10 @@ router.get('/ExportTracker', function(req, res) {
                 var row = [];
                 if (response[i].DeviceId != null && response[i].DeviceId != '' && response[i].DeviceId != undefined) {
                     DeviceId = response[i].DeviceId;
+                }
+
+                if (response[i].Company != null && response[i].Company != '' && response[i].Company != undefined) {
+                    Company = response[i].Company;
                 }
 
                 if (response[i].Type != null && response[i].Type != '' && response[i].Type != undefined) {
@@ -572,10 +575,15 @@ router.get('/ExportTracker', function(req, res) {
                     CreatedBy = response[i].CreatedBy;
                 }
                 if (UserRoles == 'Super Admin') {
-                    row.push(DeviceId, Type, IMEI, Version, SimSerialNum, SimPhoneNum, TelCompany, Country, AppName, ExpiryDate, Date, CreatedBy);
+                    row.push(DeviceId, Company, Type, IMEI, Version, SimSerialNum, SimPhoneNum, TelCompany, Country, AppName, ExpiryDate, Date, CreatedBy);
                     conf.rows.push(row);
                 } else {
-                    row.push(DeviceId, Type, IMEI, Version, SimSerialNum, SimPhoneNum, TelCompany, Country, ExpiryDate, Date, CreatedBy);
+                    if (objParam.AppName == 'DoTrack') {
+                        row.push(DeviceId, Company, Type, IMEI, Version, SimSerialNum, SimPhoneNum, TelCompany, Country, ExpiryDate, Date, CreatedBy);
+                    } else {
+                        row.push(DeviceId, Type, IMEI, Version, SimSerialNum, SimPhoneNum, TelCompany, Country, ExpiryDate, Date, CreatedBy);
+                    }
+
                     conf.rows.push(row);
                 }
 
@@ -1000,7 +1008,7 @@ router.post('/SaveGPSDevice', jsonParser, function(req, res) {
                                             funAuditLog.CreateAuditLog('SaveGPSDevice', UserExist.username, 'Update GPS Tracker Device  IMEI : (' + objGPSDeviceExit.IMEI + ')');
                                             Vehicle.findOne({ where: { deviceid: objGPSDevice.DeviceId } }).then(function(vehicleExits) {
                                                 if (vehicleExits) {
-                                                    vehicleExits.updateAttributes({ DeviceType: objGPSDevice.Type }).then(function(VehicleDeviceTypeupdate) {})
+                                                    vehicleExits.updateAttributes({ DeviceType: objGPSDevice.Type, DeviceCompany: objGPSDevice.Company }).then(function(VehicleDeviceTypeupdate) {})
                                                 }
                                             })
                                             res.json({ success: true, message: "Tracker updated successfully", data: response });
@@ -1154,6 +1162,7 @@ router.post('/uploadExcelDevice', function(req, res) {
     var form = new formidable.IncomingForm();
     var lst = [];
     var FileName = [];
+    var Company;
     var DeviceType;
     var IsOldDevice;
     var CreatedBy;
@@ -1170,6 +1179,7 @@ router.post('/uploadExcelDevice', function(req, res) {
 
     form.parse(req, function(err, fields, files) {
         //console.log(fields);
+        Company = fields.Company;
         DeviceType = fields.Type;
         IsOldDevice = fields.IsOldDevice;
         CreatedBy = fields.CreatedBy;
@@ -1206,6 +1216,7 @@ router.post('/uploadExcelDevice', function(req, res) {
                                 obj.Longitude = '114.0822583';
                                 obj.speed = '0.1';
                                 obj.Direction = '323.87';
+                                obj.Company = Company;
                                 obj.Type = DeviceType;
                                 obj.IsOldDevice = IsOldDevice;
                                 obj.CreatedBy = CreatedBy;

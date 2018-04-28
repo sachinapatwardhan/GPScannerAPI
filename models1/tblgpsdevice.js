@@ -59,7 +59,7 @@ module.exports = function(sequelize, DataTypes) {
     IsActive: {
       type: DataTypes.INTEGER(2),
       allowNull: true,
-      defaultValue: "0"
+      defaultValue: '0'
     },
     ExpiryDate: {
       type: DataTypes.DATE,
@@ -76,6 +76,11 @@ module.exports = function(sequelize, DataTypes) {
     ActivationDate: {
       type: DataTypes.DATE,
       allowNull: true
+    },
+    Company: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      defaultValue: 'Maark'
     }
   }, {
     tableName: 'tblgpsdevice'

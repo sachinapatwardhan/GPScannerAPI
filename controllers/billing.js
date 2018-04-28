@@ -308,7 +308,7 @@ router.get('/GetAllVehicleOrderbyUser', jsonParser, function(req, res) {
     }
 
     var query = "select tos.*,tosi.id as OrderdetailId, tosi.ProductName, tosi.PriceInclTax, tosi.AttributeDescription, tosi.AttributesXml, tosi.ItemWeight, tosi.UOM, tosi.sku, tosi.Attribute, tosi.AttributeValue,toss.OrderStatus from ( " +
-        "SELECT id, CustomerId, ShippAddress1, OrderNotes, OrderStatusId, OrderTotal, PurchaseOrderNumber, CONVERT_TZ(CreatedOnUtc,'+00:00','" + objParam.TimeOffset + "') as CreatedOnUtc FROM tblorderservice " + wherestatus + " ORDER BY CreatedOnUtc desc LIMIT " + objParam.start + ", " + objParam.length + ") as tos " +
+        "SELECT id, CustomerId, ShippAddress1, OrderNotes, OrderStatusId, OrderTotal, PurchaseOrderNumber, CONVERT_TZ(CreatedOnUtc,'+00:00','" + CurrentOffset + "') as CreatedOnUtc FROM tblorderservice " + wherestatus + " ORDER BY CreatedOnUtc desc LIMIT " + objParam.start + ", " + objParam.length + ") as tos " +
         "inner join tblorderserviceitem tosi on tos.id=tosi.OrderId " +
         "inner join tblorderservicestatus toss on tos.OrderStatusId=toss.id;";
 
