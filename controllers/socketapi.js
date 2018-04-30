@@ -1977,65 +1977,84 @@ global.SendSpeedData = function(objdata, Callback) {
 
     var Data = "40400012" + DeviceId + "4105" + Speed;
     Data = Data + CalculateCRCbyHex(Data) + '0D0A';
-    var client = new net.Socket();
+    var socketclient = new net.Socket();
     var Sendflag = false;
+    var ClintSocketPort = SocketPort;
+    var ClintSocketIPAddress = SocketIPAddress;
+    client.get(DeviceId + "SocketConnection", function(err, resSocket) {
 
-    client.connect(SocketPort, SocketIPAddress, function() {
-        // console.log('Speed send to ' + Data);
-        client.write(Data, 'hex');
+        if (!err) {
+            if (resSocket != null && resSocket != undefined && resSocket != '') {
+                try {
+                    var objsocketconnection = JSON.parse(resSocket);
+                    ClintSocketIPAddress = objsocketconnection.IP;
+                    ClintSocketPort = objsocketconnection.Port;
+                } catch (ex) {
 
-        client.setTimeout(10000, function() {
-            if (Sendflag == false) {
-                Sendflag = true;
+                }
+            }
+        }
 
-                client.destroy();
-                Callback({ success: false, message: 'Device not connected. Try after 5 minute.' });
-                // SendGSensorCommand(i + 1);
-            };
 
+
+        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function() {
+            // console.log('Speed send to ' + Data);
+            socketclient.write(Data, 'hex');
+
+            socketclient.setTimeout(10000, function() {
+                if (Sendflag == false) {
+                    Sendflag = true;
+
+                    socketclient.destroy();
+                    Callback({ success: false, message: 'Device not connected. Try after 5 minute.' });
+                    // SendGSensorCommand(i + 1);
+                };
+
+            });
         });
-    });
 
-    client.on('data', function(data) {
-        var line = data.toString();
-        if (Sendflag == false) {
-            if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4105') {
-                console.log('Received: ' + line);
-                var StatusCode = line.substring(26, 28);
-                Sendflag = true;
-                // SuccessDevice = SuccessDevice + 1;
-                // res.json(objNavigation);
-                client.destroy(); // kill client after server's response
-                if (StatusCode == '01') {
-
+        socketclient.on('data', function(data) {
+            var line = data.toString();
+            if (Sendflag == false) {
+                if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4105') {
+                    console.log('Received: ' + line);
+                    var StatusCode = line.substring(26, 28);
+                    Sendflag = true;
+                    // SuccessDevice = SuccessDevice + 1;
+                    // res.json(objNavigation);
+                    socketclient.destroy(); // kill socketclient after server's response
+                    if (StatusCode == '01') {
 
 
-                    client.set(DeviceId + "MaxSpeed", objdata.Speed.toString(), function(err, replies) {});
 
-                    connection.query("Update tblvehicle set MaxSpeed=" + objdata.Speed + " where deviceid='" + DeviceId + "'", function(err, rows, fields) {
-                        funAuditLog.CreateAuditLog('Speed Setting', null, 'Change vehicle (DeviceId:' + DeviceId + ') max speed (' + objdata.Speed + ') setting at (time:' + convertdateformat(new Date()) + ').');
-                        Callback({ success: true, message: 'Speed Settings Save Successfully.' });
-                    });
+                        client.set(DeviceId + "MaxSpeed", objdata.Speed.toString(), function(err, replies) {});
 
+                        connection.query("Update tblvehicle set MaxSpeed=" + objdata.Speed + " where deviceid='" + DeviceId + "'", function(err, rows, fields) {
+                            funAuditLog.CreateAuditLog('Speed Setting', null, 'Change vehicle (DeviceId:' + DeviceId + ') max speed (' + objdata.Speed + ') setting at (time:' + convertdateformat(new Date()) + ').');
+                            Callback({ success: true, message: 'Speed Settings Save Successfully.' });
+                        });
+
+
+                    } else {
+                        Callback({ success: false, message: 'Speed Settings could not save. Try again later.' });
+                    }
 
                 } else {
+                    Sendflag = true;
+
+                    socketclient.destroy();
                     Callback({ success: false, message: 'Speed Settings could not save. Try again later.' });
+                    // SendGSensorCommand(i + 1);
                 }
-
-            } else {
-                Sendflag = true;
-
-                client.destroy();
-                Callback({ success: false, message: 'Speed Settings could not save. Try again later.' });
-                // SendGSensorCommand(i + 1);
-            }
-        };
+            };
 
 
-    });
+        });
 
-    client.on('close', function() {
-        console.log('Connection closed');
+        socketclient.on('close', function() {
+            console.log('Connection closed');
+        });
+
     });
 }
 
@@ -2062,58 +2081,77 @@ global.SendMovementData = function(objdata, Callback) {
 
     var Data = "40400012" + DeviceId + "4106" + Movement;
     Data = Data + CalculateCRCbyHex(Data) + '0D0A';
-    var client = new net.Socket();
+    var socketclient = new net.Socket();
     var Sendflag = false;
 
-    client.connect(SocketPort, SocketIPAddress, function() {
-        // console.log('Speed send to ' + Data);
-        client.write(Data, 'hex');
+    var ClintSocketPort = SocketPort;
+    var ClintSocketIPAddress = SocketIPAddress;
+    client.get(DeviceId + "SocketConnection", function(err, resSocket) {
 
-        client.setTimeout(10000, function() {
+        if (!err) {
+            if (resSocket != null && resSocket != undefined && resSocket != '') {
+                try {
+                    var objsocketconnection = JSON.parse(resSocket);
+                    ClintSocketIPAddress = objsocketconnection.IP;
+                    ClintSocketPort = objsocketconnection.Port;
+                } catch (ex) {
+
+                }
+            }
+        }
+
+
+
+        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function() {
+            // console.log('Speed send to ' + Data);
+            socketclient.write(Data, 'hex');
+
+            socketclient.setTimeout(10000, function() {
+                if (Sendflag == false) {
+                    Sendflag = true;
+
+                    socketclient.destroy();
+                    Callback({ success: false, message: 'Device not connected. Try after 5 minute.' });
+                    // SendGSensorCommand(i + 1);
+                };
+
+            });
+        });
+
+        socketclient.on('data', function(data) {
+            var line = data.toString();
             if (Sendflag == false) {
-                Sendflag = true;
+                if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4106') {
+                    console.log('Received: ' + line);
+                    var StatusCode = line.substring(26, 28);
+                    Sendflag = true;
+                    // SuccessDevice = SuccessDevice + 1;
+                    // res.json(objNavigation);
+                    socketclient.destroy(); // kill client after server's response
+                    if (StatusCode == '01') {
+                        connection.query("Update tblvehicle set Movement=" + objdata.Movement + " where deviceid='" + DeviceId + "'", function(err, rows, fields) {
+                            funAuditLog.CreateAuditLog('Movement Setting', null, 'Change vehicle (DeviceId:' + DeviceId + ') Movement Setting at (time:' + convertdateformat(new Date()) + ').');
+                            Callback({ success: true, message: 'Movement Settings Save Successfully.' });
+                        });
+                    } else {
+                        Callback({ success: false, message: 'Movement Settings could not save. Try again later.' });
+                    }
 
-                client.destroy();
-                Callback({ success: false, message: 'Device not connected. Try after 5 minute.' });
-                // SendGSensorCommand(i + 1);
+                } else {
+                    Sendflag = true;
+
+                    socketclient.destroy();
+                    Callback({ success: false, message: 'Movement Settings could not save. Try again later.' });
+                    // SendGSensorCommand(i + 1);
+                }
             };
 
+
         });
-    });
 
-    client.on('data', function(data) {
-        var line = data.toString();
-        if (Sendflag == false) {
-            if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4106') {
-                console.log('Received: ' + line);
-                var StatusCode = line.substring(26, 28);
-                Sendflag = true;
-                // SuccessDevice = SuccessDevice + 1;
-                // res.json(objNavigation);
-                client.destroy(); // kill client after server's response
-                if (StatusCode == '01') {
-                    connection.query("Update tblvehicle set Movement=" + objdata.Movement + " where deviceid='" + DeviceId + "'", function(err, rows, fields) {
-                        funAuditLog.CreateAuditLog('Movement Setting', null, 'Change vehicle (DeviceId:' + DeviceId + ') Movement Setting at (time:' + convertdateformat(new Date()) + ').');
-                        Callback({ success: true, message: 'Movement Settings Save Successfully.' });
-                    });
-                } else {
-                    Callback({ success: false, message: 'Movement Settings could not save. Try again later.' });
-                }
-
-            } else {
-                Sendflag = true;
-
-                client.destroy();
-                Callback({ success: false, message: 'Movement Settings could not save. Try again later.' });
-                // SendGSensorCommand(i + 1);
-            }
-        };
-
-
-    });
-
-    client.on('close', function() {
-        console.log('Connection closed');
+        socketclient.on('close', function() {
+            console.log('Connection closed');
+        });
     });
 }
 
@@ -2127,53 +2165,70 @@ router.get('/GetCurrentLocation', function(req, res) {
 
     var Data = "40400011" + DeviceId + "4101";
     Data = Data + CalculateCRCbyHex(Data) + '0D0A';
-    var client = new net.Socket();
+    var socketclient = new net.Socket();
     var Sendflag = false;
 
-    client.connect(SocketPort, SocketIPAddress, function() {
-        // console.log('G-Sensor send to ' + DeviceId);
-        client.write(Data, 'hex');
+    var ClintSocketPort = SocketPort;
+    var ClintSocketIPAddress = SocketIPAddress;
+    client.get(DeviceId + "SocketConnection", function(err, resSocket) {
 
-        client.setTimeout(10000, function() {
+        if (!err) {
+            if (resSocket != null && resSocket != undefined && resSocket != '') {
+                try {
+                    var objsocketconnection = JSON.parse(resSocket);
+                    ClintSocketIPAddress = objsocketconnection.IP;
+                    ClintSocketPort = objsocketconnection.Port;
+                } catch (ex) {
+
+                }
+            }
+        }
+
+        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function() {
+            // console.log('G-Sensor send to ' + DeviceId);
+            socketclient.write(Data, 'hex');
+
+            socketclient.setTimeout(10000, function() {
+                if (Sendflag == false) {
+                    Sendflag = true;
+
+                    socketclient.destroy();
+                    res.json({ success: false, message: 'Device not connected. Try after 5 minute.' });
+                    // SendGSensorCommand(i + 1);
+                };
+
+            });
+        });
+
+        socketclient.on('data', function(data) {
+            var line = data.toString();
             if (Sendflag == false) {
-                Sendflag = true;
+                if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '9955') {
+                    console.log('Received: ' + line);
 
-                client.destroy();
-                res.json({ success: false, message: 'Device not connected. Try after 5 minute.' });
-                // SendGSensorCommand(i + 1);
+                    Sendflag = true;
+                    // SuccessDevice = SuccessDevice + 1;
+                    // res.json(objNavigation);
+                    socketclient.destroy(); // kill socketclient after server's response
+
+                    res.json({ success: true, message: 'Current Location Received Successfully.' });
+
+
+                } else {
+                    Sendflag = true;
+
+                    socketclient.destroy();
+                    res.json({ success: false, message: 'Current Location could not Received. Try again later.' });
+                    // SendGSensorCommand(i + 1);
+                }
             };
 
+
         });
-    });
 
-    client.on('data', function(data) {
-        var line = data.toString();
-        if (Sendflag == false) {
-            if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '9955') {
-                console.log('Received: ' + line);
-
-                Sendflag = true;
-                // SuccessDevice = SuccessDevice + 1;
-                // res.json(objNavigation);
-                client.destroy(); // kill client after server's response
-
-                res.json({ success: true, message: 'Current Location Received Successfully.' });
-
-
-            } else {
-                Sendflag = true;
-
-                client.destroy();
-                res.json({ success: false, message: 'Current Location could not Received. Try again later.' });
-                // SendGSensorCommand(i + 1);
-            }
-        };
-
-
-    });
-
-    client.on('close', function() {
-        console.log('Connection closed');
+        socketclient.on('close', function() {
+            console.log('Connection closed');
+        });
     });
 
 
@@ -2264,58 +2319,77 @@ global.SetGPRSInterval = function(objdata, Callback) {
 
     var Data = "40400013" + DeviceId + "4102" + TimeInterval;
     Data = Data + CalculateCRCbyHex(Data) + '0D0A';
-    var client = new net.Socket();
+    var socketclient = new net.Socket();
     var Sendflag = false;
 
-    client.connect(SocketPort, SocketIPAddress, function() {
-        // console.log('G-Sensor send to ' + DeviceId);
-        client.write(Data, 'hex');
+    var ClintSocketPort = SocketPort;
+    var ClintSocketIPAddress = SocketIPAddress;
+    client.get(DeviceId + "SocketConnection", function(err, resSocket) {
 
-        client.setTimeout(10000, function() {
+        if (!err) {
+            if (resSocket != null && resSocket != undefined && resSocket != '') {
+                try {
+                    var objsocketconnection = JSON.parse(resSocket);
+                    ClintSocketIPAddress = objsocketconnection.IP;
+                    ClintSocketPort = objsocketconnection.Port;
+                } catch (ex) {
+
+                }
+            }
+        }
+
+
+
+        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function() {
+            // console.log('G-Sensor send to ' + DeviceId);
+            socketclient.write(Data, 'hex');
+
+            socketclient.setTimeout(10000, function() {
+                if (Sendflag == false) {
+                    Sendflag = true;
+
+                    socketclient.destroy();
+                    Callback({ success: false, message: 'Device not connected. Try after 5 minute.' });
+                    // SendGSensorCommand(i + 1);
+                };
+
+            });
+        });
+
+        socketclient.on('data', function(data) {
+            var line = data.toString();
             if (Sendflag == false) {
-                Sendflag = true;
+                if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4102') {
+                    console.log('Received: ' + line);
+                    var StatusCode = line.substring(26, 28);
+                    Sendflag = true;
+                    // SuccessDevice = SuccessDevice + 1;
+                    // res.json(objNavigation);
+                    socketclient.destroy(); // kill socketclient after server's response
+                    if (StatusCode == '01') {
+                        connection.query("Update tblvehicle set GPRSInterval=" + objdata.TimeInterval + " where deviceid='" + DeviceId + "'", function(err, rows, fields) {
+                            funAuditLog.CreateAuditLog('GPRS Interval Settings', null, 'Change vehicle (DeviceId:' + DeviceId + ') GPRS Interval Settings at (time:' + convertdateformat(new Date()) + ').');
+                            Callback({ success: true, message: 'GPRS Interval Settings Save Successfully.' });
+                        });
+                    } else {
+                        Callback({ success: false, message: 'GPRS Interval Settings could not save. Try again later.' });
+                    }
 
-                client.destroy();
-                Callback({ success: false, message: 'Device not connected. Try after 5 minute.' });
-                // SendGSensorCommand(i + 1);
+                } else {
+                    Sendflag = true;
+
+                    socketclient.destroy();
+                    Callback({ success: false, message: 'GPRS Interval Settings could not save. Try again later.' });
+                    // SendGSensorCommand(i + 1);
+                }
             };
 
+
         });
-    });
 
-    client.on('data', function(data) {
-        var line = data.toString();
-        if (Sendflag == false) {
-            if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4102') {
-                console.log('Received: ' + line);
-                var StatusCode = line.substring(26, 28);
-                Sendflag = true;
-                // SuccessDevice = SuccessDevice + 1;
-                // res.json(objNavigation);
-                client.destroy(); // kill client after server's response
-                if (StatusCode == '01') {
-                    connection.query("Update tblvehicle set GPRSInterval=" + objdata.TimeInterval + " where deviceid='" + DeviceId + "'", function(err, rows, fields) {
-                        funAuditLog.CreateAuditLog('GPRS Interval Settings', null, 'Change vehicle (DeviceId:' + DeviceId + ') GPRS Interval Settings at (time:' + convertdateformat(new Date()) + ').');
-                        Callback({ success: true, message: 'GPRS Interval Settings Save Successfully.' });
-                    });
-                } else {
-                    Callback({ success: false, message: 'GPRS Interval Settings could not save. Try again later.' });
-                }
-
-            } else {
-                Sendflag = true;
-
-                client.destroy();
-                Callback({ success: false, message: 'GPRS Interval Settings could not save. Try again later.' });
-                // SendGSensorCommand(i + 1);
-            }
-        };
-
-
-    });
-
-    client.on('close', function() {
-        console.log('Connection closed');
+        socketclient.on('close', function() {
+            console.log('Connection closed');
+        });
     });
 }
 
@@ -2329,57 +2403,76 @@ router.get('/FectoryReset', function(req, res) {
 
     var Data = "40400011" + DeviceId + "4110";
     Data = Data + CalculateCRCbyHex(Data) + '0D0A';
-    var client = new net.Socket();
+    var socketclient = new net.Socket();
     var Sendflag = false;
 
-    client.connect(SocketPort, SocketIPAddress, function() {
-        // console.log('G-Sensor send to ' + DeviceId);
-        client.write(Data, 'hex');
+    var ClintSocketPort = SocketPort;
+    var ClintSocketIPAddress = SocketIPAddress;
+    client.get(DeviceId + "SocketConnection", function(err, resSocket) {
 
-        client.setTimeout(10000, function() {
+        if (!err) {
+            if (resSocket != null && resSocket != undefined && resSocket != '') {
+                try {
+                    var objsocketconnection = JSON.parse(resSocket);
+                    ClintSocketIPAddress = objsocketconnection.IP;
+                    ClintSocketPort = objsocketconnection.Port;
+                } catch (ex) {
+
+                }
+            }
+        }
+
+
+
+        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function() {
+            // console.log('G-Sensor send to ' + DeviceId);
+            socketclient.write(Data, 'hex');
+
+            socketclient.setTimeout(10000, function() {
+                if (Sendflag == false) {
+                    Sendflag = true;
+
+                    socketclient.destroy();
+                    res.json({ success: false, message: 'Device not connected. Try after 5 minute.' });
+                    // SendGSensorCommand(i + 1);
+                };
+
+            });
+        });
+
+        socketclient.on('data', function(data) {
+            var line = data.toString();
             if (Sendflag == false) {
-                Sendflag = true;
+                if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4110') {
+                    console.log('Received: ' + line);
+                    var StatusCode = line.substring(26, 28);
+                    Sendflag = true;
+                    // SuccessDevice = SuccessDevice + 1;
+                    // res.json(objNavigation);
+                    socketclient.destroy(); // kill socketclient after server's response
 
-                client.destroy();
-                res.json({ success: false, message: 'Device not connected. Try after 5 minute.' });
-                // SendGSensorCommand(i + 1);
+                    if (StatusCode == '01') {
+                        res.json({ success: true, message: 'Factory Reset Successfully.' });
+                    } else {
+                        res.json({ success: false, message: 'Could Not factory Reset. Try again later.' });
+                    }
+
+
+                } else {
+                    Sendflag = true;
+
+                    socketclient.destroy();
+                    res.json({ success: false, message: 'Could Not factory Reset. Try again later.' });
+                    // SendGSensorCommand(i + 1);
+                }
             };
 
+
         });
-    });
 
-    client.on('data', function(data) {
-        var line = data.toString();
-        if (Sendflag == false) {
-            if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4110') {
-                console.log('Received: ' + line);
-                var StatusCode = line.substring(26, 28);
-                Sendflag = true;
-                // SuccessDevice = SuccessDevice + 1;
-                // res.json(objNavigation);
-                client.destroy(); // kill client after server's response
-
-                if (StatusCode == '01') {
-                    res.json({ success: true, message: 'Factory Reset Successfully.' });
-                } else {
-                    res.json({ success: false, message: 'Could Not factory Reset. Try again later.' });
-                }
-
-
-            } else {
-                Sendflag = true;
-
-                client.destroy();
-                res.json({ success: false, message: 'Could Not factory Reset. Try again later.' });
-                // SendGSensorCommand(i + 1);
-            }
-        };
-
-
-    });
-
-    client.on('close', function() {
-        console.log('Connection closed');
+        socketclient.on('close', function() {
+            console.log('Connection closed');
+        });
     });
 
 
@@ -2395,57 +2488,76 @@ router.get('/RebootDevice', function(req, res) {
 
     var Data = "40400011" + DeviceId + "4902";
     Data = Data + CalculateCRCbyHex(Data) + '0D0A';
-    var client = new net.Socket();
+    var socketclient = new net.Socket();
     var Sendflag = false;
 
-    client.connect(SocketPort, SocketIPAddress, function() {
-        // console.log('G-Sensor send to ' + DeviceId);
-        client.write(Data, 'hex');
+    var ClintSocketPort = SocketPort;
+    var ClintSocketIPAddress = SocketIPAddress;
+    client.get(DeviceId + "SocketConnection", function(err, resSocket) {
 
-        client.setTimeout(10000, function() {
+        if (!err) {
+            if (resSocket != null && resSocket != undefined && resSocket != '') {
+                try {
+                    var objsocketconnection = JSON.parse(resSocket);
+                    ClintSocketIPAddress = objsocketconnection.IP;
+                    ClintSocketPort = objsocketconnection.Port;
+                } catch (ex) {
+
+                }
+            }
+        }
+
+
+
+        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function() {
+            // console.log('G-Sensor send to ' + DeviceId);
+            socketclient.write(Data, 'hex');
+
+            socketclient.setTimeout(10000, function() {
+                if (Sendflag == false) {
+                    Sendflag = true;
+
+                    socketclient.destroy();
+                    res.json({ success: false, message: 'Device not connected. Try after 5 minute.' });
+                    // SendGSensorCommand(i + 1);
+                };
+
+            });
+        });
+
+        socketclient.on('data', function(data) {
+            var line = data.toString();
             if (Sendflag == false) {
-                Sendflag = true;
+                if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4902') {
+                    console.log('Received: ' + line);
+                    var StatusCode = line.substring(26, 28);
+                    Sendflag = true;
+                    // SuccessDevice = SuccessDevice + 1;
+                    // res.json(objNavigation);
+                    socketclient.destroy(); // kill socketclient after server's response
 
-                client.destroy();
-                res.json({ success: false, message: 'Device not connected. Try after 5 minute.' });
-                // SendGSensorCommand(i + 1);
+                    if (StatusCode == '01') {
+                        res.json({ success: true, message: 'Device Reboot Successfully.' });
+                    } else {
+                        res.json({ success: false, message: 'Could Not Reboot Device. Try again later.' });
+                    }
+
+
+                } else {
+                    Sendflag = true;
+
+                    socketclient.destroy();
+                    res.json({ success: false, message: 'Could Not Reboot Device. Try again later.' });
+                    // SendGSensorCommand(i + 1);
+                }
             };
 
+
         });
-    });
 
-    client.on('data', function(data) {
-        var line = data.toString();
-        if (Sendflag == false) {
-            if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4902') {
-                console.log('Received: ' + line);
-                var StatusCode = line.substring(26, 28);
-                Sendflag = true;
-                // SuccessDevice = SuccessDevice + 1;
-                // res.json(objNavigation);
-                client.destroy(); // kill client after server's response
-
-                if (StatusCode == '01') {
-                    res.json({ success: true, message: 'Device Reboot Successfully.' });
-                } else {
-                    res.json({ success: false, message: 'Could Not Reboot Device. Try again later.' });
-                }
-
-
-            } else {
-                Sendflag = true;
-
-                client.destroy();
-                res.json({ success: false, message: 'Could Not Reboot Device. Try again later.' });
-                // SendGSensorCommand(i + 1);
-            }
-        };
-
-
-    });
-
-    client.on('close', function() {
-        console.log('Connection closed');
+        socketclient.on('close', function() {
+            console.log('Connection closed');
+        });
     });
 
 
@@ -2473,58 +2585,77 @@ global.SetSleepMode = function(objdata, Callback) {
     var Data = "40400012" + DeviceId + "4113" + SleepMode;
     Data = Data + CalculateCRCbyHex(Data) + '0D0A';
 
-    var client = new net.Socket();
+    var socketclient = new net.Socket();
     var Sendflag = false;
 
-    client.connect(SocketPort, SocketIPAddress, function() {
-        // console.log('G-Sensor send to ' + DeviceId);
-        client.write(Data, 'hex');
+    var ClintSocketPort = SocketPort;
+    var ClintSocketIPAddress = SocketIPAddress;
+    client.get(DeviceId + "SocketConnection", function(err, resSocket) {
 
-        client.setTimeout(10000, function() {
+        if (!err) {
+            if (resSocket != null && resSocket != undefined && resSocket != '') {
+                try {
+                    var objsocketconnection = JSON.parse(resSocket);
+                    ClintSocketIPAddress = objsocketconnection.IP;
+                    ClintSocketPort = objsocketconnection.Port;
+                } catch (ex) {
+
+                }
+            }
+        }
+
+
+
+        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function() {
+            // console.log('G-Sensor send to ' + DeviceId);
+            socketclient.write(Data, 'hex');
+
+            socketclient.setTimeout(10000, function() {
+                if (Sendflag == false) {
+                    Sendflag = true;
+
+                    socketclient.destroy();
+                    Callback({ success: false, message: 'Device not connected. Try after 5 minute.' });
+                    // SendGSensorCommand(i + 1);
+                };
+
+            });
+        });
+
+        socketclient.on('data', function(data) {
+            var line = data.toString();
             if (Sendflag == false) {
-                Sendflag = true;
+                if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4113') {
+                    console.log('Received: ' + line);
+                    var StatusCode = line.substring(26, 28);
+                    Sendflag = true;
+                    // SuccessDevice = SuccessDevice + 1;
+                    // res.json(objNavigation);
+                    socketclient.destroy(); // kill socketclient after server's response
+                    if (StatusCode == '01') {
+                        connection.query("Update tblvehicle set SleepMode=" + objdata.SleepMode + " where deviceid='" + DeviceId + "'", function(err, rows, fields) {
+                            funAuditLog.CreateAuditLog('Sleep Mode Setting', null, 'Change vehicle (DeviceId:' + DeviceId + ') Sleep Mode Setting at (time:' + convertdateformat(new Date()) + ').');
+                            Callback({ success: true, message: 'Sleep Mode Save Successfully.' });
+                        });
+                    } else {
+                        Callback({ success: false, message: 'Sleep Mode could not save. Try again later.' });
+                    }
 
-                client.destroy();
-                Callback({ success: false, message: 'Device not connected. Try after 5 minute.' });
-                // SendGSensorCommand(i + 1);
+                } else {
+                    Sendflag = true;
+
+                    socketclient.destroy();
+                    Callback({ success: false, message: 'Sleep Mode could not save. Try again later.' });
+                    // SendGSensorCommand(i + 1);
+                }
             };
 
+
         });
-    });
 
-    client.on('data', function(data) {
-        var line = data.toString();
-        if (Sendflag == false) {
-            if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4113') {
-                console.log('Received: ' + line);
-                var StatusCode = line.substring(26, 28);
-                Sendflag = true;
-                // SuccessDevice = SuccessDevice + 1;
-                // res.json(objNavigation);
-                client.destroy(); // kill client after server's response
-                if (StatusCode == '01') {
-                    connection.query("Update tblvehicle set SleepMode=" + objdata.SleepMode + " where deviceid='" + DeviceId + "'", function(err, rows, fields) {
-                        funAuditLog.CreateAuditLog('Sleep Mode Setting', null, 'Change vehicle (DeviceId:' + DeviceId + ') Sleep Mode Setting at (time:' + convertdateformat(new Date()) + ').');
-                        Callback({ success: true, message: 'Sleep Mode Save Successfully.' });
-                    });
-                } else {
-                    Callback({ success: false, message: 'Sleep Mode could not save. Try again later.' });
-                }
-
-            } else {
-                Sendflag = true;
-
-                client.destroy();
-                Callback({ success: false, message: 'Sleep Mode could not save. Try again later.' });
-                // SendGSensorCommand(i + 1);
-            }
-        };
-
-
-    });
-
-    client.on('close', function() {
-        console.log('Connection closed');
+        socketclient.on('close', function() {
+            console.log('Connection closed');
+        });
     });
 }
 
@@ -2603,59 +2734,75 @@ router.get('/SetOutputControl', function(req, res) {
     var ABCDE = ('00' + decimalToHexString(parseInt(ARelay))).slice(-2) + ('00' + decimalToHexString(parseInt(BSiren))).slice(-2) + ('00' + decimalToHexString(parseInt(CUserDefined))).slice(-2) + ('00' + decimalToHexString(parseInt(DDoorLock))).slice(-2) + ('00' + decimalToHexString(parseInt(EDoorUnlock))).slice(-2);
     var Data = "40400016" + DeviceId + "4114" + ABCDE;
     Data = Data + CalculateCRCbyHex(Data) + '0D0A';
-    var client = new net.Socket();
+    var socketclient = new net.Socket();
     var Sendflag = false;
 
-    client.connect(SocketPort, SocketIPAddress, function() {
-        // console.log('G-Sensor send to ' + DeviceId);
-        client.write(Data, 'hex');
+    var ClintSocketPort = SocketPort;
+    var ClintSocketIPAddress = SocketIPAddress;
+    client.get(DeviceId + "SocketConnection", function(err, resSocket) {
+        if (!err) {
+            if (resSocket != null && resSocket != undefined && resSocket != '') {
+                try {
+                    var objsocketconnection = JSON.parse(resSocket);
+                    ClintSocketIPAddress = objsocketconnection.IP;
+                    ClintSocketPort = objsocketconnection.Port;
+                } catch (ex) {
 
-        client.setTimeout(10000, function() {
-            if (Sendflag == false) {
-                Sendflag = true;
-
-                client.destroy();
-                res.json({ success: false, message: 'Device not connected. Try after 5 minute.' });
-                // SendGSensorCommand(i + 1);
-            };
-        });
-    });
-
-    client.on('data', function(data) {
-        var line = data.toString();
-        if (Sendflag == false) {
-            if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4114') {
-                console.log('Received: ' + line);
-                var StatusCode = line.substring(26, 28);
-                Sendflag = true;
-                // SuccessDevice = SuccessDevice + 1;
-                // res.json(objNavigation);
-                client.destroy(); // kill client after server's response
-                if (StatusCode == '01') {
-                    connection.query("Update tblvehicle set " + updateQuery + " where deviceid='" + DeviceId + "'", function(err, rows, fields) {
-                        if (updateQuery.indexOf("Relay=") >= 0) {
-                            client.set(DeviceId + "Relay", parseInt(ARelay), function(err, replies) {});
-                        }
-                        res.json({ success: true, message: 'Setting Save Successfully.' });
-                    });
-                } else {
-                    res.json({ success: false, message: 'Setting could not save. Try again later.' });
                 }
-
-            } else {
-                Sendflag = true;
-
-                client.destroy();
-                res.json({ success: false, message: 'Setting could not save. Try again later.' });
-                // SendGSensorCommand(i + 1);
             }
-        };
+        }
+
+        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function() {
+            // console.log('G-Sensor send to ' + DeviceId);
+            socketclient.write(Data, 'hex');
+
+            socketclient.setTimeout(10000, function() {
+                if (Sendflag == false) {
+                    Sendflag = true;
+
+                    socketclient.destroy();
+                    res.json({ success: false, message: 'Device not connected. Try after 5 minute.' });
+                    // SendGSensorCommand(i + 1);
+                };
+            });
+        });
+
+        socketclient.on('data', function(data) {
+            var line = data.toString();
+            if (Sendflag == false) {
+                if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4114') {
+                    console.log('Received: ' + line);
+                    var StatusCode = line.substring(26, 28);
+                    Sendflag = true;
+                    // SuccessDevice = SuccessDevice + 1;
+                    // res.json(objNavigation);
+                    socketclient.destroy(); // kill socketclient after server's response
+                    if (StatusCode == '01') {
+                        connection.query("Update tblvehicle set " + updateQuery + " where deviceid='" + DeviceId + "'", function(err, rows, fields) {
+                            if (updateQuery.indexOf("Relay=") >= 0) {
+                                client.set(DeviceId + "Relay", parseInt(ARelay), function(err, replies) {});
+                            }
+                            res.json({ success: true, message: 'Setting Save Successfully.' });
+                        });
+                    } else {
+                        res.json({ success: false, message: 'Setting could not save. Try again later.' });
+                    }
+
+                } else {
+                    Sendflag = true;
+
+                    socketclient.destroy();
+                    res.json({ success: false, message: 'Setting could not save. Try again later.' });
+                    // SendGSensorCommand(i + 1);
+                }
+            };
 
 
-    });
+        });
 
-    client.on('close', function() {
-        console.log('Connection closed');
+        socketclient.on('close', function() {
+            console.log('Connection closed');
+        });
     });
 
 
@@ -2678,18 +2825,18 @@ router.get('/SetOutputControl', function(req, res) {
 //     var Data = "40400016" + DeviceId + "4114" + ABCDE;
 //     Data = Data + CalculateCRCbyHex(Data) + '0D0A';
 
-//     var client = new net.Socket();
+//     var socketclient = new net.Socket();
 //     var Sendflag = false;
 
-//     client.connect(SocketPort, SocketIPAddress, function() {
+//     socketclient.connect(SocketPort, SocketIPAddress, function() {
 //         // console.log('G-Sensor send to ' + DeviceId);
-//         client.write(Data, 'hex');
+//         socketclient.write(Data, 'hex');
 
-//         client.setTimeout(10000, function() {
+//         socketclient.setTimeout(10000, function() {
 //             if (Sendflag == false) {
 //                 Sendflag = true;
 
-//                 client.destroy();
+//                 socketclient.destroy();
 //                 res.json({ success: false, message: 'Device not connected. Try after 5 minute.' });
 //                 // SendGSensorCommand(i + 1);
 //             };
@@ -2697,7 +2844,7 @@ router.get('/SetOutputControl', function(req, res) {
 //         });
 //     });
 
-//     client.on('data', function(data) {
+//     socketclient.on('data', function(data) {
 //         var line = data.toString();
 //         if (Sendflag == false) {
 //             if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4114') {
@@ -2706,7 +2853,7 @@ router.get('/SetOutputControl', function(req, res) {
 //                 Sendflag = true;
 //                 // SuccessDevice = SuccessDevice + 1;
 //                 // res.json(objNavigation);
-//                 client.destroy(); // kill client after server's response
+//                 socketclient.destroy(); // kill socketclient after server's response
 //                 if (StatusCode == '01') {
 //                     // connection.query("Update tblvehicle set SleepMode=" + req.query.SleepMode + " where deviceid=" + DeviceId, function(err, rows, fields) {
 //                     res.json({ success: true, message: 'OutPut Control Save Successfully.' });
@@ -2718,7 +2865,7 @@ router.get('/SetOutputControl', function(req, res) {
 //             } else {
 //                 Sendflag = true;
 
-//                 client.destroy();
+//                 socketclient.destroy();
 //                 res.json({ success: false, message: 'OutPut Control could not save. Try again later.' });
 //                 // SendGSensorCommand(i + 1);
 //             }
@@ -2727,7 +2874,7 @@ router.get('/SetOutputControl', function(req, res) {
 
 //     });
 
-//     client.on('close', function() {
+//     socketclient.on('close', function() {
 //         console.log('Connection closed');
 //     });
 
@@ -2805,63 +2952,82 @@ global.SetArmSettings = function(objdata, Callback) {
     var Data = "40400012" + DeviceId + "4116" + Arm;
     Data = Data + CalculateCRCbyHex(Data) + '0D0A';
 
-    var client1 = new net.Socket();
+    var socketclient = new net.Socket();
     var Sendflag = false;
 
-    client1.connect(SocketPort, SocketIPAddress, function() {
-        // console.log('G-Sensor send to ' + DeviceId);
-        client1.write(Data, 'hex');
+    var ClintSocketPort = SocketPort;
+    var ClintSocketIPAddress = SocketIPAddress;
+    client.get(DeviceId + "SocketConnection", function(err, resSocket) {
 
-        client1.setTimeout(10000, function() {
+        if (!err) {
+            if (resSocket != null && resSocket != undefined && resSocket != '') {
+                try {
+                    var objsocketconnection = JSON.parse(resSocket);
+                    ClintSocketIPAddress = objsocketconnection.IP;
+                    ClintSocketPort = objsocketconnection.Port;
+                } catch (ex) {
+
+                }
+            }
+        }
+
+
+
+        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function() {
+            // console.log('G-Sensor send to ' + DeviceId);
+            socketclient.write(Data, 'hex');
+
+            socketclient.setTimeout(10000, function() {
+                if (Sendflag == false) {
+                    Sendflag = true;
+
+                    socketclient.destroy();
+                    Callback({ success: false, message: 'Device not connected. Try after 5 minute.' });
+                    // SendGSensorCommand(i + 1);
+                };
+
+            });
+        });
+
+        socketclient.on('data', function(data) {
+            var line = data.toString();
             if (Sendflag == false) {
-                Sendflag = true;
+                if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4116') {
+                    console.log('Received: ' + line);
+                    var StatusCode = line.substring(26, 28);
+                    Sendflag = true;
 
-                client1.destroy();
-                Callback({ success: false, message: 'Device not connected. Try after 5 minute.' });
-                // SendGSensorCommand(i + 1);
+                    socketclient.destroy(); // kill client after server's response
+                    if (StatusCode == '01') {
+                        connection.query("Update tblvehicle set Arm=" + objdata.Arm + ", LastArmSetting=" + objdata.ArmStatus + " where deviceid='" + DeviceId + "'", function(err, rows, fields) {
+                            var objarmredis = {
+                                Arm: objdata.Arm,
+                                LastArmSetting: objdata.ArmStatus
+                            }
+                            client.set(DeviceId + "ArmSetting", JSON.stringify(objarmredis), function(err, replies) {});
+
+                            funAuditLog.CreateAuditLog('Arm Setting', null, 'Change vehicle (DeviceId:' + DeviceId + ') Arm Setting at (time:' + convertdateformat(new Date()) + ').');
+                            Callback({ success: true, message: 'Arm Settings Save Successfully.' });
+                        });
+                    } else {
+                        Callback({ success: false, message: 'Arm Settings could not save. Try again later.' });
+                    }
+
+                } else {
+                    Sendflag = true;
+
+                    socketclient.destroy();
+                    Callback({ success: false, message: 'Arm Settings could not save. Try again later.' });
+                    // SendGSensorCommand(i + 1);
+                }
             };
 
+
         });
-    });
 
-    client1.on('data', function(data) {
-        var line = data.toString();
-        if (Sendflag == false) {
-            if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4116') {
-                console.log('Received: ' + line);
-                var StatusCode = line.substring(26, 28);
-                Sendflag = true;
-
-                client1.destroy(); // kill client after server's response
-                if (StatusCode == '01') {
-                    connection.query("Update tblvehicle set Arm=" + objdata.Arm + ", LastArmSetting=" + objdata.ArmStatus + " where deviceid='" + DeviceId + "'", function(err, rows, fields) {
-                        var objarmredis = {
-                            Arm: objdata.Arm,
-                            LastArmSetting: objdata.ArmStatus
-                        }
-                        client.set(DeviceId + "ArmSetting", JSON.stringify(objarmredis), function(err, replies) {});
-
-                        funAuditLog.CreateAuditLog('Arm Setting', null, 'Change vehicle (DeviceId:' + DeviceId + ') Arm Setting at (time:' + convertdateformat(new Date()) + ').');
-                        Callback({ success: true, message: 'Arm Settings Save Successfully.' });
-                    });
-                } else {
-                    Callback({ success: false, message: 'Arm Settings could not save. Try again later.' });
-                }
-
-            } else {
-                Sendflag = true;
-
-                client1.destroy();
-                Callback({ success: false, message: 'Arm Settings could not save. Try again later.' });
-                // SendGSensorCommand(i + 1);
-            }
-        };
-
-
-    });
-
-    client1.on('close', function() {
-        console.log('Connection closed');
+        socketclient.on('close', function() {
+            console.log('Connection closed');
+        });
     });
 }
 
@@ -2888,58 +3054,77 @@ global.SetGPRSIntervalStopCar = function(objdata, Callback) {
 
     var Data = "40400013" + DeviceId + "4126" + TimeInterval;
     Data = Data + CalculateCRCbyHex(Data) + '0D0A';
-    var client = new net.Socket();
+    var socketclient = new net.Socket();
     var Sendflag = false;
 
-    client.connect(SocketPort, SocketIPAddress, function() {
-        // console.log('G-Sensor send to ' + DeviceId);
-        client.write(Data, 'hex');
+    var ClintSocketPort = SocketPort;
+    var ClintSocketIPAddress = SocketIPAddress;
+    client.get(DeviceId + "SocketConnection", function(err, resSocket) {
 
-        client.setTimeout(10000, function() {
+        if (!err) {
+            if (resSocket != null && resSocket != undefined && resSocket != '') {
+                try {
+                    var objsocketconnection = JSON.parse(resSocket);
+                    ClintSocketIPAddress = objsocketconnection.IP;
+                    ClintSocketPort = objsocketconnection.Port;
+                } catch (ex) {
+
+                }
+            }
+        }
+
+
+
+        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function() {
+            // console.log('G-Sensor send to ' + DeviceId);
+            socketclient.write(Data, 'hex');
+
+            socketclient.setTimeout(10000, function() {
+                if (Sendflag == false) {
+                    Sendflag = true;
+
+                    socketclient.destroy();
+                    Callback({ success: false, message: 'Device not connected. Try after 5 minute.' });
+                    // SendGSensorCommand(i + 1);
+                };
+
+            });
+        });
+
+        socketclient.on('data', function(data) {
+            var line = data.toString();
             if (Sendflag == false) {
-                Sendflag = true;
+                if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4126') {
+                    console.log('Received: ' + line);
+                    var StatusCode = line.substring(26, 28);
+                    Sendflag = true;
+                    // SuccessDevice = SuccessDevice + 1;
+                    // res.json(objNavigation);
+                    socketclient.destroy(); // kill socketclient after server's response
+                    if (StatusCode == '01') {
+                        connection.query("Update tblvehicle set GPRSStopInterval=" + objdata.TimeInterval + " where deviceid='" + DeviceId + "'", function(err, rows, fields) {
+                            funAuditLog.CreateAuditLog('GPRS Interval Setting', null, 'Change vehicle (DeviceId:' + DeviceId + ') GPRS Interval Setting at (time:' + convertdateformat(new Date()) + ').');
+                            Callback({ success: true, message: 'GPRS Interval Settings for Stop Car Save Successfully.' });
+                        });
+                    } else {
+                        Callback({ success: false, message: 'GPRS Interval Settings for Stop Car could not save. Try again later.' });
+                    }
 
-                client.destroy();
-                Callback({ success: false, message: 'Device not connected. Try after 5 minute.' });
-                // SendGSensorCommand(i + 1);
+                } else {
+                    Sendflag = true;
+
+                    socketclient.destroy();
+                    Callback({ success: false, message: 'GPRS Interval Settings for Stop Car could not save. Try again later.' });
+                    // SendGSensorCommand(i + 1);
+                }
             };
 
+
         });
-    });
 
-    client.on('data', function(data) {
-        var line = data.toString();
-        if (Sendflag == false) {
-            if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4126') {
-                console.log('Received: ' + line);
-                var StatusCode = line.substring(26, 28);
-                Sendflag = true;
-                // SuccessDevice = SuccessDevice + 1;
-                // res.json(objNavigation);
-                client.destroy(); // kill client after server's response
-                if (StatusCode == '01') {
-                    connection.query("Update tblvehicle set GPRSStopInterval=" + objdata.TimeInterval + " where deviceid='" + DeviceId + "'", function(err, rows, fields) {
-                        funAuditLog.CreateAuditLog('GPRS Interval Setting', null, 'Change vehicle (DeviceId:' + DeviceId + ') GPRS Interval Setting at (time:' + convertdateformat(new Date()) + ').');
-                        Callback({ success: true, message: 'GPRS Interval Settings for Stop Car Save Successfully.' });
-                    });
-                } else {
-                    Callback({ success: false, message: 'GPRS Interval Settings for Stop Car could not save. Try again later.' });
-                }
-
-            } else {
-                Sendflag = true;
-
-                client.destroy();
-                Callback({ success: false, message: 'GPRS Interval Settings for Stop Car could not save. Try again later.' });
-                // SendGSensorCommand(i + 1);
-            }
-        };
-
-
-    });
-
-    client.on('close', function() {
-        console.log('Connection closed');
+        socketclient.on('close', function() {
+            console.log('Connection closed');
+        });
     });
 }
 
@@ -2960,57 +3145,73 @@ router.get('/SetTimeZone', function(req, res) {
 
 
     Data = Data + CalculateCRCbyHex(Data) + '0D0A';
-    var client = new net.Socket();
+    var socketclient = new net.Socket();
     var Sendflag = false;
 
-    client.connect(SocketPort, SocketIPAddress, function() {
-        // console.log('G-Sensor send to ' + DeviceId);
-        client.write(Data, 'hex');
+    var ClintSocketPort = SocketPort;
+    var ClintSocketIPAddress = SocketIPAddress;
+    client.get(DeviceId + "SocketConnection", function(err, resSocket) {
+        if (!err) {
+            if (resSocket != null && resSocket != undefined && resSocket != '') {
+                try {
+                    var objsocketconnection = JSON.parse(resSocket);
+                    ClintSocketIPAddress = objsocketconnection.IP;
+                    ClintSocketPort = objsocketconnection.Port;
+                } catch (ex) {
 
-        client.setTimeout(10000, function() {
+                }
+            }
+        }
+
+        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function() {
+            // console.log('G-Sensor send to ' + DeviceId);
+            socketclient.write(Data, 'hex');
+
+            socketclient.setTimeout(10000, function() {
+                if (Sendflag == false) {
+                    Sendflag = true;
+
+                    socketclient.destroy();
+                    res.json({ success: false, message: 'Device not connected. Try after 5 minute.' });
+                    // SendGSensorCommand(i + 1);
+                };
+
+            });
+        });
+
+        socketclient.on('data', function(data) {
+            var line = data.toString();
             if (Sendflag == false) {
-                Sendflag = true;
+                if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4132') {
+                    console.log('Received: ' + line);
+                    var StatusCode = line.substring(26, 28);
+                    Sendflag = true;
+                    // SuccessDevice = SuccessDevice + 1;
+                    // res.json(objNavigation);
+                    socketclient.destroy(); // kill socketclient after server's response
+                    if (StatusCode == '01') {
+                        connection.query("Update tblvehicle set TimeZone=" + req.query.TimeZone + " where deviceid='" + DeviceId + "'", function(err, rows, fields) {
+                            res.json({ success: true, message: 'TimeZone Save Successfully.' });
+                        });
+                    } else {
+                        res.json({ success: false, message: 'TimeZone could not save. Try again later.' });
+                    }
 
-                client.destroy();
-                res.json({ success: false, message: 'Device not connected. Try after 5 minute.' });
-                // SendGSensorCommand(i + 1);
+                } else {
+                    Sendflag = true;
+
+                    socketclient.destroy();
+                    res.json({ success: false, message: 'TimeZone could not save. Try again later.' });
+                    // SendGSensorCommand(i + 1);
+                }
             };
 
+
         });
-    });
 
-    client.on('data', function(data) {
-        var line = data.toString();
-        if (Sendflag == false) {
-            if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4132') {
-                console.log('Received: ' + line);
-                var StatusCode = line.substring(26, 28);
-                Sendflag = true;
-                // SuccessDevice = SuccessDevice + 1;
-                // res.json(objNavigation);
-                client.destroy(); // kill client after server's response
-                if (StatusCode == '01') {
-                    connection.query("Update tblvehicle set TimeZone=" + req.query.TimeZone + " where deviceid='" + DeviceId + "'", function(err, rows, fields) {
-                        res.json({ success: true, message: 'TimeZone Save Successfully.' });
-                    });
-                } else {
-                    res.json({ success: false, message: 'TimeZone could not save. Try again later.' });
-                }
-
-            } else {
-                Sendflag = true;
-
-                client.destroy();
-                res.json({ success: false, message: 'TimeZone could not save. Try again later.' });
-                // SendGSensorCommand(i + 1);
-            }
-        };
-
-
-    });
-
-    client.on('close', function() {
-        console.log('Connection closed');
+        socketclient.on('close', function() {
+            console.log('Connection closed');
+        });
     });
 
 
@@ -3041,59 +3242,75 @@ global.SetOdometerSetting = function(objdata, Callback) {
     datalength = datalength + (Data.length / 2);
     Data = "4040" + ('0000' + datalength.toString(16)).slice(-4) + Data + CalculateCRCbyHex(Data) + '0D0A';
     console.log(Data)
-    var client = new net.Socket();
+    var socketclient = new net.Socket();
     var Sendflag = false;
 
-    client.connect(SocketPort, SocketIPAddress, function() {
-        // console.log('G-Sensor send to ' + DeviceId);
-        client.write(Data, 'hex');
+    var ClintSocketPort = SocketPort;
+    var ClintSocketIPAddress = SocketIPAddress;
+    client.get(DeviceId + "SocketConnection", function(err, resSocket) {
+        if (!err) {
+            if (resSocket != null && resSocket != undefined && resSocket != '') {
+                try {
+                    var objsocketconnection = JSON.parse(resSocket);
+                    ClintSocketIPAddress = objsocketconnection.IP;
+                    ClintSocketPort = objsocketconnection.Port;
+                } catch (ex) {
 
-        client.setTimeout(10000, function() {
+                }
+            }
+        }
+
+        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function() {
+            // console.log('G-Sensor send to ' + DeviceId);
+            socketclient.write(Data, 'hex');
+
+            socketclient.setTimeout(10000, function() {
+                if (Sendflag == false) {
+                    Sendflag = true;
+
+                    socketclient.destroy();
+                    Callback({ success: false, message: 'Device not connected. Try after 5 minute.' });
+                    // SendGSensorCommand(i + 1);
+                };
+
+            });
+        });
+
+        socketclient.on('data', function(data) {
+            var line = data.toString();
             if (Sendflag == false) {
-                Sendflag = true;
+                if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4145') {
+                    console.log('Received: ' + line);
+                    var StatusCode = line.substring(26, 28);
+                    Sendflag = true;
+                    // SuccessDevice = SuccessDevice + 1;
+                    // res.json(objNavigation);
+                    socketclient.destroy(); // kill socketclient after server's response
+                    if (StatusCode == '01') {
+                        connection.query("Update tblvehicle set OdoMeter=" + objdata.odometer + " where deviceid='" + DeviceId + "'", function(err, rows, fields) {
+                            funAuditLog.CreateAuditLog('Odometer Setting', null, 'Change vehicle (DeviceId:' + DeviceId + ') Odometer Setting at (time:' + convertdateformat(new Date()) + ').');
 
-                client.destroy();
-                Callback({ success: false, message: 'Device not connected. Try after 5 minute.' });
-                // SendGSensorCommand(i + 1);
+                            Callback({ success: true, message: 'Odometer settings Save Successfully.' });
+                        });
+                    } else {
+                        Callback({ success: false, message: 'Odometer settings could not save. Try again later.' });
+                    }
+
+                } else {
+                    Sendflag = true;
+
+                    socketclient.destroy();
+                    Callback({ success: false, message: 'Odometer settings could not save. Try again later.' });
+                    // SendGSensorCommand(i + 1);
+                }
             };
 
+
         });
-    });
 
-    client.on('data', function(data) {
-        var line = data.toString();
-        if (Sendflag == false) {
-            if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4145') {
-                console.log('Received: ' + line);
-                var StatusCode = line.substring(26, 28);
-                Sendflag = true;
-                // SuccessDevice = SuccessDevice + 1;
-                // res.json(objNavigation);
-                client.destroy(); // kill client after server's response
-                if (StatusCode == '01') {
-                    connection.query("Update tblvehicle set OdoMeter=" + objdata.odometer + " where deviceid='" + DeviceId + "'", function(err, rows, fields) {
-                        funAuditLog.CreateAuditLog('Odometer Setting', null, 'Change vehicle (DeviceId:' + DeviceId + ') Odometer Setting at (time:' + convertdateformat(new Date()) + ').');
-
-                        Callback({ success: true, message: 'Odometer settings Save Successfully.' });
-                    });
-                } else {
-                    Callback({ success: false, message: 'Odometer settings could not save. Try again later.' });
-                }
-
-            } else {
-                Sendflag = true;
-
-                client.destroy();
-                Callback({ success: false, message: 'Odometer settings could not save. Try again later.' });
-                // SendGSensorCommand(i + 1);
-            }
-        };
-
-
-    });
-
-    client.on('close', function() {
-        console.log('Connection closed');
+        socketclient.on('close', function() {
+            console.log('Connection closed');
+        });
     });
 
 }
@@ -3123,61 +3340,77 @@ global.SetACCSetting = function(objdata, Callback) {
     var Data = "4040" + commandlength + DeviceId + "4148" + ACC;
     Data = Data + CalculateCRCbyHex(Data) + '0D0A';
 
-    var client = new net.Socket();
+    var socketclient = new net.Socket();
     var Sendflag = false;
 
-    client.connect(SocketPort, SocketIPAddress, function() {
-        // console.log('G-Sensor send to ' + DeviceId);
-        client.write(Data, 'hex');
-
-        client.setTimeout(10000, function() {
-            if (Sendflag == false) {
-                Sendflag = true;
-
-                client.destroy();
-                Callback({ success: false, message: 'Device not connected. Try after 5 minute.' });
-                // SendGSensorCommand(i + 1);
-            };
-
-        });
-    });
-
-    client.on('data', function(data) {
-        var line = data.toString();
-        if (Sendflag == false) {
-            if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4148') {
-                console.log('Received: ' + line);
-                var StatusCode = line.substring(26, 28);
-                Sendflag = true;
-                // SuccessDevice = SuccessDevice + 1;
-                // res.json(objNavigation);
-                client.destroy(); // kill client after server's response
-                if (StatusCode == '01') {
-                    connection.query("Update tblvehicle set ACC=" + objdata.ACC + " where deviceid='" + DeviceId + "'", function(err, rows, fields) {
-                        funAuditLog.CreateAuditLog('ACC Setting', null, 'Change vehicle (DeviceId:' + DeviceId + ') ACC Setting at (time:' + convertdateformat(new Date()) + ').');
-
-                        Callback({ success: true, message: 'ACC settings Save Successfully.' });
-                    });
-                } else {
-
-                    Callback({ success: false, message: 'ACC settings could not save. Try again later.' });
+    var ClintSocketPort = SocketPort;
+    var ClintSocketIPAddress = SocketIPAddress;
+    client.get(DeviceId + "SocketConnection", function(err, resSocket) {
+        if (!err) {
+            if (resSocket != null && resSocket != undefined && resSocket != '') {
+                try {
+                    var objsocketconnection = JSON.parse(resSocket);
+                    ClintSocketIPAddress = objsocketconnection.IP;
+                    ClintSocketPort = objsocketconnection.Port;
+                } catch (ex) {
 
                 }
-
-            } else {
-                Sendflag = true;
-
-                client.destroy();
-                Callback({ success: false, message: 'ACC settings could not save. Try again later.' });
-                // SendGSensorCommand(i + 1);
             }
-        };
+        }
+
+        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function() {
+            // console.log('G-Sensor send to ' + DeviceId);
+            socketclient.write(Data, 'hex');
+
+            socketclient.setTimeout(10000, function() {
+                if (Sendflag == false) {
+                    Sendflag = true;
+
+                    socketclient.destroy();
+                    Callback({ success: false, message: 'Device not connected. Try after 5 minute.' });
+                    // SendGSensorCommand(i + 1);
+                };
+
+            });
+        });
+
+        socketclient.on('data', function(data) {
+            var line = data.toString();
+            if (Sendflag == false) {
+                if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4148') {
+                    console.log('Received: ' + line);
+                    var StatusCode = line.substring(26, 28);
+                    Sendflag = true;
+                    // SuccessDevice = SuccessDevice + 1;
+                    // res.json(objNavigation);
+                    socketclient.destroy(); // kill socketclient after server's response
+                    if (StatusCode == '01') {
+                        connection.query("Update tblvehicle set ACC=" + objdata.ACC + " where deviceid='" + DeviceId + "'", function(err, rows, fields) {
+                            funAuditLog.CreateAuditLog('ACC Setting', null, 'Change vehicle (DeviceId:' + DeviceId + ') ACC Setting at (time:' + convertdateformat(new Date()) + ').');
+
+                            Callback({ success: true, message: 'ACC settings Save Successfully.' });
+                        });
+                    } else {
+
+                        Callback({ success: false, message: 'ACC settings could not save. Try again later.' });
+
+                    }
+
+                } else {
+                    Sendflag = true;
+
+                    socketclient.destroy();
+                    Callback({ success: false, message: 'ACC settings could not save. Try again later.' });
+                    // SendGSensorCommand(i + 1);
+                }
+            };
 
 
-    });
+        });
 
-    client.on('close', function() {
-        console.log('Connection closed');
+        socketclient.on('close', function() {
+            console.log('Connection closed');
+        });
     });
 
 }
@@ -3208,58 +3441,74 @@ global.SetHeartBeatInterval = function(objdata, Callback) {
 
     var Data = "4040" + ('0000' + packetLength.toString(16)).slice(-4) + DeviceId + "5119" + TimeInterval;
     Data = Data + CalculateCRCbyHex(Data) + '0D0A';
-    var client = new net.Socket();
+    var socketclient = new net.Socket();
     var Sendflag = false;
 
-    client.connect(SocketPort, SocketIPAddress, function() {
-        // console.log('G-Sensor send to ' + DeviceId);
-        client.write(Data, 'hex');
+    var ClintSocketPort = SocketPort;
+    var ClintSocketIPAddress = SocketIPAddress;
+    client.get(DeviceId + "SocketConnection", function(err, resSocket) {
+        if (!err) {
+            if (resSocket != null && resSocket != undefined && resSocket != '') {
+                try {
+                    var objsocketconnection = JSON.parse(resSocket);
+                    ClintSocketIPAddress = objsocketconnection.IP;
+                    ClintSocketPort = objsocketconnection.Port;
+                } catch (ex) {
 
-        client.setTimeout(10000, function() {
+                }
+            }
+        }
+
+        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function() {
+            // console.log('G-Sensor send to ' + DeviceId);
+            socketclient.write(Data, 'hex');
+
+            socketclient.setTimeout(10000, function() {
+                if (Sendflag == false) {
+                    Sendflag = true;
+
+                    socketclient.destroy();
+                    Callback({ success: false, message: 'Device not connected. Try after 5 minute.' });
+                    // SendGSensorCommand(i + 1);
+                };
+
+            });
+        });
+
+        socketclient.on('data', function(data) {
+            var line = data.toString();
             if (Sendflag == false) {
-                Sendflag = true;
+                if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '5119') {
+                    console.log('Received: ' + line);
+                    var StatusCode = line.substring(26, 28);
+                    Sendflag = true;
+                    // SuccessDevice = SuccessDevice + 1;
+                    // res.json(objNavigation);
+                    socketclient.destroy(); // kill socketclient after server's response
+                    if (StatusCode == '01') {
+                        connection.query("Update tblvehicle set HeartbeatInterval=" + objdata.TimeInterval + " where deviceid='" + DeviceId + "'", function(err, rows, fields) {
+                            funAuditLog.CreateAuditLog('HeartBeat Interval Setting', null, 'Change vehicle (DeviceId:' + DeviceId + ') HeartBeat Interval Setting at (time:' + convertdateformat(new Date()) + ').');
+                            Callback({ success: true, message: 'HeartBeat Interval Settings Save Successfully.' });
+                        });
+                    } else {
+                        Callback({ success: false, message: 'HeartBeat Interval Settings could not save. Try again later.' });
+                    }
 
-                client.destroy();
-                Callback({ success: false, message: 'Device not connected. Try after 5 minute.' });
-                // SendGSensorCommand(i + 1);
+                } else {
+                    Sendflag = true;
+
+                    socketclient.destroy();
+                    Callback({ success: false, message: 'HeartBeat Interval Settings could not save. Try again later.' });
+                    // SendGSensorCommand(i + 1);
+                }
             };
 
+
         });
-    });
 
-    client.on('data', function(data) {
-        var line = data.toString();
-        if (Sendflag == false) {
-            if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '5119') {
-                console.log('Received: ' + line);
-                var StatusCode = line.substring(26, 28);
-                Sendflag = true;
-                // SuccessDevice = SuccessDevice + 1;
-                // res.json(objNavigation);
-                client.destroy(); // kill client after server's response
-                if (StatusCode == '01') {
-                    connection.query("Update tblvehicle set HeartbeatInterval=" + objdata.TimeInterval + " where deviceid='" + DeviceId + "'", function(err, rows, fields) {
-                        funAuditLog.CreateAuditLog('HeartBeat Interval Setting', null, 'Change vehicle (DeviceId:' + DeviceId + ') HeartBeat Interval Setting at (time:' + convertdateformat(new Date()) + ').');
-                        Callback({ success: true, message: 'HeartBeat Interval Settings Save Successfully.' });
-                    });
-                } else {
-                    Callback({ success: false, message: 'HeartBeat Interval Settings could not save. Try again later.' });
-                }
-
-            } else {
-                Sendflag = true;
-
-                client.destroy();
-                Callback({ success: false, message: 'HeartBeat Interval Settings could not save. Try again later.' });
-                // SendGSensorCommand(i + 1);
-            }
-        };
-
-
-    });
-
-    client.on('close', function() {
-        console.log('Connection closed');
+        socketclient.on('close', function() {
+            console.log('Connection closed');
+        });
     });
 
 }
@@ -3273,55 +3522,71 @@ router.get('/ClearDataLogger', function(req, res) {
     var DeviceId = req.query.DeviceId;
     var Data = "40400011" + DeviceId + "5503";
     Data = Data + CalculateCRCbyHex(Data) + '0D0A';
-    var client = new net.Socket();
+    var socketclient = new net.Socket();
     var Sendflag = false;
 
-    client.connect(SocketPort, SocketIPAddress, function() {
-        // console.log('G-Sensor send to ' + DeviceId);
-        client.write(Data, 'hex');
+    var ClintSocketPort = SocketPort;
+    var ClintSocketIPAddress = SocketIPAddress;
+    client.get(DeviceId + "SocketConnection", function(err, resSocket) {
+        if (!err) {
+            if (resSocket != null && resSocket != undefined && resSocket != '') {
+                try {
+                    var objsocketconnection = JSON.parse(resSocket);
+                    ClintSocketIPAddress = objsocketconnection.IP;
+                    ClintSocketPort = objsocketconnection.Port;
+                } catch (ex) {
 
-        client.setTimeout(10000, function() {
+                }
+            }
+        }
+
+        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function() {
+            // console.log('G-Sensor send to ' + DeviceId);
+            socketclient.write(Data, 'hex');
+
+            socketclient.setTimeout(10000, function() {
+                if (Sendflag == false) {
+                    Sendflag = true;
+
+                    socketclient.destroy();
+                    res.json({ success: false, message: 'Device not connected. Try after 5 minute.' });
+                    // SendGSensorCommand(i + 1);
+                };
+
+            });
+        });
+
+        socketclient.on('data', function(data) {
+            var line = data.toString();
             if (Sendflag == false) {
-                Sendflag = true;
+                if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '5503') {
+                    console.log('Received: ' + line);
+                    var StatusCode = line.substring(26, 28);
+                    Sendflag = true;
+                    // SuccessDevice = SuccessDevice + 1;
+                    // res.json(objNavigation);
+                    socketclient.destroy(); // kill socketclient after server's response
+                    if (StatusCode == '01') {
+                        res.json({ success: true, message: 'Data Logger Clear Successfully.' });
+                    } else {
+                        res.json({ success: false, message: 'Data Logger could not Clear. Try again later.' });
+                    }
 
-                client.destroy();
-                res.json({ success: false, message: 'Device not connected. Try after 5 minute.' });
-                // SendGSensorCommand(i + 1);
+                } else {
+                    Sendflag = true;
+
+                    socketclient.destroy();
+                    res.json({ success: false, message: 'Data Logger could not Clear. Try again later.' });
+                    // SendGSensorCommand(i + 1);
+                }
             };
 
+
         });
-    });
 
-    client.on('data', function(data) {
-        var line = data.toString();
-        if (Sendflag == false) {
-            if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '5503') {
-                console.log('Received: ' + line);
-                var StatusCode = line.substring(26, 28);
-                Sendflag = true;
-                // SuccessDevice = SuccessDevice + 1;
-                // res.json(objNavigation);
-                client.destroy(); // kill client after server's response
-                if (StatusCode == '01') {
-                    res.json({ success: true, message: 'Data Logger Clear Successfully.' });
-                } else {
-                    res.json({ success: false, message: 'Data Logger could not Clear. Try again later.' });
-                }
-
-            } else {
-                Sendflag = true;
-
-                client.destroy();
-                res.json({ success: false, message: 'Data Logger could not Clear. Try again later.' });
-                // SendGSensorCommand(i + 1);
-            }
-        };
-
-
-    });
-
-    client.on('close', function() {
-        console.log('Connection closed');
+        socketclient.on('close', function() {
+            console.log('Connection closed');
+        });
     });
 
 
@@ -3336,62 +3601,81 @@ router.get('/GetFirmWareVersion', function(req, res) {
     var DeviceId = req.query.DeviceId;
     var Data = "40400011" + DeviceId + "9001";
     Data = Data + CalculateCRCbyHex(Data) + '0D0A';
-    var client = new net.Socket();
+    var socketclient = new net.Socket();
     var Sendflag = false;
 
-    client.connect(SocketPort, SocketIPAddress, function() {
-        // console.log('G-Sensor send to ' + DeviceId);
-        client.write(Data, 'hex');
+    var ClintSocketPort = SocketPort;
+    var ClintSocketIPAddress = SocketIPAddress;
+    client.get(DeviceId + "SocketConnection", function(err, resSocket) {
 
-        client.setTimeout(10000, function() {
+        if (!err) {
+            if (resSocket != null && resSocket != undefined && resSocket != '') {
+                try {
+                    var objsocketconnection = JSON.parse(resSocket);
+                    ClintSocketIPAddress = objsocketconnection.IP;
+                    ClintSocketPort = objsocketconnection.Port;
+                } catch (ex) {
+
+                }
+            }
+        }
+
+
+
+        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function() {
+            // console.log('G-Sensor send to ' + DeviceId);
+            socketclient.write(Data, 'hex');
+
+            socketclient.setTimeout(10000, function() {
+                if (Sendflag == false) {
+                    Sendflag = true;
+
+                    socketclient.destroy();
+                    res.json({ success: false, message: 'Device not connected. Try after 5 minute.' });
+                    // SendGSensorCommand(i + 1);
+                };
+
+            });
+        });
+
+        socketclient.on('data', function(data) {
+            var line = data.toString();
             if (Sendflag == false) {
-                Sendflag = true;
+                if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '9001') {
+                    console.log('Received: ' + line);
+                    var VersionInformation = line.substring(26, line.length - 8);
+                    var Versiondata = hex2a(VersionInformation);
+                    var lstVersiondata = Versiondata.split(',');
+                    var objFirmware = {
+                        DeviceId: lstVersiondata[0],
+                        IMEI: lstVersiondata[1],
+                        Version: lstVersiondata[2],
+                    }
+                    Sendflag = true;
+                    // SuccessDevice = SuccessDevice + 1;
+                    // res.json(objNavigation);
+                    socketclient.destroy(); // kill socketclient after server's response
+                    // if (StatusCode == '01') {
+                    res.json({ success: true, message: 'Firmware Version get Successfully.', data: objFirmware });
+                    // } else {
+                    //     res.json({ success: false, message: 'Data Logger could not Clear. Try again later.' });
+                    // }
 
-                client.destroy();
-                res.json({ success: false, message: 'Device not connected. Try after 5 minute.' });
-                // SendGSensorCommand(i + 1);
+                } else {
+                    Sendflag = true;
+
+                    socketclient.destroy();
+                    res.json({ success: false, message: 'could not get Firmware Version. Try again later.' });
+                    // SendGSensorCommand(i + 1);
+                }
             };
 
+
         });
-    });
 
-    client.on('data', function(data) {
-        var line = data.toString();
-        if (Sendflag == false) {
-            if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '9001') {
-                console.log('Received: ' + line);
-                var VersionInformation = line.substring(26, line.length - 8);
-                var Versiondata = hex2a(VersionInformation);
-                var lstVersiondata = Versiondata.split(',');
-                var objFirmware = {
-                    DeviceId: lstVersiondata[0],
-                    IMEI: lstVersiondata[1],
-                    Version: lstVersiondata[2],
-                }
-                Sendflag = true;
-                // SuccessDevice = SuccessDevice + 1;
-                // res.json(objNavigation);
-                client.destroy(); // kill client after server's response
-                // if (StatusCode == '01') {
-                res.json({ success: true, message: 'Firmware Version get Successfully.', data: objFirmware });
-                // } else {
-                //     res.json({ success: false, message: 'Data Logger could not Clear. Try again later.' });
-                // }
-
-            } else {
-                Sendflag = true;
-
-                client.destroy();
-                res.json({ success: false, message: 'could not get Firmware Version. Try again later.' });
-                // SendGSensorCommand(i + 1);
-            }
-        };
-
-
-    });
-
-    client.on('close', function() {
-        console.log('Connection closed');
+        socketclient.on('close', function() {
+            console.log('Connection closed');
+        });
     });
 
 
@@ -3406,57 +3690,76 @@ router.get('/ReadGPRSTimeInterval', function(req, res) {
     var DeviceId = req.query.DeviceId;
     var Data = "40400011" + DeviceId + "9002";
     Data = Data + CalculateCRCbyHex(Data) + '0D0A';
-    var client = new net.Socket();
+    var socketclient = new net.Socket();
     var Sendflag = false;
 
-    client.connect(SocketPort, SocketIPAddress, function() {
-        // console.log('G-Sensor send to ' + DeviceId);
-        client.write(Data, 'hex');
+    var ClintSocketPort = SocketPort;
+    var ClintSocketIPAddress = SocketIPAddress;
+    client.get(DeviceId + "SocketConnection", function(err, resSocket) {
 
-        client.setTimeout(10000, function() {
+        if (!err) {
+            if (resSocket != null && resSocket != undefined && resSocket != '') {
+                try {
+                    var objsocketconnection = JSON.parse(resSocket);
+                    ClintSocketIPAddress = objsocketconnection.IP;
+                    ClintSocketPort = objsocketconnection.Port;
+                } catch (ex) {
+
+                }
+            }
+        }
+
+
+
+        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function() {
+            // console.log('G-Sensor send to ' + DeviceId);
+            socketclient.write(Data, 'hex');
+
+            socketclient.setTimeout(10000, function() {
+                if (Sendflag == false) {
+                    Sendflag = true;
+
+                    socketclient.destroy();
+                    res.json({ success: false, message: 'Device not connected. Try after 5 minute.' });
+                    // SendGSensorCommand(i + 1);
+                };
+
+            });
+        });
+
+        socketclient.on('data', function(data) {
+            var line = data.toString();
             if (Sendflag == false) {
-                Sendflag = true;
+                if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '9002') {
+                    console.log('Received: ' + line);
+                    var GPRSTimeIntervaldata = line.substring(26, 30);
+                    var GPRSTimeInterval = parseInt(GPRSTimeIntervaldata, 16) * 10;
 
-                client.destroy();
-                res.json({ success: false, message: 'Device not connected. Try after 5 minute.' });
-                // SendGSensorCommand(i + 1);
+                    Sendflag = true;
+                    // SuccessDevice = SuccessDevice + 1;
+                    // res.json(objNavigation);
+                    socketclient.destroy(); // kill socketclient after server's response
+                    // if (StatusCode == '01') {
+                    res.json({ success: true, message: 'GPRS Time Interval Retrive Successfully.', data: GPRSTimeInterval });
+                    // } else {
+                    //     res.json({ success: false, message: 'Data Logger could not Clear. Try again later.' });
+                    // }
+
+                } else {
+                    Sendflag = true;
+
+                    socketclient.destroy();
+                    res.json({ success: false, message: 'could not get GPRS Time Interval. Try again later.' });
+                    // SendGSensorCommand(i + 1);
+                }
             };
 
+
         });
-    });
 
-    client.on('data', function(data) {
-        var line = data.toString();
-        if (Sendflag == false) {
-            if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '9002') {
-                console.log('Received: ' + line);
-                var GPRSTimeIntervaldata = line.substring(26, 30);
-                var GPRSTimeInterval = parseInt(GPRSTimeIntervaldata, 16) * 10;
-
-                Sendflag = true;
-                // SuccessDevice = SuccessDevice + 1;
-                // res.json(objNavigation);
-                client.destroy(); // kill client after server's response
-                // if (StatusCode == '01') {
-                res.json({ success: true, message: 'GPRS Time Interval Retrive Successfully.', data: GPRSTimeInterval });
-                // } else {
-                //     res.json({ success: false, message: 'Data Logger could not Clear. Try again later.' });
-                // }
-
-            } else {
-                Sendflag = true;
-
-                client.destroy();
-                res.json({ success: false, message: 'could not get GPRS Time Interval. Try again later.' });
-                // SendGSensorCommand(i + 1);
-            }
-        };
-
-
-    });
-
-    client.on('close', function() {
-        console.log('Connection closed');
+        socketclient.on('close', function() {
+            console.log('Connection closed');
+        });
     });
 
 
@@ -3469,52 +3772,68 @@ router.get('/ReadTroubleCode', function(req, res) {
     var DeviceId = req.query.DeviceId;
     var Data = "40400011" + DeviceId + "9903";
     Data = Data + CalculateCRCbyHex(Data) + '0D0A';
-    var client = new net.Socket();
+    var socketclient = new net.Socket();
     var Sendflag = false;
 
-    client.connect(SocketPort, SocketIPAddress, function() {
+    var ClintSocketPort = SocketPort;
+    var ClintSocketIPAddress = SocketIPAddress;
+    client.get(DeviceId + "SocketConnection", function(err, resSocket) {
+        if (!err) {
+            if (resSocket != null && resSocket != undefined && resSocket != '') {
+                try {
+                    var objsocketconnection = JSON.parse(resSocket);
+                    ClintSocketIPAddress = objsocketconnection.IP;
+                    ClintSocketPort = objsocketconnection.Port;
+                } catch (ex) {
 
-        client.write(Data, 'hex');
-        client.setTimeout(10000, function() {
+                }
+            }
+        }
+
+        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function() {
+
+            socketclient.write(Data, 'hex');
+            socketclient.setTimeout(10000, function() {
+                if (Sendflag == false) {
+                    Sendflag = true;
+
+                    socketclient.destroy();
+                    res.json({ success: false, message: 'Device not connected. Try after 5 minute.' });
+
+                };
+
+            });
+        });
+
+        socketclient.on('data', function(data) {
+            var line = data.toString();
             if (Sendflag == false) {
-                Sendflag = true;
+                if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '9903') {
+                    console.log('Received: ' + line);
+                    var TroubleCodehex = line.substring(26, line.length - 8);
+                    var TroubleCode = hex2a(TroubleCodehex);
 
-                client.destroy();
-                res.json({ success: false, message: 'Device not connected. Try after 5 minute.' });
+                    Sendflag = true;
 
+                    socketclient.destroy();
+
+                    res.json({ success: true, message: 'Trouble Code Retrive Successfully.', data: TroubleCode });
+
+                } else {
+                    Sendflag = true;
+
+                    socketclient.destroy();
+                    res.json({ success: false, message: 'could not get Trouble Code. Try again later.' });
+
+                }
             };
 
+
         });
-    });
 
-    client.on('data', function(data) {
-        var line = data.toString();
-        if (Sendflag == false) {
-            if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '9903') {
-                console.log('Received: ' + line);
-                var TroubleCodehex = line.substring(26, line.length - 8);
-                var TroubleCode = hex2a(TroubleCodehex);
-
-                Sendflag = true;
-
-                client.destroy();
-
-                res.json({ success: true, message: 'Trouble Code Retrive Successfully.', data: TroubleCode });
-
-            } else {
-                Sendflag = true;
-
-                client.destroy();
-                res.json({ success: false, message: 'could not get Trouble Code. Try again later.' });
-
-            }
-        };
-
-
-    });
-
-    client.on('close', function() {
-        console.log('Connection closed');
+        socketclient.on('close', function() {
+            console.log('Connection closed');
+        });
     });
 
 
@@ -3528,54 +3847,69 @@ router.get('/ClearTroubleCode', function(req, res) {
 
     var Data = "40400011" + DeviceId + "9904";
     Data = Data + CalculateCRCbyHex(Data) + '0D0A';
-    var client = new net.Socket();
+    var socketclient = new net.Socket();
     var Sendflag = false;
 
-    client.connect(SocketPort, SocketIPAddress, function() {
+    var ClintSocketPort = SocketPort;
+    var ClintSocketIPAddress = SocketIPAddress;
+    client.get(DeviceId + "SocketConnection", function(err, resSocket) {
+        if (!err) {
+            if (resSocket != null && resSocket != undefined && resSocket != '') {
+                try {
+                    var objsocketconnection = JSON.parse(resSocket);
+                    ClintSocketIPAddress = objsocketconnection.IP;
+                    ClintSocketPort = objsocketconnection.Port;
+                } catch (ex) {
 
-        client.write(Data, 'hex');
+                }
+            }
+        }
 
-        client.setTimeout(10000, function() {
+        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function() {
+
+            socketclient.write(Data, 'hex');
+
+            socketclient.setTimeout(10000, function() {
+                if (Sendflag == false) {
+                    Sendflag = true;
+
+                    socketclient.destroy();
+                    res.json({ success: false, message: 'Device not connected. Try after 5 minute.' });
+                };
+
+            });
+        });
+
+        socketclient.on('data', function(data) {
+            var line = data.toString();
             if (Sendflag == false) {
-                Sendflag = true;
+                if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '9904') {
+                    console.log('Received: ' + line);
+                    var StatusCode = line.substring(26, 28);
+                    Sendflag = true;
 
-                client.destroy();
-                res.json({ success: false, message: 'Device not connected. Try after 5 minute.' });
+                    socketclient.destroy();
+                    if (StatusCode == '01') {
+                        res.json({ success: true, message: 'Trouble Code clear successfully.' });
+                    } else {
+                        res.json({ success: false, message: 'Can Not Clear Trouble Code. Try again later.' });
+                    }
+
+                } else {
+                    Sendflag = true;
+
+                    socketclient.destroy();
+                    res.json({ success: false, message: 'Can Not Clear Trouble Co. Try again later.' });
+                }
             };
 
+
+        });
+
+        socketclient.on('close', function() {
+            console.log('Connection closed');
         });
     });
-
-    client.on('data', function(data) {
-        var line = data.toString();
-        if (Sendflag == false) {
-            if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '9904') {
-                console.log('Received: ' + line);
-                var StatusCode = line.substring(26, 28);
-                Sendflag = true;
-
-                client.destroy();
-                if (StatusCode == '01') {
-                    res.json({ success: true, message: 'Trouble Code clear successfully.' });
-                } else {
-                    res.json({ success: false, message: 'Can Not Clear Trouble Code. Try again later.' });
-                }
-
-            } else {
-                Sendflag = true;
-
-                client.destroy();
-                res.json({ success: false, message: 'Can Not Clear Trouble Co. Try again later.' });
-            }
-        };
-
-
-    });
-
-    client.on('close', function() {
-        console.log('Connection closed');
-    });
-
 
 })
 
@@ -3586,52 +3920,68 @@ router.get('/ReadVINCode', function(req, res) {
     var DeviceId = req.query.DeviceId;
     var Data = "40400011" + DeviceId + "9905";
     Data = Data + CalculateCRCbyHex(Data) + '0D0A';
-    var client = new net.Socket();
+    var socketclient = new net.Socket();
     var Sendflag = false;
 
-    client.connect(SocketPort, SocketIPAddress, function() {
+    var ClintSocketPort = SocketPort;
+    var ClintSocketIPAddress = SocketIPAddress;
+    client.get(DeviceId + "SocketConnection", function(err, resSocket) {
+        if (!err) {
+            if (resSocket != null && resSocket != undefined && resSocket != '') {
+                try {
+                    var objsocketconnection = JSON.parse(resSocket);
+                    ClintSocketIPAddress = objsocketconnection.IP;
+                    ClintSocketPort = objsocketconnection.Port;
+                } catch (ex) {
 
-        client.write(Data, 'hex');
-        client.setTimeout(10000, function() {
+                }
+            }
+        }
+
+        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function() {
+
+            socketclient.write(Data, 'hex');
+            socketclient.setTimeout(10000, function() {
+                if (Sendflag == false) {
+                    Sendflag = true;
+
+                    socketclient.destroy();
+                    res.json({ success: false, message: 'Device not connected. Try after 5 minute.' });
+
+                };
+
+            });
+        });
+
+        socketclient.on('data', function(data) {
+            var line = data.toString();
             if (Sendflag == false) {
-                Sendflag = true;
+                if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '9905') {
+                    console.log('Received: ' + line);
+                    var VINCodehex = line.substring(26, line.length - 8);
+                    var VINCode = hex2a(VINCodehex);
 
-                client.destroy();
-                res.json({ success: false, message: 'Device not connected. Try after 5 minute.' });
+                    Sendflag = true;
 
+                    socketclient.destroy();
+
+                    res.json({ success: true, message: 'VIN Code Retrive Successfully.', data: VINCode });
+
+                } else {
+                    Sendflag = true;
+
+                    socketclient.destroy();
+                    res.json({ success: false, message: 'could not get VIN Code. Try again later.' });
+
+                }
             };
 
+
         });
-    });
 
-    client.on('data', function(data) {
-        var line = data.toString();
-        if (Sendflag == false) {
-            if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '9905') {
-                console.log('Received: ' + line);
-                var VINCodehex = line.substring(26, line.length - 8);
-                var VINCode = hex2a(VINCodehex);
-
-                Sendflag = true;
-
-                client.destroy();
-
-                res.json({ success: true, message: 'VIN Code Retrive Successfully.', data: VINCode });
-
-            } else {
-                Sendflag = true;
-
-                client.destroy();
-                res.json({ success: false, message: 'could not get VIN Code. Try again later.' });
-
-            }
-        };
-
-
-    });
-
-    client.on('close', function() {
-        console.log('Connection closed');
+        socketclient.on('close', function() {
+            console.log('Connection closed');
+        });
     });
 
 
@@ -3646,57 +3996,73 @@ router.get('/ReadRFIDTags', function(req, res) {
     var DeviceId = req.query.DeviceId;
     var Data = "40400011" + DeviceId + "4170";
     Data = Data + CalculateCRCbyHex(Data) + '0D0A';
-    var client = new net.Socket();
+    var socketclient = new net.Socket();
     var Sendflag = false;
 
-    client.connect(SocketPort, SocketIPAddress, function() {
-        // console.log('G-Sensor send to ' + DeviceId);
-        client.write(Data, 'hex');
+    var ClintSocketPort = SocketPort;
+    var ClintSocketIPAddress = SocketIPAddress;
+    client.get(DeviceId + "SocketConnection", function(err, resSocket) {
+        if (!err) {
+            if (resSocket != null && resSocket != undefined && resSocket != '') {
+                try {
+                    var objsocketconnection = JSON.parse(resSocket);
+                    ClintSocketIPAddress = objsocketconnection.IP;
+                    ClintSocketPort = objsocketconnection.Port;
+                } catch (ex) {
 
-        client.setTimeout(10000, function() {
+                }
+            }
+        }
+
+        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function() {
+            // console.log('G-Sensor send to ' + DeviceId);
+            socketclient.write(Data, 'hex');
+
+            socketclient.setTimeout(10000, function() {
+                if (Sendflag == false) {
+                    Sendflag = true;
+
+                    socketclient.destroy();
+                    res.json({ success: false, message: 'Device not connected. Try after 5 minute.' });
+                    // SendGSensorCommand(i + 1);
+                };
+
+            });
+        });
+
+        socketclient.on('data', function(data) {
+            var line = data.toString();
             if (Sendflag == false) {
-                Sendflag = true;
+                if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4170') {
+                    console.log('Received: ' + line);
+                    var RFIDTagshex = line.substring(26, line.length - 8);
+                    var RFIDTags = hex2a(RFIDTagshex);
 
-                client.destroy();
-                res.json({ success: false, message: 'Device not connected. Try after 5 minute.' });
-                // SendGSensorCommand(i + 1);
+                    Sendflag = true;
+                    // SuccessDevice = SuccessDevice + 1;
+                    // res.json(objNavigation);
+                    socketclient.destroy(); // kill socketclient after server's response
+                    // if (StatusCode == '01') {
+                    res.json({ success: true, message: 'RFID Tags Retrive Successfully.', data: RFIDTags });
+                    // } else {
+                    //     res.json({ success: false, message: 'Data Logger could not Clear. Try again later.' });
+                    // }
+
+                } else {
+                    Sendflag = true;
+
+                    socketclient.destroy();
+                    res.json({ success: false, message: 'could not get RFID Tags. Try again later.' });
+                    // SendGSensorCommand(i + 1);
+                }
             };
 
+
         });
-    });
 
-    client.on('data', function(data) {
-        var line = data.toString();
-        if (Sendflag == false) {
-            if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4170') {
-                console.log('Received: ' + line);
-                var RFIDTagshex = line.substring(26, line.length - 8);
-                var RFIDTags = hex2a(RFIDTagshex);
-
-                Sendflag = true;
-                // SuccessDevice = SuccessDevice + 1;
-                // res.json(objNavigation);
-                client.destroy(); // kill client after server's response
-                // if (StatusCode == '01') {
-                res.json({ success: true, message: 'RFID Tags Retrive Successfully.', data: RFIDTags });
-                // } else {
-                //     res.json({ success: false, message: 'Data Logger could not Clear. Try again later.' });
-                // }
-
-            } else {
-                Sendflag = true;
-
-                client.destroy();
-                res.json({ success: false, message: 'could not get RFID Tags. Try again later.' });
-                // SendGSensorCommand(i + 1);
-            }
-        };
-
-
-    });
-
-    client.on('close', function() {
-        console.log('Connection closed');
+        socketclient.on('close', function() {
+            console.log('Connection closed');
+        });
     });
 
 
@@ -3714,54 +4080,70 @@ router.get('/MonitorVoice', function(req, res) {
 
     var Data = "4040" + ('0000' + packetLength.toString(16)).slice(-4) + DeviceId + "4130" + PhoneHex;
     Data = Data + CalculateCRCbyHex(Data) + '0D0A';
-    var client = new net.Socket();
+    var socketclient = new net.Socket();
     var Sendflag = false;
 
-    client.connect(SocketPort, SocketIPAddress, function() {
-        // console.log('G-Sensor send to ' + DeviceId);
-        client.write(Data, 'hex');
+    var ClintSocketPort = SocketPort;
+    var ClintSocketIPAddress = SocketIPAddress;
+    client.get(DeviceId + "SocketConnection", function(err, resSocket) {
+        if (!err) {
+            if (resSocket != null && resSocket != undefined && resSocket != '') {
+                try {
+                    var objsocketconnection = JSON.parse(resSocket);
+                    ClintSocketIPAddress = objsocketconnection.IP;
+                    ClintSocketPort = objsocketconnection.Port;
+                } catch (ex) {
 
-        client.setTimeout(10000, function() {
+                }
+            }
+        }
+
+        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function() {
+            // console.log('G-Sensor send to ' + DeviceId);
+            socketclient.write(Data, 'hex');
+
+            socketclient.setTimeout(10000, function() {
+                if (Sendflag == false) {
+                    Sendflag = true;
+
+                    socketclient.destroy();
+                    res.json({ success: false, message: 'Device not connected. Try after 5 minute.' });
+                    // SendGSensorCommand(i + 1);
+                };
+
+            });
+        });
+
+        socketclient.on('data', function(data) {
+            var line = data.toString();
             if (Sendflag == false) {
-                Sendflag = true;
+                if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4130') {
+                    console.log('Received: ' + line);
+                    var StatusCode = line.substring(26, 28);
+                    Sendflag = true;
 
-                client.destroy();
-                res.json({ success: false, message: 'Device not connected. Try after 5 minute.' });
-                // SendGSensorCommand(i + 1);
+                    socketclient.destroy(); // kill socketclient after server's response
+                    if (StatusCode == '01') {
+                        res.json({ success: true, message: 'Monitor Voice Successfully. You will receive Call soon.' });
+                    } else {
+                        res.json({ success: false, message: 'Monitor Voice could not retrive. Try again later.' });
+                    }
+
+                } else {
+                    Sendflag = true;
+
+                    socketclient.destroy();
+                    res.json({ success: false, message: 'Monitor Voice could not retrive. Try again later.' });
+                    // SendGSensorCommand(i + 1);
+                }
             };
 
+
         });
-    });
 
-    client.on('data', function(data) {
-        var line = data.toString();
-        if (Sendflag == false) {
-            if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4130') {
-                console.log('Received: ' + line);
-                var StatusCode = line.substring(26, 28);
-                Sendflag = true;
-
-                client.destroy(); // kill client after server's response
-                if (StatusCode == '01') {
-                    res.json({ success: true, message: 'Monitor Voice Successfully. You will receive Call soon.' });
-                } else {
-                    res.json({ success: false, message: 'Monitor Voice could not retrive. Try again later.' });
-                }
-
-            } else {
-                Sendflag = true;
-
-                client.destroy();
-                res.json({ success: false, message: 'Monitor Voice could not retrive. Try again later.' });
-                // SendGSensorCommand(i + 1);
-            }
-        };
-
-
-    });
-
-    client.on('close', function() {
-        console.log('Connection closed');
+        socketclient.on('close', function() {
+            console.log('Connection closed');
+        });
     });
 
 

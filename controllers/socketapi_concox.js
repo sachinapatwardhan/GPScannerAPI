@@ -1103,78 +1103,97 @@ global.EngineCutOff = function(objdata, Callback) {
     var Data = "80" + ('00' + (Content.length / 2).toString(16)).slice(-2) + Content + "0001";
     Data = ('00' + ((Data.length / 2) + 2).toString(16)).slice(-2) + Data;
     // Data = Data + CalculateCRCbyHex(Data) + '0D0A';
-    var client = new net.Socket();
+    var socketclient = new net.Socket();
     var Sendflag = false;
 
-    client.connect(SocketPort, SocketIPAddress, function() {
-        // console.log('G-Sensor send to ' + DeviceId);
-        var objData = {
-            DeviceId: DeviceId,
-            Data: Data,
-            CommandType: '00000001'
+    var ClintSocketPort = SocketPort;
+    var ClintSocketIPAddress = SocketIPAddress;
+    client.get(DeviceId + "SocketConnection", function(err, resSocket) {
+
+        if (!err) {
+            if (resSocket != null && resSocket != undefined && resSocket != '') {
+                try {
+                    var objsocketconnection = JSON.parse(resSocket);
+                    ClintSocketIPAddress = objsocketconnection.IP;
+                    ClintSocketPort = objsocketconnection.Port;
+                } catch (ex) {
+
+                }
+            }
         }
-        client.write('7878' + a2hex("LOCAL80") + a2hex(JSON.stringify(objData)) + '0d0a', 'hex');
 
-        client.setTimeout(10000, function() {
-            if (Sendflag == false) {
-                Sendflag = true;
 
-                client.destroy();
-                Callback({ success: false, message: 'Device not connected. Try after 5 minute.' });
-                // SendGSensorCommand(i + 1);
-            };
 
+        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function() {
+            // console.log('G-Sensor send to ' + DeviceId);
+            var objData = {
+                DeviceId: DeviceId,
+                Data: Data,
+                CommandType: '00000001'
+            }
+            socketclient.write('7878' + a2hex("LOCAL80") + a2hex(JSON.stringify(objData)) + '0d0a', 'hex');
+
+            socketclient.setTimeout(10000, function() {
+                if (Sendflag == false) {
+                    Sendflag = true;
+
+                    socketclient.destroy();
+                    Callback({ success: false, message: 'Device not connected. Try after 5 minute.' });
+                    // SendGSensorCommand(i + 1);
+                };
+
+            });
         });
-    });
 
-    client.on('data', function(data) {
-        var line = data.toString();
-        if (Sendflag == false) {
-            if (line.substring(0, 4) == '7878' && line.substring(6, 8) == '15' && line.substring(10, 18) == '00000001') {
-                console.log('Received: ' + line);
-                var StatusCode = hex2a(line.substring(18, line.length - 16));
-                Sendflag = true;
-                // SuccessDevice = SuccessDevice + 1;
-                // res.json(objNavigation);
-                client.destroy(); // kill client after server's response
-                if (StatusCode.indexOf("DYD=Success!") >= 0) {
-                    // connection.query("Update tblvehicle set GPRSInterval=" + objdata.TimeInterval + " where deviceid=" + DeviceId, function(err, rows, fields) {
-                    connection.query("Update tblvehicle set Relay=" + objdata.IsEngineCutOff + " where deviceid='" + DeviceId + "'", function(err, rows, fields) {
-                        Callback({ success: true, message: 'Engine Cutoff Successfully.' });
-                    });
-                    // });
-                } else if (StatusCode.indexOf("HFYD=Success!") >= 0) {
-                    // connection.query("Update tblvehicle set GPRSInterval=" + objdata.TimeInterval + " where deviceid=" + DeviceId, function(err, rows, fields) {
-                    connection.query("Update tblvehicle set Relay=" + objdata.IsEngineCutOff + " where deviceid='" + DeviceId + "'", function(err, rows, fields) {
-                        Callback({ success: true, message: 'Engine Cutoff Recover Successfully.' });
-                    });
-                    // });
+        socketclient.on('data', function(data) {
+            var line = data.toString();
+            if (Sendflag == false) {
+                if (line.substring(0, 4) == '7878' && line.substring(6, 8) == '15' && line.substring(10, 18) == '00000001') {
+                    console.log('Received: ' + line);
+                    var StatusCode = hex2a(line.substring(18, line.length - 16));
+                    Sendflag = true;
+                    // SuccessDevice = SuccessDevice + 1;
+                    // res.json(objNavigation);
+                    socketclient.destroy(); // kill socketclient after server's response
+                    if (StatusCode.indexOf("DYD=Success!") >= 0) {
+                        // connection.query("Update tblvehicle set GPRSInterval=" + objdata.TimeInterval + " where deviceid=" + DeviceId, function(err, rows, fields) {
+                        connection.query("Update tblvehicle set Relay=" + objdata.IsEngineCutOff + " where deviceid='" + DeviceId + "'", function(err, rows, fields) {
+                            Callback({ success: true, message: 'Engine Cutoff Successfully.' });
+                        });
+                        // });
+                    } else if (StatusCode.indexOf("HFYD=Success!") >= 0) {
+                        // connection.query("Update tblvehicle set GPRSInterval=" + objdata.TimeInterval + " where deviceid=" + DeviceId, function(err, rows, fields) {
+                        connection.query("Update tblvehicle set Relay=" + objdata.IsEngineCutOff + " where deviceid='" + DeviceId + "'", function(err, rows, fields) {
+                            Callback({ success: true, message: 'Engine Cutoff Recover Successfully.' });
+                        });
+                        // });
+                    } else {
+                        if (objdata.IsEngineCutOff == true) {
+                            Callback({ success: false, message: 'Engine could not cutoff. Try again later.' });
+                        } else {
+                            Callback({ success: false, message: 'Engine cutoff could not recover. Try again later.' });
+                        }
+                    }
+
                 } else {
+                    Sendflag = true;
+
+                    socketclient.destroy();
                     if (objdata.IsEngineCutOff == true) {
                         Callback({ success: false, message: 'Engine could not cutoff. Try again later.' });
                     } else {
                         Callback({ success: false, message: 'Engine cutoff could not recover. Try again later.' });
                     }
+                    // SendGSensorCommand(i + 1);
                 }
-
-            } else {
-                Sendflag = true;
-
-                client.destroy();
-                if (objdata.IsEngineCutOff == true) {
-                    Callback({ success: false, message: 'Engine could not cutoff. Try again later.' });
-                } else {
-                    Callback({ success: false, message: 'Engine cutoff could not recover. Try again later.' });
-                }
-                // SendGSensorCommand(i + 1);
-            }
-        };
+            };
 
 
-    });
+        });
 
-    client.on('close', function() {
-        console.log('Connection closed');
+        socketclient.on('close', function() {
+            console.log('Connection closed');
+        });
     });
 }
 
