@@ -432,18 +432,17 @@ global.CommandConcoxGPS = function(obj, Callback) {
                                             }
 
                                             client.set(DeviceId + "MaxSpeedAlarm", JSON.stringify(objmaxspeedDataNew), function(err, replies) {});
+                                        } else if (Speed <= parseInt(objMaxSpeeddata.Speed) && objMaxSpeeddata.IsOverSpeed == true) {
+                                            //     AlarmCode = '13';
+
+                                            var objmaxspeedDataNew = {
+                                                Speed: objMaxSpeeddata.Speed,
+                                                IsSpeedAlert: true,
+                                                IsOverSpeed: false
+                                            }
+
+                                            client.set(DeviceId + "MaxSpeedAlarm", JSON.stringify(objmaxspeedDataNew), function(err, replies) {});
                                         }
-                                        //  else if (Speed <= parseInt(objMaxSpeeddata.Speed) && objMaxSpeeddata.IsOverSpeed == true) {
-                                        //     AlarmCode = '13';
-
-                                        //     var objmaxspeedDataNew = {
-                                        //         Speed: objMaxSpeeddata.Speed,
-                                        //         IsSpeedAlert: true,
-                                        //         IsOverSpeed: false
-                                        //     }
-
-                                        //     client.set(DeviceId + "MaxSpeedAlarm", JSON.stringify(objmaxspeedDataNew), function(err, replies) {});
-                                        // }
 
                                         if (AlarmCode != '') {
                                             var query = "INSERT INTO tblalarm (Datetime, Date, Latitude,Longitude,GPSPositioning,Speed,Direction,Status,DeviceId,AlarmCode,CreatedDate ) VALUES ('" + GPSDateTime + "', '" + unixDateStemp + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + inputoutputSTatus + "', '" + DeviceId + "','" + AlarmCode + "','" + CurrentDate + "');";
@@ -931,6 +930,21 @@ global.CommandConcoxHeartBeat = function(obj, Callback) {
             //     io.sockets.emit(DeviceId + 'BikeDeviceStatus', JSON.stringify(objConnection));
             // });
 
+        });
+
+
+        client.get(DeviceId, function(err, strgpsdata) {
+            if (!err) {
+                if (strgpsdata != null & strgpsdata != '' && strgpsdata != undefined) {
+                    var objgps = JSON.parse(strgpsdata);
+                    objgps.IsEngine = IsACC;
+                    objgps.IsWiringForAntiTamper = IsPowerCut;
+                    objgps.IsPowercutoff = IsPowerCut;
+
+                    client.set(DeviceId, JSON.stringify(objgps), function(err, replies) {});
+                    io.sockets.emit(DeviceId + 'BikeRoute', JSON.stringify(objgps));
+                }
+            }
         });
     } catch (ex) {
         console.log("Error Heartbeat Data = " + line);
