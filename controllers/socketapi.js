@@ -64,7 +64,7 @@ function SendIOSPushNotification(DeviceId) {
 
     var UserId = 0;
     var data = {
-        title: 'Alert',
+        title: '9787 is out of Home Fence.',
         message: '9787 is out of Home Fence. 9787 is out of Home Fence. 9787 is out of Home Fence. 9787 is out of Home Fence. 9787 is out of Home Fence. 9787 is out of Home Fence. 9787 is out of Home Fence. 9787 is out of Home Fence. 9787 is out of Home Fence.',
         soundname: 'sound50',
         msgcnt: "2",
@@ -1679,7 +1679,7 @@ global.Command9999 = function(line, Callback) {
                                 IsOverSpeed: true
                             }
 
-                            client.set(DeviceId + "MaxSpeed", JSON.stringify(objmaxspeedDataNew), function(err, replies) {});
+                            client.set(DeviceId + "MaxSpeedAlarm", JSON.stringify(objmaxspeedDataNew), function(err, replies) {});
                         }
                     }
                 });
