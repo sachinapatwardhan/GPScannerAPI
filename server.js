@@ -487,7 +487,9 @@ io.sockets.on('connection', function(socket) {
     socket.on('CommandDeviceStatus', function(data) {
         // console.log('socket.io server received : ' + data);
         var objdata = JSON.parse(data);
-        CommandDeviceStatus(objdata);
+        CommandDeviceStatus(objdata, function(res) {
+
+        });
     });
 });
 
