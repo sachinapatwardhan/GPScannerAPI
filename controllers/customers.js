@@ -113,6 +113,13 @@ router.get('/SendTestMail', function(req, res) {
     });
 })
 
+router.get('/GetDirectionSpeedByAppName', function(req, res) {
+    res.json({
+        Speed: 5,
+        Direction: 30
+    });
+})
+
 
 getToken = function(headers) {
     // console.log(headers.authorization);
