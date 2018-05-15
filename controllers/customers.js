@@ -120,6 +120,14 @@ router.get('/GetDirectionSpeedByAppName', function(req, res) {
     });
 })
 
+router.get('/GetWebcashCredential', function(req, res) {
+    res.json({
+        MID: '80000155',
+        MKey: '123456',
+        MURL: 'https://staging.webcash.com.my/wcgatewayinit.php'
+    });
+});
+
 
 getToken = function(headers) {
     // console.log(headers.authorization);
