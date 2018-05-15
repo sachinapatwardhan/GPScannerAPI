@@ -28,7 +28,7 @@ var Setting = models.tblsetting
 var AppInfo = models.tblappinfo;
 
 //End of Tables
-router.get('/GetAllProduct', function (req, res) {
+router.get('/GetAllProduct', function(req, res) {
 
     var model = [];
     var search = {};
@@ -165,9 +165,9 @@ router.get('/GetAllProduct', function (req, res) {
         model: ProductPictureMaping,
         include: [MediaMgmt]
     }, {
-            model: ProductTag,
-            attributes: ['Name']
-        });
+        model: ProductTag,
+        attributes: ['Name']
+    });
 
     if (CategoryId > 0) {
         Product.hasMany(ProductCategory, {
@@ -228,7 +228,7 @@ router.get('/GetAllProduct', function (req, res) {
         offset: parseInt(objParam.start),
         limit: parseInt(objParam.length),
         include: model
-    }).then(function (response) {
+    }).then(function(response) {
         // res.json({ success: true, response: response });
         var response1 = new Object();
         response1.draw = objParam.draw;
@@ -236,7 +236,7 @@ router.get('/GetAllProduct', function (req, res) {
         response1.recordsFiltered = response.count;
         response1.data = response.rows;
         res.json(response1);
-    }).catch(function (error) {
+    }).catch(function(error) {
         res.json({
             success: false,
             response: error
@@ -245,11 +245,11 @@ router.get('/GetAllProduct', function (req, res) {
 })
 
 
-router.get('/GetExpiryProductByName', function (req, res) {
+router.get('/GetExpiryProductByName', function(req, res) {
     Product.findOne({
         where: { Name: "Expiry Product" },
         attributes: ['Id', 'Name'],
-    }).then(function (response) {
+    }).then(function(response) {
         if (response != null) {
             res.json({ success: true, response: response });
         } else {
@@ -261,7 +261,7 @@ router.get('/GetExpiryProductByName', function (req, res) {
 
 
 //Get Product By Id For FrontSide
-router.get('/GetProductById', function (req, res) {
+router.get('/GetProductById', function(req, res) {
     var model = [];
     Product.hasMany(ProductPictureMaping, {
         foreignKey: {
@@ -314,29 +314,29 @@ router.get('/GetProductById', function (req, res) {
         model: ProductPictureMaping,
         include: [MediaMgmt]
     }, {
-            model: ProductTag,
-            attributes: ['Name']
-        }, {
-            model: RelatedProduct,
-            include: [{
-                model: Product,
-                include: {
-                    model: ProductPictureMaping,
-                    include: [MediaMgmt]
-                }
-            }]
-        });
+        model: ProductTag,
+        attributes: ['Name']
+    }, {
+        model: RelatedProduct,
+        include: [{
+            model: Product,
+            include: {
+                model: ProductPictureMaping,
+                include: [MediaMgmt]
+            }
+        }]
+    });
     Product.findAll({
         where: {
             Id: req.query.idProduct
         },
         include: model
-        // include: [{
-        //     model: ProductPictureMaping,
-        //     include: [MediaMgmt]
-        // }]
+            // include: [{
+            //     model: ProductPictureMaping,
+            //     include: [MediaMgmt]
+            // }]
 
-    }).then(function (response) {
+    }).then(function(response) {
         if (response != null) {
             res.json({
                 success: true,
@@ -354,7 +354,7 @@ router.get('/GetProductById', function (req, res) {
 
 
 //Get Product By Id For FrontSide
-router.get('/GetProductByIdForPreview', function (req, res) {
+router.get('/GetProductByIdForPreview', function(req, res) {
     // Product.hasMany(ProductPictureMaping, {
     //     foreignKey: {
     //         name: 'ProductId',
@@ -421,33 +421,33 @@ router.get('/GetProductByIdForPreview', function (req, res) {
         include: [MediaMgmt],
         require: false
     }, {
-            model: ProductTag,
-            attributes: ['Name'],
-            require: false
-        }, {
-            model: RelatedProduct,
-            include: [{
-                model: Product,
-                include: {
-                    model: ProductPictureMaping,
-                    include: [MediaMgmt],
-                    require: false
-                },
+        model: ProductTag,
+        attributes: ['Name'],
+        require: false
+    }, {
+        model: RelatedProduct,
+        include: [{
+            model: Product,
+            include: {
+                model: ProductPictureMaping,
+                include: [MediaMgmt],
                 require: false
-            }],
+            },
             require: false
-        });
+        }],
+        require: false
+    });
     Product.findAll({
         where: {
             Id: req.query.idProduct
         },
         include: model
-        // include: [{
-        //     model: ProductPictureMaping,
-        //     include: [MediaMgmt]
-        // }]
+            // include: [{
+            //     model: ProductPictureMaping,
+            //     include: [MediaMgmt]
+            // }]
 
-    }).then(function (response) {
+    }).then(function(response) {
         if (response != null) {
             res.json({
                 success: true,
@@ -465,7 +465,7 @@ router.get('/GetProductByIdForPreview', function (req, res) {
 
 
 //Get Product By Published and Deleted for FrontSide
-router.get('/GetPublishProduct', function (req, res) {
+router.get('/GetPublishProduct', function(req, res) {
     Product.hasMany(ProductPictureMaping, {
         foreignKey: {
             name: 'ProductId',
@@ -491,7 +491,7 @@ router.get('/GetPublishProduct', function (req, res) {
             model: ProductPictureMaping,
             include: [MediaMgmt]
         }]
-    }).then(function (response) {
+    }).then(function(response) {
         if (response != null) {
             res.json({
                 success: true,
@@ -507,7 +507,7 @@ router.get('/GetPublishProduct', function (req, res) {
 })
 
 //Create and Update Product
-router.post('/CreateProductPanel', jsonParser, function (req, res) {
+router.post('/CreateProductPanel', jsonParser, function(req, res) {
 
     var objProduct = req.body;
     objHeader = req.headers;
@@ -523,7 +523,7 @@ router.post('/CreateProductPanel', jsonParser, function (req, res) {
                 username: decoded.username,
                 password: decoded.password
             }
-        }).then(function (UserExist) {
+        }).then(function(UserExist) {
             if (UserExist != null) {
                 var ProductTags = objProduct.ProductTags;
                 var ACL = objProduct.ACL;
@@ -539,7 +539,7 @@ router.post('/CreateProductPanel', jsonParser, function (req, res) {
                     obj.headers = req.headers;
                     obj.query = req.query;
 
-                    funAccessPermission.CheckUserAccessPermission(obj, function (responseAccessPermission) {
+                    funAccessPermission.CheckUserAccessPermission(obj, function(responseAccessPermission) {
                         var AccessPermission = responseAccessPermission.success;
                         if (AccessPermission) {
 
@@ -548,9 +548,10 @@ router.post('/CreateProductPanel', jsonParser, function (req, res) {
                                 where: {
                                     Name: objProduct.Name,
                                     ProductTypeId: parseInt(objProduct.ProductTypeId),
+                                    Sku: objProduct.Sku
                                 },
                                 defaults: objProduct
-                            }).then(function (response) {
+                            }).then(function(response) {
 
                                 if ((response[1])) {
                                     var ProductId = response[0].Id;
@@ -577,17 +578,14 @@ router.post('/CreateProductPanel', jsonParser, function (req, res) {
                         }
                     });
                 } else {
-
                     // var CategoryId = objCategory.id;
-
                     //set Parameter
                     req.query['permission'] = "Modified";
-
                     var obj = {};
                     obj.headers = req.headers;
                     obj.query = req.query;
 
-                    funAccessPermission.CheckUserAccessPermission(obj, function (responseAccessPermission) {
+                    funAccessPermission.CheckUserAccessPermission(obj, function(responseAccessPermission) {
                         var AccessPermission = responseAccessPermission.success;
                         if (AccessPermission) {
 
@@ -597,9 +595,10 @@ router.post('/CreateProductPanel', jsonParser, function (req, res) {
                                 where: {
                                     Name: objProduct.Name,
                                     ProductTypeId: parseInt(objProduct.ProductTypeId),
+                                    Sku: objProduct.Sku
                                 },
                                 defaults: objProduct
-                            }).then(function (objProductExist) {
+                            }).then(function(objProductExist) {
                                 if (objProductExist != null && objProduct.Id != objProductExist.Id) {
                                     res.json({
                                         success: false,
@@ -611,7 +610,7 @@ router.post('/CreateProductPanel', jsonParser, function (req, res) {
                                         where: {
                                             Id: ProductId
                                         }
-                                    }).then(function (resUpdate) {
+                                    }).then(function(resUpdate) {
                                         if (resUpdate[0]) {
                                             manageProductTag(ProductId, ProductTags);
                                             manageProductACL(ProductId, ACL);
@@ -647,7 +646,7 @@ router.post('/CreateProductPanel', jsonParser, function (req, res) {
     }
 })
 
-router.post('/CopyProduct', jsonParser, function (req, res) {
+router.post('/CopyProduct', jsonParser, function(req, res) {
     var objProduct = req.body;
     objHeader = req.headers;
     var token = getToken(objHeader);
@@ -659,7 +658,7 @@ router.post('/CopyProduct', jsonParser, function (req, res) {
     obj.headers = req.headers;
     obj.query = req.query;
 
-    funAccessPermission.CheckUserAccessPermission(obj, function (responseAccessPermission) {
+    funAccessPermission.CheckUserAccessPermission(obj, function(responseAccessPermission) {
         var AccessPermission = responseAccessPermission.success;
         if (AccessPermission) {
             if (token) {
@@ -669,7 +668,7 @@ router.post('/CopyProduct', jsonParser, function (req, res) {
                         username: decoded.username,
                         password: decoded.password
                     }
-                }).then(function (UserExist) {
+                }).then(function(UserExist) {
                     if (UserExist != null) {
                         var oldProductId = objProduct.Id;
                         objProduct.Id = 0;
@@ -685,7 +684,7 @@ router.post('/CopyProduct', jsonParser, function (req, res) {
                                 Name: objProduct.Name
                             },
                             defaults: objProduct
-                        }).then(function (response) {
+                        }).then(function(response) {
 
                             if ((response[1])) {
                                 var ProductId = response[0].Id;
@@ -730,7 +729,7 @@ router.post('/CopyProduct', jsonParser, function (req, res) {
     });
 })
 
-router.get('/UpdateProduct', jsonParser, function (req, res) {
+router.get('/UpdateProduct', jsonParser, function(req, res) {
     objHeader = req.headers;
     var token = getToken(objHeader);
     if (token) {
@@ -740,14 +739,14 @@ router.get('/UpdateProduct', jsonParser, function (req, res) {
                 username: decoded.username,
                 password: decoded.password
             }
-        }).then(function (UserExist) {
+        }).then(function(UserExist) {
             if (UserExist != null) {
                 var objProduct = req.body;
                 Product.update(objProduct, {
                     where: {
                         Id: objProduct.Id
                     }
-                }).then(function (response) {
+                }).then(function(response) {
                     if (response[0]) {
                         funAuditLog.CreateAuditLog('UpdateProduct', UserExist.username, 'Update Product');
                         res.json({
@@ -772,7 +771,7 @@ router.get('/UpdateProduct', jsonParser, function (req, res) {
     }
 });
 
-router.post('/DeleteProduct', jsonParser, function (req, res) {
+router.post('/DeleteProduct', jsonParser, function(req, res) {
     objHeader = req.headers;
     var token = getToken(objHeader);
     var objProduct = req.body;
@@ -786,7 +785,7 @@ router.post('/DeleteProduct', jsonParser, function (req, res) {
     obj.headers = req.headers;
     obj.query = req.query;
 
-    funAccessPermission.CheckUserAccessPermission(obj, function (responseAccessPermission) {
+    funAccessPermission.CheckUserAccessPermission(obj, function(responseAccessPermission) {
         var AccessPermission = responseAccessPermission.success;
         if (AccessPermission) {
             if (token) {
@@ -796,7 +795,7 @@ router.post('/DeleteProduct', jsonParser, function (req, res) {
                         username: decoded.username,
                         password: decoded.password
                     }
-                }).then(function (UserExist) {
+                }).then(function(UserExist) {
                     if (UserExist != null) {
                         var objProduct = req.body;
                         if (objProduct != null) {
@@ -806,7 +805,7 @@ router.post('/DeleteProduct', jsonParser, function (req, res) {
                                 where: {
                                     Id: objProduct.Id
                                 }
-                            }).then(function (resProduct) {
+                            }).then(function(resProduct) {
                                 if (resProduct[0]) {
                                     funAuditLog.CreateAuditLog('DeleteProduct', UserExist.username, 'Delete Product');
                                     res.json({
@@ -857,9 +856,9 @@ function manageProductTag(ProductId, arrProductTags) {
         where: {
             Product_Id: ProductId
         }
-    }).then(function (resDestroyProductTag) {
+    }).then(function(resDestroyProductTag) {
         //Insert all new Product tags for this Product
-        ProductTag.bulkCreate(lstProductTags).then(function (resCreateProductTag) { })
+        ProductTag.bulkCreate(lstProductTags).then(function(resCreateProductTag) {})
     })
 }
 
@@ -882,9 +881,9 @@ function manageProductACL(ProductId, arrProductACL) {
             EntityId: ProductId,
             EntityName: "Product"
         }
-    }).then(function (resDestroyProductACL) {
+    }).then(function(resDestroyProductACL) {
         //Insert all new Product tags for this Product
-        ProductACL.bulkCreate(lstProductACL).then(function (resCreateProductACL) { })
+        ProductACL.bulkCreate(lstProductACL).then(function(resCreateProductACL) {})
     })
 }
 
@@ -936,7 +935,7 @@ function manageProductApplyDiscount(ProductId, arrProductApplyDiscount) {
     // })
 }
 
-router.get('/UpdateProductPrice', function (req, res) {
+router.get('/UpdateProductPrice', function(req, res) {
     objHeader = req.headers;
     var token = getToken(objHeader);
 
@@ -948,7 +947,7 @@ router.get('/UpdateProductPrice', function (req, res) {
     obj.headers = req.headers;
     obj.query = req.query;
 
-    funAccessPermission.CheckUserAccessPermission(obj, function (responseAccessPermission) {
+    funAccessPermission.CheckUserAccessPermission(obj, function(responseAccessPermission) {
         var AccessPermission = responseAccessPermission.success;
         if (AccessPermission) {
             if (token) {
@@ -958,7 +957,7 @@ router.get('/UpdateProductPrice', function (req, res) {
                         username: decoded.username,
                         password: decoded.password
                     }
-                }).then(function (UserExist) {
+                }).then(function(UserExist) {
                     if (UserExist != null) {
                         var model = [];
                         var search = {};
@@ -1044,9 +1043,9 @@ router.get('/UpdateProductPrice', function (req, res) {
                                 model: ProductPictureMaping,
                                 include: [MediaMgmt]
                             }, {
-                                    model: ProductTag,
-                                    attributes: ['Name']
-                                });
+                                model: ProductTag,
+                                attributes: ['Name']
+                            });
 
                             if (CategoryId > 0) {
                                 Product.hasMany(ProductCategory, {
@@ -1100,7 +1099,7 @@ router.get('/UpdateProductPrice', function (req, res) {
                                 include: model,
                                 order: 'CreatedOnUtc DESC',
                                 where: search
-                            }).then(function (response) {
+                            }).then(function(response) {
                                 function uploader(i) {
                                     if (i < response.length) {
 
@@ -1125,7 +1124,7 @@ router.get('/UpdateProductPrice', function (req, res) {
 
                                         objProduct.updateAttributes({
                                             Price: NewPrice
-                                        }).then(function (resUpdate) {
+                                        }).then(function(resUpdate) {
                                             if ((i + 1) == response.length) {
                                                 funAuditLog.CreateAuditLog('UpdateProductPrice', UserExist.username, 'Update Product Price');
                                                 res.json({
@@ -1139,7 +1138,7 @@ router.get('/UpdateProductPrice', function (req, res) {
                                     }
                                 }
                                 uploader(0);
-                            }).catch(function (error) {
+                            }).catch(function(error) {
                                 res.json(error);
                             })
 
@@ -1163,7 +1162,7 @@ router.get('/UpdateProductPrice', function (req, res) {
     });
 })
 
-router.get('/UpdateProductPublish', function (req, res) {
+router.get('/UpdateProductPublish', function(req, res) {
     objHeader = req.headers;
     var token = getToken(objHeader);
     if (token) {
@@ -1173,7 +1172,7 @@ router.get('/UpdateProductPublish', function (req, res) {
                 username: decoded.username,
                 password: decoded.password
             }
-        }).then(function (UserExist) {
+        }).then(function(UserExist) {
             if (UserExist != null) {
                 var model = [];
                 var search = {};
@@ -1258,9 +1257,9 @@ router.get('/UpdateProductPublish', function (req, res) {
                     model: ProductPictureMaping,
                     include: [MediaMgmt]
                 }, {
-                        model: ProductTag,
-                        attributes: ['Name']
-                    });
+                    model: ProductTag,
+                    attributes: ['Name']
+                });
 
                 if (CategoryId > 0) {
                     Product.hasMany(ProductCategory, {
@@ -1312,7 +1311,7 @@ router.get('/UpdateProductPublish', function (req, res) {
                     include: model,
                     order: 'CreatedOnUtc DESC',
                     where: search
-                }).then(function (response) {
+                }).then(function(response) {
 
 
                     function uploader(i) {
@@ -1345,13 +1344,13 @@ router.get('/UpdateProductPublish', function (req, res) {
                             obj.headers = req.headers;
                             obj.query = req.query;
 
-                            funAccessPermission.CheckUserAccessPermission(obj, function (responseAccessPermission) {
+                            funAccessPermission.CheckUserAccessPermission(obj, function(responseAccessPermission) {
                                 var AccessPermission = responseAccessPermission.success;
                                 if (AccessPermission) {
 
                                     objProduct.updateAttributes({
                                         Published: UpdatePublish
-                                    }).then(function (resUpdate) {
+                                    }).then(function(resUpdate) {
                                         if ((i + 1) == response.length) {
 
                                             if (UpdatePublish == 'true') {
@@ -1380,7 +1379,7 @@ router.get('/UpdateProductPublish', function (req, res) {
                     uploader(0);
 
 
-                }).catch(function (error) {
+                }).catch(function(error) {
                     res.json(error);
                 })
             } else {
@@ -1392,7 +1391,7 @@ router.get('/UpdateProductPublish', function (req, res) {
     }
 })
 
-router.get('/DownloadExcelTemplate', function (req, res) {
+router.get('/DownloadExcelTemplate', function(req, res) {
     // objHeader = req.headers;
     // var token = getToken(objHeader);
     // if (token) {
@@ -1439,7 +1438,7 @@ router.get('/DownloadExcelTemplate', function (req, res) {
         type: 'string'
     }];
 
-    ProductAttribute.findAll().then(function (response) {
+    ProductAttribute.findAll().then(function(response) {
         if (response != null) {
             for (var i = 0; i < response.length; i++) {
                 var objData = u.findWhere(conf.cols, {
@@ -1483,7 +1482,7 @@ router.get('/DownloadExcelTemplate', function (req, res) {
 })
 
 
-router.get('/ExportProducts', function (req, res) {
+router.get('/ExportProducts', function(req, res) {
     // objHeader = req.headers;
     // var token = getToken(objHeader);
     // if (token) {
@@ -1665,598 +1664,598 @@ router.get('/ExportProducts', function (req, res) {
         }
     }
     Product.findAll({
-        include: include,
-        order: 'CreatedOnUtc DESC',
-        where: SearchExport
-    }).then(function (response) {
-        conf.rows = [];
-        var lstProduct = [];
-        // i -uploaderproduct
-        // j -uploaderproductcat
-        // k -manageproductcat
-        // l -uploadSubcat
-        if (response.length > 0) {
-            function uploaderproduct(i) {
-                if (i < response.length) {
-                    //Manage Product Category
-                    // var lstproductCat = [];
-                    // if (response[i].product_category_mappings != undefined && response[i].product_category_mappings != null && response[i].product_category_mappings.length > 0) {
-                    //     function uploaderproductcat(j) {
-                    //         if (j < response[i].product_category_mappings.length) {
-                    //             var obj = new Object();
-                    //             obj.CategoryId = response[i].product_category_mappings[j].CategoryId;
-                    //             obj.CategoryName = response[i].product_category_mappings[j].tblcategorymgmt.Name;
-                    //             lstproductCat.push(obj);
-                    //             uploaderproductcat(j + 1);
-                    //         }
-                    //     }
-                    //     uploaderproductcat(0)
-                    // }
-                    // if (lstproductCat.length > 0) {
-                    //     var CategoryName = "";
-                    //     var SubCategory = "";
-                    //     var CategoryId = "";
+            include: include,
+            order: 'CreatedOnUtc DESC',
+            where: SearchExport
+        }).then(function(response) {
+            conf.rows = [];
+            var lstProduct = [];
+            // i -uploaderproduct
+            // j -uploaderproductcat
+            // k -manageproductcat
+            // l -uploadSubcat
+            if (response.length > 0) {
+                function uploaderproduct(i) {
+                    if (i < response.length) {
+                        //Manage Product Category
+                        // var lstproductCat = [];
+                        // if (response[i].product_category_mappings != undefined && response[i].product_category_mappings != null && response[i].product_category_mappings.length > 0) {
+                        //     function uploaderproductcat(j) {
+                        //         if (j < response[i].product_category_mappings.length) {
+                        //             var obj = new Object();
+                        //             obj.CategoryId = response[i].product_category_mappings[j].CategoryId;
+                        //             obj.CategoryName = response[i].product_category_mappings[j].tblcategorymgmt.Name;
+                        //             lstproductCat.push(obj);
+                        //             uploaderproductcat(j + 1);
+                        //         }
+                        //     }
+                        //     uploaderproductcat(0)
+                        // }
+                        // if (lstproductCat.length > 0) {
+                        //     var CategoryName = "";
+                        //     var SubCategory = "";
+                        //     var CategoryId = "";
 
-                    //     function manageproductcat(k) {
-                    //         if (k < lstproductCat.length) {
-                    //             CategoryName = lstproductCat[k].CategoryName;
-                    //             SubCategory = "";
-                    //             CategoryId = parseInt(lstproductCat[k].CategoryId);
+                        //     function manageproductcat(k) {
+                        //         if (k < lstproductCat.length) {
+                        //             CategoryName = lstproductCat[k].CategoryName;
+                        //             SubCategory = "";
+                        //             CategoryId = parseInt(lstproductCat[k].CategoryId);
 
-                    //             Category.findAll({
-                    //                 where: {
-                    //                     Parent: CategoryId,
-                    //                 }
-                    //             }).then(function(responsesubcat) {
-                    //                 if (responsesubcat.length > 0) {
-                    //                     function uploadSubcat(l) {
-                    //                         if (l < responsesubcat.length) {
-                    //                             var objcat = u.findWhere(lstproductCat, {
-                    //                                 CategoryId: parseInt(responsesubcat[l].id)
-                    //                             });
-                    // if (objcat != null && objcat != undefined && objcat != '') {
-                    //     var subcat = objcat.CategoryName;
-                    //     // //Remove Parrent Cat if Sub Cate Exists
-                    //     // if (SubCategory != null && SubCategory != '') {
-                    //     //     SubCategory = SubCategory + ',' + subcat;
-                    //     // } else {
-                    //     //     SubCategory = subcat;
-                    //     // }
-                    //     SubCategory = subcat;
-                    //     if (lstproductCat.length > 0) {
-                    //         lstproductCat = u.filter(lstproductCat, function(o) {
-                    //             if (o.CategoryId != parseInt(responsesubcat[l].id)) {
-                    //                 return o;
-                    //             }
-                    //         });
-                    //     }
-                    // }
-                    //if (l + 1 == responsesubcat.length) {
-                    //                                 if (response[i].product_picture_mappings.length > 0) {
-                    //                                     function uploadimage(j) {
-                    //                                         if (j < response[i].product_picture_mappings.length) {
-                    //                                             var object = new Object();
-                    //                                             object["ProductId"] = response[i].Id;
-                    //                                             object["sku"] = response[i].Sku;
-                    //                                             object["Name"] = response[i].Name.toString();
-                    //                                             object["CategoryName"] = CategoryName;
-                    //                                             object["SubCategory"] = SubCategory;
-                    //                                             object["ProductCost"] = response[i].ProductCost.toString();
-                    //                                             object["Price"] = response[i].Price.toString();
-                    //                                             object["OldPrice"] = response[i].OldPrice.toString();
-                    //                                             object["Stock"] = response[i].StockQuantity.toString();
-                    //                                             object["Weight"] = response[i].Weight.toString();
-                    //                                             object["Length"] = response[i].Length.toString();
-                    //                                             object["PWidth"] = response[i].Width.toString();
-                    //                                             object["Height"] = response[i].Height.toString();
-                    //                                             object["Picture"] = RoutePath + 'MediaUploads/' + response[i].product_picture_mappings[j].tblmediamgmt.FileName;
-                    //                                             lstProduct.push(object);
-                    //                                             uploadimage(j + 1);
-                    //                                         }
-                    //                                     }
-                    //                                     uploadimage(0);
-                    //                                 } else {
-                    //                                     var object = new Object();
-                    //                                     object["ProductId"] = response[i].Id;
-                    //                                     object["sku"] = response[i].Sku;
-                    //                                     object["Name"] = response[i].Name.toString();
-                    //                                     object["CategoryName"] = CategoryName;
-                    //                                     object["SubCategory"] = SubCategory;
-                    //                                     object["ProductCost"] = response[i].ProductCost.toString();
-                    //                                     object["Price"] = response[i].Price.toString();
-                    //                                     object["OldPrice"] = response[i].OldPrice.toString();
-                    //                                     object["Stock"] = response[i].StockQuantity.toString();
-                    //                                     object["Weight"] = response[i].Weight.toString();
-                    //                                     object["Length"] = response[i].Length.toString();
-                    //                                     object["PWidth"] = response[i].Width.toString();
-                    //                                     object["Height"] = response[i].Height.toString();
-                    //                                     object["Picture"] = '';
-                    //                                     lstProduct.push(object);
-                    //                                 }
-                    //                                 manageproductcat(k + 1);
-                    //                             } else {
-                    //                                 uploadSubcat(l + 1);
-                    //                             }
-                    //                         }
-                    //                     }
-                    //                     uploadSubcat(0);
+                        //             Category.findAll({
+                        //                 where: {
+                        //                     Parent: CategoryId,
+                        //                 }
+                        //             }).then(function(responsesubcat) {
+                        //                 if (responsesubcat.length > 0) {
+                        //                     function uploadSubcat(l) {
+                        //                         if (l < responsesubcat.length) {
+                        //                             var objcat = u.findWhere(lstproductCat, {
+                        //                                 CategoryId: parseInt(responsesubcat[l].id)
+                        //                             });
+                        // if (objcat != null && objcat != undefined && objcat != '') {
+                        //     var subcat = objcat.CategoryName;
+                        //     // //Remove Parrent Cat if Sub Cate Exists
+                        //     // if (SubCategory != null && SubCategory != '') {
+                        //     //     SubCategory = SubCategory + ',' + subcat;
+                        //     // } else {
+                        //     //     SubCategory = subcat;
+                        //     // }
+                        //     SubCategory = subcat;
+                        //     if (lstproductCat.length > 0) {
+                        //         lstproductCat = u.filter(lstproductCat, function(o) {
+                        //             if (o.CategoryId != parseInt(responsesubcat[l].id)) {
+                        //                 return o;
+                        //             }
+                        //         });
+                        //     }
+                        // }
+                        //if (l + 1 == responsesubcat.length) {
+                        //                                 if (response[i].product_picture_mappings.length > 0) {
+                        //                                     function uploadimage(j) {
+                        //                                         if (j < response[i].product_picture_mappings.length) {
+                        //                                             var object = new Object();
+                        //                                             object["ProductId"] = response[i].Id;
+                        //                                             object["sku"] = response[i].Sku;
+                        //                                             object["Name"] = response[i].Name.toString();
+                        //                                             object["CategoryName"] = CategoryName;
+                        //                                             object["SubCategory"] = SubCategory;
+                        //                                             object["ProductCost"] = response[i].ProductCost.toString();
+                        //                                             object["Price"] = response[i].Price.toString();
+                        //                                             object["OldPrice"] = response[i].OldPrice.toString();
+                        //                                             object["Stock"] = response[i].StockQuantity.toString();
+                        //                                             object["Weight"] = response[i].Weight.toString();
+                        //                                             object["Length"] = response[i].Length.toString();
+                        //                                             object["PWidth"] = response[i].Width.toString();
+                        //                                             object["Height"] = response[i].Height.toString();
+                        //                                             object["Picture"] = RoutePath + 'MediaUploads/' + response[i].product_picture_mappings[j].tblmediamgmt.FileName;
+                        //                                             lstProduct.push(object);
+                        //                                             uploadimage(j + 1);
+                        //                                         }
+                        //                                     }
+                        //                                     uploadimage(0);
+                        //                                 } else {
+                        //                                     var object = new Object();
+                        //                                     object["ProductId"] = response[i].Id;
+                        //                                     object["sku"] = response[i].Sku;
+                        //                                     object["Name"] = response[i].Name.toString();
+                        //                                     object["CategoryName"] = CategoryName;
+                        //                                     object["SubCategory"] = SubCategory;
+                        //                                     object["ProductCost"] = response[i].ProductCost.toString();
+                        //                                     object["Price"] = response[i].Price.toString();
+                        //                                     object["OldPrice"] = response[i].OldPrice.toString();
+                        //                                     object["Stock"] = response[i].StockQuantity.toString();
+                        //                                     object["Weight"] = response[i].Weight.toString();
+                        //                                     object["Length"] = response[i].Length.toString();
+                        //                                     object["PWidth"] = response[i].Width.toString();
+                        //                                     object["Height"] = response[i].Height.toString();
+                        //                                     object["Picture"] = '';
+                        //                                     lstProduct.push(object);
+                        //                                 }
+                        //                                 manageproductcat(k + 1);
+                        //                             } else {
+                        //                                 uploadSubcat(l + 1);
+                        //                             }
+                        //                         }
+                        //                     }
+                        //                     uploadSubcat(0);
 
-                    //                 } else {
-                    //                     if (response[i].product_picture_mappings.length > 0) {
-                    //                         function uploadimage(j) {
-                    //                             if (j < response[i].product_picture_mappings.length) {
-                    //                                 var object = new Object();
-                    //                                 object["ProductId"] = response[i].Id;
-                    //                                 object["sku"] = response[i].Sku;
-                    //                                 object["Name"] = response[i].Name.toString();
-                    //                                 object["CategoryName"] = CategoryName;
-                    //                                 object["SubCategory"] = SubCategory;
-                    //                                 object["ProductCost"] = response[i].ProductCost.toString();
-                    //                                 object["Price"] = response[i].Price.toString();
-                    //                                 object["OldPrice"] = response[i].OldPrice.toString();
-                    //                                 object["Stock"] = response[i].StockQuantity.toString();
-                    //                                 object["Weight"] = response[i].Weight.toString();
-                    //                                 object["Length"] = response[i].Length.toString();
-                    //                                 object["PWidth"] = response[i].Width.toString();
-                    //                                 object["Height"] = response[i].Height.toString();
-                    //                                 object["Picture"] = RoutePath + 'MediaUploads/' + response[i].product_picture_mappings[j].tblmediamgmt.FileName;
-                    //                                 lstProduct.push(object);
-                    //                                 uploadimage(j + 1);
-                    //                             }
-                    //                         }
-                    //                         uploadimage(0);
-                    //                     } else {
-                    //                         var object = new Object();
-                    //                         object["ProductId"] = response[i].Id;
-                    //                         object["sku"] = response[i].Sku;
-                    //                         object["Name"] = response[i].Name.toString();
-                    //                         object["CategoryName"] = CategoryName;
-                    //                         object["SubCategory"] = SubCategory;
-                    //                         object["ProductCost"] = response[i].ProductCost.toString();
-                    //                         object["Price"] = response[i].Price.toString();
-                    //                         object["OldPrice"] = response[i].OldPrice.toString();
-                    //                         object["Stock"] = response[i].StockQuantity.toString();
-                    //                         object["Weight"] = response[i].Weight.toString();
-                    //                         object["Length"] = response[i].Length.toString();
-                    //                         object["PWidth"] = response[i].Width.toString();
-                    //                         object["Height"] = response[i].Height.toString();
-                    //                         object["Picture"] = '';
-                    //                         lstProduct.push(object);
-                    //                     }
-                    //                     manageproductcat(k + 1);
-                    //                 }
-                    //             });
-                    //         } else {
-                    //             uploaderproduct(i + 1);
-                    //         }
-                    //     }
-                    //     manageproductcat(0);
+                        //                 } else {
+                        //                     if (response[i].product_picture_mappings.length > 0) {
+                        //                         function uploadimage(j) {
+                        //                             if (j < response[i].product_picture_mappings.length) {
+                        //                                 var object = new Object();
+                        //                                 object["ProductId"] = response[i].Id;
+                        //                                 object["sku"] = response[i].Sku;
+                        //                                 object["Name"] = response[i].Name.toString();
+                        //                                 object["CategoryName"] = CategoryName;
+                        //                                 object["SubCategory"] = SubCategory;
+                        //                                 object["ProductCost"] = response[i].ProductCost.toString();
+                        //                                 object["Price"] = response[i].Price.toString();
+                        //                                 object["OldPrice"] = response[i].OldPrice.toString();
+                        //                                 object["Stock"] = response[i].StockQuantity.toString();
+                        //                                 object["Weight"] = response[i].Weight.toString();
+                        //                                 object["Length"] = response[i].Length.toString();
+                        //                                 object["PWidth"] = response[i].Width.toString();
+                        //                                 object["Height"] = response[i].Height.toString();
+                        //                                 object["Picture"] = RoutePath + 'MediaUploads/' + response[i].product_picture_mappings[j].tblmediamgmt.FileName;
+                        //                                 lstProduct.push(object);
+                        //                                 uploadimage(j + 1);
+                        //                             }
+                        //                         }
+                        //                         uploadimage(0);
+                        //                     } else {
+                        //                         var object = new Object();
+                        //                         object["ProductId"] = response[i].Id;
+                        //                         object["sku"] = response[i].Sku;
+                        //                         object["Name"] = response[i].Name.toString();
+                        //                         object["CategoryName"] = CategoryName;
+                        //                         object["SubCategory"] = SubCategory;
+                        //                         object["ProductCost"] = response[i].ProductCost.toString();
+                        //                         object["Price"] = response[i].Price.toString();
+                        //                         object["OldPrice"] = response[i].OldPrice.toString();
+                        //                         object["Stock"] = response[i].StockQuantity.toString();
+                        //                         object["Weight"] = response[i].Weight.toString();
+                        //                         object["Length"] = response[i].Length.toString();
+                        //                         object["PWidth"] = response[i].Width.toString();
+                        //                         object["Height"] = response[i].Height.toString();
+                        //                         object["Picture"] = '';
+                        //                         lstProduct.push(object);
+                        //                     }
+                        //                     manageproductcat(k + 1);
+                        //                 }
+                        //             });
+                        //         } else {
+                        //             uploaderproduct(i + 1);
+                        //         }
+                        //     }
+                        //     manageproductcat(0);
 
-                    // } else {
-                    //     if (response[i].product_picture_mappings.length > 0) {
-                    //         function uploadimage(j) {
-                    //             if (j < response[i].product_picture_mappings.length) {
-                    //                 var object = new Object();
-                    //                 object["ProductId"] = response[i].Id;
-                    //                 object["sku"] = response[i].Sku;
-                    //                 object["Name"] = response[i].Name.toString();
-                    //                 object["CategoryName"] = "";
-                    //                 object["SubCategory"] = "";
-                    //                 object["ProductCost"] = response[i].ProductCost.toString();
-                    //                 object["Price"] = response[i].Price.toString();
-                    //                 object["OldPrice"] = response[i].OldPrice.toString();
-                    //                 object["Stock"] = response[i].StockQuantity.toString();
-                    //                 object["Weight"] = response[i].Weight.toString();
-                    //                 object["Length"] = response[i].Length.toString();
-                    //                 object["PWidth"] = response[i].Width.toString();
-                    //                 object["Height"] = response[i].Height.toString();
-                    //                 object["Picture"] = RoutePath + 'MediaUploads/' + response[i].product_picture_mappings[j].tblmediamgmt.FileName;
-                    //                 lstProduct.push(object);
-                    //                 uploadimage(j + 1);
-                    //             }
-                    //         }
-                    //         uploadimage(0);
+                        // } else {
+                        //     if (response[i].product_picture_mappings.length > 0) {
+                        //         function uploadimage(j) {
+                        //             if (j < response[i].product_picture_mappings.length) {
+                        //                 var object = new Object();
+                        //                 object["ProductId"] = response[i].Id;
+                        //                 object["sku"] = response[i].Sku;
+                        //                 object["Name"] = response[i].Name.toString();
+                        //                 object["CategoryName"] = "";
+                        //                 object["SubCategory"] = "";
+                        //                 object["ProductCost"] = response[i].ProductCost.toString();
+                        //                 object["Price"] = response[i].Price.toString();
+                        //                 object["OldPrice"] = response[i].OldPrice.toString();
+                        //                 object["Stock"] = response[i].StockQuantity.toString();
+                        //                 object["Weight"] = response[i].Weight.toString();
+                        //                 object["Length"] = response[i].Length.toString();
+                        //                 object["PWidth"] = response[i].Width.toString();
+                        //                 object["Height"] = response[i].Height.toString();
+                        //                 object["Picture"] = RoutePath + 'MediaUploads/' + response[i].product_picture_mappings[j].tblmediamgmt.FileName;
+                        //                 lstProduct.push(object);
+                        //                 uploadimage(j + 1);
+                        //             }
+                        //         }
+                        //         uploadimage(0);
 
-                    //     } else {
-                    //         var object = new Object();
-                    //         object["ProductId"] = response[i].Id;
-                    //         object["sku"] = response[i].Sku;
-                    //         object["Name"] = response[i].Name.toString();
-                    //         object["CategoryName"] = "";
-                    //         object["SubCategory"] = "";
-                    //         object["ProductCost"] = response[i].ProductCost.toString();
-                    //         object["Price"] = response[i].Price.toString();
-                    //         object["OldPrice"] = response[i].OldPrice.toString();
-                    //         object["Stock"] = response[i].StockQuantity.toString();
-                    //         object["Weight"] = response[i].Weight.toString();
-                    //         object["Length"] = response[i].Length.toString();
-                    //         object["PWidth"] = response[i].Width.toString();
-                    //         object["Height"] = response[i].Height.toString();
-                    //         object["Picture"] = '';
-                    //         lstProduct.push(object);
-                    //     }
-                    //     uploaderproduct(i + 1);
-                    // }
-                    if (response[i].product_picture_mappings.length > 0) {
-                        function uploadimage(j) {
-                            if (j < response[i].product_picture_mappings.length) {
-                                var object = new Object();
-                                object["ProductId"] = response[i].Id;
-                                object["No"] = 0;
-                                object["Name"] = response[i].Name.toString();
-                                // object["CategoryName"] = "";
-                                // object["SubCategory"] = "";
-                                object["ProductCost"] = response[i].ProductCost.toString();
-                                object["Price"] = response[i].Price.toString();
-                                object["OldPrice"] = response[i].OldPrice.toString();
-                                object["AttributePrice"] = 0;
-                                object["AttributeOldPrice"] = 0;
-                                object["Stock"] = response[i].StockQuantity.toString();
-                                object["Weight"] = response[i].Weight.toString();
-                                object["Length"] = response[i].Length.toString();
-                                object["PWidth"] = response[i].Width.toString();
-                                object["Height"] = response[i].Height.toString();
-                                object["Picture"] = RoutePath + 'MediaUploads/' + response[i].product_picture_mappings[j].tblmediamgmt.FileName;
-                                lstProduct.push(object);
-                                uploadimage(j + 1);
+                        //     } else {
+                        //         var object = new Object();
+                        //         object["ProductId"] = response[i].Id;
+                        //         object["sku"] = response[i].Sku;
+                        //         object["Name"] = response[i].Name.toString();
+                        //         object["CategoryName"] = "";
+                        //         object["SubCategory"] = "";
+                        //         object["ProductCost"] = response[i].ProductCost.toString();
+                        //         object["Price"] = response[i].Price.toString();
+                        //         object["OldPrice"] = response[i].OldPrice.toString();
+                        //         object["Stock"] = response[i].StockQuantity.toString();
+                        //         object["Weight"] = response[i].Weight.toString();
+                        //         object["Length"] = response[i].Length.toString();
+                        //         object["PWidth"] = response[i].Width.toString();
+                        //         object["Height"] = response[i].Height.toString();
+                        //         object["Picture"] = '';
+                        //         lstProduct.push(object);
+                        //     }
+                        //     uploaderproduct(i + 1);
+                        // }
+                        if (response[i].product_picture_mappings.length > 0) {
+                            function uploadimage(j) {
+                                if (j < response[i].product_picture_mappings.length) {
+                                    var object = new Object();
+                                    object["ProductId"] = response[i].Id;
+                                    object["No"] = 0;
+                                    object["Name"] = response[i].Name.toString();
+                                    // object["CategoryName"] = "";
+                                    // object["SubCategory"] = "";
+                                    object["ProductCost"] = response[i].ProductCost.toString();
+                                    object["Price"] = response[i].Price.toString();
+                                    object["OldPrice"] = response[i].OldPrice.toString();
+                                    object["AttributePrice"] = 0;
+                                    object["AttributeOldPrice"] = 0;
+                                    object["Stock"] = response[i].StockQuantity.toString();
+                                    object["Weight"] = response[i].Weight.toString();
+                                    object["Length"] = response[i].Length.toString();
+                                    object["PWidth"] = response[i].Width.toString();
+                                    object["Height"] = response[i].Height.toString();
+                                    object["Picture"] = RoutePath + 'MediaUploads/' + response[i].product_picture_mappings[j].tblmediamgmt.FileName;
+                                    lstProduct.push(object);
+                                    uploadimage(j + 1);
+                                }
                             }
+                            uploadimage(0);
+
+                        } else {
+                            var object = new Object();
+                            object["ProductId"] = response[i].Id;
+                            object["No"] = 0;
+                            object["Name"] = response[i].Name.toString();
+                            // object["CategoryName"] = "";
+                            // object["SubCategory"] = "";
+                            object["ProductCost"] = response[i].ProductCost.toString();
+                            object["Price"] = response[i].Price.toString();
+                            object["OldPrice"] = response[i].OldPrice.toString();
+                            object["AttributePrice"] = 0;
+                            object["AttributeOldPrice"] = 0;
+                            object["Stock"] = response[i].StockQuantity.toString();
+                            object["Weight"] = response[i].Weight.toString();
+                            object["Length"] = response[i].Length.toString();
+                            object["PWidth"] = response[i].Width.toString();
+                            object["Height"] = response[i].Height.toString();
+                            object["Picture"] = '';
+                            lstProduct.push(object);
                         }
-                        uploadimage(0);
-
+                        uploaderproduct(i + 1);
                     } else {
-                        var object = new Object();
-                        object["ProductId"] = response[i].Id;
-                        object["No"] = 0;
-                        object["Name"] = response[i].Name.toString();
-                        // object["CategoryName"] = "";
-                        // object["SubCategory"] = "";
-                        object["ProductCost"] = response[i].ProductCost.toString();
-                        object["Price"] = response[i].Price.toString();
-                        object["OldPrice"] = response[i].OldPrice.toString();
-                        object["AttributePrice"] = 0;
-                        object["AttributeOldPrice"] = 0;
-                        object["Stock"] = response[i].StockQuantity.toString();
-                        object["Weight"] = response[i].Weight.toString();
-                        object["Length"] = response[i].Length.toString();
-                        object["PWidth"] = response[i].Width.toString();
-                        object["Height"] = response[i].Height.toString();
-                        object["Picture"] = '';
-                        lstProduct.push(object);
-                    }
-                    uploaderproduct(i + 1);
-                } else {
-                    //Manage Product Attrinute Combination
-                    //p-uploaderFinalProduct
-                    var LstFinalProduct = [];
-                    if (lstProduct.length > 0) {
+                        //Manage Product Attrinute Combination
+                        //p-uploaderFinalProduct
+                        var LstFinalProduct = [];
+                        if (lstProduct.length > 0) {
 
-                        function uploaderFinalProduct(p) {
-                            if (p < lstProduct.length) {
-                                GetProductCombinationforExport(lstProduct[p].ProductId, function (response) {
-                                    var Attriburecolumn = response;
-                                    if (Attriburecolumn != null && Attriburecolumn != undefined && Attriburecolumn != '') {
+                            function uploaderFinalProduct(p) {
+                                if (p < lstProduct.length) {
+                                    GetProductCombinationforExport(lstProduct[p].ProductId, function(response) {
+                                        var Attriburecolumn = response;
+                                        if (Attriburecolumn != null && Attriburecolumn != undefined && Attriburecolumn != '') {
 
-                                        if (Attriburecolumn.length > 0) {
-                                            var arrGoupbyAttriburecolumn = u.groupBy(Attriburecolumn, 'ProductCombinationid');
-                                            var array = u.map(arrGoupbyAttriburecolumn, function (value, index) {
-                                                return value;
-                                            });
-                                            //Add Column
-                                            if (array.length > 0) {
-                                                function uploadAttributeExcelColumn(a) {
-                                                    if (a < array.length) {
+                                            if (Attriburecolumn.length > 0) {
+                                                var arrGoupbyAttriburecolumn = u.groupBy(Attriburecolumn, 'ProductCombinationid');
+                                                var array = u.map(arrGoupbyAttriburecolumn, function(value, index) {
+                                                    return value;
+                                                });
+                                                //Add Column
+                                                if (array.length > 0) {
+                                                    function uploadAttributeExcelColumn(a) {
+                                                        if (a < array.length) {
 
-                                                        function ManageAttriburecolumn(q) {
-                                                            if (q < array[a].length) {
-                                                                var columnExists = u.findWhere(conf.cols, {
-                                                                    caption: array[a][q].AttributeColName
-                                                                });
-                                                                if (columnExists == undefined || columnExists == '' || columnExists == null) {
-                                                                    var obj = new Object();
-                                                                    obj.caption = array[a][q].AttributeColName;
-                                                                    obj.type = 'string';
-                                                                    conf.cols.push(obj);
+                                                            function ManageAttriburecolumn(q) {
+                                                                if (q < array[a].length) {
+                                                                    var columnExists = u.findWhere(conf.cols, {
+                                                                        caption: array[a][q].AttributeColName
+                                                                    });
+                                                                    if (columnExists == undefined || columnExists == '' || columnExists == null) {
+                                                                        var obj = new Object();
+                                                                        obj.caption = array[a][q].AttributeColName;
+                                                                        obj.type = 'string';
+                                                                        conf.cols.push(obj);
 
-                                                                }
-                                                                ManageAttriburecolumn(q + 1);
-                                                            } else {
-                                                                uploadAttributeExcelColumn(a + 1);
-                                                            }
-                                                        }
-                                                        ManageAttriburecolumn(0);
-                                                    } else {
-                                                        uploadmultipleAttribute(0);
-                                                    }
-                                                }
-                                                uploadAttributeExcelColumn(0);
-
-                                                //Append Attribute
-                                                function uploadmultipleAttribute(a) {
-
-
-                                                    if (a < array.length) {
-                                                        function uploaderAttriburecolumn(q) {
-                                                            var objProductExport = new Object();
-                                                            for (var i = 0; i < conf.cols.length; i++) {
-                                                                objProductExport[conf.cols[i].caption] = null;
-                                                            };
-                                                            if (q < array[a].length) {
-                                                                var index = -1;
-                                                                u.each(conf.cols, function (data, idx) {
-                                                                    if (data.caption == 'AttributeOldPrice') {
-                                                                        index = idx;
-                                                                        return;
                                                                     }
-                                                                });
-
-                                                                objProductExport.ProductId = lstProduct[p].ProductId;
-                                                                objProductExport.No = lstProduct[p].No.toString();
-                                                                objProductExport.Name = lstProduct[p].Name.toString();
-                                                                // objProductExport.CategoryName = lstProduct[p].CategoryName;
-                                                                // objProductExport.SubCategory = lstProduct[p].SubCategory;
-                                                                objProductExport.ProductCost = lstProduct[p].ProductCost.toString();
-                                                                objProductExport.Price = lstProduct[p].Price.toString();
-                                                                objProductExport.OldPrice = lstProduct[p].OldPrice.toString();
-                                                                objProductExport.AttributePrice = lstProduct[p].AttributePrice.toString();
-                                                                objProductExport.AttributeOldPrice = lstProduct[p].AttributeOldPrice.toString();
-                                                                objProductExport.Stock = lstProduct[p].Stock.toString();
-                                                                objProductExport.Weight = lstProduct[p].Weight.toString();
-                                                                objProductExport.Length = lstProduct[p].Length.toString();
-                                                                objProductExport.PWidth = lstProduct[p].PWidth.toString();
-                                                                objProductExport.Height = lstProduct[p].Height.toString();
-                                                                objProductExport.Picture = lstProduct[p].Picture;
-                                                                if (array[a][q].CombinationPrice != null && array[a][q].CombinationPrice != undefined && array[a][q].CombinationPrice != '') {
-                                                                    objProductExport.AttributePrice = array[a][q].CombinationPrice.toString();
+                                                                    ManageAttriburecolumn(q + 1);
+                                                                } else {
+                                                                    uploadAttributeExcelColumn(a + 1);
                                                                 }
-                                                                if (array[a][q].CombinationOldPrice != null && array[a][q].CombinationOldPrice != undefined && array[a][q].CombinationOldPrice != '') {
-                                                                    objProductExport.AttributeOldPrice = array[a][q].CombinationOldPrice.toString();
-                                                                }
-                                                                // objProductExport["ProductCombinationid"] = array[a][q].ProductCombinationid;
-                                                                var attrNamelist = [];
+                                                            }
+                                                            ManageAttriburecolumn(0);
+                                                        } else {
+                                                            uploadmultipleAttribute(0);
+                                                        }
+                                                    }
+                                                    uploadAttributeExcelColumn(0);
 
-                                                                if (index != -1) {
-                                                                    function attributes(e) {
-                                                                        if (e <= conf.cols.length) {
-                                                                            if (conf.cols[e] != null && conf.cols[e] != undefined && conf.cols[e] != '') {
-                                                                                var obj = new Object();
-                                                                                obj.caption = conf.cols[e].caption;
-                                                                                attrNamelist.push(obj);
-                                                                            }
-                                                                            attributes(e + 1);
-                                                                        } else {
-                                                                            if (attrNamelist.length > 0) {
-                                                                                function Setattrributevalue(s) {
-                                                                                    if (s < attrNamelist.length) {
-                                                                                        var objattri = u.filter(array[a], {
-                                                                                            AttributeColName: attrNamelist[s].caption,
-                                                                                            ProductCombinationid: array[a][q].ProductCombinationid,
-                                                                                        });
-                                                                                        if (objattri.length > 0) {
-                                                                                            var objattri1 = u.filter(objattri, { AttributeColName: attrNamelist[s].caption, AttributeColValue: array[a][q].AttributeColValue })
-                                                                                            objProductExport[objattri1[0].AttributeColName] = objattri1[0].AttributeColValue;
-                                                                                        } else {
-                                                                                            objProductExport[attrNamelist[s].caption] = "";
-                                                                                        }
-                                                                                        Setattrributevalue(s + 1);
-                                                                                    } else {
-                                                                                        LstFinalProduct.push(objProductExport);
-                                                                                        uploaderAttriburecolumn(q + 1);
+                                                    //Append Attribute
+                                                    function uploadmultipleAttribute(a) {
 
-                                                                                    }
+
+                                                        if (a < array.length) {
+                                                            function uploaderAttriburecolumn(q) {
+                                                                var objProductExport = new Object();
+                                                                for (var i = 0; i < conf.cols.length; i++) {
+                                                                    objProductExport[conf.cols[i].caption] = null;
+                                                                };
+                                                                if (q < array[a].length) {
+                                                                    var index = -1;
+                                                                    u.each(conf.cols, function(data, idx) {
+                                                                        if (data.caption == 'AttributeOldPrice') {
+                                                                            index = idx;
+                                                                            return;
+                                                                        }
+                                                                    });
+
+                                                                    objProductExport.ProductId = lstProduct[p].ProductId;
+                                                                    objProductExport.No = lstProduct[p].No.toString();
+                                                                    objProductExport.Name = lstProduct[p].Name.toString();
+                                                                    // objProductExport.CategoryName = lstProduct[p].CategoryName;
+                                                                    // objProductExport.SubCategory = lstProduct[p].SubCategory;
+                                                                    objProductExport.ProductCost = lstProduct[p].ProductCost.toString();
+                                                                    objProductExport.Price = lstProduct[p].Price.toString();
+                                                                    objProductExport.OldPrice = lstProduct[p].OldPrice.toString();
+                                                                    objProductExport.AttributePrice = lstProduct[p].AttributePrice.toString();
+                                                                    objProductExport.AttributeOldPrice = lstProduct[p].AttributeOldPrice.toString();
+                                                                    objProductExport.Stock = lstProduct[p].Stock.toString();
+                                                                    objProductExport.Weight = lstProduct[p].Weight.toString();
+                                                                    objProductExport.Length = lstProduct[p].Length.toString();
+                                                                    objProductExport.PWidth = lstProduct[p].PWidth.toString();
+                                                                    objProductExport.Height = lstProduct[p].Height.toString();
+                                                                    objProductExport.Picture = lstProduct[p].Picture;
+                                                                    if (array[a][q].CombinationPrice != null && array[a][q].CombinationPrice != undefined && array[a][q].CombinationPrice != '') {
+                                                                        objProductExport.AttributePrice = array[a][q].CombinationPrice.toString();
+                                                                    }
+                                                                    if (array[a][q].CombinationOldPrice != null && array[a][q].CombinationOldPrice != undefined && array[a][q].CombinationOldPrice != '') {
+                                                                        objProductExport.AttributeOldPrice = array[a][q].CombinationOldPrice.toString();
+                                                                    }
+                                                                    // objProductExport["ProductCombinationid"] = array[a][q].ProductCombinationid;
+                                                                    var attrNamelist = [];
+
+                                                                    if (index != -1) {
+                                                                        function attributes(e) {
+                                                                            if (e <= conf.cols.length) {
+                                                                                if (conf.cols[e] != null && conf.cols[e] != undefined && conf.cols[e] != '') {
+                                                                                    var obj = new Object();
+                                                                                    obj.caption = conf.cols[e].caption;
+                                                                                    attrNamelist.push(obj);
                                                                                 }
-                                                                                Setattrributevalue(0);
+                                                                                attributes(e + 1);
+                                                                            } else {
+                                                                                if (attrNamelist.length > 0) {
+                                                                                    function Setattrributevalue(s) {
+                                                                                        if (s < attrNamelist.length) {
+                                                                                            var objattri = u.filter(array[a], {
+                                                                                                AttributeColName: attrNamelist[s].caption,
+                                                                                                ProductCombinationid: array[a][q].ProductCombinationid,
+                                                                                            });
+                                                                                            if (objattri.length > 0) {
+                                                                                                var objattri1 = u.filter(objattri, { AttributeColName: attrNamelist[s].caption, AttributeColValue: array[a][q].AttributeColValue })
+                                                                                                objProductExport[objattri1[0].AttributeColName] = objattri1[0].AttributeColValue;
+                                                                                            } else {
+                                                                                                objProductExport[attrNamelist[s].caption] = "";
+                                                                                            }
+                                                                                            Setattrributevalue(s + 1);
+                                                                                        } else {
+                                                                                            LstFinalProduct.push(objProductExport);
+                                                                                            uploaderAttriburecolumn(q + 1);
+
+                                                                                        }
+                                                                                    }
+                                                                                    Setattrributevalue(0);
+                                                                                }
                                                                             }
                                                                         }
-                                                                    }
-                                                                    attributes(index + 1);
-                                                                } else {
-                                                                    uploaderAttriburecolumn(q + 1);
+                                                                        attributes(index + 1);
+                                                                    } else {
+                                                                        uploaderAttriburecolumn(q + 1);
 
+                                                                    }
+
+                                                                } else {
+
+                                                                    uploadmultipleAttribute(a + 1);
+                                                                }
+                                                            }
+                                                            uploaderAttriburecolumn(0);
+                                                        } else {
+                                                            uploaderFinalProduct(p + 1);
+                                                        }
+                                                    }
+
+                                                }
+                                            }
+                                        } else {
+                                            var objNotAttribute = new Object();
+
+                                            var index = -1;
+                                            u.each(conf.cols, function(data, idx) {
+                                                if (data.caption == 'AttributeOldPrice') {
+                                                    index = idx;
+                                                    return;
+                                                }
+                                            });
+
+                                            var attrNamelist = [];
+                                            if (index != -1) {
+                                                function attributse(e) {
+                                                    if (e <= conf.cols.length) {
+                                                        if (conf.cols[e] != null && conf.cols[e] != undefined && conf.cols[e] != '') {
+                                                            var attri = conf.cols[e].caption;
+                                                            attrNamelist.push(attri);
+                                                        }
+                                                        attributse(e + 1);
+                                                    } else {
+                                                        if (attrNamelist.length > 0) {
+                                                            function Setattrributevalues(s) {
+                                                                if (s < attrNamelist.length) {
+                                                                    objNotAttribute[attrNamelist[s]] = "";
+                                                                    Setattrributevalues(s + 1);
+                                                                }
+                                                            }
+                                                            Setattrributevalues(0);
+                                                        }
+                                                    }
+                                                }
+                                                attributse(index + 1);
+                                            }
+
+
+
+                                            ProductAttribute.findAll().then(function(response) {
+                                                if (response != null) {
+                                                    for (var i = 0; i < response.length; i++) {
+                                                        var objData = u.findWhere(conf.cols, {
+                                                            caption: response[i].Name
+                                                        });
+                                                        if (objData == null || objData == undefined) {
+                                                            var obj = new Object();
+                                                            obj.caption = response[i].Name;
+                                                            obj.type = "string";
+
+                                                            conf.cols.push(obj);
+                                                            objNotAttribute[response[i].Name] = "";
+                                                        };
+                                                    };
+                                                    objNotAttribute.ProductId = lstProduct[p].ProductId;
+                                                    objNotAttribute.No = lstProduct[p].No.toString();
+                                                    objNotAttribute.Name = lstProduct[p].Name.toString();
+                                                    // objNotAttribute.CategoryName = lstProduct[p].CategoryName;
+                                                    // objNotAttribute.SubCategory = lstProduct[p].SubCategory;
+                                                    objNotAttribute.ProductCost = lstProduct[p].ProductCost.toString();
+                                                    objNotAttribute.Price = lstProduct[p].Price.toString();
+                                                    objNotAttribute.OldPrice = lstProduct[p].OldPrice.toString();
+                                                    objNotAttribute.AttributePrice = lstProduct[p].AttributePrice.toString();
+                                                    objNotAttribute.AttributeOldPrice = lstProduct[p].AttributeOldPrice.toString();
+                                                    objNotAttribute.Stock = lstProduct[p].Stock.toString();
+                                                    objNotAttribute.Weight = lstProduct[p].Weight.toString();
+                                                    objNotAttribute.Length = lstProduct[p].Length.toString();
+                                                    objNotAttribute.PWidth = lstProduct[p].PWidth.toString();
+                                                    objNotAttribute.Height = lstProduct[p].Height.toString();
+                                                    objNotAttribute.Picture = lstProduct[p].Picture;
+                                                    LstFinalProduct.push(objNotAttribute);
+                                                    uploaderFinalProduct(p + 1);
+                                                } else {
+                                                    objNotAttribute.ProductId = lstProduct[p].ProductId;
+                                                    objNotAttribute.No = lstProduct[p].No.toString();;
+                                                    objNotAttribute.Name = lstProduct[p].Name.toString();
+                                                    // objNotAttribute.CategoryName = lstProduct[p].CategoryName;
+                                                    // objNotAttribute.SubCategory = lstProduct[p].SubCategory;
+                                                    objNotAttribute.ProductCost = lstProduct[p].ProductCost.toString();
+                                                    objNotAttribute.Price = lstProduct[p].Price.toString();
+                                                    objNotAttribute.OldPrice = lstProduct[p].OldPrice.toString();
+                                                    objNotAttribute.AttributePrice = lstProduct[p].AttributePrice.toString();
+                                                    objNotAttribute.AttributeOldPrice = lstProduct[p].AttributeOldPrice.toString();
+                                                    objNotAttribute.Stock = lstProduct[p].Stock.toString();
+                                                    objNotAttribute.Weight = lstProduct[p].Weight.toString();
+                                                    objNotAttribute.Length = lstProduct[p].Length.toString();
+                                                    objNotAttribute.PWidth = lstProduct[p].PWidth.toString();
+                                                    objNotAttribute.Height = lstProduct[p].Height.toString();
+                                                    objNotAttribute.Picture = lstProduct[p].Picture;
+                                                    LstFinalProduct.push(objNotAttribute);
+                                                    uploaderFinalProduct(p + 1);
+                                                }
+                                            });
+
+                                        }
+                                    })
+                                } else {
+                                    var index = -1;
+                                    u.each(conf.cols, function(data, idx) {
+                                        if (data.caption == 'AttributeOldPrice') {
+                                            index = idx;
+                                            return;
+                                        }
+                                    });
+                                    if (LstFinalProduct.length > 0) {
+                                        function FinalExportProduct(row) {
+                                            if (row < LstFinalProduct.length) {
+                                                var rows = [];
+
+                                                rows.push((row + 1).toString());
+                                                rows.push(LstFinalProduct[row].Name);
+                                                // rows.push(LstFinalProduct[row].CategoryName);
+                                                // rows.push(LstFinalProduct[row].SubCategory);
+                                                // rows.push(LstFinalProduct[row].ProductCost);
+                                                rows.push(LstFinalProduct[row].Price);
+                                                rows.push(LstFinalProduct[row].OldPrice);
+                                                rows.push(LstFinalProduct[row].Stock);
+                                                rows.push(LstFinalProduct[row].Weight);
+                                                rows.push(LstFinalProduct[row].Length);
+                                                rows.push(LstFinalProduct[row].PWidth);
+                                                rows.push(LstFinalProduct[row].Height);
+                                                rows.push(LstFinalProduct[row].Picture);
+                                                rows.push(LstFinalProduct[row].AttributePrice);
+                                                rows.push(LstFinalProduct[row].AttributeOldPrice);
+                                                if (conf.cols.length > 0) {
+                                                    function uploaderFinalAttributeColumn(i) {
+                                                        if (i <= conf.cols.length) {
+                                                            if (conf.cols[i] != null && conf.cols[i] != undefined && conf.cols[i] != '') {
+                                                                var attri = conf.cols[i].caption;
+                                                                if (LstFinalProduct[row][attri] != null && LstFinalProduct[row][attri] != undefined) {
+                                                                    rows.push(LstFinalProduct[row][attri]);
+                                                                } else {
+                                                                    rows.push("");
                                                                 }
 
-                                                            } else {
-
-                                                                uploadmultipleAttribute(a + 1);
                                                             }
+                                                            uploaderFinalAttributeColumn(i + 1);
+                                                        } else {
+                                                            conf.rows.push(rows);
                                                         }
-                                                        uploaderAttriburecolumn(0);
-                                                    } else {
-                                                        uploaderFinalProduct(p + 1);
                                                     }
-                                                }
-
-                                            }
-                                        }
-                                    } else {
-                                        var objNotAttribute = new Object();
-
-                                        var index = -1;
-                                        u.each(conf.cols, function (data, idx) {
-                                            if (data.caption == 'AttributeOldPrice') {
-                                                index = idx;
-                                                return;
-                                            }
-                                        });
-
-                                        var attrNamelist = [];
-                                        if (index != -1) {
-                                            function attributse(e) {
-                                                if (e <= conf.cols.length) {
-                                                    if (conf.cols[e] != null && conf.cols[e] != undefined && conf.cols[e] != '') {
-                                                        var attri = conf.cols[e].caption;
-                                                        attrNamelist.push(attri);
-                                                    }
-                                                    attributse(e + 1);
+                                                    uploaderFinalAttributeColumn(index + 1);
                                                 } else {
-                                                    if (attrNamelist.length > 0) {
-                                                        function Setattrributevalues(s) {
-                                                            if (s < attrNamelist.length) {
-                                                                objNotAttribute[attrNamelist[s]] = "";
-                                                                Setattrributevalues(s + 1);
-                                                            }
-                                                        }
-                                                        Setattrributevalues(0);
-                                                    }
+                                                    conf.rows.push(rows);
                                                 }
+                                                FinalExportProduct(row + 1);
                                             }
-                                            attributse(index + 1);
+
                                         }
-
-
-
-                                        ProductAttribute.findAll().then(function (response) {
-                                            if (response != null) {
-                                                for (var i = 0; i < response.length; i++) {
-                                                    var objData = u.findWhere(conf.cols, {
-                                                        caption: response[i].Name
-                                                    });
-                                                    if (objData == null || objData == undefined) {
-                                                        var obj = new Object();
-                                                        obj.caption = response[i].Name;
-                                                        obj.type = "string";
-
-                                                        conf.cols.push(obj);
-                                                        objNotAttribute[response[i].Name] = "";
-                                                    };
-                                                };
-                                                objNotAttribute.ProductId = lstProduct[p].ProductId;
-                                                objNotAttribute.No = lstProduct[p].No.toString();
-                                                objNotAttribute.Name = lstProduct[p].Name.toString();
-                                                // objNotAttribute.CategoryName = lstProduct[p].CategoryName;
-                                                // objNotAttribute.SubCategory = lstProduct[p].SubCategory;
-                                                objNotAttribute.ProductCost = lstProduct[p].ProductCost.toString();
-                                                objNotAttribute.Price = lstProduct[p].Price.toString();
-                                                objNotAttribute.OldPrice = lstProduct[p].OldPrice.toString();
-                                                objNotAttribute.AttributePrice = lstProduct[p].AttributePrice.toString();
-                                                objNotAttribute.AttributeOldPrice = lstProduct[p].AttributeOldPrice.toString();
-                                                objNotAttribute.Stock = lstProduct[p].Stock.toString();
-                                                objNotAttribute.Weight = lstProduct[p].Weight.toString();
-                                                objNotAttribute.Length = lstProduct[p].Length.toString();
-                                                objNotAttribute.PWidth = lstProduct[p].PWidth.toString();
-                                                objNotAttribute.Height = lstProduct[p].Height.toString();
-                                                objNotAttribute.Picture = lstProduct[p].Picture;
-                                                LstFinalProduct.push(objNotAttribute);
-                                                uploaderFinalProduct(p + 1);
-                                            } else {
-                                                objNotAttribute.ProductId = lstProduct[p].ProductId;
-                                                objNotAttribute.No = lstProduct[p].No.toString();;
-                                                objNotAttribute.Name = lstProduct[p].Name.toString();
-                                                // objNotAttribute.CategoryName = lstProduct[p].CategoryName;
-                                                // objNotAttribute.SubCategory = lstProduct[p].SubCategory;
-                                                objNotAttribute.ProductCost = lstProduct[p].ProductCost.toString();
-                                                objNotAttribute.Price = lstProduct[p].Price.toString();
-                                                objNotAttribute.OldPrice = lstProduct[p].OldPrice.toString();
-                                                objNotAttribute.AttributePrice = lstProduct[p].AttributePrice.toString();
-                                                objNotAttribute.AttributeOldPrice = lstProduct[p].AttributeOldPrice.toString();
-                                                objNotAttribute.Stock = lstProduct[p].Stock.toString();
-                                                objNotAttribute.Weight = lstProduct[p].Weight.toString();
-                                                objNotAttribute.Length = lstProduct[p].Length.toString();
-                                                objNotAttribute.PWidth = lstProduct[p].PWidth.toString();
-                                                objNotAttribute.Height = lstProduct[p].Height.toString();
-                                                objNotAttribute.Picture = lstProduct[p].Picture;
-                                                LstFinalProduct.push(objNotAttribute);
-                                                uploaderFinalProduct(p + 1);
-                                            }
-                                        });
-
+                                        FinalExportProduct(0);
                                     }
-                                })
-                            } else {
-                                var index = -1;
-                                u.each(conf.cols, function (data, idx) {
-                                    if (data.caption == 'AttributeOldPrice') {
-                                        index = idx;
-                                        return;
-                                    }
-                                });
-                                if (LstFinalProduct.length > 0) {
-                                    function FinalExportProduct(row) {
-                                        if (row < LstFinalProduct.length) {
-                                            var rows = [];
-
-                                            rows.push((row + 1).toString());
-                                            rows.push(LstFinalProduct[row].Name);
-                                            // rows.push(LstFinalProduct[row].CategoryName);
-                                            // rows.push(LstFinalProduct[row].SubCategory);
-                                            // rows.push(LstFinalProduct[row].ProductCost);
-                                            rows.push(LstFinalProduct[row].Price);
-                                            rows.push(LstFinalProduct[row].OldPrice);
-                                            rows.push(LstFinalProduct[row].Stock);
-                                            rows.push(LstFinalProduct[row].Weight);
-                                            rows.push(LstFinalProduct[row].Length);
-                                            rows.push(LstFinalProduct[row].PWidth);
-                                            rows.push(LstFinalProduct[row].Height);
-                                            rows.push(LstFinalProduct[row].Picture);
-                                            rows.push(LstFinalProduct[row].AttributePrice);
-                                            rows.push(LstFinalProduct[row].AttributeOldPrice);
-                                            if (conf.cols.length > 0) {
-                                                function uploaderFinalAttributeColumn(i) {
-                                                    if (i <= conf.cols.length) {
-                                                        if (conf.cols[i] != null && conf.cols[i] != undefined && conf.cols[i] != '') {
-                                                            var attri = conf.cols[i].caption;
-                                                            if (LstFinalProduct[row][attri] != null && LstFinalProduct[row][attri] != undefined) {
-                                                                rows.push(LstFinalProduct[row][attri]);
-                                                            } else {
-                                                                rows.push("");
-                                                            }
-
-                                                        }
-                                                        uploaderFinalAttributeColumn(i + 1);
-                                                    } else {
-                                                        conf.rows.push(rows);
-                                                    }
-                                                }
-                                                uploaderFinalAttributeColumn(index + 1);
-                                            } else {
-                                                conf.rows.push(rows);
-                                            }
-                                            FinalExportProduct(row + 1);
-                                        }
-
-                                    }
-                                    FinalExportProduct(0);
+                                    var result = nodeExcel.execute(conf);
+                                    res.setHeader('Content-Type', 'application/vnd.openxmlformats');
+                                    res.setHeader("Content-Disposition", "attachment; filename=" + "Product.xlsx");
+                                    res.end(result, 'binary');
                                 }
-                                var result = nodeExcel.execute(conf);
-                                res.setHeader('Content-Type', 'application/vnd.openxmlformats');
-                                res.setHeader("Content-Disposition", "attachment; filename=" + "Product.xlsx");
-                                res.end(result, 'binary');
                             }
+                            uploaderFinalProduct(0);
                         }
-                        uploaderFinalProduct(0);
                     }
                 }
+                uploaderproduct(0);
+            } else {
+                var row = [];
+                for (var i = 0; i < conf.cols.length; i++) {
+                    row.push('');
+                };
+                conf.rows = [];
+                conf.rows.push(row);
+                var result = nodeExcel.execute(conf);
+                res.setHeader('Content-Type', 'application/vnd.openxmlformats');
+                res.setHeader("Content-Disposition", "attachment; filename=" + "NoProduct.xlsx");
+                res.end(result, 'binary');
             }
-            uploaderproduct(0);
-        } else {
-            var row = [];
-            for (var i = 0; i < conf.cols.length; i++) {
-                row.push('');
-            };
-            conf.rows = [];
-            conf.rows.push(row);
-            var result = nodeExcel.execute(conf);
-            res.setHeader('Content-Type', 'application/vnd.openxmlformats');
-            res.setHeader("Content-Disposition", "attachment; filename=" + "NoProduct.xlsx");
-            res.end(result, 'binary');
-        }
-        // res.json(lstProduct);
+            // res.json(lstProduct);
 
-    }).catch(function (error) {
-        res.json(error);
-    })
-    //         } else {
-    //             res.json(InvalidToken);
-    //         }
-    //     })
-    // } else {
-    //     res.json(InvalidToken);
-    // }
+        }).catch(function(error) {
+            res.json(error);
+        })
+        //         } else {
+        //             res.json(InvalidToken);
+        //         }
+        //     })
+        // } else {
+        //     res.json(InvalidToken);
+        // }
 })
 
 var request = require('request');
 var http = require('http');
 
-router.post('/ImportProducts', function (req, res) {
+router.post('/ImportProducts', function(req, res) {
 
     var totalattributes = 0;
     //upto picture column name
@@ -2299,12 +2298,12 @@ router.post('/ImportProducts', function (req, res) {
     //var FileName = __dirname + '/../MediaUploads/FileUpload/DeviceList.xlsx';
     form.uploadDir = __dirname + '/../MediaUploads/FileUpload';
 
-    form.parse(req, function (err, fields, files) {
+    form.parse(req, function(err, fields, files) {
         //CreatedBy = fields.CreatedBy;
 
     });
 
-    form.on('fileBegin', function (name, file) {
+    form.on('fileBegin', function(name, file) {
         file.path = form.uploadDir + "/" + file.name;
         FileName = file.path.toString();
         //FileName.push(file.path);
@@ -2330,8 +2329,8 @@ router.post('/ImportProducts', function (req, res) {
     // });
 
 
-    form.on('end', function () {
-        ProductAttribute.findAndCountAll().then(function (response) {
+    form.on('end', function() {
+        ProductAttribute.findAndCountAll().then(function(response) {
             if (response != null && response != undefined && response != '') {
                 totalattributes = response.count;
                 totalRequiredcolumn = totalRequiredcolumn + totalattributes;
@@ -2370,10 +2369,10 @@ router.post('/ImportProducts', function (req, res) {
                         }
                         lstexcel = XLSX.utils.sheet_to_json(worksheet);
                         var lst = [];
-                        lstexcel.forEach(function (row) {
+                        lstexcel.forEach(function(row) {
                             // Set empty cell to ''.
                             var obj = new Object();
-                            headers.forEach(function (hd) {
+                            headers.forEach(function(hd) {
                                 if (row[hd] == undefined) {
                                     obj[hd] = '';
                                 } else {
@@ -2410,14 +2409,14 @@ router.post('/ImportProducts', function (req, res) {
                                             Name: objProduct.Name
                                         },
                                         defaults: objProduct
-                                    }).then(function (responseProduct) {
+                                    }).then(function(responseProduct) {
                                         var objProductResponse = responseProduct[0];
                                         var ProductId = objProductResponse.Id;
                                         ProductPictureMaping.destroy({
                                             where: {
                                                 ProductId: ProductId
                                             }
-                                        }).then(function (responsepicturemapping) {
+                                        }).then(function(responsepicturemapping) {
                                             function FindExcelAttribute(k) {
                                                 if (k < lstAllVarient.length) {
                                                     if (k > 11) {
@@ -2431,7 +2430,7 @@ router.post('/ImportProducts', function (req, res) {
                                                             where: {
                                                                 ProductId: ProductId
                                                             }
-                                                        }).then(function (response) {
+                                                        }).then(function(response) {
                                                             if (response.length > 0) {
                                                                 function DeleteMapping(p) {
                                                                     if (p < response.length) {
@@ -2440,7 +2439,7 @@ router.post('/ImportProducts', function (req, res) {
                                                                             where: {
                                                                                 ProductAttributeMappingId: ProductAttributeMappingId
                                                                             }
-                                                                        }).then(function (response1) {
+                                                                        }).then(function(response1) {
                                                                             if (response1.length > 0) {
                                                                                 function uploader(q) {
                                                                                     if (q < response1.length) {
@@ -2486,13 +2485,13 @@ router.post('/ImportProducts', function (req, res) {
                                                                                             where: {
                                                                                                 ProductAttributeMappingId: ProductAttributeMappingId
                                                                                             }
-                                                                                        }).then(function (responsevalue) {
+                                                                                        }).then(function(responsevalue) {
                                                                                             // res.json({ success: true, message: "Product Attribute deleted successfully...", data: response });
                                                                                             ProductAttributeMapping.destroy({
                                                                                                 where: {
                                                                                                     ProductId: ProductId
                                                                                                 }
-                                                                                            }).then(function (responsemapping) {
+                                                                                            }).then(function(responsemapping) {
 
                                                                                                 DeleteMapping(p + 1);
 
@@ -2503,44 +2502,44 @@ router.post('/ImportProducts', function (req, res) {
                                                                                 uploader(0);
                                                                             } else {
                                                                                 ProductAttributeMapping.destroy({
-                                                                                    where: {
-                                                                                        ProductId: ProductId
-                                                                                    }
-                                                                                }).then(function (response) {
-                                                                                    DeleteMapping(p + 1);
-                                                                                    // res.json({ success: true, message: "Product Attribute deleted successfully...", data: response });
-                                                                                })
-                                                                                // ProductAttributeCombination.findAll({
-                                                                                //     where: {
-                                                                                //         ProductId: ProductId
-                                                                                //     }
-                                                                                // }).then(function(response2) {
-                                                                                //     if (response2.length > 0) {
-                                                                                //         function deletecombination(d) {
-                                                                                //             if (d < response2.length) {
-                                                                                //                 var idcombination = response2[d].Id;
-                                                                                //                 CombinationTierPrice.destroy({
-                                                                                //                     where: {
-                                                                                //                         ProductAttributeCombinationId: idcombination
-                                                                                //                     }
-                                                                                //                 }).then(function(objhcombinationtierprice) {
-                                                                                //                     ProductAttributeCombination.destroy({
-                                                                                //                         where: {
-                                                                                //                             Id: idcombination
-                                                                                //                         }
-                                                                                //                     }).then(function(responsecombinationtierprice) {
-                                                                                //                         deletecombination(d + 1);
-                                                                                //                     })
-                                                                                //                 })
-                                                                                //             } else {
-                                                                                //                 ProductAttributeMapping.destroy({
-                                                                                //                     where: {
-                                                                                //                         ProductId: ProductId
-                                                                                //                     }
-                                                                                //                 }).then(function(response) {
-                                                                                //                     DeleteMapping(p + 1);
-                                                                                //                     // res.json({ success: true, message: "Product Attribute deleted successfully...", data: response });
-                                                                                //                 })
+                                                                                        where: {
+                                                                                            ProductId: ProductId
+                                                                                        }
+                                                                                    }).then(function(response) {
+                                                                                        DeleteMapping(p + 1);
+                                                                                        // res.json({ success: true, message: "Product Attribute deleted successfully...", data: response });
+                                                                                    })
+                                                                                    // ProductAttributeCombination.findAll({
+                                                                                    //     where: {
+                                                                                    //         ProductId: ProductId
+                                                                                    //     }
+                                                                                    // }).then(function(response2) {
+                                                                                    //     if (response2.length > 0) {
+                                                                                    //         function deletecombination(d) {
+                                                                                    //             if (d < response2.length) {
+                                                                                    //                 var idcombination = response2[d].Id;
+                                                                                    //                 CombinationTierPrice.destroy({
+                                                                                    //                     where: {
+                                                                                    //                         ProductAttributeCombinationId: idcombination
+                                                                                    //                     }
+                                                                                    //                 }).then(function(objhcombinationtierprice) {
+                                                                                    //                     ProductAttributeCombination.destroy({
+                                                                                    //                         where: {
+                                                                                    //                             Id: idcombination
+                                                                                    //                         }
+                                                                                    //                     }).then(function(responsecombinationtierprice) {
+                                                                                    //                         deletecombination(d + 1);
+                                                                                    //                     })
+                                                                                    //                 })
+                                                                                    //             } else {
+                                                                                    //                 ProductAttributeMapping.destroy({
+                                                                                    //                     where: {
+                                                                                    //                         ProductId: ProductId
+                                                                                    //                     }
+                                                                                    //                 }).then(function(response) {
+                                                                                    //                     DeleteMapping(p + 1);
+                                                                                    //                     // res.json({ success: true, message: "Product Attribute deleted successfully...", data: response });
+                                                                                    //                 })
 
 
                                                                                 //             }
@@ -2629,7 +2628,7 @@ router.post('/ImportProducts', function (req, res) {
                                                     Name: objProduct.Name
                                                 },
                                                 defaults: objProduct
-                                            }).then(function (responseProduct) {
+                                            }).then(function(responseProduct) {
                                                 var objProductResponse = responseProduct[0];
                                                 var FlgProductResponse = responseProduct[1];
                                                 var ProductId = objProductResponse.Id;
@@ -2652,7 +2651,7 @@ router.post('/ImportProducts', function (req, res) {
                                                     if (!fs.existsSync(filePath)) {
 
                                                         var file = fs.createWriteStream(filePath);
-                                                        var request = http.get(Excelimage, function (response) {
+                                                        var request = http.get(Excelimage, function(response) {
                                                             response.pipe(file);
                                                         });
 
@@ -2677,7 +2676,7 @@ router.post('/ImportProducts', function (req, res) {
                                                             FileName: objMedia.FileName
                                                         },
                                                         defaults: objMedia
-                                                    }).then(function (responseMedia) {
+                                                    }).then(function(responseMedia) {
                                                         var objProductPirctureMapping = new InitializeProductPirctureMappingObject();
                                                         objProductPirctureMapping.ProductId = ProductId;
                                                         objProductPirctureMapping.PictureId = responseMedia[0].id;
@@ -2688,7 +2687,7 @@ router.post('/ImportProducts', function (req, res) {
                                                                 PictureId: objProductPirctureMapping.PictureId
                                                             },
                                                             defaults: objProductPirctureMapping
-                                                        }).then(function (responsepicturemapping) {
+                                                        }).then(function(responsepicturemapping) {
                                                             ManageImportExcel();
                                                         });
                                                     })
@@ -2828,7 +2827,7 @@ router.post('/ImportProducts', function (req, res) {
                                                                                             Name: objProductAttribute.Name
                                                                                         },
                                                                                         defaults: objProductAttribute
-                                                                                    }).then(function (responseProductAttribute) {
+                                                                                    }).then(function(responseProductAttribute) {
                                                                                         var objresponseProductAttribute = responseProductAttribute[0];
                                                                                         var flgresponseProductAttribute = responseProductAttribute[1];
 
@@ -2845,7 +2844,7 @@ router.post('/ImportProducts', function (req, res) {
                                                                                                 ProductId: objProductAttributeMapping.ProductId
                                                                                             },
                                                                                             defaults: objProductAttributeMapping
-                                                                                        }).then(function (responseProductAttributeMapping) {
+                                                                                        }).then(function(responseProductAttributeMapping) {
                                                                                             //End Product Attribute Mapping
 
                                                                                             var ProductAttributeMappingId = responseProductAttributeMapping[0].Id;
@@ -2866,7 +2865,7 @@ router.post('/ImportProducts', function (req, res) {
                                                                                                     Name: objProductAttributeValue.Name
                                                                                                 },
                                                                                                 defaults: objProductAttributeValue
-                                                                                            }).then(function (responseProductAttributeValue) {
+                                                                                            }).then(function(responseProductAttributeValue) {
                                                                                                 var obj = new Object();
                                                                                                 obj.ID = AttributeId;
                                                                                                 obj.Value = responseProductAttributeValue[0].Id;
@@ -2995,7 +2994,7 @@ router.post('/ImportProducts', function (req, res) {
                                                         objProductResponse.Height = objProduct.Height;
                                                         objProductResponse.UpdatedOnUtc = new Date();
 
-                                                        objProductResponse.save().then(function (responseobjProductResponse) {
+                                                        objProductResponse.save().then(function(responseobjProductResponse) {
                                                             //Manage Category Name
                                                             // if (CategoryName == null || CategoryName == undefined || CategoryName == '') {
                                                             //     CategoryName = "Other";
@@ -3136,7 +3135,7 @@ router.post('/ImportProducts', function (req, res) {
                                                                                                 Name: objProductAttribute.Name
                                                                                             },
                                                                                             defaults: objProductAttribute
-                                                                                        }).then(function (responseProductAttribute) {
+                                                                                        }).then(function(responseProductAttribute) {
                                                                                             var objresponseProductAttribute = responseProductAttribute[0];
                                                                                             var flgresponseProductAttribute = responseProductAttribute[1];
 
@@ -3153,7 +3152,7 @@ router.post('/ImportProducts', function (req, res) {
                                                                                                     ProductId: objProductAttributeMapping.ProductId
                                                                                                 },
                                                                                                 defaults: objProductAttributeMapping
-                                                                                            }).then(function (responseProductAttributeMapping) {
+                                                                                            }).then(function(responseProductAttributeMapping) {
                                                                                                 //End Product Attribute Mapping
 
                                                                                                 var ProductAttributeMappingId = responseProductAttributeMapping[0].Id;
@@ -3174,7 +3173,7 @@ router.post('/ImportProducts', function (req, res) {
                                                                                                         Name: objProductAttributeValue.Name
                                                                                                     },
                                                                                                     defaults: objProductAttributeValue
-                                                                                                }).then(function (responseProductAttributeValue) {
+                                                                                                }).then(function(responseProductAttributeValue) {
 
                                                                                                     var obj = new Object();
                                                                                                     obj.ID = AttributeId;
@@ -3601,7 +3600,7 @@ function GetCategoryIdFromImport(objCategory) {
             Title: objCategory.Title
         },
         defaults: objCategory
-    }).then(function (response) {
+    }).then(function(response) {
         if (response[0] != null) {
             Cid = response[0].id;
             return Cid;
@@ -3618,7 +3617,7 @@ function manageProductCategoryMapping(oldProductId, newProductId) {
         where: {
             ProductId: oldProductId
         }
-    }).then(function (response) {
+    }).then(function(response) {
         var lstProductCategory = [];
         for (var i = 0; i < response.length; i++) {
             var objProductCategory = {
@@ -3630,7 +3629,7 @@ function manageProductCategoryMapping(oldProductId, newProductId) {
             lstProductCategory.push(objProductCategory);
 
             if (i == response.length - 1) {
-                ProductCategory.bulkCreate(lstProductCategory).then(function (resProductCategory) { })
+                ProductCategory.bulkCreate(lstProductCategory).then(function(resProductCategory) {})
             }
         }
     })
@@ -3641,7 +3640,7 @@ function manageProductManufacturerMapping(oldProductId, newProductId) {
         where: {
             ProductId: oldProductId
         }
-    }).then(function (response) {
+    }).then(function(response) {
         var lstProductManufacturer = [];
         for (var i = 0; i < response.length; i++) {
             var objProductManufacturer = {
@@ -3653,7 +3652,7 @@ function manageProductManufacturerMapping(oldProductId, newProductId) {
             lstProductManufacturer.push(objProductManufacturer);
 
             if (i == response.length - 1) {
-                ProductManufacturer.bulkCreate(lstProductManufacturer).then(function (resProductManufacturer) { })
+                ProductManufacturer.bulkCreate(lstProductManufacturer).then(function(resProductManufacturer) {})
             }
         }
     })
@@ -3664,7 +3663,7 @@ function manageProductSpecificationAttributeMapping(oldProductId, newProductId) 
         where: {
             ProductId: oldProductId
         }
-    }).then(function (response) {
+    }).then(function(response) {
         var lstProductSpecificationAttribute = [];
         for (var i = 0; i < response.length; i++) {
             var objProductSpecificationAttribute = {
@@ -3679,7 +3678,7 @@ function manageProductSpecificationAttributeMapping(oldProductId, newProductId) 
             lstProductSpecificationAttribute.push(objProductSpecificationAttribute);
 
             if (i == response.length - 1) {
-                ProductSpecificationAttribute.bulkCreate(lstProductSpecificationAttribute).then(function (resProductSpecificationAttribute) { })
+                ProductSpecificationAttribute.bulkCreate(lstProductSpecificationAttribute).then(function(resProductSpecificationAttribute) {})
             }
         }
     })
@@ -3690,7 +3689,7 @@ function manageProductAttributeMapping(oldProductId, newProductId) {
         where: {
             ProductId: oldProductId
         }
-    }).then(function (response) {
+    }).then(function(response) {
         var lstProductAttributeMaping = [];
         for (var i = 0; i < response.length; i++) {
             var objProductAttributeMaping = {
@@ -3708,7 +3707,7 @@ function manageProductAttributeMapping(oldProductId, newProductId) {
             lstProductAttributeMaping.push(objProductAttributeMaping);
 
             if (i == response.length - 1) {
-                ProductAttributeMaping.bulkCreate(lstProductAttributeMaping).then(function (resProductAttributeMaping) { })
+                ProductAttributeMaping.bulkCreate(lstProductAttributeMaping).then(function(resProductAttributeMaping) {})
             }
         }
     })
@@ -3719,7 +3718,7 @@ function manageProductAttributeCombination(oldProductId, newProductId) {
         where: {
             ProductId: oldProductId
         }
-    }).then(function (response) {
+    }).then(function(response) {
         var lstProductAttributeCombination = [];
         for (var i = 0; i < response.length; i++) {
             var objProductAttributeCombination = {
@@ -3736,7 +3735,7 @@ function manageProductAttributeCombination(oldProductId, newProductId) {
             lstProductAttributeCombination.push(objProductAttributeCombination);
 
             if (i == response.length - 1) {
-                ProductAttributeCombination.bulkCreate(lstProductAttributeCombination).then(function (resProductAttributeCombination) { })
+                ProductAttributeCombination.bulkCreate(lstProductAttributeCombination).then(function(resProductAttributeCombination) {})
             }
         }
     })
@@ -3747,7 +3746,7 @@ function manageTierPrice(oldProductId, newProductId) {
         where: {
             ProductId: oldProductId
         }
-    }).then(function (response) {
+    }).then(function(response) {
         var lstProductTierPrice = [];
         for (var i = 0; i < response.length; i++) {
             var objProductTierPrice = {
@@ -3761,7 +3760,7 @@ function manageTierPrice(oldProductId, newProductId) {
 
             if (i == response.length - 1) {
 
-                ProductTierPrice.bulkCreate(lstProductTierPrice).then(function (resProductTierPrice) { })
+                ProductTierPrice.bulkCreate(lstProductTierPrice).then(function(resProductTierPrice) {})
             }
         }
     })
@@ -3772,7 +3771,7 @@ function manageProductPictureMapping(oldProductId, newProductId) {
         where: {
             ProductId: oldProductId
         }
-    }).then(function (response) {
+    }).then(function(response) {
         var lstProductPictureMaping = [];
         for (var i = 0; i < response.length; i++) {
             var objProductPictureMaping = {
@@ -3783,7 +3782,7 @@ function manageProductPictureMapping(oldProductId, newProductId) {
             lstProductPictureMaping.push(objProductPictureMaping);
 
             if (i == response.length - 1) {
-                ProductPictureMaping.bulkCreate(lstProductPictureMaping).then(function (resProductPictureMaping) { })
+                ProductPictureMaping.bulkCreate(lstProductPictureMaping).then(function(resProductPictureMaping) {})
             }
         }
     })
@@ -3794,7 +3793,7 @@ function manageRelatedProduct(oldProductId, newProductId) {
         where: {
             ProductId1: oldProductId
         }
-    }).then(function (response) {
+    }).then(function(response) {
         var lstRelatedProduct = [];
         for (var i = 0; i < response.length; i++) {
             var objRelatedProduct = {
@@ -3805,7 +3804,7 @@ function manageRelatedProduct(oldProductId, newProductId) {
             lstRelatedProduct.push(objRelatedProduct);
 
             if (i == response.length - 1) {
-                RelatedProduct.bulkCreate(lstRelatedProduct).then(function (resRelatedProduct) { })
+                RelatedProduct.bulkCreate(lstRelatedProduct).then(function(resRelatedProduct) {})
             }
         }
     })
@@ -3816,7 +3815,7 @@ function manageCrossSellProduct(oldProductId, newProductId) {
         where: {
             ProductId1: oldProductId
         }
-    }).then(function (response) {
+    }).then(function(response) {
         var lstCrossSellProduct = [];
         for (var i = 0; i < response.length; i++) {
             var objCrossSellProduct = {
@@ -3826,7 +3825,7 @@ function manageCrossSellProduct(oldProductId, newProductId) {
             lstCrossSellProduct.push(objCrossSellProduct);
 
             if (i == response.length - 1) {
-                CrossSellProduct.bulkCreate(lstCrossSellProduct).then(function (resCrossSellProduct) { })
+                CrossSellProduct.bulkCreate(lstCrossSellProduct).then(function(resCrossSellProduct) {})
             }
         }
     })
@@ -3971,7 +3970,7 @@ function manageCrossSellProduct(oldProductId, newProductId) {
 // });
 
 
-router.get('/CheckProductIsAddable', function (req, res) {
+router.get('/CheckProductIsAddable', function(req, res) {
     var ProductType = "";
     Product.findAll({
         where: {
@@ -3979,7 +3978,7 @@ router.get('/CheckProductIsAddable', function (req, res) {
             ProductTypeId: req.query.ProductTypeId,
             Deleted: false
         }
-    }).then(function (resProduct) {
+    }).then(function(resProduct) {
         if (req.query.ProductTypeId != null && req.query.ProductTypeId != "" && req.query.ProductTypeId != undefined) {
             if (req.query.ProductTypeId == "1") {
                 ProductType = "VeterinarySlot";
@@ -3993,7 +3992,7 @@ router.get('/CheckProductIsAddable', function (req, res) {
             where: {
                 Name: ProductType
             }
-        }).then(function (resSetting) {
+        }).then(function(resSetting) {
             if (resSetting != null) {
                 if (resSetting.Value <= resProduct.length) {
                     res.json({
@@ -4018,7 +4017,7 @@ router.get('/CheckProductIsAddable', function (req, res) {
         })
     })
 });
-router.get('/GetHotSeelingProductForApp', function (req, res) {
+router.get('/GetHotSeelingProductForApp', function(req, res) {
     var objParam = req.query;
 
     var offset = (parseInt(objParam.page) * 4);
@@ -4118,7 +4117,7 @@ router.get('/GetHotSeelingProductForApp', function (req, res) {
                 }]
             }]
         }],
-    }).then(function (response) {
+    }).then(function(response) {
         // res.json({ success: true, response: response });
         var response1 = new Object();
         // response1.draw = objParam.draw;
@@ -4126,14 +4125,14 @@ router.get('/GetHotSeelingProductForApp', function (req, res) {
         // response1.recordsFiltered = response.count;
         response1.data = response.rows;
         res.json(response1);
-    }).catch(function (error) {
+    }).catch(function(error) {
         res.json({
             success: false,
             response: error
         });
     })
 })
-router.get('/GetAllProductForApp', function (req, res) {
+router.get('/GetAllProductForApp', function(req, res) {
     var objParam = req.query;
     var offset = (parseInt(objParam.page) * 4);
     var Productmodel = [];
@@ -4182,7 +4181,7 @@ router.get('/GetAllProductForApp', function (req, res) {
         // order.push('Id');
         // order.push('desc');
         order = '`product`.`Id` desc'
-        //Orderby = 'Id desc'; // LIMIT ' + parseInt(offset) + ', ' + parseInt(objParam.limit) + '';
+            //Orderby = 'Id desc'; // LIMIT ' + parseInt(offset) + ', ' + parseInt(objParam.limit) + '';
     }
 
     Product.hasMany(ProductAttributeMaping, {
@@ -4254,11 +4253,11 @@ router.get('/GetAllProductForApp', function (req, res) {
                 attributes: ['Id', 'FileName', 'Name']
             }]
         }]
-    }).then(function (response) {
+    }).then(function(response) {
         var response1 = new Object();
         response1.data = response;
         res.json(response1);
-    }).catch(function (error) {
+    }).catch(function(error) {
         res.json({
             success: false,
             response: error
@@ -4267,7 +4266,7 @@ router.get('/GetAllProductForApp', function (req, res) {
 })
 
 //Get Product By Id For FrontSide
-router.get('/GetProductByIdForApp', function (req, res) {
+router.get('/GetProductByIdForApp', function(req, res) {
     // Product.hasMany(ProductPictureMaping, {
     //     foreignKey: {
     //         name: 'ProductId',
@@ -4333,29 +4332,29 @@ router.get('/GetProductByIdForApp', function (req, res) {
         model: ProductPictureMaping,
         include: [MediaMgmt]
     }, {
-            model: ProductTag,
-            attributes: ['Name']
-        }, {
-            model: RelatedProduct,
-            include: [{
-                model: Product,
-                include: {
-                    model: ProductPictureMaping,
-                    include: [MediaMgmt]
-                }
-            }]
-        });
+        model: ProductTag,
+        attributes: ['Name']
+    }, {
+        model: RelatedProduct,
+        include: [{
+            model: Product,
+            include: {
+                model: ProductPictureMaping,
+                include: [MediaMgmt]
+            }
+        }]
+    });
     Product.findAll({
         where: {
             Id: req.query.idProduct
         },
         include: model
-        // include: [{
-        //     model: ProductPictureMaping,
-        //     include: [MediaMgmt]
-        // }]
+            // include: [{
+            //     model: ProductPictureMaping,
+            //     include: [MediaMgmt]
+            // }]
 
-    }).then(function (response) {
+    }).then(function(response) {
         if (response != null) {
             res.json({
                 success: true,
@@ -4371,7 +4370,7 @@ router.get('/GetProductByIdForApp', function (req, res) {
     })
 })
 
-router.get('/GetProductSearchForApp', function (req, res) {
+router.get('/GetProductSearchForApp', function(req, res) {
 
     //var offset = (parseInt(req.query.page) * 4);
 
@@ -4458,18 +4457,18 @@ router.get('/GetProductSearchForApp', function (req, res) {
         model: ProductPictureMaping,
         include: [MediaMgmt]
     }, {
-            model: ProductTag,
-            attributes: ['Name']
-        }, {
-            model: RelatedProduct,
-            include: [{
-                model: Product,
-                include: {
-                    model: ProductPictureMaping,
-                    include: [MediaMgmt]
-                }
-            }]
-        });
+        model: ProductTag,
+        attributes: ['Name']
+    }, {
+        model: RelatedProduct,
+        include: [{
+            model: Product,
+            include: {
+                model: ProductPictureMaping,
+                include: [MediaMgmt]
+            }
+        }]
+    });
     Product.findAll({
         //where: { Name: req.query.idProduct },
         where: search,
@@ -4480,7 +4479,7 @@ router.get('/GetProductSearchForApp', function (req, res) {
         //     model: ProductPictureMaping,
         //     include: [MediaMgmt]
         // }]
-    }).then(function (response) {
+    }).then(function(response) {
         if (response != null) {
             res.json({
                 success: true,
@@ -4496,7 +4495,7 @@ router.get('/GetProductSearchForApp', function (req, res) {
     })
 })
 
-router.post('/UpdateHotSellingProduct', jsonParser, function (req, res) {
+router.post('/UpdateHotSellingProduct', jsonParser, function(req, res) {
     objHeader = req.headers;
     var token = getToken(objHeader);
     if (token) {
@@ -4506,7 +4505,7 @@ router.post('/UpdateHotSellingProduct', jsonParser, function (req, res) {
                 username: decoded.username,
                 password: decoded.password
             }
-        }).then(function (UserExist) {
+        }).then(function(UserExist) {
             if (UserExist != null) {
                 var objProduct = req.body;
                 Product.findOne({
@@ -4514,12 +4513,12 @@ router.post('/UpdateHotSellingProduct', jsonParser, function (req, res) {
                     where: {
                         Id: objProduct.Id
                     }
-                }).then(function (ObjHotSellProduct) {
+                }).then(function(ObjHotSellProduct) {
                     if (ObjHotSellProduct) {
                         //funAuditLog.CreateAuditLog('UpdateProduct', UserExist.username, 'Update Product');
                         ObjHotSellProduct.updateAttributes({
                             IsHotSelling: objProduct.IsHotSelling
-                        }).then(function (resUpdate) {
+                        }).then(function(resUpdate) {
                             if (resUpdate) {
                                 funAuditLog.CreateAuditLog('UpdateHotSellProduct', UserExist.username, 'Update Hot Selling Product');
                                 res.json({
@@ -5009,7 +5008,7 @@ function GetProductCombinationforExport(idProduct, callback) {
                 ProductId: parseInt(idProduct)
             }
         }]
-    }).then(function (response) {
+    }).then(function(response) {
         var lstResponse = [];
         if (response.length > 0) {
             function uploader(i) {
@@ -5031,13 +5030,13 @@ function GetProductCombinationforExport(idProduct, callback) {
                                         where: {
                                             Id: id
                                         }
-                                    }).then(function (resProductAttribute) {
+                                    }).then(function(resProductAttribute) {
                                         if (arrAttributeValueString != null && arrAttributeValueString != '' && arrAttributeValueString != undefined) {
                                             ProductAttributeValue.findOne({
                                                 where: {
                                                     Id: arrAttributeValueString
                                                 }
-                                            }).then(function (resProductAttributeValue) {
+                                            }).then(function(resProductAttributeValue) {
                                                 if (resProductAttributeValue != null && resProductAttributeValue != '' && resProductAttributeValue != undefined) {
                                                     var obj = {
                                                         AttributeColName: resProductAttribute.Name,
@@ -5083,7 +5082,7 @@ function GetProductCombinationforExport(idProduct, callback) {
     //     return callback(finalData);
     // });
 }
-router.get('/GetAllWalletPackage', function (req, res) {
+router.get('/GetAllWalletPackage', function(req, res) {
 
     var search = {};
     search['$and'] = [];
@@ -5099,10 +5098,10 @@ router.get('/GetAllWalletPackage', function (req, res) {
 
     Product.findAndCountAll({
         where: search,
-    }).then(function (response) {
+    }).then(function(response) {
         // res.json({ success: true, response: response });
         res.json(response);
-    }).catch(function (error) {
+    }).catch(function(error) {
         res.json({
             success: false,
             response: error
@@ -5110,7 +5109,7 @@ router.get('/GetAllWalletPackage', function (req, res) {
     })
 })
 
-router.get('/GetAllWalletPackageOneTime', function (req, res) {
+router.get('/GetAllWalletPackageOneTime', function(req, res) {
 
     var search = {};
     search['$and'] = [];
@@ -5126,10 +5125,10 @@ router.get('/GetAllWalletPackageOneTime', function (req, res) {
 
     Product.findAndCountAll({
         where: search,
-    }).then(function (response) {
+    }).then(function(response) {
         // res.json({ success: true, response: response });
         res.json(response);
-    }).catch(function (error) {
+    }).catch(function(error) {
         res.json({
             success: false,
             response: error
