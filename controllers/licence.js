@@ -692,7 +692,7 @@ router.post('/SwipeDevice', jsonParser, function(req, res) {
         .then(function(responsedata) {
             res.json({
                 success: true,
-                message: 'Swipe device successfully.',
+                message: 'Swap device successfully.',
                 data: responsedata
             });
         })
