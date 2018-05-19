@@ -517,7 +517,9 @@ router.get('/PrintDetailTripReport', function(req, res) {
             header: {
                 "height": "35px",
             },
+            timeout: 120000
         };
+
         pdf.create(html, options).toStream(function(err, stream) {
             stream.pipe(res);
         });
@@ -934,6 +936,7 @@ router.get('/PrintFenceReport', function(req, res) {
                         header: {
                             "height": "35px",
                         },
+                        timeout: 120000
                     };
 
                     pdf.create(html, options).toStream(function(err, stream) {
@@ -1591,6 +1594,7 @@ router.get('/PrintEngineReport', function(req, res) {
                 header: {
                     "height": "35px",
                 },
+                timeout: 120000
             };
 
             pdf.create(html, options).toStream(function(err, stream) {
@@ -2261,6 +2265,7 @@ router.get('/PrintLastPositionDataByUserId', function(req, res) {
                     header: {
                         "height": "35px",
                     },
+                    timeout: 120000
                 };
 
                 pdf.create(html, options).toStream(function(err, stream) {
@@ -3380,6 +3385,7 @@ router.get('/PrintParkingReportNew', function(req, res) {
                     header: {
                         "height": "35px",
                     },
+                    timeout: 120000
                 };
 
                 pdf.create(html, options).toStream(function(err, stream) {
@@ -5715,6 +5721,7 @@ router.get('/PrintDailyStatReportNew', function(req, res) {
                             header: {
                                 "height": "35px",
                             },
+                            timeout: 120000
                         };
 
                         pdf.create(html, options).toStream(function(err, stream) {
@@ -6396,6 +6403,7 @@ router.get('/PrintJourneyReport', function(req, res) {
                 header: {
                     "height": "35px",
                 },
+                timeout: 120000
             };
 
             pdf.create(html, options).toStream(function(err, stream) {
