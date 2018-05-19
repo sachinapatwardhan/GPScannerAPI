@@ -233,11 +233,11 @@ router.post('/GetAllWorkingBike', jsonParser, function(req, res) {
 
 router.get('/GetAllWorkingBikeWebApp', jsonParser, function(req, res) {
 
-    var query = "select t4.id,t4.iduser,t4.Name,t4.deviceid,t4.IsOnline,t4.DeviceType,t4.DeviceCompany,t4.ShareId,t4.VehicleType,t4.CreatedDate,t4.IdGroup,t4.IdSharedGroup,  " +
+    var query = "select t4.id,t4.iduser,t4.Name,t4.deviceid,t4.IsOnline,t4.DeviceType,t4.DeviceCompany,t4.FuelRatio,t4.FuelCapacity,t4.IsFule,t4.ShareId,t4.VehicleType,t4.CreatedDate,t4.IdGroup,t4.IdSharedGroup,  " +
         "(select count(*) from tblalarm  a where a.DeviceId =t4.deviceid and IsRead=false) as 'NotificationCount' ," +
         "(SELECT COUNT(*) FROM tblserviceenhancementnotification WHERE IsRead=false and idvehicle = t4.id) as 'AlertCount' " +
         "from " +
-        "  (select tb.iduser,tb.deviceid,tb.id,tb.Name,tb.DeviceType,tb.DeviceCompany,tvt.Type as 'VehicleType',tb.CreatedDate,tsd.id as'ShareId',tb.IsOnline,tsd.IdSharedGroup as 'IdSharedGroup',tb.IdGroup from tblvehicle tb " +
+        "  (select tb.iduser,tb.deviceid,tb.id,tb.Name,tb.DeviceType,tb.FuelRatio,tb.FuelCapacity,tb.IsFule,tb.DeviceCompany,tvt.Type as 'VehicleType',tb.CreatedDate,tsd.id as'ShareId',tb.IsOnline,tsd.IdSharedGroup as 'IdSharedGroup',tb.IdGroup from tblvehicle tb " +
         "   LEFT join tblsharedevice tsd on tb.id=tsd.idVehicle " +
         "   LEFT JOIN tblvehicletype tvt on tb.idType=tvt.id " +
         "   where (tb.iduser=" + req.query.idUser + " or tsd.iduser=" + req.query.idUser + ") and IsDelete = false " +
@@ -257,6 +257,9 @@ router.get('/GetAllWorkingBikeWebApp', jsonParser, function(req, res) {
                     obj.deviceid = rows[i].deviceid;
                     obj.IsOnline = rows[i].IsOnline;
                     obj.DeviceType = rows[i].DeviceType;
+                    obj.FuelRatio = rows[i].FuelRatio;
+                    obj.FuelCapacity = rows[i].FuelCapacity;
+                    obj.IsFule = rows[i].IsFule;
                     obj.DeviceCompany = rows[i].DeviceCompany;
                     obj.ShareId = rows[i].ShareId;
                     obj.VehicleType = rows[i].VehicleType;
@@ -2763,6 +2766,23 @@ router.get('/GetExcelVehicleDetailReport', function(req, res) {
             res.json({ success: false, data: [] });
         }
     })
+})
+
+router.get('/ChangeFuleStatus', function(req, res) {
+    Vehicle.findOne({
+            where: {
+                deviceid: req.query.deviceid
+            }
+        })
+        .then(function(resVehical) {
+            if (resVehical) {
+                resVehical.updateAttributes({ IsFule: req.query.IsFule }).then(function(response) {
+                    res.json({ success: true, message: "Fule status updated successfully." })
+                })
+            } else {
+                res.json({ success: false, message: "No record found." })
+            }
+        })
 })
 
 function convertdateformat(date1) {

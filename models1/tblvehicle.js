@@ -17,11 +17,11 @@ module.exports = function(sequelize, DataTypes) {
       }
     },
     Name: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(200),
       allowNull: true
     },
     deviceid: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(100),
       allowNull: true
     },
     renewaldate: {
@@ -29,7 +29,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     IsOnline: {
-      type: DataTypes.BOOLEAN,
+      type: DataTypes.INTEGER(1),
       allowNull: true,
       defaultValue: '0'
     },
@@ -46,7 +46,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     IsACC: {
-      type: DataTypes.BOOLEAN,
+      type: DataTypes.INTEGER(1),
       allowNull: true,
       defaultValue: '0'
     },
@@ -55,7 +55,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     CreatedBy: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(100),
       allowNull: true
     },
     ModifiedDate: {
@@ -63,7 +63,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     ModifiedBy: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(100),
       allowNull: true
     },
     SleepMode: {
@@ -122,16 +122,16 @@ module.exports = function(sequelize, DataTypes) {
       defaultValue: '0'
     },
     TimeZone: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(100),
       allowNull: true
     },
     IsDelete: {
-      type: DataTypes.BOOLEAN,
+      type: DataTypes.INTEGER(1),
       allowNull: true,
       defaultValue: '0'
     },
     DeviceType: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(45),
       allowNull: true
     },
     idSalesAgent: {
@@ -144,7 +144,7 @@ module.exports = function(sequelize, DataTypes) {
       defaultValue: '0'
     },
     IsShared: {
-      type: DataTypes.BOOLEAN,
+      type: DataTypes.INTEGER(1),
       allowNull: true,
       defaultValue: '0'
     },
@@ -172,22 +172,84 @@ module.exports = function(sequelize, DataTypes) {
       defaultValue: '0.00'
     },
     ShareCode: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(45),
       allowNull: true
     },
     IdGroup: {
       type: DataTypes.INTEGER(11),
       allowNull: true
     },
+    PUCNo: {
+      type: DataTypes.STRING(100),
+      allowNull: true
+    },
+    RCNo: {
+      type: DataTypes.STRING(100),
+      allowNull: true
+    },
+    LicenceNo: {
+      type: DataTypes.STRING(100),
+      allowNull: true
+    },
+    Insurence: {
+      type: DataTypes.STRING(100),
+      allowNull: true
+    },
+    DriverName: {
+      type: DataTypes.STRING(200),
+      allowNull: true
+    },
+    FuleType: {
+      type: DataTypes.STRING(100),
+      allowNull: true
+    },
+    FuelCost: {
+      type: DataTypes.DECIMAL,
+      allowNull: true
+    },
+    Average: {
+      type: DataTypes.DECIMAL,
+      allowNull: true
+    },
+    FuelRatio: {
+      type: DataTypes.DECIMAL,
+      allowNull: true,
+      defaultValue: '1.00'
+    },
+    FuelCapacity: {
+      type: DataTypes.DECIMAL,
+      allowNull: true,
+      defaultValue: '0.00'
+    },
     IsPowercutoff: {
-      type: DataTypes.BOOLEAN,
+      type: DataTypes.INTEGER(1),
       allowNull: true,
       defaultValue: '0'
     },
     DeviceCompany: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(100),
       allowNull: true,
       defaultValue: 'Maark'
+    },
+    IsIgnition: {
+      type: DataTypes.INTEGER(1),
+      allowNull: true,
+      defaultValue: '0'
+    },
+    IsEmail: {
+      type: DataTypes.INTEGER(1),
+      allowNull: true,
+      defaultValue: '0'
+    },
+    IdleMinute: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true,
+      defaultValue: '3'
+    },
+    IsFule: {
+      type: DataTypes.INTEGER(1),
+      allowNull: true,
+      defaultValue: '0'
     }
   }, {
     tableName: 'tblvehicle'
