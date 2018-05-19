@@ -128,6 +128,10 @@ router.get('/GetWebcashCredential', function(req, res) {
     });
 });
 
+router.get('/GetEmptyFuelPoint', function(req, res) {
+    res.json(40);
+});
+
 
 getToken = function(headers) {
     // console.log(headers.authorization);
