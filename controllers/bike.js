@@ -2485,11 +2485,11 @@ router.get('/GetAllWorkingBikeWebAppNew1', jsonParser, function(req, res) {
 
 router.get('/GetAllWorkingBikeWebAppNew', function(req, res) {
 
-    var query = "select t4.id,t4.iduser,t4.Name,t4.deviceid,t4.IsOnline,t4.DeviceType,t4.DeviceCompany,t4.ShareId,t4.VehicleType,t4.IsShared,t4.IdGroup,t4.IdSharedGroup, " +
+    var query = "select t4.id,t4.iduser,t4.Name,t4.deviceid,t4.IsOnline,t4.DeviceType,t4.DeviceCompany,t4.FuelRatio,t4.FuelCapacity,t4.IsFule,t4.ShareId,t4.VehicleType,t4.IsShared,t4.IdGroup,t4.IdSharedGroup, " +
         "(select count(*) from tblalarm  a where a.DeviceId =t4.deviceid and IsRead=false) as 'NotificationCount' ," +
         "(SELECT COUNT(*) FROM tblserviceenhancementnotification WHERE IsRead=false and idvehicle = t4.id) as 'AlertCount' " +
         "from " +
-        "  (select tb.iduser,tb.deviceid,tb.id,tb.Name,tb.IdGroup,tb.DeviceType,tb.DeviceCompany,tb.IsShared as 'IsShared',tsd.IdSharedGroup as 'IdSharedGroup',tvt.Type as 'VehicleType',tsd.id as'ShareId',tb.IsOnline from tblvehicle tb " +
+        "  (select tb.iduser,tb.deviceid,tb.id,tb.Name,tb.IdGroup,tb.DeviceType,tb.DeviceCompany,tb.FuelRatio,tb.FuelCapacity,tb.IsFule,tb.IsShared as 'IsShared',tsd.IdSharedGroup as 'IdSharedGroup',tvt.Type as 'VehicleType',tsd.id as'ShareId',tb.IsOnline from tblvehicle tb " +
         "   LEFT join tblsharedevice tsd on tb.id=tsd.idVehicle " +
         "   LEFT JOIN tblvehicletype tvt on tb.idType=tvt.id " +
         "   where (tb.iduser=" + req.query.idUser + " or tsd.iduser=" + req.query.idUser + ") and IsDelete = false " +
@@ -2518,6 +2518,9 @@ router.get('/GetAllWorkingBikeWebAppNew', function(req, res) {
                     obj.IsShared = rows[i].IsShared;
                     obj.IdSharedGroup = rows[i].IdSharedGroup;
                     obj.AD2 = rows[i].AD2;
+                    obj.FuelRatio = rows[i].FuelRatio;
+                    obj.IsFule = rows[i].IsFule;
+                    obj.FuelCapacity = rows[i].FuelCapacity;
                     client.get(rows[i].deviceid, function(err, strgpsdata) {
                         if (!err) {
                             if (strgpsdata != null & strgpsdata != '' && strgpsdata != undefined) {
