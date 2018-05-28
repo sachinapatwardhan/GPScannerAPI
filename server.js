@@ -1,4 +1,5 @@
 // require('newrelic');
+var swStats = require('swagger-stats');  // ian: added by ian for statistic
 require('dotenv').config()
 global.express = require('express');
 //var router = express.Router();
@@ -393,6 +394,7 @@ app.get('/loaderio-77f8cf2fe818b42b0353bbe2a21da573', function(req, res) {
 });
 
 app.use(express.static(__dirname + '/'));
+app.use(swStats.getMiddleware({}));     //ian: added by ian
 
 http.listen(process.env.APIPort, function() {
     console.log('listening on *:' + process.env.APIPort);
