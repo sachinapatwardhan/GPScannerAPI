@@ -2813,6 +2813,24 @@ router.get('/ChangeFuleStatus', function(req, res) {
         })
 })
 
+router.get('/ChangeFuleRatioAndCapcity', function(req, res) {
+    Vehicle.findOne({
+            where: {
+                deviceid: req.query.deviceid
+            }
+        })
+        .then(function(resVehical) {
+            if (resVehical) {
+                resVehical.updateAttributes({ FuelRatio: req.query.FuelRatio, FuelCapacity: req.query.FuelCapacity }).then(function(response) {
+                    Commonfunction.UpdateVehicleRedis(req.query.deviceid, 'Vehicle');
+                    res.json({ success: true, message: "Fule Ratio and Capacity updated successfully." })
+                })
+            } else {
+                res.json({ success: false, message: "No record found." })
+            }
+        })
+})
+
 function convertdateformat(date1) {
     var date = new Date(date1);
     var firstdayMonth = date.getMonth() + 1;
