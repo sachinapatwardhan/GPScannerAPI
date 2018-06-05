@@ -184,6 +184,7 @@ router.get('/DeleteAppInfo', function(req, res) {
                             // response.updateAttributes({ IsDelete: true }).then(function(resUpdate) {
                             response.destroy().then(function(resUpdate) {
                                 funAuditLog.CreateAuditLog('DeleteApp', UserExist.username, 'Delete App Info (' + response.AppName + ')');
+                                Commonfunction.UpdateAppInfoRedis();
                                 res.json({
                                     success: true,
                                     message: "App Info Deleted Successfully",
