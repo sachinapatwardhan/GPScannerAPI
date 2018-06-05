@@ -627,25 +627,6 @@ function customPassword() {
 }
 //End of Private functions
 
-//Command9955 - GPS Command
-global.Command9955 = function(objGPSData, Callback) {
-    objGPSData.Deviceid = objGPSData.DeviceId;
-    if (objGPSData.Position == 'A') {
-        client.set(objGPSData.DeviceId, JSON.stringify(objGPSData), function(err, replies) {});
-        io.sockets.emit(objGPSData.DeviceId + 'BikeRoute', JSON.stringify(objGPSData));
-    }
-};
-
-//Command9901 - CAN-BUS Command
-global.Command9901 = function(objCanbusData, Callback) {
-    io.sockets.emit(objCanbusData.DeviceId + 'canbusdata', JSON.stringify(objCanbusData));
-};
-
-//Command9902 -  Driving Behavior Command
-global.Command9902 = function(objDrivingData, Callback) {
-    io.sockets.emit(objDrivingData.DeviceId + 'drivingdata', JSON.stringify(objDrivingData));
-};
-
 //Send Speed Data
 router.get('/SendSpeedData', function(req, res) {
     req.setTimeout(3600000);
