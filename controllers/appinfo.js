@@ -3,6 +3,8 @@ var express = require('express'),
 //Tables
 var User = models.tbluserinformation;
 var AppInfo = models.tblappinfo;
+var Commonfunction = require('./common.js');
+
 //End of Tables
 
 router.get('/GetAllAppInfo', function(req, res) {
@@ -84,9 +86,9 @@ router.post('/SaveAppInfo', jsonParser, function(req, res) {
                     objAppInfo.CreatedBy = decoded.username;
                     AppInfo.findOrCreate({ where: { AppName: objAppInfo.AppName }, defaults: objAppInfo }).then(function(response) {
                         if (response[0]) {
-
                             DefultAppSetting(response[0].Id);
                             funAuditLog.CreateAuditLog('SaveApp', decoded.username, 'Create App Info (' + response[0].AppName + ')');
+                            Commonfunction.UpdateAppInfoRedis();
                             res.json({
                                 success: true,
                                 message: "App Info created successfully...",
@@ -112,6 +114,7 @@ router.post('/SaveAppInfo', jsonParser, function(req, res) {
                     }).then(function(response) {
                         if (response[0]) {
                             funAuditLog.CreateAuditLog('Update App', decoded.username, 'Update App Info (' + objAppInfo.AppName + ')');
+                            Commonfunction.UpdateAppInfoRedis();
                             res.json({
                                 success: true,
                                 message: "App Info updated successfully...",
