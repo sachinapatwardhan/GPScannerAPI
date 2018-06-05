@@ -206,7 +206,7 @@ router.get('/UpdateUserIdByUdId', function(req, res) {
                     }).then(function(response) {
                         if (response) {
                             response.updateAttributes({ iduser: req.query.UserId, Country: req.query.Country, MessageCount: 0 }).then(function(resUpdate) {
-                                Commonfunction.updatePushNotificationRedisValue(req.query.UserId);
+                                updatePushNotificationRedisValue(req.query.UserId);
                                 res.json({
                                     success: true,
                                     message: "User Push notification data updated successfully...",
@@ -227,7 +227,7 @@ router.get('/UpdateUserIdByUdId', function(req, res) {
                     }).then(function(response) {
                         if (response) {
                             response.updateAttributes({ iduser: req.query.UserId, Country: req.query.Country, MessageCount: 0 }).then(function(resUpdate) {
-                                Commonfunction.updatePushNotificationRedisValue(req.query.UserId);
+                                updatePushNotificationRedisValue(req.query.UserId);
                                 res.json({
                                     success: true,
                                     message: "User Push notification data updated successfully...",
@@ -251,7 +251,7 @@ router.get('/UpdateUserIdByUdId', function(req, res) {
 
 router.get('/UpdatePushnotificationCounter', function(req, res) {
     PushNotification.findOne({ where: { udid: req.query.udid, UserType: req.query.UserType } }).then(function(reposnse) {
-        Commonfunction.updatePushNotificationRedisValue(response.iduser);
+        updatePushNotificationRedisValue(response.iduser);
         connection.query("Update tblpushnotification set messagecount=0 where udid='" + req.query.udid + "' and UserType='" + req.query.UserType + "'", function(errupdate, updateresp, fields) {
             res.json({
                 success: true,
