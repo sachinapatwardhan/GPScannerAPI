@@ -495,167 +495,167 @@ router.post('/UpdateReadStatus', jsonParser, function(req, res) {
 })
 
 //Call Every Day '15:00 Minit'
-var rule = new schedule.RecurrenceRule();
-rule.minute = new schedule.Range(0, 59, 0);
+// var rule = new schedule.RecurrenceRule();
+// rule.minute = new schedule.Range(0, 59, 0);
 
 
-var AddAllServiceNotification = schedule.scheduleJob(rule, function() {
-    // console.log("Call Alert Notification Every 01:00 Minute", new Date());
-    var date = new Date();
-    date.setUTCDate((new Date()).getDate() - 1);
-    date.setUTCHours(0);
-    date.setUTCMinutes(0);
-    date.setUTCSeconds(0);
-    // console.log("Main date = ", date)
+// var AddAllServiceNotification = schedule.scheduleJob(rule, function() {
+//     // console.log("Call Alert Notification Every 01:00 Minute", new Date());
+//     var date = new Date();
+//     date.setUTCDate((new Date()).getDate() - 1);
+//     date.setUTCHours(0);
+//     date.setUTCMinutes(0);
+//     date.setUTCSeconds(0);
+//     // console.log("Main date = ", date)
 
-    ServiceEnhacement.belongsTo(Vehicle, {
-        foreignKey: {
-            name: 'idvehicle',
-            allowNull: false
-        }
-    });
+//     ServiceEnhacement.belongsTo(Vehicle, {
+//         foreignKey: {
+//             name: 'idvehicle',
+//             allowNull: false
+//         }
+//     });
 
-    ServiceEnhacement.findAll({
-        where: { Todate: { $gte: date }, IsDelete: 0, IsComplete: 0 },
-        include: [{
-            model: Vehicle
-        }]
-    }).then(function(response) {
-        if (response) {
-            function uploader(i) {
-                if (response.length > i) {
-                    date1 = new Date();
-                    date2 = response[i].Todate;
+//     ServiceEnhacement.findAll({
+//         where: { Todate: { $gte: date }, IsDelete: 0, IsComplete: 0 },
+//         include: [{
+//             model: Vehicle
+//         }]
+//     }).then(function(response) {
+//         if (response) {
+//             function uploader(i) {
+//                 if (response.length > i) {
+//                     date1 = new Date();
+//                     date2 = response[i].Todate;
 
-                    date1.setUTCHours(0);
-                    date1.setUTCMinutes(0);
-                    date1.setUTCSeconds(0);
+//                     date1.setUTCHours(0);
+//                     date1.setUTCMinutes(0);
+//                     date1.setUTCSeconds(0);
 
-                    var timeDiff = date2.getTime() - date1.getTime();
-                    var diffDays = Math.round(timeDiff / (1000 * 3600 * 24));
-                    if (diffDays == 30 || diffDays == 3 || diffDays == 0 || diffDays == -1) {
-                        var obj = new Object();
-                        obj.IdServiceEnhancement = response[i].id;
-                        obj.CreatedDate = new Date();
-                        obj.days = diffDays;
-                        obj.IsRead = false;
-                        // obj.idvehicle = response[i].tblvehicle.id;
-                        ServiceEnhancementNotification.findOrCreate({
-                            where: {
-                                IdServiceEnhancement: obj.IdServiceEnhancement,
-                                days: diffDays
-                            },
-                            defaults: obj
-                        }).then(function(ServiceEnhacementcerated) {
+//                     var timeDiff = date2.getTime() - date1.getTime();
+//                     var diffDays = Math.round(timeDiff / (1000 * 3600 * 24));
+//                     if (diffDays == 30 || diffDays == 3 || diffDays == 0 || diffDays == -1) {
+//                         var obj = new Object();
+//                         obj.IdServiceEnhancement = response[i].id;
+//                         obj.CreatedDate = new Date();
+//                         obj.days = diffDays;
+//                         obj.IsRead = false;
+//                         // obj.idvehicle = response[i].tblvehicle.id;
+//                         ServiceEnhancementNotification.findOrCreate({
+//                             where: {
+//                                 IdServiceEnhancement: obj.IdServiceEnhancement,
+//                                 days: diffDays
+//                             },
+//                             defaults: obj
+//                         }).then(function(ServiceEnhacementcerated) {
 
-                            if (ServiceEnhacementcerated[1]) {
-                                var NewObj = new Object()
-                                NewObj.Id = ServiceEnhacementcerated[0].Id;
-                                NewObj.IdServiceEnhancement = ServiceEnhacementcerated[0].IdServiceEnhancement;
-                                NewObj.CreatedDate = ServiceEnhacementcerated[0].CreatedDate;
-                                NewObj.Message = ServiceEnhacementcerated[0].Message;
-                                NewObj.tblserviceenhancement = response[i];
-                                NewObj.days = diffDays;
-                                NewObj.IsRead = false;
-                                NewObj.idvehicle = response[i].tblvehicle.id;
-                                io.sockets.emit(response[i].tblvehicle.iduser + 'ServiceEnhacementNotification', JSON.stringify(NewObj));
+//                             if (ServiceEnhacementcerated[1]) {
+//                                 var NewObj = new Object()
+//                                 NewObj.Id = ServiceEnhacementcerated[0].Id;
+//                                 NewObj.IdServiceEnhancement = ServiceEnhacementcerated[0].IdServiceEnhancement;
+//                                 NewObj.CreatedDate = ServiceEnhacementcerated[0].CreatedDate;
+//                                 NewObj.Message = ServiceEnhacementcerated[0].Message;
+//                                 NewObj.tblserviceenhancement = response[i];
+//                                 NewObj.days = diffDays;
+//                                 NewObj.IsRead = false;
+//                                 NewObj.idvehicle = response[i].tblvehicle.id;
+//                                 io.sockets.emit(response[i].tblvehicle.iduser + 'ServiceEnhacementNotification', JSON.stringify(NewObj));
 
-                                var Message = "";
+//                                 var Message = "";
 
-                                if (diffDays == 30 || diffDays == 3) {
-                                    var RenewDate = moment(new Date(date2));
-                                    var RenewDateFormat = RenewDate.format("DD MMMM YYYY");
-                                    if (response[i].Type == 'Car Service') {
-                                        Message = "Your vehicle " + response[i].tblvehicle.Name + " service due on " + RenewDateFormat + ". Pls get your vehicle serviced.";
-                                    } else if (response[i].Type == 'Insurance Renewal') {
-                                        Message = "Your vehicle " + response[i].tblvehicle.Name + " insurance will expire on " + RenewDateFormat + ".Pls renew it on time.";
-                                    } else if (response[i].Type == 'Driving Licence Renewal') {
-                                        Message = "Your driving license will expire on " + RenewDateFormat + ". Pls renew it on time.";
-                                    } else if (response[i].Type == 'Battery Replacement') {
-                                        Message = "Your vehicle " + response[i].tblvehicle.Name + " battery need replacement before " + RenewDateFormat + ". Pls replace it on time.";
-                                    } else if (response[i].Type == 'PUC Renewal') {
-                                        Message = "Your vehicle " + response[i].tblvehicle.Name + " PUC will expire on " + RenewDateFormat + ".Pls renew it on time.";
-                                    } else if (response[i].Type == 'Road Tax Renewal') {
-                                        Message = "Your vehicle " + response[i].tblvehicle.Name + " road tax due on " + RenewDateFormat + ". Pls renew your road tax.";
-                                    } else if (response[i].Type == 'Tyre Replacement') {
-                                        Message = "Your vehicle " + response[i].tblvehicle.Name + " tyre need replacement before " + RenewDateFormat + ". Pls replace it on time.";
-                                    }
+//                                 if (diffDays == 30 || diffDays == 3) {
+//                                     var RenewDate = moment(new Date(date2));
+//                                     var RenewDateFormat = RenewDate.format("DD MMMM YYYY");
+//                                     if (response[i].Type == 'Car Service') {
+//                                         Message = "Your vehicle " + response[i].tblvehicle.Name + " service due on " + RenewDateFormat + ". Pls get your vehicle serviced.";
+//                                     } else if (response[i].Type == 'Insurance Renewal') {
+//                                         Message = "Your vehicle " + response[i].tblvehicle.Name + " insurance will expire on " + RenewDateFormat + ".Pls renew it on time.";
+//                                     } else if (response[i].Type == 'Driving Licence Renewal') {
+//                                         Message = "Your driving license will expire on " + RenewDateFormat + ". Pls renew it on time.";
+//                                     } else if (response[i].Type == 'Battery Replacement') {
+//                                         Message = "Your vehicle " + response[i].tblvehicle.Name + " battery need replacement before " + RenewDateFormat + ". Pls replace it on time.";
+//                                     } else if (response[i].Type == 'PUC Renewal') {
+//                                         Message = "Your vehicle " + response[i].tblvehicle.Name + " PUC will expire on " + RenewDateFormat + ".Pls renew it on time.";
+//                                     } else if (response[i].Type == 'Road Tax Renewal') {
+//                                         Message = "Your vehicle " + response[i].tblvehicle.Name + " road tax due on " + RenewDateFormat + ". Pls renew your road tax.";
+//                                     } else if (response[i].Type == 'Tyre Replacement') {
+//                                         Message = "Your vehicle " + response[i].tblvehicle.Name + " tyre need replacement before " + RenewDateFormat + ". Pls replace it on time.";
+//                                     }
 
-                                } else if (diffDays == 0) {
-                                    if (response[i].Type == 'Car Service') {
-                                        Message = "Your vehicle " + response[i].tblvehicle.Name + " service has due today. Pls get your vehicle serviced.";
-                                    } else if (response[i].Type == 'Insurance Renewal') {
-                                        Message = "Your vehicle " + response[i].tblvehicle.Name + " insurance has expired today. Pls renew today to avoid uncovered moments.";
-                                    } else if (response[i].Type == 'Driving Licence Renewal') {
-                                        Message = "Your driving license has expired today. Pls renew today to avoid uncovered moments.";
-                                    } else if (response[i].Type == 'Battery Replacement') {
-                                        Message = "Your vehicle " + response[i].tblvehicle.Name + " battery need replacement today. Pls replace it.";
-                                    } else if (response[i].Type == 'PUC Renewal') {
-                                        Message = "Your vehicle " + response[i].tblvehicle.Name + " PUC has expired today. Pls renew today.";
-                                    } else if (response[i].Type == 'Road Tax Renewal') {
-                                        Message = "Your vehicle " + response[i].tblvehicle.Name + " road tax is due for renewal. Pls renew today to avoid uncovered moments.";
-                                    } else if (response[i].Type == 'Tyre Replacement') {
-                                        Message = "Your vehicle " + response[i].tblvehicle.Name + " tyre need replacement today. Pls replace it.";
-                                    }
-                                } else {
+//                                 } else if (diffDays == 0) {
+//                                     if (response[i].Type == 'Car Service') {
+//                                         Message = "Your vehicle " + response[i].tblvehicle.Name + " service has due today. Pls get your vehicle serviced.";
+//                                     } else if (response[i].Type == 'Insurance Renewal') {
+//                                         Message = "Your vehicle " + response[i].tblvehicle.Name + " insurance has expired today. Pls renew today to avoid uncovered moments.";
+//                                     } else if (response[i].Type == 'Driving Licence Renewal') {
+//                                         Message = "Your driving license has expired today. Pls renew today to avoid uncovered moments.";
+//                                     } else if (response[i].Type == 'Battery Replacement') {
+//                                         Message = "Your vehicle " + response[i].tblvehicle.Name + " battery need replacement today. Pls replace it.";
+//                                     } else if (response[i].Type == 'PUC Renewal') {
+//                                         Message = "Your vehicle " + response[i].tblvehicle.Name + " PUC has expired today. Pls renew today.";
+//                                     } else if (response[i].Type == 'Road Tax Renewal') {
+//                                         Message = "Your vehicle " + response[i].tblvehicle.Name + " road tax is due for renewal. Pls renew today to avoid uncovered moments.";
+//                                     } else if (response[i].Type == 'Tyre Replacement') {
+//                                         Message = "Your vehicle " + response[i].tblvehicle.Name + " tyre need replacement today. Pls replace it.";
+//                                     }
+//                                 } else {
 
-                                    if (response[i].Type == 'Car Service') {
-                                        Message = "Your vehicle " + response[i].tblvehicle.Name + " need a service. Pls get your vehicle serviced.";
-                                    } else if (response[i].Type == 'Insurance Renewal') {
-                                        Message = "Your vehicle " + response[i].tblvehicle.Name + " insurance has expired. Pls renew your insurance.";
-                                    } else if (response[i].Type == 'Driving Licence Renewal') {
-                                        Message = "Your driving license has expired. Pls renew your driving license.";
-                                    } else if (response[i].Type == 'Battery Replacement') {
-                                        Message = "Your vehicle " + response[i].tblvehicle.Name + " battery need replacement. Get your car battery replaced.";
-                                    } else if (response[i].Type == 'PUC Renewal') {
-                                        Message = "We're sorry, your PUC for " + response[i].tblvehicle.Name + " has expired. Renew your PUC license.";
-                                    } else if (response[i].Type == 'Road Tax Renewal') {
-                                        Message = "Your vehicle " + response[i].tblvehicle.Name + " road tax has expired. Pls renew your expired road tax.";
-                                    } else if (response[i].Type == 'Tyre Replacement') {
-                                        Message = "Your vehicle " + response[i].tblvehicle.Name + " tyre need replacement. Get your car tyre replaced.";
-                                    }
-                                }
+//                                     if (response[i].Type == 'Car Service') {
+//                                         Message = "Your vehicle " + response[i].tblvehicle.Name + " need a service. Pls get your vehicle serviced.";
+//                                     } else if (response[i].Type == 'Insurance Renewal') {
+//                                         Message = "Your vehicle " + response[i].tblvehicle.Name + " insurance has expired. Pls renew your insurance.";
+//                                     } else if (response[i].Type == 'Driving Licence Renewal') {
+//                                         Message = "Your driving license has expired. Pls renew your driving license.";
+//                                     } else if (response[i].Type == 'Battery Replacement') {
+//                                         Message = "Your vehicle " + response[i].tblvehicle.Name + " battery need replacement. Get your car battery replaced.";
+//                                     } else if (response[i].Type == 'PUC Renewal') {
+//                                         Message = "We're sorry, your PUC for " + response[i].tblvehicle.Name + " has expired. Renew your PUC license.";
+//                                     } else if (response[i].Type == 'Road Tax Renewal') {
+//                                         Message = "Your vehicle " + response[i].tblvehicle.Name + " road tax has expired. Pls renew your expired road tax.";
+//                                     } else if (response[i].Type == 'Tyre Replacement') {
+//                                         Message = "Your vehicle " + response[i].tblvehicle.Name + " tyre need replacement. Get your car tyre replaced.";
+//                                     }
+//                                 }
 
-                                //push Notification Send
+//                                 //push Notification Send
 
-                                connection.query("SELECT tu.id, tu.username, ta.AppName, ta.IOSCertificate, ta.IOSKey, ta.AndroidId, ta.AndroidSenderId FROM tbluserinformation as tu inner Join tblappinfo as ta ON ta.id = tu.idApp where tu.id=" + response[i].tblvehicle.iduser, function(err, objAppInfo, fields) {
-                                    var soundname = "Default";
-                                    var AllUser = response[i].tblvehicle.iduser.toString();
-                                    var PushNotificationdata = {
-                                        title: 'Alert',
-                                        message: Message,
-                                        // Fence: 'Default',
-                                        soundname: soundname,
-                                        otherfields: {
-                                            deviceid: response[i].tblvehicle.deviceid,
-                                            Id: response[i].tblvehicle.id,
-                                            VehicleName: response[i].tblvehicle.Name,
-                                            NotificationType: response[i].Type,
-                                            Type: 'Notification'
-                                        }
-                                    };
+//                                 connection.query("SELECT tu.id, tu.username, ta.AppName, ta.IOSCertificate, ta.IOSKey, ta.AndroidId, ta.AndroidSenderId FROM tbluserinformation as tu inner Join tblappinfo as ta ON ta.id = tu.idApp where tu.id=" + response[i].tblvehicle.iduser, function(err, objAppInfo, fields) {
+//                                     var soundname = "Default";
+//                                     var AllUser = response[i].tblvehicle.iduser.toString();
+//                                     var PushNotificationdata = {
+//                                         title: 'Alert',
+//                                         message: Message,
+//                                         // Fence: 'Default',
+//                                         soundname: soundname,
+//                                         otherfields: {
+//                                             deviceid: response[i].tblvehicle.deviceid,
+//                                             Id: response[i].tblvehicle.id,
+//                                             VehicleName: response[i].tblvehicle.Name,
+//                                             NotificationType: response[i].Type,
+//                                             Type: 'Notification'
+//                                         }
+//                                     };
 
-                                    SendPushNotification(PushNotificationdata, AllUser, objAppInfo[0]);
+//                                     SendPushNotification(PushNotificationdata, AllUser, objAppInfo[0]);
 
-                                    uploader(i + 1);
-                                });
-                            } else {
-                                uploader(i + 1);
-                            }
+//                                     uploader(i + 1);
+//                                 });
+//                             } else {
+//                                 uploader(i + 1);
+//                             }
 
-                        })
-                    } else {
-                        uploader(i + 1)
-                    }
-                }
-            }
-            uploader(0)
-        } else {
-            res.json({ success: false });
-        }
-    })
+//                         })
+//                     } else {
+//                         uploader(i + 1)
+//                     }
+//                 }
+//             }
+//             uploader(0)
+//         } else {
+//             res.json({ success: false });
+//         }
+//     })
 
-});
+// });
 
 router.get('/CompleteSevice', function(req, res) {
 
