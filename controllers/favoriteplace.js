@@ -3,6 +3,8 @@ var geolib = require("geolib");
 var User = models.tbluserinformation;
 var FavoritePlace = models.tblfavoriteplace;
 var GPSData = models.tblgpsdata;
+var Commonfunction = require('./common.js');
+
 
 router.get('/GetAllFavoritePlaceByDevice', function(req, res) {
     FavoritePlace.findAll({
@@ -197,6 +199,7 @@ router.post('/SaveFavoritePlace', jsonParser, function(req, res) {
                         }
                     }).then(function(objPet) {
                         objPet.updateAttributes({ IsInFence: IsPetInFence }).then(function(resUpdate) {
+                            Commonfunction.UpdateVehicleRedis(objFavoritePlace.deviceId, 'Vehicle');
                             res.json({
                                 success: true,
                                 message: "Fence updated successfully...",

@@ -6,6 +6,8 @@ var OrderServiceDetail = models.tblorderserviceitem;
 var OrderServiceStatus = models.tblorderservicestatus;
 var LicenceManager = models.tbllicencemanager;
 var Vehicle = models.tblvehicle;
+var Commonfunction = require('./common.js');
+
 //////////
 
 // Billing API start
@@ -555,6 +557,7 @@ router.post('/WebCashResponseUrl', jsonParser, function(req, res) {
                                                 var objVehicle = u.findWhere(lstVehicleList, { deviceid: UpdateDeviceId });
                                                 if (objVehicle != undefined) {
                                                     return objVehicle.updateAttributes({ renewaldate: updatedDate });
+                                                    Commonfunction.UpdateVehicleRedis(objVehicle.deviceid, 'Vehicle');
                                                 } else {
                                                     return {};
                                                 }

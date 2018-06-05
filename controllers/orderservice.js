@@ -13,6 +13,8 @@ var User = models.tbluserinformation;
 var GPSDevice = models.tblgpsdevice;
 var WalletTransaction = models.tblwallettransaction;
 var Vehicle = models.tblvehicle;
+var Commonfunction = require('./common.js');
+
 //
 // CreateOrderServiceGlobal("India", 1, "0000000000000", "IMMM", function(redds) {
 //     console.log(redds)
@@ -348,6 +350,8 @@ router.post('/CreateOrderService', jsonParser, function(req, res) {
                         vehicleExits.updateAttributes({
                             renewaldate: responseOrderDetail.ExpiryDate,
                         }).then(function(response1) {
+                            //Update Vehicle Data For in Redis Server
+                            Commonfunction.UpdateVehicleRedis(responseOrderDetail.OrderNotes, 'Vehicle');
                             res.json({
                                 success: true,
                                 message: "Order Service placed successfully...",
@@ -449,6 +453,7 @@ router.get('/RenewOrderService', function(req, res) {
                                 vehicleExits.updateAttributes({
                                     renewaldate: objOrder.ExpiryDate,
                                 }).then(function(response) {
+                                    Commonfunction.UpdateVehicleRedis(objOrderExists.OrderNotes, 'Vehicle');
                                     res.json({
                                         success: true,
                                         message: "Order Service Renew successfully...",
@@ -539,6 +544,7 @@ router.get('/UpdateOrderServiceDates', function(req, res) {
                             vehicleExits.updateAttributes({
                                 renewaldate: ExpiryDate,
                             }).then(function(response) {
+                                Commonfunction.UpdateVehicleRedis(resOrderFind.OrderNotes, 'Vehicle');
                                 res.json({
                                     success: true,
                                     message: "Expiry Date Updated Successfully"
@@ -1046,18 +1052,21 @@ router.post('/SaveOrderService', jsonParser, function(req, res) {
                                                         }
                                                     }).then(function(vehicleCreated) {
                                                         if (vehicleCreated) {
-                                                            funAuditLog.CreateAuditLog('Create Vehicle through Create Oder service', UserExist.username, 'Save Vehicle  through Create Oder service / DeviceID ('+ VehicleExist.deviceid+') ');
+                                                            Commonfunction.UpdateVehicleRedis(objVehicle.deviceid, 'Vehicle');
+                                                            funAuditLog.CreateAuditLog('Create Vehicle through Create Oder service', UserExist.username, 'Save Vehicle  through Create Oder service / DeviceID (' + VehicleExist.deviceid + ') ');
                                                         }
                                                     })
                                                 } else {
                                                     VehicleExist.updateAttributes({ renewaldate: AddDate(objVehicle.CreatedDate, 1, "Year") }).then(function(vehicleupdated) {
-                                                        funAuditLog.CreateAuditLog('update Vehicle Expiry date through Create Oder service', UserExist.username, 'update Vehicle Expiry date through Create Oder service / DeviceID ('+ VehicleExist.deviceid+')');
+                                                        Commonfunction.UpdateVehicleRedis(objVehicle.deviceid, 'Vehicle');
+                                                        funAuditLog.CreateAuditLog('update Vehicle Expiry date through Create Oder service', UserExist.username, 'update Vehicle Expiry date through Create Oder service / DeviceID (' + VehicleExist.deviceid + ')');
                                                     });
                                                 }
                                             } else {
                                                 Vehicle.create(objVehicle).then(function(vehicleCreated) {
                                                     if (vehicleCreated) {
-                                                        funAuditLog.CreateAuditLog('Create Vehicle through Create Oder service', UserExist.username, 'Save Vehicle Type through Create Oder service / DeviceID ('+ vehicleCreated.deviceid+')');
+                                                        Commonfunction.UpdateVehicleRedis(objVehicle.deviceid);
+                                                        funAuditLog.CreateAuditLog('Create Vehicle through Create Oder service', UserExist.username, 'Save Vehicle Type through Create Oder service / DeviceID (' + vehicleCreated.deviceid + ')');
                                                     }
                                                 })
                                             }

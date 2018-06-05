@@ -9,6 +9,8 @@ var Vehicle = models.tblvehicle;
 var EmailTemplate = models.tblemailtemplate;
 var SystemEmail = models.tblemailsettingsys;
 var GpsDeleteCash = models.tblgpsdeletecash;
+var Commonfunction = require('./common.js');
+
 //gpsdata
 
 router.get('/GetAllGpsDataOld', function(req, res) {
@@ -5393,6 +5395,7 @@ router.get('/DeleteGPSdatabyVehicleId', function(req, res) {
                         }).then(function(response) {
                             if (response) {
                                 response.updateAttributes({ IsDelete: true }).then(function(resUpdate) {
+                                    Commonfunction.DeleteVehicleRedis(req.query.DeviceId);
                                     if (resUpdate) {
                                         funAuditLog.CreateAuditLog('Delete vehicle', decoded.username, 'Update IsDelete Status 1/ DeviceID: (' + response.deviceid + ')');
                                         if (req.query.flg == true || req.query.flg == 'true') {

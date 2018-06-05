@@ -9,7 +9,7 @@ var Country = models.tblcountrymgmt;
 var State = models.tblcountrystatemgmt;
 var AppInfo = models.tblappinfo;
 var SharedDevice = models.tblsharedevice;
-
+var Commonfunction = require('./common.js');
 //End of Tables
 
 router.get('/GetAllUser', function(req, res) {
@@ -1094,6 +1094,7 @@ router.post('/SaveUser', jsonParser, function(req, res) {
 
                                                                     UserInRole.create(objUserInRole).then(function(response) {
                                                                         if (objUser.roleId.length == (i + 1)) {
+                                                                            updateUserRedisValue(objUser.id);
                                                                             funAuditLog.CreateAuditLog('SaveUser', UserExist.username, 'Update User');
                                                                             res.json({
                                                                                 success: true,
@@ -1163,6 +1164,7 @@ router.post('/SaveUser', jsonParser, function(req, res) {
                                                                     UserInRole.create(objUserInRole).then(function(response) {
                                                                         if (objUser.roleId.length == (i + 1)) {
                                                                             funAuditLog.CreateAuditLog('SaveUser', UserExist.username, 'Update User');
+                                                                            updateUserRedisValue(objUser.id);
                                                                             res.json({
                                                                                 success: true,
                                                                                 message: "User updated successfully...",
@@ -1272,6 +1274,7 @@ router.post('/SaveUser', jsonParser, function(req, res) {
                                                                     UserInRole.create(objUserInRole).then(function(response) {
                                                                         if (objUser.roleId.length == (i + 1)) {
                                                                             funAuditLog.CreateAuditLog('SaveUser', UserExist.username, 'Create User');
+                                                                            updateUserRedisValue(responseObjUser[0].id)
                                                                             res.json({
                                                                                 success: true,
                                                                                 message: "User created successfully...",
@@ -1344,6 +1347,7 @@ router.post('/SaveUser', jsonParser, function(req, res) {
                                                                     UserInRole.create(objUserInRole).then(function(response) {
                                                                         if (objUser.roleId.length == (i + 1)) {
                                                                             funAuditLog.CreateAuditLog('SaveUser', UserExist.username, 'Create User');
+                                                                            updateUserRedisValue(responseObjUser[0].id)
                                                                             res.json({
                                                                                 success: true,
                                                                                 message: "User created successfully...",
@@ -1462,7 +1466,7 @@ router.post('/SaveUserNew', jsonParser, function(req, res) {
                                                         UserInRole.create(objUserInRole).then(function(response) {
                                                             if (objUser.roleId.length == (i + 1)) {
                                                                 funAuditLog.CreateAuditLog('SaveUser', UserExist.username, 'Update User');
-
+                                                                updateUserRedisValue(objUser.id);
                                                                 res.json({
                                                                     success: true,
                                                                     message: "User updated successfully...",
@@ -1555,6 +1559,7 @@ router.post('/SaveUserNew', jsonParser, function(req, res) {
                                                         UserInRole.create(objUserInRole).then(function(response) {
                                                             if (objUser.roleId.length == (i + 1)) {
                                                                 funAuditLog.CreateAuditLog('SaveUser', UserExist.username, 'Create User');
+                                                                updateUserRedisValue(responseObjUser[0].id)
                                                                 res.json({
                                                                     success: true,
                                                                     message: "User created successfully...",
@@ -1678,7 +1683,7 @@ router.post('/SaveCustomer', jsonParser, function(req, res) {
                                                         UserInRole.create(objUserInRole).then(function(response) {
                                                             if (objUser.roleId.length == (i + 1)) {
                                                                 funAuditLog.CreateAuditLog('SaveCustomer', UserExist.username, 'Update Customer');
-
+                                                                updateUserRedisValue(objUser.id)
                                                                 res.json({
                                                                     success: true,
                                                                     message: "Customer updated successfully...",
@@ -1771,6 +1776,7 @@ router.post('/SaveCustomer', jsonParser, function(req, res) {
                                                         UserInRole.create(objUserInRole).then(function(response) {
                                                             if (objUser.roleId.length == (i + 1)) {
                                                                 funAuditLog.CreateAuditLog('SaveCustomer', UserExist.username, 'Create Customer');
+                                                                updateUserRedisValue(responseObjUser[0].id);
                                                                 res.json({
                                                                     success: true,
                                                                     message: "Customer created successfully...",
@@ -3342,6 +3348,17 @@ router.post('/UpdateCustomer', jsonParser, function(req, res) {
     }
 
 });
+
+
+function updateUserRedisValue(id) {
+    Vehicle.findAll({ where: { iduser: id } }).then(function(response) {
+        if (response) {
+            for (var i = 0; i < response.length; i++) {
+                Commonfunction.UpdateVehicleRedis(response[i].deviceid, 'User')
+            }
+        }
+    })
+}
 
 
 

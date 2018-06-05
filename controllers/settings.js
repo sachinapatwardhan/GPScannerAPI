@@ -8,6 +8,8 @@ var Handshake = models.tblhandshake;
 var PetGps = models.tblgpsscanner;
 var Alarm = models.tblalarm;
 var Vehicle = models.tblvehicle;
+var Commonfunction = require('./common.js');
+
 //End of Tables
 
 //Media Size
@@ -140,6 +142,7 @@ router.get('/GetTaxSettingForSharlink', jsonParser, function(req, res) {
                                 res.json({ success: true, message: "Record found...", data: response1 });
                             } else {
                                 VehicleExist.updateAttributes({ ShareCode: Math.floor(100000 + Math.random() * 900000) }).then(function(shareCodeupdated) {
+                                    Commonfunction.UpdateVehicleRedis(req.query.DeviceId, 'Vehicle');
                                     funAuditLog.CreateAuditLog('Insert share Location code', UserExist.username, 'Insert share Location code (' + req.query.DeviceId + ')');
                                     var response1 = new Object();
                                     response1.Name = response.Name

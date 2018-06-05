@@ -7,6 +7,7 @@ var Bike = models.tblvehicle;
 var CanbusData = models.tblcanbusdata;
 var DrivingData = models.tbldrivingdata;
 var momentz = require('moment-timezone');
+var Commonfunction = require('./common.js');
 
 router.get('/GetAllBike', function(req, res) {
     Vehicle.findAll( /*{ order: 'bikeNumber desc' }*/ ).then(function(response) {
@@ -398,6 +399,7 @@ router.post('/SaveFence', jsonParser, function(req, res) {
         if (objFence.id == 0) {
             if ((response[1])) {
                 var IsPetInFence = true;
+                Commonfunction.UpdateVehicleRedis(objFence.DeviceId, 'Fence');
                 PetGPS.findOne({
                     where: {
                         DeviceId: objFence.deviceId
@@ -479,6 +481,7 @@ router.post('/SaveFence', jsonParser, function(req, res) {
                     }).then(function(objPet) {
                         objPet.updateAttributes({ IsInFence: IsPetInFence }).then(function(resUpdate) {
                             // funAuditLog.CreateAuditLog('SaveFence', UserExist.username , 'Delete Pet Tracking');
+                            Commonfunction.UpdateVehicleRedis(objFence.deviceId, 'Vehicle');
                             res.json({
                                 success: true,
                                 message: "Fence created successfully...",
@@ -497,12 +500,14 @@ router.post('/SaveFence', jsonParser, function(req, res) {
                 }
             }).then(function(response) {
                 var IsPetInFence = true;
+                Commonfunction.UpdateVehicleRedis(objFence.deviceId, 'Fence');
                 PetGPS.findOne({
                     where: {
                         DeviceId: objFence.deviceId
                     },
                     order: 'id DESC'
                 }).then(function(response) {
+
                     if (response != null) {
                         var CheckPoints = {
                                 latitude: parseFloat(response.Latitude),
@@ -577,6 +582,7 @@ router.post('/SaveFence', jsonParser, function(req, res) {
                         }
                     }).then(function(objPet) {
                         objPet.updateAttributes({ IsInFence: IsPetInFence }).then(function(resUpdate) {
+                            Commonfunction.UpdateVehicleRedis(objFence.deviceId, 'Vehicle');
                             res.json({
                                 success: true,
                                 message: "Fence updated successfully...",

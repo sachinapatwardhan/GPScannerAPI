@@ -5,6 +5,8 @@ var User = models.tbluserinformation;
 var Fence = models.tblfence;
 var PetGPS = models.tblgpsdata;
 var Bike = models.tblvehicle;
+var Commonfunction = require('./common.js');
+
 //End of Tables
 
 router.get('/GetAllFence', function(req, res) {
@@ -136,7 +138,7 @@ router.post('/SaveFence', jsonParser, function(req, res) {
     }).then(function(response) {
         if ((response[1])) {
             var IsPetInFence = true;
-
+            Commonfunction.UpdateVehicleRedis(objFence.deviceId, 'Fence');
             PetGPS.findOne({
                 where: {
                     DeviceId: objFence.deviceId
@@ -218,6 +220,7 @@ router.post('/SaveFence', jsonParser, function(req, res) {
                 }).then(function(objPet) {
                     objPet.updateAttributes({ IsInFence: IsPetInFence }).then(function(resUpdate) {
                         // funAuditLog.CreateAuditLog('SaveFence', UserExist.username , 'Delete Pet Tracking');
+                        Commonfunction.UpdateVehicleRedis(objFence.deviceId, 'Vehicle');
                         res.json({
                             success: true,
                             message: "Fence created successfully...",
@@ -233,6 +236,7 @@ router.post('/SaveFence', jsonParser, function(req, res) {
                     deviceId: objFence.deviceId
                 }
             }).then(function(response) {
+                Commonfunction.UpdateVehicleRedis(objFence.deviceId, 'Fence');
                 var IsPetInFence = true;
                 PetGPS.findOne({
                     where: {
@@ -314,6 +318,7 @@ router.post('/SaveFence', jsonParser, function(req, res) {
                         }
                     }).then(function(objPet) {
                         objPet.updateAttributes({ IsInFence: IsPetInFence }).then(function(resUpdate) {
+                            Commonfunction.UpdateVehicleRedis(objFence.deviceId, 'Vehicle');
                             res.json({
                                 success: true,
                                 message: "Fence updated successfully...",
@@ -425,6 +430,7 @@ router.post('/OldSaveFenceById', jsonParser, function(req, res) {
                         id: objFence.id
                     }
                 }).then(function(resUpdate) {
+                    Commonfunction.UpdateVehicleRedis(objFence.deviceId, 'Fence');
                     // funAuditLog.CreateAuditLog('SaveFence', UserExist.username , 'Delete Pet Tracking');
                     res.json({
                         success: true,
@@ -440,6 +446,7 @@ router.post('/OldSaveFenceById', jsonParser, function(req, res) {
                     id: objFence.idFence
                 }
             }).then(function(resFence) {
+                Commonfunction.UpdateVehicleRedis(objFence.deviceId, 'Fence');
                 var IsPetInFence = true;
                 PetGPS.findOne({
                     where: {
@@ -519,6 +526,7 @@ router.post('/OldSaveFenceById', jsonParser, function(req, res) {
                             id: objFence.idFence
                         }
                     }).then(function(resUpdate) {
+                        Commonfunction.UpdateVehicleRedis(objFence.deviceId, 'Fence');
                         res.json({
                             success: true,
                             message: "Fence updated successfully...",
@@ -537,6 +545,7 @@ router.post('/SaveFenceById', jsonParser, function(req, res) {
     if (objFence.idFence == 0 || objFence.idFence == null || objFence.idFence == undefined) {
         Fence.create(objFence).then(function(resFence) {
             if (resFence) {
+                Commonfunction.UpdateVehicleRedis(objFence.deviceId, 'Fence');
                 var IsPetInFence = true;
                 // PetGPS.findOne({
                 //     where: {
@@ -623,6 +632,7 @@ router.post('/SaveFenceById', jsonParser, function(req, res) {
                             id: resFence.id
                         }
                     }).then(function(resUpdate) {
+                        Commonfunction.UpdateVehicleRedis(objFence.deviceId, 'Fence');
                         // funAuditLog.CreateAuditLog('SaveFence', UserExist.username , 'Delete Pet Tracking');
                         res.json({
                             success: true,
@@ -640,6 +650,7 @@ router.post('/SaveFenceById', jsonParser, function(req, res) {
                 id: objFence.idFence
             }
         }).then(function(resFence) {
+            Commonfunction.UpdateVehicleRedis(objFence.deviceId, 'Fence');
             // var IsPetInFence = true;
             // PetGPS.findOne({
             //     where: {
@@ -728,6 +739,7 @@ router.post('/SaveFenceById', jsonParser, function(req, res) {
                         id: objFence.idFence
                     }
                 }).then(function(resUpdate) {
+                    Commonfunction.UpdateVehicleRedis(objFence.deviceId, 'Fence');
                     res.json({
                         success: true,
                         message: "Fence updated successfully...",
@@ -751,6 +763,7 @@ router.post('/UpdateFenceNameById', jsonParser, function(req, res) {
     }).then(function(response) {
         if (response != null) {
             response.updateAttributes({ name: objFence.name }).then(function(resUpdate) {
+                Commonfunction.UpdateVehicleRedis(response.deviceId, 'Fence');
                 res.json({
                     success: true,
                     message: "Fence Name updated successfully...",
@@ -803,6 +816,7 @@ router.get('/DeleteFence', function(req, res) {
                     }
                 }).then(function(response) {
                     if (response) {
+                        Commonfunction.UpdateVehicleRedis(req.query.deviceId, 'Fence');
                         Pet.findOne({
                             where: {
                                 deviceid: req.query.deviceId
@@ -859,20 +873,28 @@ router.get('/DeleteFence', function(req, res) {
 });
 
 router.get('/DeleteFenceById', function(req, res) {
-    Fence.destroy({
+    Fence.findOne({
         where: {
             id: req.query.idFence
         }
-    }).then(function(response) {
-        if (response) {
-            res.json({
-                success: true,
-                message: "Fence Removed successfully...",
-                data: response
-            });
-        } else {
-            res.json({ success: false, message: 'Fence not Removed.' });
-        }
+    }).then(function(FenceExits) {
+        var DeviceId = FenceExits.deviceId;
+        Fence.destroy({
+            where: {
+                id: req.query.idFence
+            }
+        }).then(function(response) {
+            if (response) {
+                Commonfunction.UpdateVehicleRedis(DeviceId, 'Fence');
+                res.json({
+                    success: true,
+                    message: "Fence Removed successfully...",
+                    data: response
+                });
+            } else {
+                res.json({ success: false, message: 'Fence not Removed.' });
+            }
+        })
     })
 });
 

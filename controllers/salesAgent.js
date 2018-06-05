@@ -19,6 +19,8 @@
     var AgentRetailer = models.tblagentretailer;
     var DeviceAgentRetailer = models.tbldeviceagentretailer;
     var Licencemanager = models.tbllicencemanager;
+    var Commonfunction = require('./common.js');
+    var Vehicle = models.tblvehicle;
     //////////
 
     router.post('/registerRetailerAccount', jsonParser, function(req, res) {
@@ -50,6 +52,7 @@
                             err.name = 'BugzError';
                             throw err;
                         }
+
 
                         return AgentRetailer.create({
                                 agentId: req.body.agentId,
@@ -86,6 +89,7 @@
                     });
             })
             .then(function(rUser) {
+                updateUserRedisValue(rUser.id);
                 res.json({
                     success: true,
                     message: 'Retailer account created!',
@@ -330,7 +334,15 @@
 
     });
 
-
+    function updateUserRedisValue(id) {
+        Vehicle.findAll({ where: { iduser: id } }).then(function(response) {
+            if (response) {
+                for (var i = 0; i < response.length; i++) {
+                    Commonfunction.UpdateVehicleRedis(response[i].deviceid, 'User')
+                }
+            }
+        })
+    }
     //////////
 
     module.exports = router;

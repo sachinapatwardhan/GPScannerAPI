@@ -13,6 +13,8 @@ var WalletTransaction = models.tblwallettransaction;
 var AuditLogLicence = models.tblauditloglicence;
 var DeviceAgentRetailer = models.tbldeviceagentretailer;
 var SimDetail = models.tblsimdetails;
+var Commonfunction = require('./common.js');
+
 
 var Sequelize = require('sequelize');
 var sequelize = require('../models1').sequelize;
@@ -142,7 +144,9 @@ router.get('/SaveLicenceDetail', function(req, res) {
                                                         if (response) {
                                                             Vehicle.findOne({ where: { deviceid: response.DeviceId } }).then(function(vehicleExist) {
                                                                 if (vehicleExist) {
-                                                                    vehicleExist.updateAttributes({ renewaldate: response.ExpiryDate }).then(function(updateRenewDate) {})
+                                                                    vehicleExist.updateAttributes({ renewaldate: response.ExpiryDate }).then(function(updateRenewDate) {
+                                                                        Commonfunction.UpdateVehicleRedis(response.DeviceId, 'Vehicle');
+                                                                    })
                                                                 }
                                                             })
 
@@ -177,7 +181,9 @@ router.get('/SaveLicenceDetail', function(req, res) {
                                                         if (response) {
                                                             Vehicle.findOne({ where: { deviceid: response.DeviceId, IsDelete: false } }).then(function(vehicleExist) {
                                                                     if (vehicleExist) {
-                                                                        vehicleExist.updateAttributes({ renewaldate: response.ExpiryDate }).then(function(updateRenewDate) {})
+                                                                        vehicleExist.updateAttributes({ renewaldate: response.ExpiryDate }).then(function(updateRenewDate) {
+                                                                            Commonfunction.UpdateVehicleRedis(response.DeviceId, 'Vehicle');
+                                                                        })
                                                                     }
                                                                 })
                                                                 // funAuditLog.CreateAuditLog('Update Licence device ', UserExist.username, 'update Device (' + OldDeviceId + ') to (' + response.DeviceId + ') / Licence No (' + LicenceExist.LicenceNo + ')');
@@ -350,7 +356,9 @@ router.get('/changestatusrenewal', function(req, res) {
                             // funAuditLog.CreateAuditLog('Update Licecence ExpiryDate of Device ', UserExist.username, 'DeviceID(' + response.DeviceId + ') / Updated ExpiryDate (' + convertdateformat(response.ExpiryDate, 4) + ') / Old ExpiryDate (' + convertdateformat(oldexpdate, 4) + ') / Updated for (' + difference + ') month)');
                             Vehicle.findOne({ where: { DeviceId: isExist.DeviceId } }).then(function(vehicleExist) {
                                 if (vehicleExist) {
-                                    vehicleExist.updateAttributes({ renewaldate: updatedDate }).then(function(updateRenewDate) {})
+                                    vehicleExist.updateAttributes({ renewaldate: updatedDate }).then(function(updateRenewDate) {
+                                        Commonfunction.UpdateVehicleRedis(isExist.DeviceId, 'Vehicle')
+                                    })
                                 }
                             })
                             funAuditLogLicence.CreateAuditLogLicence('Renew Licence', isExist.LicenceNo, isExist.DeviceId, updatedDate, oldexpdate, UserExist.username, 'Renew licence Expiry date for month:(' + difference + ')');
@@ -441,7 +449,7 @@ router.get('/SwipeDeviceAdmin', function(req, res) {
                                                                             IsDelete: 1
                                                                         })
                                                                         .then(function(resUpdateVehical) {
-
+                                                                            Commonfunction.DeleteVehicleRedis(resVehical.deviceid);
                                                                             funAuditLogLicence.CreateAuditLogLicence('Swap Licence Device', null, req.query.OldDeviceId, null, null, req.query.CreatedBy, 'Update vehical IsDelete true.');
 
                                                                             var obj = {
@@ -454,6 +462,7 @@ router.get('/SwipeDeviceAdmin', function(req, res) {
                                                                             }
                                                                             return Vehicle.create(obj)
                                                                                 .then(function(resVreateVehical) {
+                                                                                    Commonfunction.UpdateVehicleRedis(resVreateVehical.deviceid, 'Vehicle');
                                                                                     funAuditLogLicence.CreateAuditLogLicence('Swap Licence Device', null, req.query.DeviceId, null, null, req.query.CreatedBy, 'Create new vehical with deviceid :' + req.query.DeviceId + '.');
 
                                                                                     return DeviceAgentRetailer.findOne({
@@ -626,6 +635,7 @@ router.post('/SwipeDevice', jsonParser, function(req, res) {
                                                             IsDelete: 1
                                                         })
                                                         .then(function(resUpdateVehical) {
+                                                            Commonfunction.DeleteVehicleRedis(resUpdateVehical.deviceid);
                                                             funAuditLogLicence.CreateAuditLogLicence('Swap Licence Device', null, req.body.OldDeviceId, null, null, req.body.CreatedBy, 'Update vehical IsDelete true.');
 
                                                             var obj = {
@@ -638,6 +648,7 @@ router.post('/SwipeDevice', jsonParser, function(req, res) {
                                                             }
                                                             return Vehicle.create(obj)
                                                                 .then(function(resVreateVehical) {
+                                                                    Commonfunction.UpdateVehicleRedis(resVreateVehical, 'Vehicle')
                                                                     funAuditLogLicence.CreateAuditLogLicence('Swap Licence Device', null, req.body.NewDeviceId, null, null, req.body.CreatedBy, 'Create new vehical with deviceid :' + req.body.NewDeviceId + '.');
 
                                                                     return OrderService.findOne({

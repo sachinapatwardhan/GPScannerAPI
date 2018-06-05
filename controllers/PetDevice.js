@@ -9,6 +9,7 @@ var TelCo = models.tbltelco;
 var SimService = models.tblsimdetails;
 var VehicleType = models.tblvehicletype;
 var Vehicle = models.tblvehicle;
+var Commonfunction = require('./common.js');
 //End of Tables
 
 router.get('/GetAllGPSDeviceold', function(req, res) {
@@ -1008,7 +1009,9 @@ router.post('/SaveGPSDevice', jsonParser, function(req, res) {
                                             funAuditLog.CreateAuditLog('SaveGPSDevice', UserExist.username, 'Update GPS Tracker Device  IMEI : (' + objGPSDeviceExit.IMEI + ')');
                                             Vehicle.findOne({ where: { deviceid: objGPSDevice.DeviceId } }).then(function(vehicleExits) {
                                                 if (vehicleExits) {
-                                                    vehicleExits.updateAttributes({ DeviceType: objGPSDevice.Type, DeviceCompany: objGPSDevice.Company }).then(function(VehicleDeviceTypeupdate) {})
+                                                    vehicleExits.updateAttributes({ DeviceType: objGPSDevice.Type, DeviceCompany: objGPSDevice.Company }).then(function(VehicleDeviceTypeupdate) {
+                                                        Commonfunction.UpdateVehicleRedis(objGPSDevice.DeviceId, 'Vehicle');
+                                                    })
                                                 }
                                             })
                                             res.json({ success: true, message: "Tracker updated successfully", data: response });

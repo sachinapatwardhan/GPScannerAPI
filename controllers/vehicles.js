@@ -10,6 +10,8 @@ var Alarm = models.tblalarm;
 var DefaultValue = models.tbldefaultvalue;
 var VehicleGroup = models.tblvehiclegroup;
 var LicenceManager = models.tbllicencemanager;
+var Commonfunction = require('./common.js');
+
 //End of Tables
 
 var AppInfo = models.tblappinfo;
@@ -117,6 +119,7 @@ router.get('/UpdateExpiryDate', function(req, res) {
                         var oldexpdate = vehicleExist.renewaldate;
 
                         vehicleExist.updateAttributes({ renewaldate: req.query.renewaldate }).then(function(response) {
+                            Commonfunction.UpdateVehicleRedis(vehicleExist.deviceid, 'Vehicle');
                             LicenceManager.findOne({ where: { DeviceId: vehicleExist.deviceid, IsDeleted: 0 } }).then(function(LicenceExist) {
                                 var oldExpiry = LicenceExist.ExpiryDate;
                                 if (LicenceExist) {
@@ -174,6 +177,7 @@ router.get('/AddVehicleToGroup', function(req, res) {
         }).then(function(UserExist) {
             if (UserExist != null) {
                 connection.query("Update tblvehicle set IdGroup=null where IdGroup =" + req.query.Id, function(err, vehicleRemoveToGroup, fields) {
+                    ManageGroupUpdateVehicleForRedis(req.query.Id);
                     connection.query("Update tblsharedevice set IdSharedGroup=null where idUser=" + req.query.idUser + " and IdSharedGroup =" + req.query.Id, function(err, sharedvehicleRemoveToGroup, fields) {
                         uploder(0);
 
@@ -183,6 +187,7 @@ router.get('/AddVehicleToGroup', function(req, res) {
                                     if (req.query.DeviceList != undefined && req.query.DeviceList != null && req.query.DeviceList != '') {
                                         connection.query("Update tblvehicle set IdGroup=" + req.query.Id + " where deviceid in (" + [req.query.DeviceList] + ")", function(err, VehicleAddToGroup, fields) {
                                             if (!err && VehicleAddToGroup) {
+                                                ManageRedisForVehicle(req.query.DeviceList);
                                                 uploder(i + 1);
                                                 TotalSuccess++;
                                             } else {
@@ -244,6 +249,24 @@ router.get('/AddVehicleToGroup', function(req, res) {
     }
 })
 
+function ManageRedisForVehicle(Deviceidlist) {
+    for (var i = 0; i < Deviceidlist.length; i++) {
+        //Update Vehicle Data For in Redis Server
+        Commonfunction.UpdateVehicleRedis(Deviceidlist[i], 'Vehicle');
+    }
+}
+
+function ManageGroupUpdateVehicleForRedis(Ids) {
+    connection.query("select * from  tblvehicle  where IdGroup =" + Ids, function(err, response, fields) {
+        if (!err && response.length > 0) {
+            for (var i = 0; i < response.length; i++) {
+                //Update Vehicle Data For in Redis Server
+                Commonfunction.UpdateVehicleRedis(response[i].deviceid, 'Vehicle');
+            }
+        }
+    })
+}
+
 
 router.get('/GroupRemoveById', function(req, res) {
     objHeader = req.headers;
@@ -261,6 +284,7 @@ router.get('/GroupRemoveById', function(req, res) {
 
                 connection.query("Update tblvehicle set IdGroup=null where IdGroup =" + req.query.Id, function(err, GroupRemoved, fields) {
                     if (!err && GroupRemoved) {
+                        ManageGroupUpdateVehicleForRedis(req.query.Id);
                         connection.query("Update tblsharedevice set IdSharedGroup=null where IdSharedGroup =" + req.query.Id, function(err, sharedvehicleRemoveToGroup, fields) {
                             if (!err && sharedvehicleRemoveToGroup) {
                                 VehicleGroup.destroy({ where: { Id: req.query.Id } }).then(function(response) {
@@ -691,6 +715,7 @@ router.post('/SaveVehicle', jsonParser, function(req, res) {
                     objVehicle.CreatedBy = decoded.username;
                     Vehicle.findOrCreate({ where: { deviceid: objVehicle.deviceid }, defaults: objVehicle }).then(function(response) {
                         if (response[0]) {
+                            Commonfunction.UpdateVehicleRedis(objVehicle.deviceid);
                             funAuditLog.CreateAuditLog('SaveVehicle', decoded.username, 'Create Vehicle (DeviceId:' + response[0].deviceid + ' , UserId : ' + response[0].iduser + ')');
                             res.json({
                                 success: true,
@@ -714,6 +739,7 @@ router.post('/SaveVehicle', jsonParser, function(req, res) {
                         }
                     }).then(function(response) {
                         if (response[0]) {
+                            Commonfunction.UpdateVehicleRedis(objVehicle.deviceid, 'Vehicle');
                             funAuditLog.CreateAuditLog('SaveVehicle', decoded.username, 'Update Vehicle (DeviceId:' + response[0].deviceid + ' , UserId : ' + response[0].iduser + ')');
                             res.json({
                                 success: true,
@@ -1096,6 +1122,7 @@ router.get('/TransferDevicetoUser', function(req, res) {
                 var query = "update tblvehicle left join tblfence on tblvehicle.deviceid = tblfence.deviceId set  tblvehicle.deviceid='" + req.query.deviceid + "' ,tblfence.deviceId  = '" + req.query.deviceid + "' ,tblvehicle.MaxSpeed = 0 where tblvehicle.id= '" + req.query.id + "'"
                 connection.query(query, function(err, rows, fields) {
                     if (!err) {
+                        Commonfunction.UpdateVehicleRedis(req.query.deviceid, 'Vehicle');
                         funAuditLog.CreateAuditLog('Transfer Device', UserExist.username, 'Transfer Device (' + req.query.olddeviceid + ') to (' + req.query.deviceid + ')');
                         res.json({ success: true, message: "Device Transfer successfully..", data: rows });
                     } else {

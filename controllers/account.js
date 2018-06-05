@@ -12,6 +12,8 @@ var Setting = models.tblsetting;
 var SharedEmailTbl = models.tblsharedemail;
 var ShareDevice = models.tblsharedevice;
 var Vehicle = models.tblvehicle;
+var Commonfunction = require('./common.js');
+
 //End of Tables
 
 router.get('/login', jsonParser, function(req, res) {
@@ -491,7 +493,10 @@ router.get('/OwnerMobilelogout', jsonParser, function(req, res) {
     }).then(function(response) {
         if (response != null) {
             var objPushnotification = response;
+            var idUser = response.iduser;
+
             objPushnotification.updateAttributes({ iduser: 0 }).then(function(resUpdate) {
+                updatePushNotificationRedisValue(idUser);
                 res.json({
                     success: true,
                     message: "Logout Successfully."
@@ -516,7 +521,9 @@ router.get('/Mobilelogout', jsonParser, function(req, res) {
         }).then(function(response) {
             if (response != null) {
                 var objPushnotification = response;
+                var iduser = response.iduser;
                 objPushnotification.updateAttributes({ iduser: 0, MessageCount: 0 }).then(function(resUpdate) {
+                    updatePushNotificationRedisValue(iduser);
                     res.json({
                         success: true,
                         message: "Logout Successfully."
@@ -538,7 +545,9 @@ router.get('/Mobilelogout', jsonParser, function(req, res) {
         }).then(function(response) {
             if (response != null) {
                 var objPushnotification = response;
+                var iduser = response.iduser;
                 objPushnotification.updateAttributes({ iduser: 0, MessageCount: 0 }).then(function(resUpdate) {
+                    updatePushNotificationRedisValue(iduser);
                     res.json({
                         success: true,
                         message: "Logout Successfully."
@@ -606,6 +615,7 @@ router.post('/register', jsonParser, function(req, res) {
                         if (chkEmailExist != null && objUserReg.Type == 'Owner') {
                             objUserReg.Type = 'Both';
                             chkEmailExist.updateAttributes({ Type: 'Both', password: objUserReg.password, MaxSpeed: objUserReg.MaxSpeed }).then(function(resUser) {
+                                updateUserRedisValue(chkEmailExist.id);
                                 funAuditLog.CreateAuditLog('register', chkEmailExist.username, 'Create New User in Both');
                                 res.json({
                                     success: true,
@@ -615,6 +625,7 @@ router.post('/register', jsonParser, function(req, res) {
                         } else if (chkEmailExist != null && objUserReg.Type == 'Shop') {
                             objUserReg.Type = 'Both';
                             chkEmailExist.updateAttributes({ Type: 'Both', password: objUserReg.password }).then(function(resUser) {
+                                updateUserRedisValue(chkEmailExist.id);
                                 funAuditLog.CreateAuditLog('register', chkEmailExist.username, 'Create New User in Both');
                                 res.json({
                                     success: true,
@@ -629,11 +640,13 @@ router.post('/register', jsonParser, function(req, res) {
                                     }
                                 }).then(function(objRole) {
                                     if (objRole != null) {
+
                                         var objUserInRole = {
                                             userId: resUserReg.id,
                                             roleId: objRole.id,
                                         }
                                         UserInRole.create(objUserInRole).then(function(resUserInRole) {
+                                            updateUserRedisValue(objRole.id);
                                             funAuditLog.CreateAuditLog('register', resUserReg.username, 'Create New User');
                                             res.json({
                                                 success: true,
@@ -652,6 +665,7 @@ router.post('/register', jsonParser, function(req, res) {
                                                 roleId: resRole.id,
                                             }
                                             UserInRole.create(objUserInRole).then(function(resUserInRole) {
+                                                updateUserRedisValue(resUserReg.id);
                                                 funAuditLog.CreateAuditLog('register', resUserReg.username, 'Create New User');
                                                 res.json({
                                                     success: true,
@@ -684,6 +698,7 @@ router.get('/ResendOTP', function(req, res) {
         if (objUser != null) {
             objUser.updateAttributes({ OTP: req.query.OTP }).then(function(resUpdate) {
                 //Send OTP
+                updateUserRedisValue(objUser.id)
                 var objOTP = new Object();
                 objOTP.To = objUser.phone;
                 objOTP.body = 'Your Verification Code for logging into GPSINA is ' + req.query.OTP + '. Kindly do not share it with anyone else.';
@@ -919,6 +934,7 @@ router.post('/changepasswordNew', jsonParser, function(req, res) {
                     chkUserExist.updateAttributes({
                         password: EncryptNewpassword
                     }).then(function(response) {
+                        updateUserRedisValue(chkUserExist.id)
                         funAuditLog.CreateAuditLog('changepassword', chkUserExist.username, 'Change User Password-ID: (' + chkUserExist.id + ')');
                         SystemEmail.findOne({ where: { IdApp: chkUserExist.idApp } }).then(function(objSystemEmail) {
                             EmailTemplate.findOne({
@@ -1057,6 +1073,7 @@ router.post('/changepassword', jsonParser, function(req, res) {
                     chkUserExist.updateAttributes({
                         password: EncryptNewpassword
                     }).then(function(response) {
+                        updateUserRedisValue(chkUserExist.id)
                         funAuditLog.CreateAuditLog('changepassword', chkUserExist.username, 'Change User Password - ID: (' + chkUserExist.id + ')');
                         res.json({
                             success: true,
@@ -1129,6 +1146,7 @@ router.post('/changeUserPassword', jsonParser, function(req, res) {
                 }
                 if (EncryptOldpassword == Password) {
                     chkUserExist.updateAttributes(search).then(function(response) {
+                        updateUserRedisValue(chkUserExist.id)
                         funAuditLog.CreateAuditLog('changepassword', chkUserExist.username, 'Change User Password- ID: (' + chkUserExist.id + ')');
                         res.json({
                             success: true,
@@ -1175,6 +1193,7 @@ router.get('/forgotpassword', function(req, res) {
                 var EncryptNewpassword = jwt.encode(NewPassword, "bugz");
                 var search = { password: EncryptNewpassword };
                 objUser.updateAttributes(search).then(function(response) {
+                    updateUserRedisValue(objUser.id)
                     if (response != null) {
                         EmailTemplate.findOne({
                             where: {
@@ -1279,6 +1298,7 @@ router.get('/forgotpasswordNew', function(req, res) {
                     var EncryptNewpassword = jwt.encode(NewPassword, "bugz");
                     response.updateAttributes({ password: EncryptNewpassword }).then(function(response) {
                         if (response != null) {
+                            updateUserRedisValue(response.id);
                             EmailTemplate.findOne({
                                 where: {
                                     Type: "Forgot Password Email",
@@ -1372,6 +1392,7 @@ router.get('/forgotpasswordNew', function(req, res) {
                                 var EncryptNewpassword = jwt.encode(NewPassword, "bugz");
                                 response1.updateAttributes({ password: EncryptNewpassword }).then(function(response) {
                                     if (response != null) {
+                                        updateUserRedisValue(response1.id);
                                         EmailTemplate.findOne({
                                             where: {
                                                 Type: "Forgot Password Email",
@@ -1480,6 +1501,7 @@ router.get('/forgotpasswordfromOwnerCustomer', function(req, res) {
                 if (flgIsUpdate) {
                     objUser.updateAttributes(search).then(function(response) {
                         if (response != null) {
+                            updateUserRedisValue(objUser.id);
                             EmailTemplate.findOne({
                                 where: {
                                     Type: "Forgot Password Email",
@@ -1590,6 +1612,7 @@ router.get('/forgotpasswordfromOwnerCustomerNew', jsonParser, function(req, res)
                                     if (flgIsUpdate) {
                                         objUser.updateAttributes(search).then(function(response) {
                                             if (response != null) {
+                                                updateUserRedisValue(objUser.id);
                                                 EmailTemplate.findOne({
                                                     where: {
                                                         Type: "Forgot Password Email",
@@ -1792,6 +1815,7 @@ router.post('/MobileRegister', jsonParser, function(req, res) {
                     roleId: objRole.id,
                 }
                 UserInRole.create(objUserInRole).then(function(resUserInRole) {
+                    updateUserRedisValue(resUserReg.id)
                     funAuditLog.CreateAuditLog('register', resUserReg.username, 'Create New User - ID: (' + resUserReg.id + ')');
 
                     //Send OTP
@@ -1819,6 +1843,7 @@ router.post('/MobileRegister', jsonParser, function(req, res) {
                         roleId: resRole.id,
                     }
                     UserInRole.create(objUserInRole).then(function(resUserInRole) {
+                        updateUserRedisValue(resUserReg.id);
                         funAuditLog.CreateAuditLog('register', resUserReg.username, 'Create New User - ID: (' + resUserReg.id + ')');
 
                         //Send OTP
@@ -1861,6 +1886,7 @@ router.get('/MobileForgotPassword', function(req, res) {
                 var search = { password: EncryptNewpassword };
                 objUser.updateAttributes(search).then(function(response) {
                     if (response != null) {
+                        updateUserRedisValue(objUser.id);
                         EmailTemplate.findOne({
                             where: {
                                 Type: "Forgot Password Email",
@@ -1944,6 +1970,7 @@ router.post('/changeMobileUserPassword', jsonParser, function(req, res) {
                 var search = { password: EncryptNewpassword };
                 if (EncryptOldpassword == Password) {
                     chkUserExist.updateAttributes(search).then(function(response) {
+                        updateUserRedisValue(chkUserExist.id);
                         funAuditLog.CreateAuditLog('changepassword', chkUserExist.username, 'Change User Password - ID: (' + chkUserExist.id + ')');
                         res.json({
                             success: true,
@@ -1981,7 +2008,9 @@ router.get('/MobileApplogout', jsonParser, function(req, res) {
         }).then(function(response) {
             if (response != null) {
                 var objPushnotification = response;
+                var iduser = iduser;
                 objPushnotification.updateAttributes({ iduser: 0 }).then(function(resUpdate) {
+                    updatePushNotificationRedisValue(iduser);
                     res.json({
                         success: true,
                         message: "Logout Successfully."
@@ -2002,7 +2031,9 @@ router.get('/MobileApplogout', jsonParser, function(req, res) {
         }).then(function(response) {
             if (response != null) {
                 var objPushnotification = response;
+                var iduser = iduser;
                 objPushnotification.updateAttributes({ iduser: 0 }).then(function(resUpdate) {
+                    updatePushNotificationRedisValue(iduser);
                     res.json({
                         success: true,
                         message: "Logout Successfully."
@@ -2022,6 +2053,7 @@ router.get('/SetLastLogin', jsonParser, function(req, res) {
         if (userExits) {
             var LastLogin = new Date();
             userExits.updateAttributes({ LastLogin: LastLogin }).then(function(userupdate) {
+                updateUserRedisValue(userExits.id);
                 res.json(userupdate)
 
             })
@@ -2060,9 +2092,13 @@ router.get('/MobileAppLoginNew', jsonParser, function(req, res) {
             });
             var LastLogin = new Date();
             if (req.query.AppVersion != null && req.query.AppVersion != undefined && req.query.AppVersion != '0.0.0') {
-                response.updateAttributes({ LastLogin: LastLogin, AppVersion: req.query.AppVersion, Platform: req.query.Platform }).then(function(UpdateLastLogin) {})
+                response.updateAttributes({ LastLogin: LastLogin, AppVersion: req.query.AppVersion, Platform: req.query.Platform }).then(function(UpdateLastLogin) {
+                    updateUserRedisValue(response.id);
+                })
             } else {
-                response.updateAttributes({ LastLogin: LastLogin }).then(function(UpdateLastLogin) {})
+                response.updateAttributes({ LastLogin: LastLogin }).then(function(UpdateLastLogin) {
+                    updateUserRedisValue(response.id);
+                })
             }
             UserInRole.findAll({
                 where: {
@@ -2159,6 +2195,7 @@ router.post('/MobileRegisterNew', jsonParser, function(req, res) {
                     // });
                     var objshare = { email: resUserReg.email, id: resUserReg.id, username: resUserReg.username };
                     AddNewShareDevice(objshare, function(response1) {
+                        updateUserRedisValue(resUserReg.id)
                         res.json({
                             success: true,
                             message: "User Registered Successfully...",
@@ -2190,7 +2227,7 @@ router.post('/MobileRegisterNew', jsonParser, function(req, res) {
                         // });
                         var objshare = { email: resUserReg.email, id: resUserReg.id, username: resUserReg.username };
                         AddNewShareDevice(objshare, function(response1) {
-                            console.log("@@@@")
+                            updateUserRedisValue(resUserReg.id)
                             res.json({
                                 success: true,
                                 message: "User Registered Successfully...",
@@ -2245,6 +2282,7 @@ function AddNewShareDevice(objparam, callback) {
 
                                         if (ShareDeviceCreated) {
                                             SharedEmailExit[i].updateAttributes({ Status: 'Complete', ModifiedDate: new Date(), ModifiedBy: objparam.username }).then(function(SharedEmailupdate) {
+                                                updateUserRedisValue(vehicleExit.iduser);
                                                 funAuditLog.CreateAuditLog('update SharedEmailExit', objparam.username, 'Update SharedEmailExit  UserID: (' + SharedEmailExit.idUser + ') -> SharedID: (' + SharedEmailExit.Id + ') ');
                                                 uploader(i + 1);
 
@@ -2296,10 +2334,10 @@ router.get('/MobileForgotPasswordNew', function(req, res) {
             if (objUser != null) {
                 SystemEmail.findOne({ where: { IdApp: objUser.idApp } }).then(function(objSystemEmail) {
                     var NewPassword = customPassword();
-                    console.log(NewPassword);
                     var EncryptNewpassword = jwt.encode(NewPassword, "bugz");
                     var search = { password: EncryptNewpassword };
                     objUser.updateAttributes(search).then(function(response) {
+                        updateUserRedisValue(objUser.id);
                         if (response != null) {
                             EmailTemplate.findOne({
                                 where: {
@@ -2402,6 +2440,7 @@ router.post('/changeMobileUserPasswordNew', jsonParser, function(req, res) {
                 var search = { password: EncryptNewpassword };
                 if (EncryptOldpassword == Password) {
                     chkUserExist.updateAttributes(search).then(function(response) {
+                        updateUserRedisValue(chkUserExist.id);
                         funAuditLog.CreateAuditLog('changepassword', chkUserExist.username, 'Change User Password - ID: (' + chkUserExist.id + ')  ');
                         res.json({
                             success: true,
@@ -2439,7 +2478,9 @@ router.get('/MobileApplogoutNew', jsonParser, function(req, res) {
         }).then(function(response) {
             if (response != null) {
                 var objPushnotification = response;
+                var iduser = iduser;
                 objPushnotification.updateAttributes({ iduser: 0 }).then(function(resUpdate) {
+                    updatePushNotificationRedisValue(iduser);
                     res.json({
                         success: true,
                         message: "Logout Successfully."
@@ -2460,7 +2501,9 @@ router.get('/MobileApplogoutNew', jsonParser, function(req, res) {
         }).then(function(response) {
             if (response != null) {
                 var objPushnotification = response;
+                var iduser = iduser;
                 objPushnotification.updateAttributes({ iduser: 0 }).then(function(resUpdate) {
+                    updatePushNotificationRedisValue(iduser);
                     res.json({
                         success: true,
                         message: "Logout Successfully."
@@ -2564,7 +2607,25 @@ router.get('/CheckUserPassword', jsonParser, function(req, res) {
     })
 })
 
+function updatePushNotificationRedisValue(id) {
+    Vehicle.findAll({ where: { iduser: id } }).then(function(response) {
+        if (response) {
+            for (var i = 0; i < response.length; i++) {
+                Commonfunction.UpdateVehicleRedis(response[i].deviceid, 'PushNotification')
+            }
+        }
+    })
+}
 
+function updateUserRedisValue(id) {
+    Vehicle.findAll({ where: { iduser: id } }).then(function(response) {
+        if (response) {
+            for (var i = 0; i < response.length; i++) {
+                Commonfunction.UpdateVehicleRedis(response[i].deviceid, 'User')
+            }
+        }
+    })
+}
 //End Of New Mobile App wise
 
 //Private functions

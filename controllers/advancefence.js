@@ -5,6 +5,7 @@ var AdvanceFence = models.tbladvancefence;
 var Fence = models.tblfence;
 var PetGPS = models.tblgpsdata;
 var Bike = models.tblvehicle;
+var Commonfunction = require('./common.js');
 
 
 
@@ -92,29 +93,40 @@ router.get('/GetAllAdvancefence', function(req, res) {
 })
 
 router.get('/DeleteFenceById', function(req, res) {
-    Fence.destroy({
+    Fence.findAll({
         where: {
             IdAdvanceFence: req.query.id
         }
-    }).then(function(FenceDeleted) {
-
-        AdvanceFence.destroy({
+    }).then(function(FenceList) {
+        var Deviceidlist = [];
+        for (var i = 0; i < FenceList.length; i++) {
+            Deviceidlist.push(FenceList[i].deviceId);
+        }
+        UpdateFenceForRedis(Deviceidlist);
+        Fence.destroy({
             where: {
-                id: req.query.id
+                IdAdvanceFence: req.query.id
             }
-        }).then(function(response) {
-            if (response) {
+        }).then(function(FenceDeleted) {
 
-                res.json({
-                    success: true,
-                    message: "Advance fence removed successfully...",
-                    data: response
-                });
-            } else {
-                res.json({ success: false, message: 'Advance fence not Removed.' });
-            }
+            AdvanceFence.destroy({
+                where: {
+                    id: req.query.id
+                }
+            }).then(function(response) {
+                if (response) {
+
+                    res.json({
+                        success: true,
+                        message: "Advance fence removed successfully...",
+                        data: response
+                    });
+                } else {
+                    res.json({ success: false, message: 'Advance fence not Removed.' });
+                }
+            })
+
         })
-
     })
 });
 
@@ -161,6 +173,7 @@ router.post('/SaveFenceByIdNew', jsonParser, function(req, res) {
 
                                                 function uploader(m) {
                                                     if (Deviceidlist.length > m) {
+                                                        Commonfunction.UpdateVehicleRedis(Deviceidlist[m], 'Fence');
                                                         client.get(Deviceidlist[m], function(err, strgpsdata) {
 
                                                             var response = JSON.parse(strgpsdata);
@@ -324,6 +337,7 @@ router.post('/SaveFenceByIdNew', jsonParser, function(req, res) {
                                                     } else {
                                                         if (Devicelist.length > 0) {
                                                             connection.query("UPDATE tblfence set IsInFence=false where IdAdvanceFence='" + AdvanceFenceCreated.id + "' and  deviceId in (" + [Devicelist] + ');', function(err, resUpdate, fields) {
+                                                                UpdateFenceForRedis(Devicelist);
                                                                 res.json({
                                                                     success: true,
                                                                     message: "Advance fence created successfully...",
@@ -371,6 +385,7 @@ router.post('/SaveFenceByIdNew', jsonParser, function(req, res) {
 
                                 function uploader(m) {
                                     if (Deviceidlist.length > m) {
+                                        Commonfunction.UpdateVehicleRedis(Deviceidlist[m], 'Fence');
                                         client.get(Deviceidlist[m], function(err, strgpsdata) {
                                             var response = JSON.parse(strgpsdata);
                                             if (!err) {
@@ -449,6 +464,7 @@ router.post('/SaveFenceByIdNew', jsonParser, function(req, res) {
                                     } else {
                                         if (Devicelist.length > 0) {
                                             connection.query("UPDATE tblfence set IsInFence=false where IdAdvanceFence='" + AdvanceFenceCreated.id + "' and  deviceId in (" + [Devicelist] + ');', function(err, resUpdate, fields) {
+                                                UpdateFenceForRedis(Devicelist);
                                                 res.json({
                                                     success: true,
                                                     message: "Advance fence created successfully...",
@@ -609,6 +625,7 @@ router.post('/updateAdvanceFence', jsonParser, function(req, res) {
 
                                                 function uploader(m) {
                                                     if (Deviceidlist.length > m) {
+                                                        Commonfunction.UpdateVehicleRedis(Deviceidlist[m], 'Fence');
                                                         client.get(Deviceidlist[m], function(err, strgpsdata) {
                                                                 var response = JSON.parse(strgpsdata);
                                                                 if (!err) {
@@ -976,7 +993,7 @@ router.get('/ChangeFenceByBike', function(req, res) {
         if (response) {
             Fence.update({ IsFenceOnline: IsFenceOnline }, { where: { IdAdvanceFence: response.id } }).then(function(resUpdate) {
                 var desc = "Fence Status = " + IsFenceOnline;
-
+                Commonfunction.UpdateVehicleRedis(deviceId, 'Fence');
                 res.json({
                     success: true,
                     message: "Advance fence setting saved successfully.",
@@ -991,5 +1008,13 @@ router.get('/ChangeFenceByBike', function(req, res) {
     })
 
 })
+
+
+function UpdateFenceForRedis(Deviceidlist) {
+    for (var i = 0; i < Deviceidlist.length; i++) {
+        //Update Vehicle Data For in Redis Server
+        Commonfunction.UpdateVehicleRedis(Deviceidlist[i], 'Fence');
+    }
+}
 
 module.exports = router

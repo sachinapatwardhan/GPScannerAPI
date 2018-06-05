@@ -4,6 +4,7 @@ var VehicleGroup = models.tblvehiclegroup;
 var User = models.tbluserinformation;
 var Vehicle = models.tblvehicle;
 var App = models.tblappinfo;
+var Commonfunction = require('./common.js');
 
 
 router.get('/GetvehicleGroupWise', function(req, res) {
@@ -132,6 +133,7 @@ router.post('/SaveVehicleGroup', jsonParser, function(req, res) {
                     resvehicle.updateAttributes({
                         IdGroup: objVehicleGroup.IdGroup
                     }).then(function(resUpdate) {
+                        Commonfunction.UpdateVehicleRedis(resvehicle.deviceid, 'Vehicle');
                         funAuditLog.CreateAuditLog('Create Vehicle Group', UserExist.username, 'Save Vehicle Group');
                         res.json({ success: true, message: "Vehicle Group created successfully...", data: resUpdate });
                     })

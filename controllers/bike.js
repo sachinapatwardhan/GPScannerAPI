@@ -18,6 +18,7 @@ var EmailTemplate = models.tblemailtemplate;
 var Setting = models.tblsetting;
 var VehicleGroup = models.tblvehiclegroup;
 var VehicleType = models.tblvehicletype;
+var Commonfunction = require('./common.js');
 //End of Tables
 
 app.use(express.static(__dirname + '/../MediaUploads/PetUpload'));
@@ -356,6 +357,7 @@ router.get('/DeleteBike', function(req, res) {
                     }).then(function(response) {
                         if (response) {
                             response.updateAttributes({ IsDelete: true }).then(function(resUpdate) {
+                                Commonfunction.DeleteVehicleRedis(req.query.DeviceId);
                                 funAuditLog.CreateAuditLog('DeleteBike', UserExist.username, 'Delete Vehicle (DevicId:' + response.deviceid + ' and UserId:' + response.iduser + ')');
                                 res.json({
                                     success: true,
@@ -372,6 +374,7 @@ router.get('/DeleteBike', function(req, res) {
                     if (req.query.BikeId != '' && req.query.BikeId != null) {
                         Vehicle.destroy({ where: { id: req.query.BikeId } }).then(function(response) {
                             if (response) {
+                                Commonfunction.DeleteVehicleRedis(req.query.DeviceId);
                                 funAuditLog.CreateAuditLog('DeleteBike', UserExist.username, 'Delete Vehicle (DevicId:' + response.deviceid + ' and UserId:' + response.iduser + ')');
                                 res.json({
                                     success: true,
@@ -681,7 +684,7 @@ router.get('/ChangeFenceByBike', function(req, res) {
 
             response.updateAttributes({ IsFenceOnline: IsFenceOnline }).then(function(resUpdate) {
                 var desc = "Fence Status = " + IsFenceOnline;
-
+                Commonfunction.UpdateVehicleRedis(deviceId, 'Fence');
                 res.json({
                     success: true,
                     message: "Fence Setting saved successfully.",
@@ -1006,6 +1009,7 @@ router.get('/SaveVehicleold', jsonParser, function(req, res) {
                                                 // CreateOrderServiceGlobal(UserExist.country, UserExist.id, objVehicle.deviceid, UserExist.username, UserExist.idApp, function(orderresponse) {
                                                 changeSharedId(objVehicle.iduser, objVehicleExist.iduser, objVehicle.deviceid, function(shareuserupdate) {
                                                     // console.log("0....1...................................", shareuserupdate)
+                                                    Commonfunction.UpdateVehicleRedis(objVehicle.deviceid, 'Vehicle');
                                                     res.json({
                                                         success: true,
                                                         message: "Vehicle created successfully...",
@@ -1047,6 +1051,7 @@ router.get('/SaveVehicleold', jsonParser, function(req, res) {
                                                 objVehicle.renewaldate = ExpiryDate;
                                                 Vehicle.create(objVehicle).then(function(response) {
                                                     if (response) {
+                                                        Commonfunction.UpdateVehicleRedis(objVehicle.deviceid);
                                                         funAuditLog.CreateAuditLog('Create Vehicle', UserExist.username, 'SaveVehicle(IMEI:' + objVehicle.IMEI + ' , UserId : ' + objVehicle.iduser + ')');
 
                                                         // GpsDevice.findOne({ where: { DeviceId: response.deviceid } }).then(function(GpsDataExist) {
@@ -1127,9 +1132,11 @@ router.get('/SaveVehicleold', jsonParser, function(req, res) {
                                             }
                                         }).then(function(response) {
                                             if (response[0]) {
+
                                                 funAuditLog.CreateAuditLog('Update Vehicle', UserExist.username, 'UpdateVehicle(IMEI:' + objVehicle.IMEI + ' , UserId : ' + objVehicle.iduser + ')');
                                                 changeSharedId(objVehicle.iduser, objVehicleExist.iduser, objVehicle.deviceid, function(shareuserupdate) {
                                                     // console.log("1...2................................", shareuserupdate)
+                                                    Commonfunction.UpdateVehicleRedis(objVehicle.deviceid, 'Vehicle');
                                                     res.json({
                                                         success: true,
                                                         message: "Vehicle updated successfully...",
@@ -1180,6 +1187,7 @@ router.get('/SaveVehicleold', jsonParser, function(req, res) {
                                             }
                                         }).then(function(response) {
                                             if (response[0]) {
+
                                                 funAuditLog.CreateAuditLog('Update Vehicle', UserExist.username, 'UpdateVehicle(IMEI:' + objVehicle.IMEI + ' , UserId : ' + objVehicle.iduser + ')');
                                                 // console.log("***********")
                                                 // console.log("country...........", UserExist.country)
@@ -1197,6 +1205,7 @@ router.get('/SaveVehicleold', jsonParser, function(req, res) {
                                                 // CreateOrderServiceGlobal(UserExist.country, UserExist.id, objVehicle.deviceid, UserExist.username, UserExist.idApp, function(orderresponse) {
                                                 changeSharedId(objVehicle.iduser, objVehicleExist.iduser, objVehicle.deviceid, function(shareuserupdate) {
                                                     // console.log("1...2.......3.........................", shareuserupdate)
+                                                    Commonfunction.UpdateVehicleRedis(objVehicle.deviceid, 'Vehicle');
                                                     res.json({
                                                         success: true,
                                                         message: "Vehicle created successfully...",
@@ -1237,6 +1246,7 @@ router.get('/SaveVehicleold', jsonParser, function(req, res) {
                                                 objVehicle.renewaldate = ExpiryDate;
                                                 Vehicle.create(objVehicle).then(function(response) {
                                                     if (response) {
+                                                        Commonfunction.UpdateVehicleRedis(objVehicle.deviceid);
                                                         funAuditLog.CreateAuditLog('Create Vehicle', UserExist.username, 'SaveVehicle(IMEI:' + objVehicle.IMEI + ' , UserId : ' + objVehicle.iduser + ')');
 
                                                         //Insert DeviceId to Acc Value set table (if country !=Cambodia)
@@ -1306,9 +1316,11 @@ router.get('/SaveVehicleold', jsonParser, function(req, res) {
                                             }
                                         }).then(function(response) {
                                             if (response[0]) {
+
                                                 funAuditLog.CreateAuditLog('Update Vehicle', UserExist.username, 'UpdateVehicle(IMEI:' + objVehicle.IMEI + ' , UserId : ' + objVehicle.iduser + ')');
                                                 changeSharedId(objVehicle.iduser, objVehicleExist.iduser, objVehicle.deviceid, function(shareuserupdate) {
                                                     // console.log("1...2.......3........4.................", shareuserupdate)
+                                                    Commonfunction.UpdateVehicleRedis(objVehicle.deviceid, 'Vehicle');
                                                     res.json({
                                                         success: true,
                                                         message: "Vehicle updated successfully...",
@@ -1438,7 +1450,6 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                                             }
                                                         }).then(function(response) {
                                                             if (response[0]) {
-
                                                                 funAuditLog.CreateAuditLog('Update Vehicle', UserExist.username, 'SaveVehicle(IMEI:' + objVehicle.IMEI + ' , UserId : ' + objVehicle.iduser + ')');
                                                                 // GpsDevice.findOne({ where: { DeviceId: objVehicle.deviceid } }).then(function(GpsDataExist) {
                                                                 //     if (GpsDataExist) {
@@ -1454,6 +1465,7 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                                                 // })
 
                                                                 changeSharedId(objVehicle.iduser, objVehicleExist.iduser, objVehicle.deviceid, function(shareuserupdate) {
+                                                                    Commonfunction.UpdateVehicleRedis(objVehicle.deviceid, 'Vehicle');
                                                                     res.json({
                                                                         success: true,
                                                                         message: "Vehicle created successfully...",
@@ -1498,6 +1510,7 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                                                 objVehicle.renewaldate = LicenceNores.data.ExpiryDate;
                                                                 Vehicle.create(objVehicle).then(function(response) {
                                                                     if (response) {
+                                                                        Commonfunction.UpdateVehicleRedis(objVehicle.deviceid);
                                                                         funAuditLog.CreateAuditLog('Create Vehicle', UserExist.username, 'SaveVehicle(IMEI:' + objVehicle.IMEI + ' , UserId : ' + objVehicle.iduser + ')');
 
                                                                         // GpsDevice.findOne({ where: { DeviceId: response.deviceid } }).then(function(GpsDataExist) {
@@ -1576,8 +1589,10 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                                                 }
                                                             }).then(function(response) {
                                                                 if (response[0]) {
+                                                                    Commonfunction.UpdateVehicleRedis(objVehicle.deviceid, 'Vehicle');
                                                                     funAuditLog.CreateAuditLog('Update Vehicle', UserExist.username, 'UpdateVehicle(IMEI:' + objVehicle.IMEI + ' , UserId : ' + objVehicle.iduser + ')');
                                                                     changeSharedId(objVehicle.iduser, objVehicleExist.iduser, objVehicle.deviceid, function(shareuserupdate) {
+                                                                        Commonfunction.UpdateVehicleRedis(objVehicle.deviceid, 'Vehicle');
                                                                         res.json({
                                                                             success: true,
                                                                             message: "Vehicle updated successfully...",
@@ -1644,8 +1659,10 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                                             }
                                                         }).then(function(response) {
                                                             if (response[0]) {
+
                                                                 funAuditLog.CreateAuditLog('Update Vehicle', UserExist.username, 'UpdateVehicle(DeviceId:' + objVehicle.deviceid + ' , UserId : ' + objVehicle.iduser + ')');
                                                                 changeSharedId(objVehicle.iduser, objVehicleExist.iduser, objVehicle.deviceid, function(shareuserupdate) {
+                                                                    Commonfunction.UpdateVehicleRedis(objVehicle.deviceid, 'Vehicle');
                                                                     res.json({
                                                                         success: true,
                                                                         message: "Vehicle created successfully...",
@@ -1690,6 +1707,7 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                                                 objVehicle.renewaldate = LicenceNoExist.ExpiryDate;
                                                                 Vehicle.create(objVehicle).then(function(response) {
                                                                     if (response) {
+                                                                        Commonfunction.UpdateVehicleRedis(objVehicle.deviceid);
                                                                         funAuditLog.CreateAuditLog('Create Vehicle', UserExist.username, 'SaveVehicle(DeviceId:' + objVehicle.deviceid + ' , UserId : ' + objVehicle.iduser + ')');
 
                                                                         //Insert DeviceId to Acc Value set table (if country !=Cambodia)
@@ -1754,8 +1772,10 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                                                 }
                                                             }).then(function(response) {
                                                                 if (response[0]) {
+
                                                                     funAuditLog.CreateAuditLog('Update Vehicle', UserExist.username, 'UpdateVehicle(DeviceId:' + objVehicle.deviceid + ' , UserId : ' + objVehicle.iduser + ')');
                                                                     changeSharedId(objVehicle.iduser, objVehicleExist.iduser, objVehicle.deviceid, function(shareuserupdate) {
+                                                                        Commonfunction.UpdateVehicleRedis(objVehicle.deviceid, 'Vehicle');
                                                                         res.json({
                                                                             success: true,
                                                                             message: "Vehicle updated successfully...",
@@ -2303,7 +2323,7 @@ router.get('/UpdateVehicleName', jsonParser, function(req, res) {
 
     connectionbikedata.query("Update tblvehicle set Name='" + req.query.Name + "' where deviceid='" + req.query.DeviceId + "'", function(err, rows, fields) {
         if (!err) {
-
+            Commonfunction.UpdateVehicleRedis(req.query.DeviceId, 'Vehicle');
             res.json({ success: true, message: 'Vehicle No. Save Successfully.' });
         } else {
             // console.log(err);
@@ -2317,6 +2337,7 @@ router.get('/UpdateVehicleType', jsonParser, function(req, res) {
 
     connectionbikedata.query("Update tblvehicle set idType='" + req.query.idType + "' where deviceid='" + req.query.DeviceId + "'", function(err, rows, fields) {
         if (!err) {
+            Commonfunction.UpdateVehicleRedis(req.query.DeviceId, 'Vehicle');
             res.json({ success: true, message: 'Vehicle Type Save Successfully.' });
         } else {
             // console.log(err);
@@ -2345,6 +2366,7 @@ router.get('/UpdateVehicleShare', jsonParser, function(req, res) {
                 }
                 connectionbikedata.query("Update tblvehicle set IsShared=" + req.query.IsShared + " " + updateAttribute + " where deviceid='" + req.query.DeviceId + "'", function(err, rows, fields) {
                     if (!err) {
+                        Commonfunction.UpdateVehicleRedis(req.query.DeviceId, 'Vehicle');
                         funAuditLog.CreateAuditLog('Update share Location ', UserExist.username, 'Update share Location (' + req.query.DeviceId + ')');
                         res.json({ success: true, message: 'Vehicle No. Save Successfully.' });
 
@@ -2378,6 +2400,7 @@ router.get('/UpdateInsurenceDate', jsonParser, function(req, res) {
     // console.log("Update tblvehicle set InsurenceDate='" + req.query.InsurenceDate + "' where deviceid=deviceid='" + req.query.DeviceId + "'")
     connectionbikedata.query("Update tblvehicle set InsurenceDate='" + req.query.InsurenceDate + "' where deviceid='" + req.query.DeviceId + "'", function(err, rows, fields) {
         if (!err) {
+            Commonfunction.UpdateVehicleRedis(req.query.DeviceId, 'Vehicle');
             res.json({ success: true, message: 'Insurence Date Save Successfully.' });
         } else {
             // console.log(err);
@@ -2394,6 +2417,7 @@ router.get('/UpdatePUCDate', jsonParser, function(req, res) {
     // console.log("Update tblvehicle set PUCDate='" + req.query.PUCDate + "' where deviceid=deviceid='" + req.query.DeviceId + "'")
     connectionbikedata.query("Update tblvehicle set PUCDate='" + req.query.PUCDate + "' where deviceid='" + req.query.DeviceId + "'", function(err, rows, fields) {
         if (!err) {
+            Commonfunction.UpdateVehicleRedis(req.query.DeviceId, 'Vehicle');
             res.json({ success: true, message: 'PUC Date  Save Successfully.' });
         } else {
             // console.log(err);
@@ -2780,6 +2804,7 @@ router.get('/ChangeFuleStatus', function(req, res) {
         .then(function(resVehical) {
             if (resVehical) {
                 resVehical.updateAttributes({ IsFule: req.query.IsFule }).then(function(response) {
+                    Commonfunction.UpdateVehicleRedis(req.query.deviceid, 'Vehicle');
                     res.json({ success: true, message: "Fule status updated successfully." })
                 })
             } else {

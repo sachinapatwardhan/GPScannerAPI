@@ -6,6 +6,7 @@
     var bodyParser = require('body-parser');
     var jsonParser = bodyParser.json();
     var moment = require('moment');
+    var Commonfunction = require('./common.js');
 
     //////////
 
@@ -443,6 +444,7 @@
                                                             }
                                                         }).then(function(vehicleCreated) {
                                                             if (vehicleCreated) {
+                                                                Commonfunction.UpdateVehicleRedis(objVehicle.deviceid, 'Vehicle');
                                                                 funAuditLog.CreateAuditLog('Create Vehicle through device Activation', userexits.username, 'Save Vehicle (DeviceId:' + vehicleCreated.deviceid + ') through device Activation');
                                                                 callActiveDevice()
                                                             }
@@ -465,6 +467,7 @@
                                                     objVehicle.renewaldate = LicenceNores.data.ExpiryDate;
                                                     Vehicle.create(objVehicle).then(function(vehicleCreated) {
                                                         if (vehicleCreated) {
+                                                            Commonfunction.UpdateVehicleRedis(objVehicle.deviceid);
                                                             funAuditLog.CreateAuditLog('Create Vehicle through device Activation', userexits.username, 'Save Vehicle (DeviceId:' + vehicleCreated.deviceid + ') through device Activation');
                                                             callActiveDevice()
                                                         }
