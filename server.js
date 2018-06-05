@@ -1,5 +1,5 @@
 // require('newrelic');
-var swStats = require('swagger-stats');  // ian: added by ian for statistic
+var swStats = require('swagger-stats'); // ian: added by ian for statistic
 require('dotenv').config()
 global.express = require('express');
 //var router = express.Router();
@@ -394,7 +394,7 @@ app.get('/loaderio-77f8cf2fe818b42b0353bbe2a21da573', function(req, res) {
 });
 
 app.use(express.static(__dirname + '/'));
-app.use(swStats.getMiddleware({}));     //ian: added by ian
+app.use(swStats.getMiddleware({})); //ian: added by ian
 
 http.listen(process.env.APIPort, function() {
     console.log('listening on *:' + process.env.APIPort);
@@ -415,22 +415,6 @@ io.sockets.on('connection', function(socket) {
         })
     });
 
-    //Alarm Data
-    socket.on('Command9999', function(data) {
-        // console.log('socket.io server received 9999 : ' + data);
-        Command9999(data, function(res) {
-
-        })
-    });
-
-    //Heart Beat Data
-    socket.on('Command5001', function(data) {
-        // console.log('socket.io server received 5001 : ' + data);
-        Command5001(data, function(res) {
-
-        })
-    });
-
     //CAN-BUS Data
     socket.on('Command9901', function(data) {
         // console.log('socket.io server received 9901 : ' + data);
@@ -445,13 +429,6 @@ io.sockets.on('connection', function(socket) {
         Command9902(data, function(res) {
 
         })
-    });
-
-    //Update Device Status
-    socket.on('UpdateDeviceStatus', function(data) {
-        // console.log('socket.io server received : ' + data);
-        var objdata = JSON.parse(data);
-        UpdateDeviceStatus(objdata, function(objres) {});
     });
 
     // Journey Route Complete
@@ -484,7 +461,6 @@ io.sockets.on('connection', function(socket) {
         })
     });
 
-
     //Update Device Status
     socket.on('CommandDeviceStatus', function(data) {
         // console.log('socket.io server received : ' + data);
@@ -492,6 +468,18 @@ io.sockets.on('connection', function(socket) {
         CommandDeviceStatus(objdata, function(res) {
 
         });
+    });
+
+    //Update Device Status for new socket server
+    socket.on('UpdateDeviceStatusNewSocket', function(data) {
+        io.sockets.emit(data.DeviceId + 'BikeDeviceStatus', JSON.stringify(data));
+    });
+
+    // Device Alarm for new socket server
+    socket.on('DeviceAlarm', function(data) {
+        io.sockets.emit(data.IdUser + 'DeviceAlarm', JSON.stringify(data));
+        data.Id = 0;
+        io.sockets.emit(data.IdUser + 'DeviceNotificationCount', JSON.stringify(data));
     });
 });
 

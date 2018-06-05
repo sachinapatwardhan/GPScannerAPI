@@ -5502,9 +5502,16 @@ router.get('/DeleteAccount', function(req, res) {
                     obj.CreatedDate = new Date();
                     obj.CreatedBy = UserExist.username;
                     obj.RequestType = "AccountDelete";
-                    GpsDeleteCash.create(obj).then(function(CashCreate) {
+                    GpsDeleteCash.findOrCreate({
+                        where: {
+                            idUser: obj.idUser,
+                            Status: obj.Status,
+                            RequestType: obj.RequestType,
+                        },
+                        defaults: obj
+                    }).then(function(CashCreate) {
                         if (CashCreate) {
-                            funAuditLog.CreateAuditLog('Delete Account', decoded.username, 'Save GpsDeleteCash data Userid: (' + CashCreate.idUser + ')');
+                            funAuditLog.CreateAuditLog('Delete Account', decoded.username, 'Save GpsDeleteCash data Userid: (' + obj.idUser + ')');
                             res.json({
                                 success: true,
                                 message: "Account Deleted Successfully",
@@ -5531,6 +5538,28 @@ router.get('/DeleteAccount', function(req, res) {
         res.json(InvalidToken);
     }
 })
+
+router.get('/DeleteGPSDeleteById', function(req, res) {
+    GpsDeleteCash.destroy({
+        where: {
+            id: req.query.idGPSDelete
+        }
+    }).then(function(response) {
+        if (response) {
+            res.json({
+                success: true,
+                message: "GPSDelete Record deleted successfully...",
+                data: response
+            });
+        } else {
+            res.json({
+                success: false,
+                message: "Requested Record not Exist....",
+                data: response
+            });
+        }
+    })
+});
 
 
 module.exports = router;

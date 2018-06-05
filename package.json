@@ -113,6 +113,7 @@
     "socket.io-parser": "~2.2.6",
     "statuses": "~1.2.1",
     "string_decoder": "~0.10.31",
+    "swagger-stats": "^0.95.5",
     "terraformer": "~1.0.5",
     "terraformer-wkt-parser": "~1.1.0",
     "to-array": "~0.1.4",
