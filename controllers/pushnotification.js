@@ -250,8 +250,10 @@ router.get('/UpdateUserIdByUdId', function(req, res) {
 });
 
 router.get('/UpdatePushnotificationCounter', function(req, res) {
-    PushNotification.findOne({ where: { udid: req.query.udid, UserType: req.query.UserType } }).then(function(reposnse) {
-        updatePushNotificationRedisValue(response.iduser);
+    PushNotification.findOne({ where: { udid: req.query.udid, UserType: req.query.UserType } }).then(function(response) {
+        if (response != null) {
+            updatePushNotificationRedisValue(response.iduser);
+        }
         connection.query("Update tblpushnotification set messagecount=0 where udid='" + req.query.udid + "' and UserType='" + req.query.UserType + "'", function(errupdate, updateresp, fields) {
             res.json({
                 success: true,
