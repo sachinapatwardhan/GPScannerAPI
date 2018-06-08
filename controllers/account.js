@@ -2008,7 +2008,7 @@ router.get('/MobileApplogout', jsonParser, function(req, res) {
         }).then(function(response) {
             if (response != null) {
                 var objPushnotification = response;
-                var iduser = iduser;
+                var iduser = response.iduser;
                 objPushnotification.updateAttributes({ iduser: 0 }).then(function(resUpdate) {
                     updatePushNotificationRedisValue(iduser);
                     res.json({
@@ -2031,7 +2031,7 @@ router.get('/MobileApplogout', jsonParser, function(req, res) {
         }).then(function(response) {
             if (response != null) {
                 var objPushnotification = response;
-                var iduser = iduser;
+                var iduser = response.iduser;
                 objPushnotification.updateAttributes({ iduser: 0 }).then(function(resUpdate) {
                     updatePushNotificationRedisValue(iduser);
                     res.json({
