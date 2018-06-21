@@ -4,11 +4,6 @@ require('dotenv').config()
 global.express = require('express');
 //var router = express.Router();
 global.app = express();
-global.Promise = require("bluebird");
-Promise.config({
-    longStackTraces: true,
-    warnings: true
-})
 var x = new Date();
 var offset = -x.getTimezoneOffset();
 global.CurrentOffset = (('00' + offset).slice(-2) >= 0 ? "+" : "-") + ('00' + parseInt(offset / 60).toString()).slice(-2) + ":" + offset % 60;
@@ -474,125 +469,101 @@ io.sockets.on('connection', function(socket) {
     });
 });
 
-app.use('/connection', require('./controllers/connection'))
-
-//Maark Mobile API
-app.use('/mobileV1/customer', require('./mobile_controllers/customers'))
-app.use('/mobileV1/advancefence', require('./mobile_controllers/advancefence'))
-app.use('/mobileV1/appinfo', require('./mobile_controllers/appinfo'))
-app.use('/mobileV1/appversion', require('./mobile_controllers/appversion'))
-app.use('/mobileV1/bike', require('./mobile_controllers/bike'))
-app.use('/mobileV1/country', require('./mobile_controllers/country'))
-app.use('/mobileV1/customers', require('./mobile_controllers/customers'))
-app.use('/mobileV1/favoriteplace', require('./mobile_controllers/favoriteplace'))
-app.use('/mobileV1/gpsdata', require('./mobile_controllers/gpsdata'))
-app.use('/mobileV1/language', require('./mobile_controllers/language'))
-app.use('/mobileV1/MapData', require('./mobile_controllers/MapData'))
-app.use('/mobileV1/petAlarm', require('./mobile_controllers/petAlarm'))
-app.use('/mobileV1/petFence', require('./mobile_controllers/petFence'))
-app.use('/mobileV1/pushnotification', require('./mobile_controllers/pushnotification'))
-app.use('/mobileV1/Report', require('./mobile_controllers/Report'))
-app.use('/mobileV1/serviceenhancement', require('./mobile_controllers/serviceenhancement'))
-app.use('/mobileV1/settings', require('./mobile_controllers/settings'))
-app.use('/mobileV1/sharedevice', require('./mobile_controllers/sharedevice'))
-app.use('/mobileV1/socketapi', require('./mobile_controllers/socketapi'))
-app.use('/mobileV1/user', require('./mobile_controllers/user'))
-app.use('/mobileV1/vehicles', require('./mobile_controllers/vehicles'))
-app.use('/mobileV1/vehicletype', require('./mobile_controllers/vehicletype'))
-
+app.use('/connection', require('./controllers/connection'));
 
 // Main API
-app.use('/customer', require('./controllers/customers'))
-app.use('/dashboard', require('./controllers/dashboard'))
-app.use('/account', require('./controllers/account'))
+app.use('/customer', require('./controllers/customers'));
+app.use('/dashboard', require('./controllers/dashboard'));
+app.use('/account', require('./controllers/account'));
 
-app.use('/enquiry', require('./controllers/enquiry'))
-app.use('/vehicles', require('./controllers/vehicles'))
+app.use('/enquiry', require('./controllers/enquiry'));
+app.use('/vehicles', require('./controllers/vehicles'));
 
-app.use('/pettracking', require('./controllers/petTracking'))
+app.use('/pettracking', require('./controllers/petTracking'));
 
-app.use('/petalarm', require('./controllers/petAlarm'))
-app.use('/favoriteplace', require('./controllers/favoriteplace'))
-    //app.use('/petFeedback', require('./controllers/petFeedback'))
-    //app.use('/petshop', require('./controllers/petShop'))
-app.use('/vehiclegroup', require('./controllers/vehiclegroup'))
-app.use('/carrier', require('./controllers/carrier'))
-app.use('/deviceacc', require('./controllers/deviceacc'))
-    //CMS
-app.use('/media', require('./controllers/media'))
-app.use('/menu', require('./controllers/menu'))
-app.use('/banner', require('./controllers/banner'))
-app.use('/stickyfooter', require('./controllers/stickyfooter'))
-app.use('/widget', require('./controllers/widget'))
-app.use('/news', require('./controllers/news'))
+app.use('/petalarm', require('./controllers/petAlarm'));
+app.use('/favoriteplace', require('./controllers/favoriteplace'));
+//app.use('/petFeedback', require('./controllers/petFeedback'));
+//app.use('/petshop', require('./controllers/petShop'));
+app.use('/vehiclegroup', require('./controllers/vehiclegroup'));
+app.use('/carrier', require('./controllers/carrier'));
+app.use('/deviceacc', require('./controllers/deviceacc'));
+//CMS
+app.use('/media', require('./controllers/media'));
+app.use('/menu', require('./controllers/menu'));
+app.use('/banner', require('./controllers/banner'));
+app.use('/stickyfooter', require('./controllers/stickyfooter'));
+app.use('/widget', require('./controllers/widget'));
+app.use('/news', require('./controllers/news'));
 
 //End of CMS
 
 
-app.use('/warehouse', require('./controllers/warehouse'))
-app.use('/vendor', require('./controllers/vendor'))
-app.use('/store', require('./controllers/store'))
+app.use('/warehouse', require('./controllers/warehouse'));
+app.use('/vendor', require('./controllers/vendor'));
+app.use('/store', require('./controllers/store'));
 
 
 //User
-app.use('/role', require('./controllers/role'))
-app.use('/user', require('./controllers/user'))
-app.use('/userpermission', require('./controllers/userPermission'))
-app.use('/currency', require('./controllers/currency'))
+app.use('/role', require('./controllers/role'));
+app.use('/user', require('./controllers/user'));
+app.use('/userpermission', require('./controllers/userPermission'));
+app.use('/currency', require('./controllers/currency'));
 
 //End of User
 
 //Setting
-app.use('/apiaccess', require('./controllers/apiaccess'))
-app.use('/module', require('./controllers/module'))
-app.use('/country', require('./controllers/country'))
-app.use('/state', require('./controllers/state'))
-app.use('/city', require('./controllers/city'))
+app.use('/apiaccess', require('./controllers/apiaccess'));
+app.use('/module', require('./controllers/module'));
+app.use('/country', require('./controllers/country'));
+app.use('/state', require('./controllers/state'));
+app.use('/city', require('./controllers/city'));
 
 
-app.use('/settings', require('./controllers/settings'))
-app.use('/email', require('./controllers/email'))
-app.use('/category', require('./controllers/category'))
-app.use('/taxcategory', require('./controllers/taxcategory'))
-app.use('/taxrate', require('./controllers/taxrate'))
-app.use('/language', require('./controllers/language'))
-app.use('/languageresources', require('./controllers/languageResources'))
-app.use('/pushnotification', require('./controllers/pushnotification'))
-app.use('/petfence', require('./controllers/petFence'))
-app.use('/facebookpagesetting', require('./controllers/facebookpagesetting'))
-app.use('/sharedevice', require('./controllers/sharedevice'))
-app.use('/productAttribute', require('./controllers/productAttribute'))
-app.use('/product', require('./controllers/product'))
-app.use('/productAttributeMapping', require('./controllers/productAttributeMapping'))
-app.use('/productAttributeValue', require('./controllers/productAttributeValue'))
-app.use('/productAttributeCombination', require('./controllers/productAttributeCombination'))
-app.use('/productPictureMapping', require('./controllers/productPictureMapping'))
-app.use('/orderservice', require('./controllers/orderservice'))
-app.use('/journey', require('./controllers/journey'))
-app.use('/NotificationSetting', require('./controllers/NotificationSetting.js'))
-    // app.use('/advancefence', require('./controllers/advancefence'))
-    //End of Setting
+app.use('/settings', require('./controllers/settings'));
+app.use('/email', require('./controllers/email'));
+app.use('/category', require('./controllers/category'));
+app.use('/taxcategory', require('./controllers/taxcategory'));
+app.use('/taxrate', require('./controllers/taxrate'));
+app.use('/language', require('./controllers/language'));
+app.use('/languageresources', require('./controllers/languageResources'));
+app.use('/pushnotification', require('./controllers/pushnotification'));
+app.use('/petfence', require('./controllers/petFence'));
+app.use('/facebookpagesetting', require('./controllers/facebookpagesetting'));
+app.use('/sharedevice', require('./controllers/sharedevice'));
+app.use('/productAttribute', require('./controllers/productAttribute'));
+app.use('/product', require('./controllers/product'));
+app.use('/productAttributeMapping', require('./controllers/productAttributeMapping'));
+app.use('/productAttributeValue', require('./controllers/productAttributeValue'));
+app.use('/productAttributeCombination', require('./controllers/productAttributeCombination'));
+app.use('/productPictureMapping', require('./controllers/productPictureMapping'));
+app.use('/orderservice', require('./controllers/orderservice'));
+app.use('/journey', require('./controllers/journey'));
+app.use('/NotificationSetting', require('./controllers/NotificationSetting.js'));
+// app.use('/advancefence', require('./controllers/advancefence'));
+//End of Setting
 
 
 
 //Bike
-app.use('/bike', require('./controllers/bike'))
-    // End of Bike
+app.use('/bike', require('./controllers/bike'));
+// End of Bike
 
-app.use('/dynamicpage', require('./controllers/dynamicpage'))
+app.use('/dynamicpage', require('./controllers/dynamicpage'));
 
 //socket API start
-app.use('/socketapi', require('./controllers/socketapi'))
-app.use('/socketapi_concox', require('./controllers/socketapi_concox'))
+app.use('/socketapi', require('./controllers/socketapi'));
+app.use('/socketapi_concox', require('./controllers/socketapi_concox'));
+app.use('/socketapi_gpsbox', require('./controllers/socketapi_gpsbox'));
 
-app.use('/PetDevice', require('./controllers/PetDevice'))
+app.use('/PetDevice', require('./controllers/PetDevice'));
 
 //gpsdata
-app.use('/gpsdata', require('./controllers/gpsdata'))
-app.use('/canbusdata', require('./controllers/canbusdata'))
-app.use('/telco', require('./controllers/telco'))
-app.use('/MapData', require('./controllers/MapData'))
-app.use('/homepage', require('./controllers/homepage'))
+app.use('/gpsdata', require('./controllers/gpsdata'));
+app.use('/canbusdata', require('./controllers/canbusdata'));
+app.use('/telco', require('./controllers/telco'));
+app.use('/MapData', require('./controllers/MapData'));
+app.use('/homepage', require('./controllers/homepage'));
 app.use('/Report', require('./controllers/Report'));
 app.use('/appinfo', require('./controllers/appinfo'));
 app.use('/appversion', require('./controllers/appversion'));
@@ -602,12 +573,12 @@ app.use('/vehicletype', require('./controllers/vehicletype'));
 app.use('/mainsetting', require('./controllers/mainsetting'));
 app.use('/DeviceStock', require('./controllers/DeviceStock'));
 app.use('/serviceenhancement', require('./controllers/serviceenhancement'));
-app.use('/advancefence', require('./controllers/advancefence'))
-app.use('/lastGPSdata', require('./controllers/lastGPSdata'))
-    //socket API End
+app.use('/advancefence', require('./controllers/advancefence'));
+app.use('/lastGPSdata', require('./controllers/lastGPSdata'));
+//socket API End
 
 //Wallet Transaction
-app.use('/WalletTransaction', require('./controllers/WalletTransaction'))
+app.use('/WalletTransaction', require('./controllers/WalletTransaction'));
 
 // MAARK Install App
 app.use('/salesAgent', require('./controllers/salesAgent'));
@@ -615,9 +586,9 @@ app.use('/retailer', require('./controllers/retailer'));
 app.use('/admin', require('./controllers/admin'));
 app.use('/auditlog', require('./controllers/auditlog'));
 app.use('/routeplan', require('./controllers/routeplan'));
-app.use('/feedback', require('./controllers/feedback'))
-app.use('/assignretailer', require('./controllers/assignretailer'))
-app.use('/licence', require('./controllers/licence'))
-app.use('/billing', require('./controllers/billing'))
-
+app.use('/feedback', require('./controllers/feedback'));
+app.use('/assignretailer', require('./controllers/assignretailer'));
+app.use('/licence', require('./controllers/licence'));
+app.use('/billing', require('./controllers/billing'));
+app.use('/fuelCalibration', require('./controllers/fuelcalibration'));
 // MAARK Install App End

@@ -3,7 +3,7 @@ var express = require('express'),
 
 var Vehicle = models.tblvehicle;
 
-router.get('/Setfullfuelpoint', function(req, res) {
+router.get('/SetfullfuelPoint', function(req, res) {
     var DeviceId = req.query.deviceid; //'52852852852852';
     client.get(DeviceId, function(err, strgpsdata) {
         var AD1 = 0;
@@ -16,7 +16,6 @@ router.get('/Setfullfuelpoint', function(req, res) {
             }
         }
         res.json(AD1);
-
     })
 })
 
@@ -35,14 +34,14 @@ router.get('/SetVehicleFuelData', function(req, res) {
             var FuelCapacity = fueltanksize;
             vehicleExist.updateAttributes({ FuelRatio: FuelRatio, FuelCapacity: FuelCapacity, IsFule: true }).then(function(response) {
                 if (response) {
-                    funAuditLog.CreateAuditLog('Update Fuel Data', 'Calibration', 'Update vehicle fuel data: (FuelRatio:' + (FuelRatio).toFixed(2) + ') & (FuelCapacity:' + (FuelCapacity).toFixed(2) + ') ');
+                    funAuditLog.CreateAuditLog('Update Fuel Data', 'Calibration', 'Update Vehicle fuel data: (FuelRatio:' + (FuelRatio).toFixed(2) + ') & (FuelCapacity:' + (FuelCapacity).toFixed(2) + ') ');
                     res.json({ success: true, message: "Fuel Calibration updated successfully." })
                 } else {
                     res.json({ success: false, message: "Fuel Calibration not updated." })
                 }
             })
         } else {
-            res.json({ success: false, message: "Vehicle not assign with this deviceid." })
+            res.json({ success: false, message: "Vehicle not assign with this device ID." })
         }
     })
 
