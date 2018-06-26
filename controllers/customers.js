@@ -93,7 +93,28 @@ router.get('/GetGeneralInfo', function(req, res) {
     var obj = new Object();
     obj.CompanyName = CompanyName;
     obj.phoneNumber = phoneNumber;
-    res.json({ success: true, data: obj });
+    if (req.query.DeviceList != undefined && req.query.DeviceList != null && req.query.DeviceList != '' && req.query.DeviceList.length > 0) {
+        var query = "SELECT tu.email,tu.username,tu.phone,tda.retailerId,tu.ProfileName " +
+            " FROM tbluserinformation tu " +
+            " INNER JOIN tbldeviceagentretailer tda ON tda.retailerId = tu.id " +
+            " WHERE tda.DeviceId IN (" + req.query.DeviceList + ")  LIMIT 1";
+        connection.query(query, function(err, response, fields) {
+            if (!err && response.length > 0) {
+                if (response[0].email != null && response[0].email != undefined && response[0].email != '') {
+                    var obj1 = new Object();
+                    obj1.CompanyName = response[0].ProfileName;
+                    obj1.phoneNumber = response[0].phone;
+                    res.json({ success: true, data: obj1 });
+                } else {
+                    res.json({ success: true, data: obj });
+                }
+            } else {
+                res.json({ success: true, data: obj });
+            }
+        })
+    } else {
+        res.json({ success: true, data: obj });
+    }
 })
 
 router.get('/SendTestMail', function(req, res) {
@@ -186,20 +207,7 @@ router.get('/ReportExample', function(req, res) {
 
 })
 
-router.get('/GetGeneralInfo', function(req, res) {
-    console.log(req.query)
-    var CompanyName = '';
-    var phoneNumber = '';
 
-    if (req.query.AppName == 'HC CARGO') {
-        CompanyName = 'CAR PRO AUTO PARTS & ACC. S/B';
-        phoneNumber = '603-62581961';
-    }
-    var obj = new Object();
-    obj.CompanyName = CompanyName;
-    obj.phoneNumber = phoneNumber;
-    res.json({ success: true, data: obj });
-})
 
 //Manage Permission to Access Methods
 global.funAccessPermission = new Object();
