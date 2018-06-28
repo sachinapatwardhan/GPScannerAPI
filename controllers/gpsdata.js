@@ -189,6 +189,7 @@ router.get('/GetAllGpsDataNew', function(req, res) {
         search = search + 'tgps.Altitude like "%' + objSearch + '%" or ';
         search = search + 'tgps.AD1 like "%' + objSearch + '%" or ';
         search = search + 'tgps.AD2 like "%' + objSearch + '%" or ';
+        search = search + 'tgps.IsWiringForAntiTamper like "%' + objSearch + '%" or ';
         search = search + 'tgps.OdoMeter like "%' + objSearch + '%") ';
     }
 
@@ -251,7 +252,7 @@ router.get('/GetAllGpsDataNew', function(req, res) {
         //     " inner join tblappinfo as ta  on ta.Id = tu.idApp" +
         //     search;
 
-        var qry = "SELECT SQL_CALC_FOUND_ROWS tgps.DeviceId, tgps.Date, tgps.Latitude, tgps.Longitude, tgps.Speed, tgps.Direction, tgps.GPSPositioning, tgps.Speed, tgps.Direction, tgps.Status, " +
+        var qry = "SELECT SQL_CALC_FOUND_ROWS tgps.IsWiringForAntiTamper,tgps.DeviceId, tgps.Date, tgps.Latitude, tgps.Longitude, tgps.Speed, tgps.Direction, tgps.GPSPositioning, tgps.Speed, tgps.Direction, tgps.Status, " +
             "tgps.IsRelayToStopTheCar, tgps.IsSirenSound, tgps.IsDoor, tgps.IsEngine, tgps.IsLockTheDoor, tgps.IsUnlockTheDoor, tgps.IsSOS, tgps.AD1, tgps.AD2, tgps.Altitude, tgps.OdoMeter " +
             "FROM tblgpsdata as tgps " +
             "inner join tblgpsdevice as tgd  on tgd.DeviceId = tgps.DeviceId " +
