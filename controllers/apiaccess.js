@@ -262,7 +262,7 @@ router.get('/DelAccessClient', function(req, res) {
     });
 })
 
-router.get('/getAllDeviceFromAppName', function(req, res) {
+router.get('/getAllDeviceFromAppNameold', function(req, res) {
     var objParam = req.query;
     var objColumns = objParam.columns;
     var objOrderBy = objParam.order;
@@ -330,6 +330,51 @@ router.get('/getAllDeviceFromAppName', function(req, res) {
     }).catch(function(err) {
         console.log(err)
         res.json(err);
+    })
+})
+
+
+router.get('/getAllDeviceFromAppName', function(req, res) {
+    var objParam = req.query;
+    var objColumns = objParam.columns;
+    var objOrderBy = objParam.order;
+    var objSearch = objParam.search;
+    var search = '';
+    if (objSearch != null && objSearch != '') {
+
+        search += " WHERE  (tgd.DeviceId  like '%" + objSearch + "%' or";
+        search += " tu.email  like '%" + objSearch + "%' or";
+        search += " tu.username like '%" + objSearch + "%' )";
+    }
+    var query = "SELECT tgd.*,tu.email,tu.username,tac.DeviceId as apiaccDeviceId FROM " +
+        " tblgpsdevice tgd " +
+        " INNER JOIN tblapiaccessclient tac ON tgd.AppName = tac.AppName and tac.id=" + objParam.APIAccessId +
+        " LEFT JOIN tblVehicle tv ON tv.deviceid = tgd.DeviceID " +
+        " LEFT JOIN tbluserinformation tu ON tu.id = tv.iduser " + search +
+        " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
+    var Countqry = "SELECT count(tgd.id) as TotalRecord FROM" +
+        " tblgpsdevice tgd " +
+        " INNER JOIN tblapiaccessclient tac ON tgd.AppName = tac.AppName and tac.id=" + objParam.APIAccessId +
+        " LEFT JOIN tblVehicle tv ON tv.deviceid = tgd.DeviceID " +
+        " LEFT JOIN tbluserinformation tu ON tu.id = tv.iduser " + search;
+    connection.query(query, function(err, response) {
+        if (response != undefined) {
+            connection.query(Countqry, function(err, lstCount, fields) {
+                var response1 = new Object();
+                response1.draw = objParam.draw;
+                response1.recordsTotal = lstCount[0].TotalRecord;
+                response1.recordsFiltered = lstCount[0].TotalRecord;
+                response1.data = response;
+                res.json(response1);
+            });
+        } else {
+            var response1 = new Object();
+            response1.draw = objParam.draw;
+            response1.recordsTotal = 0;
+            response1.recordsFiltered = 0;
+            response1.data = [];
+            res.json(response1);
+        }
     })
 })
 
