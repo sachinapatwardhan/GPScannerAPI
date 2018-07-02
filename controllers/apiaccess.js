@@ -4,7 +4,7 @@ var User = models.tbluserinformation;
 var AccessClient = models.tblapiaccessclient;
 var AppInfo = models.tblappinfo;
 var GPSDevice = models.tblgpsdevice;
-
+var Vehicle = models.tblvehicle;
 
 router.get('/GetAllAccessClient', function(req, res) {
     var objParam = req.query;
@@ -269,16 +269,13 @@ router.get('/getAllDeviceFromAppName', function(req, res) {
     var objSearch = objParam.search;
     var Orderby = objColumns[parseInt(objOrderBy[0].column)].data + ' ' + objOrderBy[0].dir;
     var search = {};
+    var Req = false;
     if (objSearch != null && objSearch != '') {
         search['$or'] = [];
-        for (var i = 0; i < objColumns.length; i++) {
-            if (objColumns[i].data != null && objColumns[i].data != '') {
-                var columnName = objColumns[i].data;
-                var obj = new Object();
-                columnName = columnName == 'DeviceId' ? 'tblgpsdevice.DeviceId' : columnName;
-                search['$or'].push([columnName + ' like ?', "%" + objSearch + "%"]);
-            };
-        };
+        search['$or'].push(['tblgpsdevice.DeviceId like ?', "%" + objSearch + "%"]);
+        search['$or'].push(['`tblvehicle.tbluserinformation`.`email` like ?', "%" + objSearch + "%"]);
+        search['$or'].push(['`tblvehicle.tbluserinformation`.`username` like ?', "%" + objSearch + "%"]);
+        Req = true;
     }
     search['$and'] = [];
     var obj1 = new Object();
@@ -289,6 +286,17 @@ router.get('/getAllDeviceFromAppName', function(req, res) {
         foreignKey: 'AppName',
         targetKey: 'AppName',
     });
+    GPSDevice.belongsTo(Vehicle, {
+        foreignKey: 'DeviceId',
+        targetKey: 'deviceid',
+    });
+
+    Vehicle.belongsTo(User, {
+        foreignKey: {
+            name: 'iduser',
+            allowNull: false
+        }
+    });
 
     GPSDevice.findAndCountAll({
         where: search,
@@ -297,7 +305,15 @@ router.get('/getAllDeviceFromAppName', function(req, res) {
             where: {
                 id: objParam.APIAccessId
             },
-            required: true,
+            required: Req,
+        }, {
+            model: Vehicle,
+            required: Req,
+            include: [{
+                model: User,
+                required: Req,
+                attributes: ['email', 'username']
+            }]
         }],
         order: [
             [objColumns[parseInt(objOrderBy[0].column)].data, objOrderBy[0].dir]
@@ -312,6 +328,7 @@ router.get('/getAllDeviceFromAppName', function(req, res) {
         response1.data = response.rows;
         res.json(response1);
     }).catch(function(err) {
+        console.log(err)
         res.json(err);
     })
 })
