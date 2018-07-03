@@ -31,29 +31,23 @@ router.get('/GetAllEuropeCountry', function(req, res) {
 
 //Get Current country
 router.get('/GetCurrentCountry', function(req, res) {
+    var lstip = req.connection.remoteAddress.toString().split(":");
+    var ip = '0.0.0.0';
+    if (lstip.length > 0) {
+        ip = lstip[lstip.length - 1];
+    }
     request.get({
-        url: 'http://freegeoip.net/json/' + req.connection.remoteAddress,
+        url: 'http://geoip.maark.my:5000/GetCurrentCountryByIp?IP=' + ip,
     }, function(error, response, body) {
-        console.log(body)
-        if (body.indexOf("Error") >= 0) {
-            res.json(null);
-        } else {
+        if (body != '' && body != null && body != undefined) {
             try {
-                var data = eval('(' + body + ')');
-                var objCurrentCountry = data
-                res.json(objCurrentCountry);
+                var data = JSON.parse(body);
+                res.json(data);
             } catch (ex) {
-                var mail = {
-                    from: 'soham.patel@bugzstudio.com',
-                    to: 'soham.patel@bugzstudio.com',
-                    subject: 'Maark Get Current Country API error',
-                    text: body + "; IP Address = " + req.connection.remoteAddress
-                };
-                transporter.sendMail(mail, function(error, response) {
-
-                });
                 res.json(null);
             }
+        } else {
+            res.json(null);
         }
     })
 });
