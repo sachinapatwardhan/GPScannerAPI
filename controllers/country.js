@@ -37,7 +37,7 @@ router.get('/GetCurrentCountry', function(req, res) {
         ip = lstip[lstip.length - 1];
     }
     request.get({
-        url: 'http://geoip.maark.my:5000/GetCurrentCountryByIp?IP=' + ip,
+        url: 'http://geoip.maark.my/GetCurrentCountryByIp?IP=' + ip,
     }, function(error, response, body) {
         if (body != '' && body != null && body != undefined) {
             try {
