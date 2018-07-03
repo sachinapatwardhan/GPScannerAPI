@@ -40,6 +40,7 @@
                             password: jwt.encode(req.body.password, TokenKey),
                             ProfileName: req.body.profileName,
                             IsMobileVerify: false,
+                            phone: req.body.phone,
                             createddate: now,
                             createdby: req.body.agentId,
                             idApp: req.body.appId
