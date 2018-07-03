@@ -807,7 +807,7 @@ function checkLicence(objVehicle, username, callback) {
                         } else {
                             return callback({
                                 success: false,
-                                message: "No more Licence avilable to assign Device. Please contact administrator",
+                                message: "No more Licence available to assign Device. Please contact administrator",
                                 data: null,
                             });
                         }
