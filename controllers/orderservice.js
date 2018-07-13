@@ -280,6 +280,234 @@ router.get('/GetAllOrderService', function(req, res) {
 
 })
 
+router.get('/GetAllOrderServiceNew', function(req, res) {
+    var objParam = req.query;
+    var objColumns = objParam.columns;
+    var objOrder = objParam.order;
+    var objSearch = objParam.search;
+
+    var Orderby = objColumns[parseInt(objOrder[0].column)].data + ' ' + objOrder[0].dir;
+    var search = {};
+
+    if (objSearch != null && objSearch != '') {
+        search['$or'] = [];
+
+        for (var i = 0; i < objColumns.length; i++) {
+            if (objColumns[i].data != null && objColumns[i].data != '') {
+                var columnName = objColumns[i].data;
+
+                if (columnName != 'CreatedOnUtc' && columnName != 'ExpiryDate') {
+                    if (columnName == "AppName") {
+                        search['$or'].push(['tblappinfo.AppName like ?', "%" + objSearch + "%"]);
+                    } else if (columnName == 'Email') {
+                        search['$or'].push(['tbluserinformation.email like ?', "%" + objSearch + "%"]);
+                    } else if (columnName == 'UserName') {
+                        search['$or'].push(['tbluserinformation.username like ?', "%" + objSearch + "%"]);
+                    } else {
+                        search['$or'].push([columnName + ' like ?', "%" + objSearch + "%"]);
+                    }
+                }
+            };
+        };
+    }
+
+    // OrderService.hasMany(OrderServiceDetail, {
+    //     foreignKey: {
+    //         name: 'OrderId',
+    //         allowNull: false
+    //     }
+    // });
+
+    OrderService.belongsTo(OrderServiceStatus, {
+        foreignKey: {
+            name: 'OrderStatusId',
+            allowNull: false
+        }
+    });
+
+    OrderService.belongsTo(User, {
+        foreignKey: {
+            name: 'CustomerId',
+            allowNull: true
+        }
+    });
+
+    OrderService.belongsTo(AppInfo, {
+        foreignKey: {
+            name: 'SubscriptionTransactionId',
+            allowNull: false
+        }
+    })
+
+    if (objParam.StartDate != '' && objParam.StartDate != null && objParam.StartDate != undefined && objParam.EndDate != '' && objParam.EndDate != null && objParam.EndDate != undefined) {
+
+        // search['$and'] = [];
+        if (search['$and'] == undefined) {
+            search['$and'] = [];
+        }
+
+        var InnerSearch = {};
+        if (InnerSearch['$or'] == undefined) {
+            InnerSearch['$or'] = [];
+        }
+
+        var StartDate = convertdateUTCformat(objParam.StartDate);
+        var EndDate = convertdateUTCformat(objParam.EndDate, 2);
+
+        var obj = new Object();
+        obj['ExpiryDate'] = {
+            $between: [StartDate, EndDate]
+        };
+        InnerSearch['$or'].push(obj);
+
+        var obj1 = new Object();
+        obj1['CreatedOnUtc'] = {
+            $between: [StartDate, EndDate]
+        };
+        InnerSearch['$or'].push(obj1);
+
+        search['$and'].push(InnerSearch);
+
+    } else if (objParam.StartDate != '' && objParam.StartDate != null && objParam.StartDate != undefined) {
+
+        if (search['$and'] == undefined) {
+            search['$and'] = [];
+        }
+
+        var InnerSearch = {};
+        if (InnerSearch['$or'] == undefined) {
+            InnerSearch['$or'] = [];
+        }
+
+        var StartDate = convertdateUTCformat(objParam.StartDate);
+        var obj = new Object();
+        obj['ExpiryDate'] = {
+            $gte: StartDate
+        };
+        InnerSearch['$or'].push(obj);
+
+        var obj1 = new Object();
+        obj1['CreatedOnUtc'] = {
+            $gte: StartDate
+        };
+        InnerSearch['$or'].push(obj1);
+
+        search['$and'].push(InnerSearch);
+
+    } else if (objParam.EndDate != '' && objParam.EndDate != null && objParam.EndDate != undefined) {
+
+        if (search['$and'] == undefined) {
+            search['$and'] = [];
+        }
+
+        var InnerSearch = {};
+        if (InnerSearch['$or'] == undefined) {
+            InnerSearch['$or'] = [];
+        }
+
+        var EndDate = convertdateUTCformat(objParam.EndDate, 2);
+
+        var obj = new Object();
+        obj['ExpiryDate'] = {
+            $lte: EndDate
+        };
+        InnerSearch['$or'].push(obj);
+
+        var obj1 = new Object();
+        obj1['CreatedOnUtc'] = {
+            $lte: EndDate
+        };
+        InnerSearch['$or'].push(obj1);
+
+        search['$and'].push(InnerSearch);
+
+    }
+
+    if (objParam.Status > 0) {
+        if (search['$and'] == undefined) {
+            search['$and'] = [];
+        }
+        var obj = new Object();
+        obj['OrderStatusId'] = {
+            $eq: objParam.Status
+        };
+        search['$and'].push(obj);
+    }
+
+    if (objParam.Type > 0) {
+        if (search['$and'] == undefined) {
+            search['$and'] = [];
+        }
+        var obj = new Object();
+        obj['SubscriptionTransactionId'] = {
+            $eq: parseInt(objParam.Type)
+        };
+        search['$and'].push(obj);
+    }
+    if (objParam.idApp != '' && objParam.idApp != undefined && objParam.idApp != null) {
+        if (search['$and'] == undefined) {
+            search['$and'] = [];
+        }
+        var obj = new Object();
+        obj['SubscriptionTransactionId'] = {
+            $eq: parseInt(objParam.idApp)
+        };
+        search['$and'].push(obj);
+    }
+    if (objParam.Country != '' && objParam.Country != null && objParam.Country != undefined && objParam.Country != 0) {
+        if (search['$and'] == undefined) {
+            search['$and'] = [];
+        }
+        var obj = new Object();
+        obj['ShippAddress1'] = {
+            $eq: objParam.Country
+        };
+        search['$and'].push(obj);
+    }
+
+
+    var offset = (req.query.PageNo * 10) - 10;
+
+    OrderService.findAndCountAll({
+        where: search,
+        offset: parseInt(objParam.start),
+        limit: parseInt(objParam.length),
+        include: [{
+            model: OrderServiceStatus,
+            attributes: ['id', 'OrderStatus'],
+            required: true
+                // }, {
+                //     model: OrderServiceDetail,
+                //     attributes: ['id', 'ProductName', 'Quantity', 'UnitPriceInclTax'],
+                //     required: true
+        }, {
+            model: User,
+            attributes: ['id', 'email', 'username', 'country', 'ProfileName'],
+            required: true
+        }, {
+            model: AppInfo,
+            required: true,
+            attributes: ['AppName'],
+        }],
+        order: Orderby
+    }).then(function(response) {
+        var response1 = new Object();
+        response1.draw = objParam.draw;
+        response1.LastPage = response.count;
+        response1.recordsTotal = response.count;
+        response1.recordsFiltered = response.count;
+        response1.data = response.rows;
+        res.json(response1);
+    }).catch(function(error) {
+        console.log(error)
+        res.json({
+            success: false,
+            response: error
+        });
+    })
+
+})
+
 router.get('/GetOrderServiceStatus', function(req, res) {
     OrderServiceStatus.findAll().then(function(resStatus) {
         res.json(resStatus);
