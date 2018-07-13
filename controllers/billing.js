@@ -784,7 +784,7 @@ router.get('/UpdateReferenceNumber', function(req, res) {
 router.post('/SaveOrderServiceNew', jsonParser, function(req, res) {
     objOrderservice = req.body;
     objHeader = req.headers;
-    var OrderTotal = 0;
+    var OrderTotal = objOrderservice.OrderTotal;
     var DeviceId = ''
     var lstProduct = objOrderservice.lstProduct;
     var lstLicenceId = [];
@@ -807,14 +807,14 @@ router.post('/SaveOrderServiceNew', jsonParser, function(req, res) {
                 }
 
                 for (var i = 0; i < lstProduct.length; i++) {
-                    OrderTotal = OrderTotal + lstProduct[i].RenewPrice;
+                    // OrderTotal = OrderTotal + lstProduct[i].RenewPrice;
                     if (DeviceId == '') {
                         DeviceId = lstProduct[i].deviceid;
                     } else {
                         DeviceId = DeviceId + "," + lstProduct[i].deviceid;
                     }
                 }
-
+                console.log("Order Total = " + OrderTotal)
                 var objOrder = new Object();
                 objOrder.CustomerId = objOrderservice.idUser;
                 objOrder.CreatedOnUtc = new Date();
@@ -827,7 +827,7 @@ router.post('/SaveOrderServiceNew', jsonParser, function(req, res) {
                 objOrder.OrderTotal = OrderTotal;
                 objOrder.OrderNotes = DeviceId;
                 objOrder.SettlementCur = "MYR / Rs";
-                objOrder.OrderStatusId = 1;
+                objOrder.OrderStatusId = 2;
                 objOrder.SubscriptionTransactionId = objOrderservice.idApp;
                 objOrder.ShippingStatusId = 0;
                 objOrder.PaymentMethodSystemName = "CASH";
@@ -872,7 +872,7 @@ router.post('/SaveOrderServiceNew', jsonParser, function(req, res) {
                     objOrderDetail.Quantity = 1;
                     objOrderDetail.UnitPriceInclTax = lstProduct[i].RenewPrice;
                     objOrderDetail.UnitPriceExclTax = lstProduct[i].RenewPrice;
-                    objOrderDetail.idOrderStatus = 1;
+                    objOrderDetail.idOrderStatus = 2;
                     objOrderDetail.PriceInclTax = lstProduct[i].RenewPrice;
                     objOrderDetail.PriceExclTax = lstProduct[i].RenewPrice;
                     objOrderDetail.UOM = lstProduct[i].UOM;
