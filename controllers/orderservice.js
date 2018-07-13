@@ -1118,6 +1118,283 @@ router.get('/ExportOrderService', function(req, res) {
     });
 })
 
+router.get('/ExportOrderServiceNew', function(req, res) {
+    var conf = {};
+    conf.cols = [];
+
+    var objParam = req.query;
+    var objSearch = objParam.search;
+
+    var search = {};
+
+    if (objSearch != null && objSearch != '' && objSearch != undefined && objSearch != 'undefined') {
+        search['$or'] = [];
+        search['$or'].push(['tblappinfo.AppName like ?', "%" + objSearch + "%"]);
+        search['$or'].push(['tbluserinformation.email like ?', "%" + objSearch + "%"]);
+        search['$or'].push(['tbluserinformation.username like ?', "%" + objSearch + "%"]);
+        search['$or'].push(['OrderTotal like ?', "%" + objSearch + "%"]);
+        search['$or'].push(['OrderNotes like ?', "%" + objSearch + "%"]);
+        search['$or'].push(['ShippAddress1 like ?', "%" + objSearch + "%"]);
+        search['$or'].push(['tblorderservicestatus.OrderStatus like ?', "%" + objSearch + "%"]);
+    }
+
+    // OrderService.hasOne(OrderServiceDetail, {
+    //     foreignKey: {
+    //         name: 'OrderId',
+    //         allowNull: false
+    //     }
+    // });
+
+    OrderService.belongsTo(OrderServiceStatus, {
+        foreignKey: {
+            name: 'OrderStatusId',
+            allowNull: false
+        }
+    });
+
+    OrderService.belongsTo(User, {
+        foreignKey: {
+            name: 'CustomerId',
+            allowNull: false
+        }
+    });
+
+    OrderService.belongsTo(AppInfo, {
+        foreignKey: {
+            name: 'SubscriptionTransactionId',
+            allowNull: false
+        }
+    })
+
+    if (objParam.StartDate != '' && objParam.StartDate != null && objParam.StartDate != undefined && objParam.EndDate != '' && objParam.EndDate != null && objParam.EndDate != undefined) {
+
+        // search['$and'] = [];
+        if (search['$and'] == undefined) {
+            search['$and'] = [];
+        }
+
+        var InnerSearch = {};
+        if (InnerSearch['$or'] == undefined) {
+            InnerSearch['$or'] = [];
+        }
+
+        var StartDate = convertdateUTCformat(objParam.StartDate);
+        var EndDate = convertdateUTCformat(objParam.EndDate, 2);
+
+        var obj = new Object();
+        obj['ExpiryDate'] = {
+            $between: [StartDate, EndDate]
+        };
+        InnerSearch['$or'].push(obj);
+
+        var obj1 = new Object();
+        obj1['CreatedOnUtc'] = {
+            $between: [StartDate, EndDate]
+        };
+        InnerSearch['$or'].push(obj1);
+
+        search['$and'].push(InnerSearch);
+
+    } else if (objParam.StartDate != '' && objParam.StartDate != null && objParam.StartDate != undefined) {
+
+        if (search['$and'] == undefined) {
+            search['$and'] = [];
+        }
+
+        var InnerSearch = {};
+        if (InnerSearch['$or'] == undefined) {
+            InnerSearch['$or'] = [];
+        }
+
+        var StartDate = convertdateUTCformat(objParam.StartDate);
+        var obj = new Object();
+        obj['ExpiryDate'] = {
+            $gte: StartDate
+        };
+        InnerSearch['$or'].push(obj);
+
+        var obj1 = new Object();
+        obj1['CreatedOnUtc'] = {
+            $gte: StartDate
+        };
+        InnerSearch['$or'].push(obj1);
+
+        search['$and'].push(InnerSearch);
+
+    } else if (objParam.EndDate != '' && objParam.EndDate != null && objParam.EndDate != undefined) {
+
+        if (search['$and'] == undefined) {
+            search['$and'] = [];
+        }
+
+        var InnerSearch = {};
+        if (InnerSearch['$or'] == undefined) {
+            InnerSearch['$or'] = [];
+        }
+
+        var EndDate = convertdateUTCformat(objParam.EndDate, 2);
+
+        var obj = new Object();
+        obj['ExpiryDate'] = {
+            $lte: EndDate
+        };
+        InnerSearch['$or'].push(obj);
+
+        var obj1 = new Object();
+        obj1['CreatedOnUtc'] = {
+            $lte: EndDate
+        };
+        InnerSearch['$or'].push(obj1);
+
+        search['$and'].push(InnerSearch);
+
+    }
+
+    if (objParam.Status > 0) {
+        if (search['$and'] == undefined) {
+            search['$and'] = [];
+        }
+        var obj = new Object();
+        obj['OrderStatusId'] = {
+            $eq: objParam.Status
+        };
+        search['$and'].push(obj);
+    }
+
+    if (objParam.Type > 0) {
+        if (search['$and'] == undefined) {
+            search['$and'] = [];
+        }
+        var obj = new Object();
+        obj['SubscriptionTransactionId'] = {
+            $eq: parseInt(objParam.Type)
+        };
+        search['$and'].push(obj);
+    }
+
+    if (objParam.idApp != '' && objParam.idApp != undefined && objParam.idApp != null && objParam.idApp > 0) {
+        if (search['$and'] == undefined) {
+            search['$and'] = [];
+        }
+        var obj = new Object();
+        obj['SubscriptionTransactionId'] = {
+            $eq: parseInt(objParam.idApp)
+        };
+        search['$and'].push(obj);
+    }
+
+
+    if (objParam.Country != '' && objParam.Country != null && objParam.Country != undefined && objParam.Country != 0) {
+        if (search['$and'] == undefined) {
+            search['$and'] = [];
+        }
+        var obj = new Object();
+        obj['ShippAddress1'] = {
+            $eq: objParam.Country
+        };
+        search['$and'].push(obj);
+    }
+
+    OrderService.findAll({
+        where: search,
+        order: 'CreatedOnUtc desc',
+        include: [{
+            model: OrderServiceStatus,
+            attributes: ['id', 'OrderStatus'],
+            required: true
+                // }, {
+                //     model: OrderServiceDetail,
+                //     attributes: ['id', 'ProductName', 'Quantity', 'UnitPriceInclTax'],
+                //     required: true
+        }, {
+            model: User,
+            attributes: ['id', 'email', 'username', 'country', 'ProfileName'],
+            required: true
+        }, {
+            model: AppInfo,
+            required: true,
+            attributes: ['id', 'AppName'],
+        }]
+    }).then(function(response) {
+
+        var NewColumns = [{
+            caption: 'No',
+            type: 'string'
+        }, {
+            caption: 'Order No',
+            type: 'string'
+        }, {
+            caption: 'Type',
+            type: 'string'
+        }, {
+            caption: 'Email',
+            type: 'string'
+        }, {
+            caption: 'Created Date',
+            type: 'string'
+                // }, {
+                //     caption: 'Exipiry Date',
+                //     type: 'string'
+        }, {
+            caption: 'Order Total',
+            type: 'number'
+        }, {
+            caption: 'Device',
+            type: 'string'
+        }, {
+            caption: 'Country',
+            type: 'string'
+        }, {
+            caption: 'Status',
+            type: 'string'
+        }];
+
+        conf.cols = (NewColumns);
+        var row = [];
+
+        for (var i = 0; i < response.length; i++) {
+            var ObjData = response[i];
+            var srow = [];
+
+            var No = i + 1;
+            var Type = ObjData.tblappinfo.AppName;
+            var OrderNo = ObjData.PurchaseOrderNumber;
+            var Email = ObjData.tbluserinformation.email;
+            if (ObjData.CreatedOnUtc != '' && ObjData.CreatedOnUtc != null && ObjData.CreatedOnUtc != undefined) {
+                var CreatedOnUtc = moment(moment.utc(ObjData.CreatedOnUtc).toDate()).format("DD/MM/YYYY hh:mm A");
+            } else {
+                var CreatedOnUtc = '';
+            }
+            // if (ObjData.ExpiryDate != '' && ObjData.ExpiryDate != null && ObjData.ExpiryDate != undefined) {
+            //     var ExpiryDate = moment(moment.utc(ObjData.ExpiryDate).toDate()).format("DD/MM/YYYY hh:mm A");
+            // } else {
+            //     var ExpiryDate = '';
+            // }
+            var OrderTotal = ObjData.OrderTotal;
+            var Device = ObjData.OrderNotes;
+            var Country = ObjData.ShippAddress1;
+            var Status = ObjData.tblorderservicestatus.OrderStatus;
+            srow.push(No.toString());
+            srow.push(OrderNo);
+            srow.push(Type);
+            srow.push(Email);
+            srow.push(CreatedOnUtc);
+            // srow.push(ExpiryDate);
+            srow.push(OrderTotal.toString());
+            srow.push(Device);
+            srow.push(Country);
+            srow.push(Status);
+            row.push(srow);
+        };
+        conf.rows = [];
+        conf.rows = row;
+        var result = nodeExcel.execute(conf);
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats');
+        res.setHeader("Content-Disposition", "attachment; filename=" + "OrderService.xlsx");
+        res.end(result, 'binary');
+    });
+})
+
 function convertdateformatcutm(date1) {
     var date = new Date(date1);
     var firstdayMonth = date.getMonth() + 1;
