@@ -40,7 +40,7 @@ router.get('/GetAllCustomer', function(req, res) {
     if (req.query.idApp != null && req.query.idApp != undefined && req.query.idApp != '') {
         search = " where tbluserinformation.idApp = " + req.query.idApp;
     }
-    var query = "select tbluserinformation.email,tbluserinformation.id from tbluserinformation inner join tblvehicle on tbluserinformation.id = tblvehicle.iduser and tblvehicle.IsDelete=0 and tblvehicle.deviceid!='' " + search;
+    var query = "select tbluserinformation.email,tbluserinformation.id from tbluserinformation inner join tblvehicle on tbluserinformation.id = tblvehicle.iduser and tblvehicle.IsDelete=0 and tblvehicle.deviceid!='' " + search + "  group by tbluserinformation.id";
     connection.query(query, function(err, response) {
         res.json(response)
     })
