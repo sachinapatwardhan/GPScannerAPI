@@ -20,6 +20,32 @@ var Commonfunction = require('./common.js');
 //     console.log(redds)
 // })
 
+router.get('/GetAllDeviceId', function(req, res) {
+    var search = "";
+    if (req.query.idApp != null && req.query.idApp != undefined && req.query.idApp != '') {
+        search = " and tblappinfo.id = " + req.query.idApp;
+    }
+    var query = "select tblvehicle.deviceid " +
+        " from tblvehicle " +
+        " inner join tblgpsdevice on tblgpsdevice.DeviceId = tblvehicle.deviceid " +
+        " inner join tblappinfo on tblappinfo.AppName = tblgpsdevice.AppName " +
+        " where tblvehicle.IsDelete=0 and tblvehicle.deviceid!='' " + search;
+    connection.query(query, function(err, response) {
+        res.json(response)
+    })
+})
+
+router.get('/GetAllCustomer', function(req, res) {
+    var search = "";
+    if (req.query.idApp != null && req.query.idApp != undefined && req.query.idApp != '') {
+        search = " where tbluserinformation.idApp = " + req.query.idApp;
+    }
+    var query = "select tbluserinformation.email,tbluserinformation.id from tbluserinformation inner join tblvehicle on tbluserinformation.id = tblvehicle.iduser and tblvehicle.IsDelete=0 and tblvehicle.deviceid!='' " + search;
+    connection.query(query, function(err, response) {
+        res.json(response)
+    })
+})
+
 function convertdateUTCformat(date1, flg) {
     var date = new Date(date1);
     var firstdayMonth = date.getUTCMonth() + 1;
@@ -288,6 +314,7 @@ router.get('/GetAllOrderServiceNew', function(req, res) {
 
     var Orderby = objColumns[parseInt(objOrder[0].column)].data + ' ' + objOrder[0].dir;
     var search = {};
+    var search1 = {};
 
     if (objSearch != null && objSearch != '') {
         search['$or'] = [];
@@ -464,8 +491,25 @@ router.get('/GetAllOrderServiceNew', function(req, res) {
         };
         search['$and'].push(obj);
     }
+    if (objParam.DeviceId != '' && objParam.DeviceId != undefined && objParam.DeviceId != '' && objParam.DeviceId != 'All') {
+        if (search['$and'] == undefined) {
+            search['$and'] = [];
+        }
+        var obj = new Object();
+        obj['OrderNotes'] = {
+            $like: '%' + objParam.DeviceId + '%'
+        };
+        search['$and'].push(obj);
+    }
 
-
+    if (objParam.IdUser != '' && objParam.IdUser != undefined && objParam.IdUser != '' && objParam.IdUser != 'All') {
+        search1['$and'] = [];
+        var obj = new Object();
+        obj['id'] = {
+            $eq: objParam.IdUser
+        };
+        search1['$and'].push(obj);
+    }
     var offset = (req.query.PageNo * 10) - 10;
 
     OrderService.findAndCountAll({
@@ -483,6 +527,7 @@ router.get('/GetAllOrderServiceNew', function(req, res) {
         }, {
             model: User,
             attributes: ['id', 'email', 'username', 'country', 'ProfileName'],
+            where: search1,
             required: true
         }, {
             model: AppInfo,
@@ -1126,6 +1171,7 @@ router.get('/ExportOrderServiceNew', function(req, res) {
     var objSearch = objParam.search;
 
     var search = {};
+    var search1 = {};
 
     if (objSearch != null && objSearch != '' && objSearch != undefined && objSearch != 'undefined') {
         search['$or'] = [];
@@ -1294,7 +1340,25 @@ router.get('/ExportOrderServiceNew', function(req, res) {
         };
         search['$and'].push(obj);
     }
+    if (objParam.DeviceId != '' && objParam.DeviceId != undefined && objParam.DeviceId != '' && objParam.DeviceId != 'All') {
+        if (search['$and'] == undefined) {
+            search['$and'] = [];
+        }
+        var obj = new Object();
+        obj['OrderNotes'] = {
+            $like: '%' + objParam.DeviceId + '%'
+        };
+        search['$and'].push(obj);
+    }
 
+    if (objParam.IdUser != '' && objParam.IdUser != undefined && objParam.IdUser != '' && objParam.IdUser != 'All') {
+        search1['$and'] = [];
+        var obj = new Object();
+        obj['id'] = {
+            $eq: objParam.IdUser
+        };
+        search1['$and'].push(obj);
+    }
     OrderService.findAll({
         where: search,
         order: 'CreatedOnUtc desc',
@@ -1309,6 +1373,7 @@ router.get('/ExportOrderServiceNew', function(req, res) {
         }, {
             model: User,
             attributes: ['id', 'email', 'username', 'country', 'ProfileName'],
+            where: search1,
             required: true
         }, {
             model: AppInfo,
