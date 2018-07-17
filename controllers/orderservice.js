@@ -526,7 +526,7 @@ router.get('/GetAllOrderServiceNew', function(req, res) {
                 //     required: true
         }, {
             model: User,
-            attributes: ['id', 'email', 'username', 'country', 'ProfileName'],
+            attributes: ['id', 'email', 'username', 'country', 'ProfileName', 'idApp'],
             where: search1,
             required: true
         }, {
