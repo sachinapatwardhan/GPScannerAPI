@@ -1201,6 +1201,142 @@ router.get('/MakeStatusPaid', function(req, res) {
     }
 })
 
+//Image APi
+router.post('/uploadImage', function(req, res) {
+    var form = new formidable.IncomingForm();
+
+    form.uploadDir = __dirname + '/../MediaUploads/PaymentReceipt';
+    var FileName = [];
+    var lstOrder = [];
+    //file upload path
+    form.parse(req, function(err, fields, files) {
+        //you can get fields here
+    });
+    form.on('fileBegin', function(name, file) {
+        var ext = file.name.substring(file.name.lastIndexOf('.'), file.name.length);
+        var NewName = GetImageNameFromDate();
+        if (ext.indexOf('?') > -1) {
+            ext = ext.substring(0, ext.lastIndexOf('?'));
+        };
+
+        if (file.name.indexOf('.') == -1) {
+            ext = '.jpg'
+        }
+
+        file.path = form.uploadDir + "/" + NewName + ext;
+        FileName.push(NewName + ext);
+        lstOrder.push(name);
+
+        //modify file path
+    });
+    form.on('end', function() {
+        var i = 0;
+
+        function uploader(i) {
+            if (i < FileName.length) {
+                var orderId = parseInt(lstOrder[i]);
+                OrderService.findOne({
+                    where: {
+                        id: orderId
+                    }
+                }).then(function(response) {
+                    if (response != null) {
+                        if (response.ImageUrl != '' && response.ImageUrl != null) {
+                            var oldFile = __dirname + '/../MediaUploads/PaymentReceipt/' + response.ImageUrl;
+                            fs.exists(oldFile, function(exists) {
+                                if (exists) {
+                                    fs.unlink(oldFile);
+                                }
+                            });
+                        };
+                        response.updateAttributes({
+                            ImageUrl: FileName[i]
+                        }).then(function(resUpdate) {
+                            if ((i + 1) == FileName.length) {
+                                res.json({
+                                    success: true,
+                                    message: "Receipt Save successfully.",
+                                    data: FileName[i]
+                                });
+                            } else {
+                                uploader(i + 1);
+                            };
+                        })
+                    }
+                })
+            }
+        }
+        uploader(i);
+        if (FileName.length == 0) {
+            res.json({
+                success: false,
+                message: "Please Select atleast One File..."
+            });
+        }
+        // res.sendStatus(200);
+        //when finish all process
+    });
+});
+
+
+router.get('/DeleteOrderReceipt', function(req, res) {
+    objHeader = req.headers;
+    var token = getToken(objHeader);
+    if (token) {
+        var decoded = jwt.decode(token, TokenKey);
+        User.findOne({ where: { username: decoded.username, password: decoded.password } }).then(function(UserExist) {
+            if (UserExist != null) {
+                OrderService.findOne({
+                    where: { id: req.query.id },
+                }).then(function(response) {
+                    if (response.ImageUrl != '' && response.ImageUrl != null) {
+                        var oldFile = __dirname + '/../MediaUploads/PaymentReceipt/' + response.ImageUrl;
+                        fs.exists(oldFile, function(exists) {
+                            if (exists) {
+                                fs.unlink(oldFile);
+                            }
+                        });
+                    };
+                    funAuditLog.CreateAuditLog('DeleteOrderReceipt', UserExist.username, "DeleteOrderReceipt User: " + UserExist.username + " idOrder : " + req.query.id + " ImageUrl : " + response.ImageUrl + " ");
+                    return response.updateAttributes({ ImageUrl: null });
+                }).then(function(resupdate) {
+                    var obj = {
+                        success: true,
+                        message: "Receipt Delete Successfully",
+                    }
+                    res.json(obj);
+                }).catch(function(error) {
+                    var obj = {
+                        success: false,
+                        message: "Receipt can not Delete",
+                    }
+                    res.json(obj);
+                })
+
+            } else {
+                res.json(InvalidToken);
+            }
+        })
+    } else {
+        res.json(InvalidToken);
+    }
+});
+
+function GetImageNameFromDate() {
+    var d = new Date();
+    var curr_date = d.getDate();
+    var curr_month = d.getMonth() + 1; //Months are zero based
+    var curr_year = d.getFullYear();
+
+    var seconds = d.getSeconds();
+    var minutes = d.getMinutes();
+    var hour = d.getHours();
+
+    var milisec = d.getMilliseconds();
+
+    return curr_year.toString() + curr_month.toString() + curr_date.toString() + hour.toString() + minutes.toString() + seconds.toString() + milisec.toString();
+
+}
 //Order API End
 //////////
 
