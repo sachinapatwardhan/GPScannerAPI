@@ -1010,7 +1010,10 @@ router.get('/SendPaymentLink', function(req, res) {
         }).spread(function(objSetting, objEmail, objEmailTemplate) {
             if (objSetting != null && objEmailTemplate != null) {
                 var TotalAmount = parseFloat(req.query.OrderTotal).toFixed(2);
-                var body = objEmailTemplate.EmailBody.replace(/{Email}/g, req.query.Email).replace(/{AppName}/g, req.query.AppName).replace("{PaymentLink}", objSetting.Value).replace("{Amount}", TotalAmount);
+                var urldata = req.query.id + "," + req.query.username + "," + req.query.Email;
+                var url = objSetting.Value + '/' + jwt.encode(urldata, "bugz");
+                var link = url;
+                var body = objEmailTemplate.EmailBody.replace(/{Email}/g, req.query.Email).replace(/{AppName}/g, req.query.AppName).replace("{PaymentLink}", link).replace("{Amount}", TotalAmount);
                 var mail = {
                     from: objEmail.DefaultEmailFrom,
                     to: req.query.Email,
@@ -1018,7 +1021,7 @@ router.get('/SendPaymentLink', function(req, res) {
                     html: body
                 };
                 SetsmtpConfig(objEmail, mail, function(EmailSettingCreated) {
-                    console.log(EmailSettingCreated)
+                    // console.log(EmailSettingCreated)
                 })
                 funAuditLog.CreateAuditLog('Payment Link', decoded.username, 'Payment Link Send: (' + req.query.Email + ')');
                 res.json({
@@ -1041,7 +1044,7 @@ router.get('/SendPaymentLink', function(req, res) {
                 }
             }
         }).catch(function(error) {
-            if (err.message === 'Token') {
+            if (error.message === 'Token') {
                 res.json(InvalidToken);
             } else {
                 var obj = {
@@ -1321,6 +1324,28 @@ router.get('/DeleteOrderReceipt', function(req, res) {
         res.json(InvalidToken);
     }
 });
+
+
+router.get('/GetAllOrderDetailsByOrderId', function(req, res) {
+    // console.log(req.query)
+    // OrderServiceDetail.findAll({ where: { OrderId: req.query.OrderId } }).then(function(response) {
+    //     res.json(response)
+    // })
+    var url = jwt.decode(req.query.url, "bugz");
+    url = url.split(',');
+    var OrderId = url[0];
+    var username = url[1];
+    var email = url[2];
+    var query = "select tblorderserviceitem.* ,tblorderservice.OrderStatusId,tblorderservice.ImageUrl,tblorderservice.PurchaseOrderNumber,tblorderservice.OrderTotal from tblorderserviceitem inner join tblorderservice on tblorderservice.id= tblorderserviceitem.OrderId where tblorderserviceitem.OrderId=" + OrderId;
+    connection.query(query, function(err, response, fields) {
+        var obj = new Object();
+        obj.lstOrderDetail = response;
+        obj.username = username;
+        obj.email = email;
+        res.json(obj);
+    })
+
+})
 
 function GetImageNameFromDate() {
     var d = new Date();
