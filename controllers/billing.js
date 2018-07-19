@@ -10,6 +10,7 @@ var Setting = models.tblsetting;
 var SystemEmail = models.tblemailsettingsys;
 var EmailTemplate = models.tblemailtemplate;
 var Commonfunction = require('./common.js');
+var WebCashconfig = require('./../config/webcash.json');
 
 //////////
 
@@ -445,7 +446,6 @@ router.get('/GetEncryptedBillingdata', function(req, res) {
     };
 });
 
-
 router.post('/WebCashResponseUrl', jsonParser, function(req, res) {
     var resdata = req.body;
     var resdataparam = req.query;
@@ -455,9 +455,12 @@ router.post('/WebCashResponseUrl', jsonParser, function(req, res) {
     }
     io.sockets.emit(resdataparam.OrderNumber + 'WebCashResponse', JSON.stringify(objConnection));
 
-    var MerchantID = '80000155'
-    var MerchantKey = '123456'
-    var Merchantenquiry = 'https://staging.webcash.com.my/enquiry.php?'
+    // var MerchantID = '80000155'
+    // var MerchantKey = '123456'
+    // var Merchantenquiry = 'https://staging.webcash.com.my/enquiry.php?'
+    var MerchantID = WebCashconfig.WebCash.MerchantID;
+    var MerchantKey = WebCashconfig.WebCash.MerchantKey;
+    var Merchantenquiry = WebCashconfig.WebCash.MerchantEnquiry;
 
     OrderService.findOne({
         where: { PurchaseOrderNumber: resdataparam.OrderNumber },
@@ -1011,22 +1014,33 @@ router.get('/SendPaymentLink', function(req, res) {
             if (objSetting != null && objEmailTemplate != null) {
                 var TotalAmount = parseFloat(req.query.OrderTotal).toFixed(2);
                 var urldata = req.query.id + "," + req.query.username + "," + req.query.Email;
-                var url = objSetting.Value + '/' + jwt.encode(urldata, "bugz");
-                var link = url;
-                var body = objEmailTemplate.EmailBody.replace(/{Email}/g, req.query.Email).replace(/{AppName}/g, req.query.AppName).replace("{PaymentLink}", link).replace("{Amount}", TotalAmount);
-                var mail = {
-                    from: objEmail.DefaultEmailFrom,
-                    to: req.query.Email,
-                    subject: req.query.AppName + " " + objEmailTemplate.EmailSubject,
-                    html: body
-                };
-                SetsmtpConfig(objEmail, mail, function(EmailSettingCreated) {
-                    // console.log(EmailSettingCreated)
-                })
-                funAuditLog.CreateAuditLog('Payment Link', decoded.username, 'Payment Link Send: (' + req.query.Email + ')');
-                res.json({
-                    success: true,
-                    message: "Payment Link Send to Customer Successfully.",
+                var query = "select tblorderserviceitem.* ,tblorderservice.OrderStatusId,tblorderservice.ImageUrl,tblorderservice.PurchaseOrderNumber,tblorderservice.OrderTotal from tblorderserviceitem inner join tblorderservice on tblorderservice.id= tblorderserviceitem.OrderId where tblorderserviceitem.OrderId=" + req.query.id;
+                connection.query(query, function(err, lstorderdetail, fields) {
+                    var OrderDetail = "";
+                    for (var i = 0; i < lstorderdetail.length; i++) {
+                        OrderDetail = OrderDetail + '<div>&nbsp;</div>' +
+                            '<div>' + (i + 1).toString() + '.<span style="white-space:pre"> </span>' + lstorderdetail[i].AttributeDescription + ' (' + lstorderdetail[i].ProductName + ') -&gt; ' + lstorderdetail[i].AttributesXml + ' to ' + lstorderdetail[i].ItemWeight + '</div>' +
+                            '<div>-----------------------------------------</div>' +
+                            '<div>Amount Due = MYR ' + parseFloat(lstorderdetail[i].PriceInclTax).toFixed(2) + '</div>';
+                    }
+
+                    var url = objSetting.Value + '/' + jwt.encode(urldata, "bugz");
+                    var link = url;
+                    var body = objEmailTemplate.EmailBody.replace(/{Email}/g, req.query.Email).replace(/{AppName}/g, req.query.AppName).replace("{PaymentLink}", link).replace("{Amount}", TotalAmount).replace("{OrderDetail}", OrderDetail);
+                    var mail = {
+                        from: objEmail.DefaultEmailFrom,
+                        to: req.query.Email,
+                        subject: objEmailTemplate.EmailSubject,
+                        html: body
+                    };
+                    SetsmtpConfig(objEmail, mail, function(EmailSettingCreated) {
+                        // console.log(EmailSettingCreated)
+                    })
+                    funAuditLog.CreateAuditLog('Payment Link', decoded.username, 'Payment Link Send: (' + req.query.Email + ')');
+                    res.json({
+                        success: true,
+                        message: "Payment Link Send to Customer Successfully.",
+                    });
                 });
             } else {
                 if (objSetting == null) {

@@ -9,6 +9,7 @@ var Role = models.tblrole;
 var UserInRole = models.tbluserinrole;
 var AuditLog = models.tblauditlog;
 var EmailSetting = models.tblemailsettingsys;
+var WebCashconfig = require('./../config/webcash.json');
 //End of Tables
 
 //Global Message
@@ -143,9 +144,9 @@ router.get('/GetDirectionSpeedByAppName', function(req, res) {
 
 router.get('/GetWebcashCredential', function(req, res) {
     res.json({
-        MID: '80000155',
-        MKey: '123456',
-        MURL: 'https://staging.webcash.com.my/wcgatewayinit.php'
+        MID: WebCashconfig.WebCash.MerchantID,
+        MKey: WebCashconfig.WebCash.MerchantKey,
+        MURL: WebCashconfig.WebCash.MUrl
     });
 });
 

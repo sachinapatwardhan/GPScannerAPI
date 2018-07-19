@@ -1,0 +1,8 @@
+{
+    "WebCash": {
+        "MerchantID": "80000155",
+        "MerchantKey": "123456",
+        "MerchantEnquiry": "https://staging.webcash.com.my/enquiry.php?",
+        "MUrl": "https://staging.webcash.com.my/wcgatewayinit.php"
+    }
+}
