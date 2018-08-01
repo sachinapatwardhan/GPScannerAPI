@@ -9,7 +9,6 @@ var Role = models.tblrole;
 var UserInRole = models.tbluserinrole;
 var AuditLog = models.tblauditlog;
 var EmailSetting = models.tblemailsettingsys;
-var WebCashconfig = require('./../config/webcash.json');
 //End of Tables
 
 //Global Message
@@ -37,6 +36,19 @@ global.RecordNotFound = {
 //End of Global Message
 
 var https = require('https');
+
+router.get('/GetGeoCodingServiceProvider', function(req, res) {
+    // var ServiceProvider = 'google';
+    var ServiceProvider = 'nominatim';
+    if (req.query.AppName == 'Navi Track') {
+        ServiceProvider = 'nominatim';
+    } else if (req.query.AppName == 'Maark') {
+        ServiceProvider = 'nominatim';
+    } else if (req.query.AppName == 'HC CARGO') {
+        ServiceProvider = 'nominatim';
+    }
+    res.json(ServiceProvider);
+});
 
 router.get('/SendOTP', function(req, res) {
     var data = JSON.stringify({
@@ -144,9 +156,9 @@ router.get('/GetDirectionSpeedByAppName', function(req, res) {
 
 router.get('/GetWebcashCredential', function(req, res) {
     res.json({
-        MID: WebCashconfig.WebCash.MerchantID,
-        MKey: WebCashconfig.WebCash.MerchantKey,
-        MURL: WebCashconfig.WebCash.MUrl
+        MID: '80000155',
+        MKey: '123456',
+        MURL: 'https://staging.webcash.com.my/wcgatewayinit.php'
     });
 });
 
