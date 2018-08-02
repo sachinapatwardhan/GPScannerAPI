@@ -591,5 +591,5 @@ app.use('/assignretailer', require('./controllers/assignretailer'));
 app.use('/licence', require('./controllers/licence'));
 app.use('/billing', require('./controllers/billing'));
 app.use('/fuelCalibration', require('./controllers/fuelcalibration'));
-app.use('/billingservice', require('./controllers/billingservice.js'));
+// app.use('/billingservice', require('./controllers/billingservice.js'));
 // MAARK Install App End
