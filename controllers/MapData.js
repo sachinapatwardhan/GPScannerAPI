@@ -207,7 +207,7 @@ router.get('/ExportReportNew', function(req, res) {
                 var Direction = 0.00;
                 var IsEngine = 'Off';
                 if (response[i].Latitude != undefined && response[i].Latitude != null && response[i].Latitude != '' && response[i].Longitude != undefined && response[i].Longitude != null && response[i].Longitude != '') {
-                    geocoder.reverse({ lat: response[i].Latitude, lon: response[i].Longitude }, function(err, resAddress) {
+                    Commonfunction.GetAddressLatLong(response[i].Latitude, response[i].Longitude, function(resAddress) {
                         if (response[i].Datetime != null && response[i].Datetime != '' && response[i].Datetime != undefined) {
                             // Datetime = dateformat(response[i].Datetime, 2);
                             Datetime = momentz.utc(new Date(response[i].Date * 1000)).tz(objTask.TimeZone).format('DD-MM-YYYY hh:mm:ss a')
@@ -235,22 +235,16 @@ router.get('/ExportReportNew', function(req, res) {
                                 IsEngine = 'On';
                             }
                         }
-                        if (err == null && resAddress != null) {
-                            if (resAddress.length > 0) {
-                                Address = resAddress[0].formattedAddress;
-                                row.push(Datetime.toString(), Address, Speed.toString(), GPSPositioning.toString(), Direction.toString(), IsEngine.toString());
-                            } else {
-                                Address = "N/A";
-                                row.push(Datetime.toString(), Address, Speed.toString(), GPSPositioning.toString(), Direction.toString(), IsEngine.toString());
-                            }
+                        if (resAddress != '') {
+                            Address = resAddress;
                         } else {
                             Address = "N/A";
-                            row.push(Datetime.toString(), Address, Speed.toString(), GPSPositioning.toString(), Direction.toString(), IsEngine.toString());
                         }
-                        var latlng = Latitude + "/" + Longitude;
-
+                        row.push(Datetime.toString(), Address, Speed.toString(), GPSPositioning.toString(), Direction.toString(), IsEngine.toString());
                         conf.rows.push(row);
-                        GetData(i + 1);
+                        setTimeout(function() {
+                            GetData(i + 1);
+                        });
                     })
                 } else {
                     if (response[i].Datetime != null && response[i].Datetime != '' && response[i].Datetime != undefined) {
@@ -283,7 +277,9 @@ router.get('/ExportReportNew', function(req, res) {
                     var latlng = Latitude + "/" + Longitude;
                     row.push(Datetime.toString(), latlng, Speed.toString(), GPSPositioning.toString(), Direction.toString(), IsEngine.toString());
                     conf.rows.push(row);
-                    GetData(i + 1);
+                    setTimeout(function() {
+                        GetData(i + 1);
+                    });
                 }
             } else {
                 var result = nodeExcel.execute(conf);
@@ -645,20 +641,28 @@ router.get('/GetAllDrivingData', function(req, res) {
     })
 });
 router.get('/DeleteFence', function(req, res) {
-    Fence.destroy({
+    Fence.findOne({
         where: {
             id: req.query.id
         }
-    }).then(function(response) {
-        if (response != null) {
-            res.json({
-                success: true,
-                message: "Fence Deleted Successfully...",
-                data: response
-            });
-        } else {
-            res.json(RecordNotFound);
-        }
+    }).then(function(FenceExits) {
+        var DeviceId = FenceExits.deviceId;
+        Fence.destroy({
+            where: {
+                id: req.query.id
+            }
+        }).then(function(response) {
+            if (response != null) {
+                Commonfunction.UpdateVehicleRedis(DeviceId, 'Fence');
+                res.json({
+                    success: true,
+                    message: "Fence Deleted Successfully...",
+                    data: response
+                });
+            } else {
+                res.json(RecordNotFound);
+            }
+        })
     })
 })
 

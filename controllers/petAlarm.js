@@ -91,7 +91,7 @@ router.post('/SavePetAlarm', jsonParser, function(req, res) {
                         defaults: objPetAlarm
                     }).then(function(response) {
                         if ((response[1])) {
-                            funAuditLog.CreateAuditLog('SavePetAlarm', UserExist.username, 'Create Pet Alarm / DeviceId ('+ response[1].DeviceId+')');
+                            funAuditLog.CreateAuditLog('SavePetAlarm', UserExist.username, 'Create Pet Alarm / DeviceId (' + response[1].DeviceId + ')');
                             res.json({
                                 success: true,
                                 message: "Pet Alarm created successfully...",
@@ -125,7 +125,7 @@ router.post('/SavePetAlarm', jsonParser, function(req, res) {
                                 }
                             }).then(function(response) {
                                 if (response[0]) {
-                                    funAuditLog.CreateAuditLog('UpdatePetAlarm', UserExist.username, 'Update Pet Alarm / ('+ objPetAlarmExist.DeviceId +')');
+                                    funAuditLog.CreateAuditLog('UpdatePetAlarm', UserExist.username, 'Update Pet Alarm / (' + objPetAlarmExist.DeviceId + ')');
                                     res.json({
                                         success: true,
                                         message: "Pet Alarm updated successfully...",
@@ -183,7 +183,7 @@ router.get('/DeleteVehicleAlarm', function(req, res) {
                                     DeleteBike(i + 1);
                                 })
                             } else {
-                                funAuditLog.CreateAuditLog('DeleteVehicleAlarm', UserExist.username, 'Delete Vehicle Alarm / DeviceId ('+ resBike.DeviceId+')');
+                                funAuditLog.CreateAuditLog('DeleteVehicleAlarm', UserExist.username, 'Delete Vehicle Alarm / DeviceId (' + resBike.DeviceId + ')');
                                 res.json(msg);
                             }
                         }
@@ -234,6 +234,26 @@ router.get('/GetVehicleAlarmByUser', function(req, res) {
             }
         }
     }
+    if (req.query.StartTime != null && req.query.StartTime != undefined && req.query.StartTime != '-1' && req.query.StartTime != 'All') {
+        var Startdate = req.query.StartTime;
+        var convertDate = convertdateformatForUnix(Startdate);
+        var unixStartdate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
+        if (search != "") {
+            search += " and tp.Date >= '" + unixStartdate + "'";
+        } else {
+            search += " Where tp.Date >= '" + unixStartdate + "'";
+        }
+    }
+    if (req.query.EndTime != null && req.query.EndTime != undefined && req.query.EndTime != '-1' && req.query.EndTime != 'All') {
+        var Enddate = req.query.EndTime;
+        var convertDate = convertdateformatForUnix(Enddate);
+        var unixEnddate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
+        if (search != "") {
+            search += " and tp.Date <= '" + unixEnddate + "'";
+        } else {
+            search += " Where tp.Date <= '" + unixEnddate + "'";
+        }
+    }
     var query = "select tp.Id,tp.CreatedDate,tp.Latitude,tp.Longitude,tp.Datetime,tp.Date,tp.DeviceId,tp.Speed,tp.AlarmCode, tp.FenceName,tp.IsRead, tpg.id,tpg.Name from tblalarm tp inner join tblvehicle tpg on tp.DeviceId = tpg.deviceid left join tblsharedevice tsd on tpg.id=tsd.idVehicle ";
     query += search;
 
@@ -246,7 +266,7 @@ router.get('/GetVehicleAlarmByUser', function(req, res) {
 
     query += " group by tp.Id order by tp.Id DESC limit " + limit + " OFFSET " + offset;
 
-    connection.query(query, function(err, rows, fields) {
+    connectionAlarmData.query(query, function(err, rows, fields) {
         if (!err) {
             res.json({ success: true, data: rows });
         } else {
@@ -321,4 +341,29 @@ router.get('/GetAllTotalNotificationCount', function(req, res) {
     })
 })
 
+router.get('/setAlarmMarkAsReadweb', function(req, res) {
+    PetAlarm.update({ IsRead: 1 }, { where: { DeviceId: { $in: req.query.DeviceArray } } }).then(function(response) {
+        if (response) {
+            res.json({ success: true, message: 'All Notification have been marked as read..' });
+        } else {
+            res.json({ success: true, message: 'Err....' });
+        }
+    }).catch(function(error) {
+        res.json(error);
+    })
+})
+
+
+function convertdateformatForUnix(date1) {
+    var date = new Date(date1);
+    var firstdayMonth = date.getMonth() + 1;
+    var firstdayDay = date.getDate();
+    var firstdayYear = date.getFullYear();
+    var firstdayHours = date.getHours();
+    var firstdayMinutes = date.getMinutes();
+    var firstdaySeconds = date.getSeconds();
+
+    return ("00" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("0000" + firstdayDay.toString()).slice(-2) + " " + ("00" + firstdayHours.toString()).slice(-2) + ':' + ("00" + firstdayMinutes.toString()).slice(-2) + ':' + ("00" + firstdaySeconds.toString()).slice(-2);
+
+}
 module.exports = router

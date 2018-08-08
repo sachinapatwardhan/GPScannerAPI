@@ -89,6 +89,25 @@ module.exports = function(sequelize, DataTypes) {
     Platform: {
       type: DataTypes.STRING,
       allowNull: true
+    },
+    SpeedValue: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    IsIgnition: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+      defaultValue: '0'
+    },
+    IsEmail: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+      defaultValue: '0'
+    },
+    IdleMinute: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true,
+      defaultValue: '3'
     }
   }, {
     tableName: 'tbluserinformation'

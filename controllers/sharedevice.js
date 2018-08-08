@@ -5,6 +5,8 @@ var EmailTemplate = models.tblemailtemplate;
 var SystemEmail = models.tblemailsettingsys;
 var SharedEmail = models.tblsharedemail;
 var AppInfo = models.tblappinfo;
+var Vehicle = models.tblvehicle;
+var Commonfunction = require('./common.js');
 router.get('/GetAllSharedVehicle', function(req, res) {
     var search = '';
     if (req.query.appId != null && req.query.appId != '' && req.query.appId != undefined) {
@@ -110,6 +112,7 @@ router.get('/GetAllSharedDeviceByUserNew', function(req, res) {
     SharedDevice.findAll({
         include: [{
             model: User,
+            where: { username: { $ne: 'sysreport' } },
             attributes: ['id', 'email', 'username'],
         }],
         where: { DeviceId: req.query.DeviceId, $or: [{ idSharedUser: req.query.idSharedUser }, { idUser: req.query.idSharedUser }] },
@@ -455,6 +458,9 @@ router.get('/ChangeNotificationSetting', function(req, res) {
             if (!err) {
                 res.json({ success: true, message: 'Notification Setting Changed Successfully.' });
                 funAuditLog.CreateAuditLog('ChangeSubShareNotification', decoded.username, 'Change Sub Share Notification');
+                connection.query("SELECT DeviceId, idUser from tblsharedevice  where id=" + req.query.id, function(err, response, fields) {
+                    updatePushNotificationRedisValue(response[0].idUser);
+                })
             } else {
                 console.log(err);
                 res.json({ success: false, message: 'Notification Setting could not Changed. Try again later.' });
@@ -523,5 +529,285 @@ router.get('/RejectSharedInvitation', function(req, res) {
 
 })
 
+//Share Group of vehicle
+
+router.post('/SaveSharedGroupUserNew', jsonParser, function(req, res) {
+    objUser = req.body;
+    objHeader = req.headers;
+    var token = getToken(objHeader);
+    if (token) {
+        var decoded = jwt.decode(token, TokenKey);
+        User.findOne({ where: { email: objUser.email, idApp: objUser.idApp } }).then(function(chkUserExist) {
+            if (chkUserExist != null) {
+                Vehicle.findAll({ where: { iduser: objUser.idSharedUser, IdGroup: { $eq: objUser.IdGroup } } }).then(function(VehicleList) {
+                    if (VehicleList && VehicleList.length > 0) {
+                        var collist = [];
+                        var CretaedDate = new Date();
+                        uploder(0);
+
+                        function uploder(i) {
+                            if (VehicleList.length > i) {
+                                SharedDevice.findOne({ where: { DeviceId: VehicleList[i].deviceid, idUser: chkUserExist.id, idSharedUser: objUser.idSharedUser } }).then(function(resExist) {
+                                    if (resExist == null) {
+                                        var row = [chkUserExist.id, objUser.idSharedUser, 1, VehicleList[i].id, decoded.username, CretaedDate, VehicleList[i].deviceid, 1, 1];
+                                        collist.push(row);
+                                        uploder(i + 1);
+                                    } else {
+                                        uploder(i + 1);
+                                    }
+                                })
+                            } else {
+                                if (collist.length > 0) {
+                                    connection.query("INSERT INTO tblsharedevice  (idUser, idSharedUser, IsActive, idVehicle, CreatedBy, CreatedDate, DeviceId, IsSharedUserNotification, IsNotification) VALUES ?", [collist], function(err, sharedGroup, fields) {
+                                        if (!err && sharedGroup) {
+                                            res.json({
+                                                success: true,
+                                                message: "Group of vehicle shared successfully.",
+                                            });
+                                            var objConnection = {
+                                                UserId: chkUserExist.id,
+                                                // DeviceId: objUser.DeviceId
+                                            }
+
+                                            // io.sockets.emit('ShareStatus', JSON.stringify(objConnection));
+                                            // io.sockets.emit(objUser.idUser + 'ShareStatus', JSON.stringify(objConnection));
+                                        } else {
+                                            res.json({
+                                                success: false,
+                                                message: "Group of vehicle not shared.",
+                                            });
+                                        }
+                                    })
+                                } else {
+                                    res.json({
+                                        success: true,
+                                        message: "Group of vehicle already shared this user.",
+                                    });
+                                }
+                            }
+                        }
+                    } else {
+                        res.json({
+                            success: false,
+                            message: "Group has no vehicle found.",
+                        });
+                    }
+                })
+
+            } else {
+
+                res.json({
+                    success: false,
+                    message: "User is not Exist...",
+                });
+            }
+        })
+    } else {
+        res.json(InvalidToken);
+    }
+})
+
+router.get('/getAllInvitedUser', function(req, res) {
+    objHeader = req.headers;
+    var token = getToken(objHeader);
+    if (token) {
+        var decoded = jwt.decode(token, TokenKey);
+        User.findOne({ where: { username: decoded.username, password: decoded.password } }).then(function(UserExist) {
+            if (UserExist != null) {
+
+                var IdGroup = req.query.IdGroup;
+                var idUser = req.query.idUser;
+                var Email = req.query.email;
+                SharedEmail.findOne({ where: { idUser: idUser, SharedEmail: Email, Status: 'Pending' } }).then(function(response) {
+                    if (response) {
+                        Vehicle.findAll({ where: { IdGroup: IdGroup, iduser: idUser } }).then(function(response) {
+                            if (response.length > 0) {
+                                uploder(0);
+
+                                function uploder(i) {
+                                    if (response.length > i) {
+                                        var ObjSharedEmail = new Object();
+                                        ObjSharedEmail.DeviceId = response[i].deviceid;
+                                        ObjSharedEmail.SharedEmail = Email;
+                                        ObjSharedEmail.Status = 'Pending';
+                                        ObjSharedEmail.idUser = idUser;
+                                        ObjSharedEmail.CreatedDate = new Date();
+                                        ObjSharedEmail.CreatedBy = decoded.username;
+                                        SharedEmail.findOrCreate({
+                                            where: {
+                                                DeviceId: ObjSharedEmail.DeviceId,
+                                                SharedEmail: ObjSharedEmail.SharedEmail,
+                                            },
+                                            defaults: ObjSharedEmail
+                                        }).then(function(SharedEmailExit) {
+                                            if (SharedEmailExit[1]) {
+                                                uploder(i + 1);
+                                            } else {
+                                                if (SharedEmailExit[0].Status != 'Pending' && SharedEmailExit[0].Status != 'Complete') {
+                                                    var obj = { Status: "Pending", ModifiedBy: null, ModifiedDate: null, CreatedBy: decoded.username, CreatedDate: new Date() };
+                                                    SharedEmailExit[0].updateAttributes(obj).then(function(SystemEmailUpdate) {
+                                                        if (SystemEmailUpdate) {
+                                                            uploder(i + 1);
+                                                        }
+                                                    })
+                                                } else {
+                                                    uploder(i + 1);
+                                                }
+                                            }
+                                        })
+                                    } else {
+                                        funAuditLog.CreateAuditLog('Create shared Email', decoded.username, 'Save shared Email');
+                                        res.json({
+                                            success: true,
+                                            message: 'Shared email is not Tracking account.you have already invited this email user.'
+                                                // message: 'You have already sharing with this user',
+                                        });
+                                    }
+                                }
+                            } else {
+                                res.json({
+                                    success: true,
+                                    message: "Group has no vehicle found.",
+                                });
+                            }
+                        })
+
+                    } else {
+                        res.json({
+                            success: false,
+                            message: "Invite User",
+                        });
+                    }
+                })
+            } else {
+                res.json(InvalidToken)
+            }
+        })
+    } else {
+        res.json(InvalidToken)
+    }
+
+})
+
+
+router.post('/InvitedNewUserByGroupShare', jsonParser, function(req, res) {
+    objUser = req.body;
+    objHeader = req.headers;
+
+    var token = getToken(objHeader);
+    if (token) {
+        var decoded = jwt.decode(token, TokenKey);
+        User.findOne({ where: { username: decoded.username, password: decoded.password } }).then(function(UserExist) {
+            if (UserExist != null) {
+                AppInfo.findOne({ where: { AppName: objUser.AppName } }).then(function(AppInfoExit) {
+                    Vehicle.findAll({ where: { IdGroup: objUser.IdGroup, iduser: objUser.idSharedUser } }).then(function(response) {
+                        if (response.length > 0) {
+                            uploder(0);
+
+                            function uploder(i) {
+                                if (response.length > i) {
+                                    var ObjSharedEmail = new Object();
+                                    ObjSharedEmail.DeviceId = response[i].deviceid;
+                                    ObjSharedEmail.SharedEmail = objUser.email;
+                                    ObjSharedEmail.Status = 'Pending';
+                                    ObjSharedEmail.idUser = objUser.idSharedUser;
+                                    ObjSharedEmail.CreatedDate = new Date();
+                                    ObjSharedEmail.CreatedBy = decoded.username;
+                                    SharedEmail.findOrCreate({
+                                        where: {
+                                            DeviceId: ObjSharedEmail.DeviceId,
+                                            SharedEmail: ObjSharedEmail.SharedEmail,
+                                        },
+                                        defaults: ObjSharedEmail
+                                    }).then(function(SharedEmailExit) {
+                                        if (SharedEmailExit[1]) {
+                                            uploder(i + 1);
+                                        } else {
+                                            if (SharedEmailExit[0].Status != 'Pending' && SharedEmailExit[0].Status != 'Complete') {
+                                                var obj = { Status: "Pending", ModifiedBy: null, ModifiedDate: null, CreatedBy: decoded.username, CreatedDate: new Date() };
+                                                SharedEmailExit[0].updateAttributes(obj).then(function(SystemEmailUpdate) {
+                                                    if (SystemEmailUpdate) {
+                                                        uploder(i + 1);
+                                                    }
+                                                })
+                                            } else {
+                                                uploder(i + 1);
+                                            }
+
+                                        }
+                                    })
+                                } else {
+                                    funAuditLog.CreateAuditLog('Create shared Email', decoded.username, 'Save shared Email');
+                                    SystemEmail.findOne({ where: { IdApp: AppInfoExit.Id } }).then(function(objSystemEmail) {
+                                        EmailTemplate.findOne({
+                                            where: {
+                                                Type: "Invitation Email",
+                                            }
+                                        }).then(function(objEmailTemplate) {
+                                            if (objEmailTemplate) {
+                                                var fromid = '';
+                                                if (UserExist.email == '' || UserExist.email == null || UserExist.email == undefined) {
+                                                    fromid = objSystemEmail.DefaultEmailFrom;
+                                                } else {
+                                                    fromid = UserExist.email;
+                                                }
+                                                var body = objEmailTemplate.EmailBody.replace(/{AppName}/g, objUser.AppName).replace(/{email}/g, fromid).replace(/{url}/g, AppInfoExit.WebAppUrl);
+                                                var mail = {
+                                                    from: fromid,
+                                                    to: objUser.email, // + ', ' + objSystemEmail.NotificationEmailTo,
+                                                    // cc: objSetting.Value,
+                                                    subject: UserExist.email + " " + objEmailTemplate.EmailSubject,
+                                                    html: body
+                                                };
+                                                SetsmtpConfig(objSystemEmail, mail, function(EmailSettingCreated) {
+                                                    // console.log(EmailSettingCreated)
+                                                })
+
+                                                res.json({
+                                                    success: true,
+                                                    message: "Invitation email send to this user successfully",
+                                                    // data: response
+                                                });
+                                                //     }
+                                                // });
+                                            } else {
+                                                res.json({
+                                                    success: false,
+                                                    message: "Email Template not found",
+                                                    data: response
+                                                });
+                                            }
+                                        })
+                                    })
+                                }
+                            }
+                        }
+                    })
+                })
+
+            } else {
+                res.json(InvalidToken)
+            }
+        })
+    } else {
+        res.json(InvalidToken)
+    }
+
+})
+
+
+function updatePushNotificationRedisValue(id) {
+    var query = "SELECT tv.deviceid " +
+        " FROM tblvehicle tv " +
+        " LEFT JOIN tblsharedevice tsd ON tv.id=tsd.idVehicle " +
+        " where  (tv.iduser=" + id + " or tsd.iduser=" + id + ")  and tv.IsDelete = 0";
+    connection.query(query, function(err, response, filed) {
+        if (response) {
+            for (var i = 0; i < response.length; i++) {
+                Commonfunction.UpdateVehicleRedis(response[i].deviceid, 'PushNotification')
+            }
+        }
+    })
+}
 
 module.exports = router

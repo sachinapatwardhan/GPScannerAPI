@@ -954,6 +954,9 @@ router.get('/DeleteDeviceById', function(req, res) {
 
 router.post('/SaveGPSDevice', jsonParser, function(req, res) {
     objGPSDevice = req.body;
+    if (objGPSDevice.AppName == 'Tracking') {
+        objGPSDevice.DeviceId = objGPSDevice.IMEI;
+    }
     if (objGPSDevice.idSalesAgent == 0) {
         objGPSDevice.idSalesAgent = null
     }
@@ -980,6 +983,9 @@ router.post('/SaveGPSDevice', jsonParser, function(req, res) {
                             GPSDevice.findOrCreate({ where: { DeviceId: objGPSDevice.DeviceId }, defaults: objGPSDevice }).then(function(response) {
                                 if ((response[1])) {
                                     funAuditLog.CreateAuditLog('SaveGPSDevice', UserExist.username, 'Create GPS Tracker Device / IMEI : (' + response[0].IMEI + ')');
+                                    if (objGPSDevice.AppName == 'MYPINHERE') {
+                                        client.set(objGPSDevice.DeviceId + "ProjectIgnitionStatus", 'true', function(err, replies) {});
+                                    }
                                     res.json({ success: true, message: "Tracker created successfully...", data: response });
                                 } else {
                                     res.json({ success: false, message: "Tracker already exist...", data: response });
@@ -999,7 +1005,7 @@ router.post('/SaveGPSDevice', jsonParser, function(req, res) {
 
                     funAccessPermission.CheckUserAccessPermission(obj, function(responseAccessPermission) {
                         var AccessPermission = responseAccessPermission.success;
-                        if (AccessPermission) {;
+                        if (AccessPermission) {
                             GPSDevice.findOne({ where: { DeviceId: objGPSDevice.DeviceId } }).then(function(objGPSDeviceExit) {
                                 if (objGPSDeviceExit != null && objGPSDevice.id != objGPSDeviceExit.id) {
                                     res.json({ success: false, message: "Tracker is already exist...", data: objGPSDeviceExit });
@@ -1014,6 +1020,11 @@ router.post('/SaveGPSDevice', jsonParser, function(req, res) {
                                                     })
                                                 }
                                             })
+                                            if (objGPSDevice.AppName == 'MYPINHERE') {
+                                                client.set(objGPSDevice.DeviceId + "ProjectIgnitionStatus", 'true', function(err, replies) {});
+                                            } else {
+                                                client.del(objGPSDevice.DeviceId + "ProjectIgnitionStatus", function(err, replies) {});
+                                            }
                                             res.json({ success: true, message: "Tracker updated successfully", data: response });
                                         } else {
                                             res.json({ success: false, message: "Tracker Is Not updated", data: response });
@@ -1244,9 +1255,17 @@ router.post('/uploadExcelDevice', function(req, res) {
                                                 defaults: obj
                                             }).then(function(response) {
                                                 if ((response[1])) {
+                                                    if (obj.AppName == 'MYPINHERE') {
+                                                        client.set(obj.DeviceId + "ProjectIgnitionStatus", 'true', function(err, replies) {});
+                                                    }
                                                     addDevice(i + 1);
                                                 } else {
                                                     GPSDevice.update(obj, { where: { id: response[0].id } }).then(function(resUpdate) {
+                                                        if (obj.AppName == 'MYPINHERE') {
+                                                            client.set(obj.DeviceId + "ProjectIgnitionStatus", 'true', function(err, replies) {});
+                                                        } else {
+                                                            client.del(obj.DeviceId + "ProjectIgnitionStatus", function(err, replies) {});
+                                                        }
                                                         addDevice(i + 1);
                                                     });
                                                     // Importerror.push(lst[i].SerialNumber); 
@@ -1274,10 +1293,18 @@ router.post('/uploadExcelDevice', function(req, res) {
                                                         defaults: obj
                                                     }).then(function(response) {
                                                         if ((response[1])) {
+                                                            if (obj.AppName == 'MYPINHERE') {
+                                                                client.set(obj.DeviceId + "ProjectIgnitionStatus", 'true', function(err, replies) {});
+                                                            }
                                                             addDevice(i + 1);
                                                         } else {
                                                             // Importerror.push(lst[i].SerialNumber);
                                                             GPSDevice.update(obj, { where: { id: response[0].id } }).then(function(resUpdate) {
+                                                                if (obj.AppName == 'MYPINHERE') {
+                                                                    client.set(obj.DeviceId + "ProjectIgnitionStatus", 'true', function(err, replies) {});
+                                                                } else {
+                                                                    client.del(obj.DeviceId + "ProjectIgnitionStatus", function(err, replies) {});
+                                                                }
                                                                 addDevice(i + 1);
                                                             });
                                                         }
@@ -1290,10 +1317,18 @@ router.post('/uploadExcelDevice', function(req, res) {
                                                             defaults: obj
                                                         }).then(function(response) {
                                                             if ((response[1])) {
+                                                                if (obj.AppName == 'MYPINHERE') {
+                                                                    client.set(obj.DeviceId + "ProjectIgnitionStatus", 'true', function(err, replies) {});
+                                                                }
                                                                 addDevice(i + 1);
                                                             } else {
                                                                 // Importerror.push(lst[i].SerialNumber);
                                                                 GPSDevice.update(obj, { where: { id: response[0].id } }).then(function(resUpdate) {
+                                                                    if (obj.AppName == 'MYPINHERE') {
+                                                                        client.set(obj.DeviceId + "ProjectIgnitionStatus", 'true', function(err, replies) {});
+                                                                    } else {
+                                                                        client.del(obj.DeviceId + "ProjectIgnitionStatus", function(err, replies) {});
+                                                                    }
                                                                     addDevice(i + 1);
                                                                 });
                                                             }

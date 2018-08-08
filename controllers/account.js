@@ -646,7 +646,7 @@ router.post('/register', jsonParser, function(req, res) {
                                             roleId: objRole.id,
                                         }
                                         UserInRole.create(objUserInRole).then(function(resUserInRole) {
-                                            updateUserRedisValue(objRole.id);
+                                            updateUserRedisValue(resUserReg.id);
                                             funAuditLog.CreateAuditLog('register', resUserReg.username, 'Create New User');
                                             res.json({
                                                 success: true,
@@ -2128,6 +2128,8 @@ router.get('/MobileAppLoginNew', jsonParser, function(req, res) {
                     UserName: response.username,
                     Email: response.email,
                     Notification: response.Notification,
+                    SpeedValue: response.SpeedValue,
+                    IsIgnition: response.IsIgnition,
                     message: "Login Successfully..."
                 });
             })
@@ -2608,7 +2610,11 @@ router.get('/CheckUserPassword', jsonParser, function(req, res) {
 })
 
 function updatePushNotificationRedisValue(id) {
-    Vehicle.findAll({ where: { iduser: id } }).then(function(response) {
+    var query = "SELECT tv.deviceid " +
+        " FROM tblvehicle tv " +
+        " LEFT JOIN tblsharedevice tsd ON tv.id=tsd.idVehicle " +
+        " where  (tv.iduser=" + id + " or tsd.iduser=" + id + ")  and tv.IsDelete = 0";
+    connection.query(query, function(err, response, filed) {
         if (response) {
             for (var i = 0; i < response.length; i++) {
                 Commonfunction.UpdateVehicleRedis(response[i].deviceid, 'PushNotification')

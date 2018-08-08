@@ -1078,7 +1078,7 @@ router.get('/SaveVehicleold', jsonParser, function(req, res) {
                                                         // })
 
                                                         //Insert DeviceId to Acc Value set table (if country !=Cambodia)
-                                                        if (objGpsDevice.CountryId != 30) {
+                                                        if (objGpsDevice.CountryId != 30 && objVehicle.DeviceType == 'MT05') {
                                                             var CurrentDate = GetCurrentDate();
                                                             var query = "INSERT INTO tbldeviceaccvalueset (DeviceId,CreatedDate ) VALUES ('" + objVehicle.deviceid + "', '" + CurrentDate + "');";
                                                             connectionbikedata.query(query, function(err, rows, fields) {
@@ -1250,7 +1250,7 @@ router.get('/SaveVehicleold', jsonParser, function(req, res) {
                                                         funAuditLog.CreateAuditLog('Create Vehicle', UserExist.username, 'SaveVehicle(IMEI:' + objVehicle.IMEI + ' , UserId : ' + objVehicle.iduser + ')');
 
                                                         //Insert DeviceId to Acc Value set table (if country !=Cambodia)
-                                                        if (objGpsDevice.CountryId != 30) {
+                                                        if (objGpsDevice.CountryId != 30 && objVehicle.DeviceType == 'MT05') {
                                                             var CurrentDate = GetCurrentDate();
                                                             var query = "INSERT INTO tbldeviceaccvalueset (DeviceId,CreatedDate ) VALUES ('" + objVehicle.deviceid + "', '" + CurrentDate + "');";
                                                             connectionbikedata.query(query, function(err, rows, fields) {
@@ -1428,6 +1428,9 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                 if (objGpsDevice != null) {
                                     objVehicle.DeviceType = objGpsDevice.Type;
                                     objVehicle.DeviceCompany = objGpsDevice.Company;
+                                    if (objGpsDevice.AppName == "Tracking") {
+                                        objVehicle.deviceid = objVehicle.IMEI;
+                                    }
                                     if (objVehicle.id == 0) {
                                         // objVehicle.IsOnline = false;
                                         // objVehicle.CreatedDate = GetCurrentDate();
@@ -1465,6 +1468,9 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                                                 // })
 
                                                                 changeSharedId(objVehicle.iduser, objVehicleExist.iduser, objVehicle.deviceid, function(shareuserupdate) {
+                                                                    if (objGpsDevice.AppName == 'Tracking') {
+                                                                        shareVehicleTosysreportUser(objVehicle.deviceid);
+                                                                    }
                                                                     Commonfunction.UpdateVehicleRedis(objVehicle.deviceid, 'Vehicle');
                                                                     res.json({
                                                                         success: true,
@@ -1526,9 +1532,12 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                                                         //         })
                                                                         //     }
                                                                         // })
+                                                                        if (objGpsDevice.AppName == 'Tracking') {
+                                                                            shareVehicleTosysreportUser(objVehicle.deviceid);
+                                                                        }
 
                                                                         //Insert DeviceId to Acc Value set table (if country !=Cambodia)
-                                                                        if (objGpsDevice.CountryId != 30) {
+                                                                        if (objGpsDevice.CountryId != 30 && objVehicle.DeviceType == 'MT05') {
                                                                             var CurrentDate = GetCurrentDate();
                                                                             var query = "INSERT INTO tbldeviceaccvalueset (DeviceId,CreatedDate ) VALUES ('" + objVehicle.deviceid + "', '" + CurrentDate + "');";
                                                                             connectionbikedata.query(query, function(err, rows, fields) {
@@ -1591,7 +1600,11 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                                                 if (response[0]) {
                                                                     Commonfunction.UpdateVehicleRedis(objVehicle.deviceid, 'Vehicle');
                                                                     funAuditLog.CreateAuditLog('Update Vehicle', UserExist.username, 'UpdateVehicle(IMEI:' + objVehicle.IMEI + ' , UserId : ' + objVehicle.iduser + ')');
+
                                                                     changeSharedId(objVehicle.iduser, objVehicleExist.iduser, objVehicle.deviceid, function(shareuserupdate) {
+                                                                        if (objGpsDevice.AppName == 'Tracking') {
+                                                                            shareVehicleTosysreportUser(objVehicle.deviceid);
+                                                                        }
                                                                         Commonfunction.UpdateVehicleRedis(objVehicle.deviceid, 'Vehicle');
                                                                         res.json({
                                                                             success: true,
@@ -1635,6 +1648,9 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                 if (objGpsDevice != null) {
                                     objVehicle.DeviceType = objGpsDevice.Type;
                                     objVehicle.DeviceCompany = objGpsDevice.Company;
+                                    if (objGpsDevice.AppName == "Tracking") {
+                                        objVehicle.deviceid = objGpsDevice.IMEI;
+                                    }
                                     if (objVehicle.id == 0) {
                                         // objVehicle.IsOnline = false;
                                         objVehicle.CreatedDate = new Date();
@@ -1662,6 +1678,9 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
 
                                                                 funAuditLog.CreateAuditLog('Update Vehicle', UserExist.username, 'UpdateVehicle(DeviceId:' + objVehicle.deviceid + ' , UserId : ' + objVehicle.iduser + ')');
                                                                 changeSharedId(objVehicle.iduser, objVehicleExist.iduser, objVehicle.deviceid, function(shareuserupdate) {
+                                                                    if (objGpsDevice.AppName == 'Tracking') {
+                                                                        shareVehicleTosysreportUser(objVehicle.deviceid);
+                                                                    }
                                                                     Commonfunction.UpdateVehicleRedis(objVehicle.deviceid, 'Vehicle');
                                                                     res.json({
                                                                         success: true,
@@ -1709,9 +1728,11 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
                                                                     if (response) {
                                                                         Commonfunction.UpdateVehicleRedis(objVehicle.deviceid);
                                                                         funAuditLog.CreateAuditLog('Create Vehicle', UserExist.username, 'SaveVehicle(DeviceId:' + objVehicle.deviceid + ' , UserId : ' + objVehicle.iduser + ')');
-
+                                                                        if (objGpsDevice.AppName == 'Tracking') {
+                                                                            shareVehicleTosysreportUser(objVehicle.deviceid);
+                                                                        }
                                                                         //Insert DeviceId to Acc Value set table (if country !=Cambodia)
-                                                                        if (objGpsDevice.CountryId != 30) {
+                                                                        if (objGpsDevice.CountryId != 30 && objVehicle.DeviceType == 'MT05') {
                                                                             var CurrentDate = GetCurrentDate();
                                                                             var query = "INSERT INTO tbldeviceaccvalueset (DeviceId,CreatedDate ) VALUES ('" + objVehicle.deviceid + "', '" + CurrentDate + "');";
                                                                             connectionbikedata.query(query, function(err, rows, fields) {
@@ -1775,6 +1796,9 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
 
                                                                     funAuditLog.CreateAuditLog('Update Vehicle', UserExist.username, 'UpdateVehicle(DeviceId:' + objVehicle.deviceid + ' , UserId : ' + objVehicle.iduser + ')');
                                                                     changeSharedId(objVehicle.iduser, objVehicleExist.iduser, objVehicle.deviceid, function(shareuserupdate) {
+                                                                        if (objGpsDevice.AppName == 'Tracking') {
+                                                                            shareVehicleTosysreportUser(objVehicle.deviceid);
+                                                                        }
                                                                         Commonfunction.UpdateVehicleRedis(objVehicle.deviceid, 'Vehicle');
                                                                         res.json({
                                                                             success: true,
@@ -1824,8 +1848,83 @@ router.get('/SaveVehicle', jsonParser, function(req, res) {
     }
 });
 
+global.shareVehicleTosysreportUser = shareVehicleTosysreportUser;
+
+function shareVehicleTosysreportUser(DeviceId) {
+    var query = "select tu.* from tbluserinformation tu inner join tblappinfo ta on tu.idApp = ta.Id where tu.username='sysreport' and ta.AppName='Tracking'";
+    connectionbikedata.query(query, function(err, rows, fields) {
+        if (!err && rows) {
+            var query = "Select * from tblvehicle tv where tv.deviceid='" + DeviceId + "' and tv.IsDelete = 0";
+            connectionbikedata.query(query, function(err, objVehicle, fields) {
+                if (!err && objVehicle) {
+                    var obj = new Object();
+                    obj.idSharedUser = objVehicle[0].iduser;
+                    obj.idUser = rows[0].id;
+                    obj.IsActive = 1;
+                    obj.idVehicle = objVehicle[0].id;
+                    obj.CreatedBy = "System";
+                    obj.CreatedDate = new Date();
+                    obj.DeviceId = objVehicle[0].deviceid;
+                    obj.IsSharedUserNotification = 1;
+                    obj.IsNotification = 1;
+                    SharedDevice.findOne({ where: { DeviceId: obj.DeviceId, idUser: obj.idUser, idSharedUser: obj.idSharedUser } }).then(function(resExist) {
+                        if (resExist == null) {
+                            SharedDevice.create(obj).then(function(response) {
+                                // console.log("Share device Device........");
+                            })
+                        }
+                    })
+                }
+            })
+        }
+    })
+}
 
 
+function share(CallBack) {
+    var query = "select tu.* from tbluserinformation tu inner join tblappinfo ta on tu.idApp = ta.Id where tu.username='sysreport' and ta.AppName='Tracking'";
+    connectionbikedata.query(query, function(err, rows, fields) {
+        var query = "select tv.* from tblvehicle tv Left join tbluserinformation tu on tv.iduser = tu.id left join tblappinfo ta on tu.idApp = ta.Id where  ta.AppName='Tracking' and tv.IsDelete=0";
+        connectionbikedata.query(query, function(err, objVehicle, fields) {
+            uploder(0);
+            // console.log(objVehicle.length)
+            function uploder(i) {
+                if (i < objVehicle.length) {
+                    var obj = new Object();
+                    obj.idSharedUser = objVehicle[i].iduser;
+                    obj.idUser = rows[0].id;
+                    obj.IsActive = 1;
+                    obj.idVehicle = objVehicle[i].id;
+                    obj.CreatedBy = "System";
+                    obj.CreatedDate = new Date();
+                    obj.DeviceId = objVehicle[i].deviceid;
+                    obj.IsSharedUserNotification = 1;
+                    obj.IsNotification = 1;
+                    SharedDevice.findOne({ where: { DeviceId: obj.DeviceId, idUser: obj.idUser, idSharedUser: obj.idSharedUser } }).then(function(resExist) {
+                        if (resExist == null) {
+                            SharedDevice.create(obj).then(function(response) {
+                                // console.log(response.DeviceId, "--", i)
+                                uploder(i + 1);
+                            })
+                        } else {
+                            // console.log("----------------", i)
+                            uploder(i + 1);
+                        }
+                    })
+                } else {
+                    CallBack("Share all device to sysreport user.");
+                }
+            }
+
+        })
+    })
+}
+
+router.get('/OldVehicleShareForReport', function(req, res) {
+    share(function(resdata) {
+        res.json(resdata);
+    });
+});
 
 // router.post('/SaveVehicle', jsonParser, function(req, res) {
 //     objVehicle = req.body;
@@ -2830,6 +2929,192 @@ router.get('/ChangeFuleRatioAndCapcity', function(req, res) {
             }
         })
 })
+
+router.get('/updateEmailNotificationSetting', jsonParser, function(req, res) {
+    objHeader = req.headers;
+    var token = getToken(objHeader);
+    var obj = {};
+    obj.headers = req.headers;
+
+    if (token) {
+        var decoded = jwt.decode(token, TokenKey);
+        User.findOne({
+            where: {
+                username: decoded.username,
+                password: decoded.password
+            }
+        }).then(function(UserExist) {
+            if (UserExist != null) {
+                User.findOne({ where: { id: req.query.Id } }).then(function(response1) {
+                    if (response1) {
+                        response1.updateAttributes({ IsEmail: req.query.IsEmail }).then(function(UpdateUserEmail) {
+                            if (UpdateUserEmail) {
+                                var query = "update tblvehicle set IsEmail=" + req.query.IsEmail + " where iduser=" + req.query.Id;
+                                connection.query(query, function(err, response) {
+                                    if (response) {
+                                        res.json({ success: true, message: "Email Notification setting update successfully." })
+                                        Vehicle.findAll({ where: { iduser: req.query.Id } }).then(function(vehicleList) {
+                                            if (vehicleList.length > 0) {
+                                                function uploder(i) {
+                                                    if (vehicleList.length > i) {
+                                                        //update Vehicle Data In Redis Server
+                                                        Commonfunction.UpdateVehicleRedis(vehicleList[i].deviceid, 'Vehicle');
+                                                        Commonfunction.UpdateVehicleRedis(vehicleList[i].deviceid, 'User');
+                                                        client.set(vehicleList[i].deviceid + "EmailNotificationSend", req.query.IsEmail.toString(), function(err, replies) {
+                                                            // console.log(err)
+                                                            uploder(i + 1);
+                                                        });
+                                                    }
+                                                }
+                                                uploder(0);
+                                            }
+                                        })
+                                    } else {
+                                        res.json({ success: false, message: "Email Notification setting not update." })
+                                    }
+                                })
+                            } else {
+                                res.json({ success: false, message: "Email Notification setting not update." })
+                            }
+                        })
+                    } else {
+                        res.json(RecordNotFound)
+                    }
+                })
+            } else {
+                res.json(InvalidToken);
+            }
+        })
+    } else {
+        res.json(InvalidToken);
+    }
+
+})
+
+router.get('/updateIsIgnitionNotificationSetting', jsonParser, function(req, res) {
+    objHeader = req.headers;
+    var token = getToken(objHeader);
+    var obj = {};
+    obj.headers = req.headers;
+
+    if (token) {
+        var decoded = jwt.decode(token, TokenKey);
+        User.findOne({
+            where: {
+                username: decoded.username,
+                password: decoded.password
+            }
+        }).then(function(UserExist) {
+            if (UserExist != null) {
+                User.findOne({ where: { id: req.query.Id } }).then(function(response1) {
+                    if (response1) {
+                        response1.updateAttributes({ IsIgnition: req.query.IsIgnition }).then(function(UpdateUserIgnition) {
+                            if (UpdateUserIgnition) {
+                                var query = "update tblvehicle set IsIgnition=" + req.query.IsIgnition + " where iduser=" + req.query.Id;
+                                connection.query(query, function(err, response) {
+                                    if (response) {
+                                        res.json({ success: true, message: "Ignition Notification setting update successfully." })
+                                        Vehicle.findAll({ where: { iduser: req.query.Id } }).then(function(vehicleList) {
+                                            if (vehicleList.length > 0) {
+                                                function uploder(i) {
+                                                    if (vehicleList.length > i) {
+                                                        //update Vehicle Data In Redis Server
+                                                        Commonfunction.UpdateVehicleRedis(vehicleList[i].deviceid, 'Vehicle');
+                                                        //User
+                                                        Commonfunction.UpdateVehicleRedis(vehicleList[i].deviceid, 'User');
+                                                        client.set(vehicleList[i].deviceid + "IgnitionStatus", req.query.IsIgnition.toString(), function(err, replies) {
+                                                            // console.log(err)
+                                                            uploder(i + 1);
+                                                        });
+                                                    }
+                                                }
+                                                uploder(0)
+                                            }
+                                        })
+                                    } else {
+                                        res.json({ success: false, message: "Ignition Notification setting not update." })
+                                    }
+                                })
+                            } else {
+                                res.json({ success: false, message: "Ignition Notification setting not update." })
+                            }
+                        })
+                    } else {
+                        res.json(RecordNotFound)
+                    }
+                })
+            } else {
+                res.json(InvalidToken);
+            }
+        })
+    } else {
+        res.json(InvalidToken);
+    }
+
+})
+
+router.get('/updateIdleMinute', jsonParser, function(req, res) {
+    objHeader = req.headers;
+    var token = getToken(objHeader);
+    var obj = {};
+    obj.headers = req.headers;
+
+    if (token) {
+        var decoded = jwt.decode(token, TokenKey);
+        User.findOne({
+            where: {
+                username: decoded.username,
+                password: decoded.password
+            }
+        }).then(function(UserExist) {
+            if (UserExist != null) {
+                User.findOne({ where: { id: req.query.Id } }).then(function(response1) {
+                    if (response1) {
+                        response1.updateAttributes({ IdleMinute: req.query.IdleMinute }).then(function(UpdateUserIgnition) {
+                            if (UpdateUserIgnition) {
+                                var query = "update tblvehicle set IdleMinute=" + req.query.IdleMinute + " where iduser=" + req.query.Id;
+                                connection.query(query, function(err, response) {
+                                    if (response) {
+                                        res.json({ success: true, message: "Idle Minute update successfully." })
+                                        Vehicle.findAll({ where: { iduser: req.query.Id } }).then(function(vehicleList) {
+                                            if (vehicleList.length > 0) {
+                                                function uploder(i) {
+                                                    if (vehicleList.length > i) {
+                                                        //update Vehicle Data In Redis Server
+                                                        Commonfunction.UpdateVehicleRedis(vehicleList[i].deviceid, 'Vehicle');
+                                                        //User
+                                                        Commonfunction.UpdateVehicleRedis(vehicleList[i].deviceid, 'User');
+                                                        client.set(vehicleList[i].deviceid + "IdleMinute", (req.query.IdleMinute).toString(), function(err, replies) {
+                                                            // console.log(err)
+                                                            uploder(i + 1);
+                                                        });
+                                                    }
+                                                }
+                                                uploder(0)
+                                            }
+                                        })
+                                    } else {
+                                        res.json({ success: false, message: "Idle Minute not update." })
+                                    }
+                                })
+                            } else {
+                                res.json({ success: false, message: "Idle Minute not update." })
+                            }
+                        })
+                    } else {
+                        res.json(RecordNotFound)
+                    }
+                })
+            } else {
+                res.json(InvalidToken);
+            }
+        })
+    } else {
+        res.json(InvalidToken);
+    }
+
+})
+
 
 function convertdateformat(date1) {
     var date = new Date(date1);

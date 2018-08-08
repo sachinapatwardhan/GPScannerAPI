@@ -21,6 +21,8 @@ global.handleDisconnectbikedata = handleDisconnectbikedata;
 global.handleDisconnectreport = handleDisconnectreport;
 global.handleDisconnectDashboard = handleDisconnectDashboard;
 global.handleDisconnectGpsData = handleDisconnectGpsData;
+global.handleDisconnectAlarmData = handleDisconnectAlarmData;
+global.handleDisconnectUserData = handleDisconnectUserData;
 
 function handleDisconnect() {
     // console.log("@@@@@@@@@@@@@@@@@@@@@@")
@@ -245,5 +247,61 @@ function handleDisconnectdotrack() {
     });
 }
 handleDisconnectdotrack();
+
+function handleDisconnectAlarmData() {
+    // console.log("GPS data....")
+    global.connectionAlarmData = mysql.createConnection({
+        host: MysqlHost,
+        user: Mysqluser,
+        password: Mysqlpassword,
+        database: Mysqldatabase,
+        multipleStatements: true
+    });
+
+    connectionAlarmData.connect(function(err) {
+        if (err) {
+            console.log('error when connecting to db for dashbord data:', err);
+            setTimeout(handleDisconnectAlarmData, 2000);
+        }
+    });
+
+    connectionAlarmData.on('error', function(err) {
+        console.log('db error', err);
+        if (err.code === 'PROTOCOL_CONNECTION_LOST') {
+            handleDisconnectAlarmData();
+        } else {
+            throw err;
+        }
+    });
+}
+handleDisconnectAlarmData();
+
+function handleDisconnectUserData() {
+    // console.log("GPS data....")
+    global.connectionUserData = mysql.createConnection({
+        host: MysqlHost,
+        user: Mysqluser,
+        password: Mysqlpassword,
+        database: Mysqldatabase,
+        multipleStatements: true
+    });
+
+    connectionUserData.connect(function(err) {
+        if (err) {
+            console.log('error when connecting to db for dashbord data:', err);
+            setTimeout(handleDisconnectUserData, 2000);
+        }
+    });
+
+    connectionUserData.on('error', function(err) {
+        console.log('db error', err);
+        if (err.code === 'PROTOCOL_CONNECTION_LOST') {
+            handleDisconnectUserData();
+        } else {
+            throw err;
+        }
+    });
+}
+handleDisconnectUserData();
 
 module.exports = router

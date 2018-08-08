@@ -482,7 +482,12 @@ router.get('/UpdateUserIdForPWA', function(req, res) {
 
 
 function updatePushNotificationRedisValue(id) {
-    Vehicle.findAll({ where: { iduser: id } }).then(function(response) {
+    var query = "SELECT tv.deviceid " +
+        " FROM tblvehicle tv " +
+        " LEFT JOIN tblsharedevice tsd ON tv.id=tsd.idVehicle " +
+        " where  (tv.iduser=" + id + " or tsd.iduser=" + id + ")  and tv.IsDelete = 0";
+    connection.query(query, function(err, response, filed) {
+        // Vehicle.findAll({ where: { iduser: id } }).then(function(response) {
         if (response) {
             for (var i = 0; i < response.length; i++) {
                 Commonfunction.UpdateVehicleRedis(response[i].deviceid, 'PushNotification')
@@ -503,7 +508,12 @@ function updateUserRedisValue(id) {
 }
 
 function updatePWANotificationRedisValue(id) {
-    Vehicle.findAll({ where: { iduser: id } }).then(function(response) {
+    var query = "SELECT tv.deviceid " +
+        " FROM tblvehicle tv " +
+        " LEFT JOIN tblsharedevice tsd ON tv.id=tsd.idVehicle " +
+        " where  (tv.iduser=" + id + " or tsd.iduser=" + id + ")  and tv.IsDelete = 0";
+    connection.query(query, function(err, response, filed) {
+        // Vehicle.findAll({ where: { iduser: id } }).then(function(response) {
         if (response) {
             for (var i = 0; i < response.length; i++) {
                 Commonfunction.UpdateVehicleRedis(response[i].deviceid, 'PWAPushNotification')

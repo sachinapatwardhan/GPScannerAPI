@@ -4,6 +4,7 @@ var Vehicle = models.tblvehicle;
 var GPSdata = models.tblgpsdata;
 var JourneyRoute = models.JourneyRoute;
 var momentz = require('moment-timezone');
+var Commonfunction = require('./common.js');
 /*------------------------------------Detailed Trip Report-------------------*/
 router.get('/GetAllGPSByTimeZoneDate', function(req, res) {
 
@@ -3021,7 +3022,7 @@ router.get('/ExportParkingReportNew', function(req, res) {
                 var Longitude = '';
 
                 if (Array[i].Latitude != undefined && Array[i].Latitude != null && Array[i].Latitude != '' && Array[i].Longitude != undefined && Array[i].Longitude != null && response[i].Longitude != '') {
-                    geocoder.reverse({ lat: Array[i].Latitude, lon: Array[i].Longitude }, function(err, res) {
+                    Commonfunction.GetAddressLatLong(Array[i].Latitude, Array[i].Longitude, function(resAddress) {
                         if (Array[i].StartTime != null && Array[i].StartTime != '' && Array[i].StartTime != undefined) {
                             StartTime = Array[i].StartTime;
                         }
@@ -3043,23 +3044,15 @@ router.get('/ExportParkingReportNew', function(req, res) {
                         if (Array[i].Longitude != null && Array[i].Longitude != '' && Array[i].Longitude != undefined) {
                             Longitude = Array[i].Longitude;
                         }
-                        if (!err || res != null) {
-                            if (res.length > 0) {
-                                Address = res[0].formattedAddress;
-                                row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address.toString());
-                                // row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address.toString(), Latitude, Longitude);
-                            } else {
-                                Address = "N/A";
-                                row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address.toString());
-                                // row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address.toString(), Latitude, Longitude);
-                            }
-                        } else {
-                            Address = "N/A";
-                            row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address);
-                            // row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address, Latitude, Longitude);
+                        if (resAddress == '') {
+                            resAddress = 'N/A'
                         }
+                        Address = res[0].formattedAddress;
+                        row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address.toString());
                         conf.rows.push(row);
-                        GetData(i + 1);
+                        setTimeout(function() {
+                            GetData(i + 1);
+                        });
                     })
                 } else {
                     if (Array[i].StartTime != null && Array[i].StartTime != '' && Array[i].StartTime != undefined) {
@@ -3089,7 +3082,9 @@ router.get('/ExportParkingReportNew', function(req, res) {
                     row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address);
                     // row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address, Latitude, Longitude);
                     conf.rows.push(row);
-                    GetData(i + 1);
+                    setTimeout(function() {
+                        GetData(i + 1);
+                    });
                 }
 
             } else {
@@ -3257,8 +3252,7 @@ router.get('/PrintParkingReportNew', function(req, res) {
                 var Longitude = '';
 
                 if (Array[i].Latitude != undefined && Array[i].Latitude != null && Array[i].Latitude != '' && Array[i].Longitude != undefined && Array[i].Longitude != null && response[i].Longitude != '') {
-                    geocoder.reverse({ lat: Array[i].Latitude, lon: Array[i].Longitude }, function(err, res) {
-
+                    Commonfunction.GetAddressLatLong(Array[i].Latitude, Array[i].Longitude, function(resAddress) {
                         if (Array[i].StartTime != null && Array[i].StartTime != '' && Array[i].StartTime != undefined) {
                             StartTime = Array[i].StartTime;
                         }
@@ -3280,46 +3274,22 @@ router.get('/PrintParkingReportNew', function(req, res) {
                         if (Array[i].Longitude != null && Array[i].Longitude != '' && Array[i].Longitude != undefined) {
                             Longitude = Array[i].Longitude;
                         }
-                        if (!err || res != null) {
-                            if (res.length > 0) {
-                                Address = res[0].formattedAddress;
-                                // row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address.toString());
-                                table += '<tr>' +
-                                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + (i + 1) + '</td>' +
-                                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + Name.toString() + '</td>' +
-                                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + StartTime + '</td>' +
-                                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + EndTime + '</td>' +
-                                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + ParkingTime.toString() + '</td>' +
-                                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">' + Address.toString() + '</td>' +
-                                    '</tr>';
-                                // row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address.toString(), Latitude, Longitude);
-                            } else {
-                                Address = "N/A";
-                                table += '<tr>' +
-                                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + (i + 1) + '</td>' +
-                                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + Name.toString() + '</td>' +
-                                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + StartTime + '</td>' +
-                                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + EndTime + '</td>' +
-                                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + ParkingTime.toString() + '</td>' +
-                                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">' + Address.toString() + '</td>' +
-                                    '</tr>';
-                                // row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address.toString());
-                                // row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address.toString(), Latitude, Longitude);
-                            }
-                        } else {
-                            Address = "N/A";
-                            table += '<tr>' +
-                                '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + (i + 1) + '</td>' +
-                                '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + Name.toString() + '</td>' +
-                                '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + StartTime + '</td>' +
-                                '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + EndTime + '</td>' +
-                                '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + ParkingTime.toString() + '</td>' +
-                                '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">' + Address.toString() + '</td>' +
-                                '</tr>';
-                            // row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address);
-                            // row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address, Latitude, Longitude);
+                        if (resAddress == '') {
+                            resAddress = "N/A";
                         }
-                        GetData(i + 1);
+                        Address = resAddress;
+                        // row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address.toString());
+                        table += '<tr>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + (i + 1) + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + Name.toString() + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + StartTime + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + EndTime + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + ParkingTime.toString() + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">' + Address.toString() + '</td>' +
+                            '</tr>';
+                        setTimeout(function() {
+                            GetData(i + 1);
+                        });
                     })
                 } else {
                     if (Array[i].StartTime != null && Array[i].StartTime != '' && Array[i].StartTime != undefined) {
@@ -3356,7 +3326,9 @@ router.get('/PrintParkingReportNew', function(req, res) {
                         '</tr>';
                     // row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address);
                     // row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address, Latitude, Longitude);
-                    GetData(i + 1);
+                    setTimeout(function() {
+                        GetData(i + 1);
+                    });
                 }
 
             } else {

@@ -9,6 +9,7 @@ var Country = models.tblcountrymgmt;
 var State = models.tblcountrystatemgmt;
 var AppInfo = models.tblappinfo;
 var SharedDevice = models.tblsharedevice;
+var GpsDeleteCash = models.tblgpsdeletecash;
 var Commonfunction = require('./common.js');
 //End of Tables
 
@@ -1535,7 +1536,7 @@ router.post('/SaveUserNew', jsonParser, function(req, res) {
                                 } else {
                                     var UserPassword = customPassword();
                                     var EncryptUserpassword = jwt.encode(UserPassword, "bugz");
-
+                                    objUser.password = EncryptUserpassword;
                                     User.findOrCreate({
                                         where: {
                                             username: objUser.username,
@@ -2940,7 +2941,6 @@ router.get('/GetAllDynamicOwnerCustomerold', function(req, res) {
 })
 
 router.get('/GetAllDynamicOwnerCustomer', function(req, res) {
-
     var objParam = req.query;
     var objColumns = objParam.columns;
     var objOrderBy = objParam.order;
@@ -2989,24 +2989,37 @@ router.get('/GetAllDynamicOwnerCustomer', function(req, res) {
         }
     }
 
-    var query = "select tbluserinformation.CreatedDate, tblappinfo.AppName,tbluserinformation.id,tbluserinformation.username,tbluserinformation.idApp,tbluserinformation.email,tbluserinformation.phone,tbluserinformation.country,tbluserinformation.OTP,tbluserinformation.IsMobileVerify,CONVERT_TZ(tbluserinformation.LastLogin,'+00:00','" + CurrentOffset + "') as LastLogin, " +
-        "(select count(tblvehicle.deviceid) from tblvehicle where iduser = tbluserinformation.id and tblvehicle.IsDelete=0 and tblvehicle.deviceid !='' ) as TotalDevice " +
-        "from tbluserinformation left join tblappinfo on tbluserinformation.idApp = tblappinfo.id " + search +
-        " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
-    var Countqry = "SELECT count(tbluserinformation.id) as TotalRecord " +
-        "from tbluserinformation left join tblappinfo on tbluserinformation.idApp = tblappinfo.id " + search;
-    connection.query(query, function(err, response) {
+    var UserInRole = objParam.UserRoles.length ? objParam.UserRoles : [];
+
+    var CheckRole = u.contains(UserInRole, "Super Admin");
+    if (CheckRole == false) {
+        var query = "select SQL_CALC_FOUND_ROWS tbluserinformation.CreatedDate, tblappinfo.AppName,tbluserinformation.id,tbluserinformation.username,tbluserinformation.idApp,tbluserinformation.email,tbluserinformation.phone,tbluserinformation.country,tbluserinformation.OTP,tbluserinformation.IsMobileVerify,CONVERT_TZ(tbluserinformation.LastLogin,'+00:00','" + CurrentOffset + "') as LastLogin, " +
+            "(select count(tblvehicle.deviceid) from tblvehicle where iduser = tbluserinformation.id and tblvehicle.IsDelete=0 and tblvehicle.deviceid !='' ) as TotalDevice " +
+            "from tbluserinformation left join tblappinfo on tbluserinformation.idApp = tblappinfo.id   inner join tbluserinrole on tbluserinformation.id=tbluserinrole.userId inner join tblrole on tblrole.id=tbluserinrole.roleId and tblrole.RoleName='User' " + search +
+            " group by tbluserinformation.id " +
+            " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start) + ";";
+    } else {
+        var query = "select SQL_CALC_FOUND_ROWS tbluserinformation.CreatedDate, tblappinfo.AppName,tbluserinformation.id,tbluserinformation.username,tbluserinformation.idApp,tbluserinformation.email,tbluserinformation.phone,tbluserinformation.country,tbluserinformation.OTP,tbluserinformation.IsMobileVerify,CONVERT_TZ(tbluserinformation.LastLogin,'+00:00','" + CurrentOffset + "') as LastLogin, " +
+            "(select count(tblvehicle.deviceid) from tblvehicle where iduser = tbluserinformation.id and tblvehicle.IsDelete=0 and tblvehicle.deviceid !='' ) as TotalDevice " +
+            "from tbluserinformation left join tblappinfo on tbluserinformation.idApp = tblappinfo.id  " + search +
+            " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start) + ";";
+    }
+
+
+    query += " SELECT FOUND_ROWS() as TotalRecord ";
+    // var Countqry = "SELECT count(tbluserinformation.id) as TotalRecord " +
+    //     "from tbluserinformation left join tblappinfo on tbluserinformation.idApp = tblappinfo.id " + JoinQuery + search;
+    connectionUserData.query(query, function(err, response) {
         if (response != undefined) {
-            connection.query(Countqry, function(err, lstCount, fields) {
-                var response1 = new Object();
-                response1.draw = objParam.draw;
-                response1.recordsTotal = lstCount[0].TotalRecord;
-                response1.recordsFiltered = lstCount[0].TotalRecord;
-                response1.data = response;
-                res.json(response1);
-            });
+            // connection.query(Countqry, function(err, lstCount, fields) {
+            var response1 = new Object();
+            response1.draw = objParam.draw;
+            response1.recordsTotal = response[1][0].TotalRecord;
+            response1.recordsFiltered = response[1][0].TotalRecord;
+            response1.data = response[0];
+            res.json(response1);
+            // });
         } else {
-            console.log(err);
             var response1 = new Object();
             response1.draw = objParam.draw;
             response1.recordsTotal = 0;
@@ -3063,7 +3076,7 @@ router.get('/ExportOwnerCustomer', function(req, res) {
         "from tbluserinformation left join tblappinfo on tbluserinformation.idApp = tblappinfo.id " + search +
         " order by CreatedDate desc";
 
-    connection.query(query, function(err, response) {
+    connectionUserData.query(query, function(err, response) {
         if (response != undefined) {
             conf.rows = [];
 
@@ -3220,7 +3233,7 @@ router.get('/GetAllDynamicShopperCustomer', function(req, res) {
 })
 
 
-router.get('/DeleteCustomer', function(req, res) {
+router.get('/DeleteCustomer_old', function(req, res) {
     objHeader = req.headers;
     var token = getToken(objHeader);
     var obj = {};
@@ -3360,6 +3373,46 @@ function updateUserRedisValue(id) {
     })
 }
 
+//DeleteCustomer
+router.get('/DeleteCustomer', function(req, res) {
+    objHeader = req.headers;
+    var token = getToken(objHeader);
+    var obj = {};
+    obj.headers = req.headers;
+    obj.query = req.query;
+    if (token) {
+        var decoded = jwt.decode(token, TokenKey);
+        var obj = new Object();
+        obj.idUser = req.query.id;
+        obj.Status = 'Pending';
+        obj.CreatedDate = new Date();
+        obj.CreatedBy = decoded.username;
+        obj.RequestType = "AccountDelete";
+        GpsDeleteCash.findOrCreate({
+            where: {
+                idUser: obj.idUser,
+                Status: obj.Status,
+                RequestType: obj.RequestType,
+            },
+            defaults: obj
+        }).then(function(CashCreate) {
+            if (CashCreate[1]) {
+                funAuditLog.CreateAuditLog('Delete Account', decoded.username, 'Save GpsDeleteCash data Userid: (' + obj.idUser + ')');
+                res.json({
+                    success: true,
+                    message: "Your account deletion is under process. We will notify you over email.",
+                })
+            } else {
+                res.json({
+                    success: false,
+                    message: "You have already requested for account termination. It is under process. Please wait, you will be notified via email.",
+                })
+            }
 
+        })
+    } else {
+        res.json(InvalidToken);
+    }
+})
 
 module.exports = router

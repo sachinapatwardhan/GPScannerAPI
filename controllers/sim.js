@@ -143,7 +143,7 @@ router.post('/SaveSIMInfo', jsonParser, function(req, res) {
                                     funAuditLog.CreateAuditLog('Update SIM', UserExist.username, 'Update SIM Data');
                                     res.json({ success: true, message: "SIM Info updated successfully...", data: response });
                                 } else {
-                                    res.json({ success: true, message: "SIM Info not updated successfully...", data: response });
+                                    res.json({ success: false, message: "SIM Info not updated successfully...", data: response });
                                 }
                             })
                         }

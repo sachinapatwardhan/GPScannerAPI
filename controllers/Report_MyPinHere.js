@@ -4,6 +4,7 @@ var Vehicle = models.tblvehicle;
 var GPSdata = models.tblgpsdata;
 var JourneyRoute = models.JourneyRoute;
 var momentz = require('moment-timezone');
+var Commonfunction = require('./common.js');
 
 function handleDisconnectreport() {
     // console.log("Report.....")
@@ -39,7 +40,7 @@ function SetSpeedValue(Speed, SpeedValue) {
         return Speed.toFixed(2) + ' km/h';
     } else if (SpeedValue == 'MPH') {
         Speed = (Speed) * 0.621372;
-        return Speed.toFixed(2) + ' m/h';
+        return Speed.toFixed(2) + ' mph';
     } else {
         return Speed.toFixed(2) + ' km/h';
     }
@@ -1814,7 +1815,7 @@ router.get('/ExportLastPositionDataByUserId', function(req, res) {
             caption: 'Assest Name',
             type: 'string'
         }, {
-            caption: 'Device Id',
+            caption: 'Device ID',
             type: 'string'
         }, {
             caption: 'Time',
@@ -2185,7 +2186,7 @@ router.get('/PrintLastPositionDataByUserId', function(req, res) {
         '<tr>' +
         '<th style="padding: 10px 5px;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-bottom: 1px dotted #000; border-right: 1px dotted #000;">No</th>' +
         '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Asset Name</th>' +
-        '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Device Id</th>' +
+        '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Device ID</th>' +
         '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Time</th>' +
         '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Device Status</th>' +
         '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Engine</th>' +
@@ -2738,10 +2739,10 @@ router.get('/ExportParkingReport', function(req, res) {
             caption: 'Asset Name',
             type: 'string'
         }, {
-            caption: 'StartTime',
+            caption: 'Start Time',
             type: 'string'
         }, {
-            caption: 'EndTime',
+            caption: 'End Time',
             type: 'string'
         }, {
             caption: 'Parking Time',
@@ -3180,7 +3181,8 @@ router.get('/ExportParkingReportNew', function(req, res) {
                 var Longitude = '';
 
                 if (Array[i].Latitude != undefined && Array[i].Latitude != null && Array[i].Latitude != '' && Array[i].Longitude != undefined && Array[i].Longitude != null && response[i].Longitude != '') {
-                    geocoder.reverse({ lat: Array[i].Latitude, lon: Array[i].Longitude }, function(err, res) {
+                    // geocoder.reverse({ lat: Array[i].Latitude, lon: Array[i].Longitude }, function(err, res) {
+                    Commonfunction.GetAddressLatLong(Array[i].Latitude, Array[i].Longitude, function(resAddress) {
                         if (Array[i].StartTime != null && Array[i].StartTime != '' && Array[i].StartTime != undefined) {
                             StartTime = Array[i].StartTime;
                         }
@@ -3202,21 +3204,26 @@ router.get('/ExportParkingReportNew', function(req, res) {
                         if (Array[i].Longitude != null && Array[i].Longitude != '' && Array[i].Longitude != undefined) {
                             Longitude = Array[i].Longitude;
                         }
-                        if (!err || res != null) {
-                            if (res.length > 0) {
-                                Address = res[0].formattedAddress;
-                                row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address.toString());
-                                // row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address.toString(), Latitude, Longitude);
-                            } else {
-                                Address = "N/A";
-                                row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address.toString());
-                                // row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address.toString(), Latitude, Longitude);
-                            }
-                        } else {
-                            Address = "N/A";
-                            row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address);
-                            // row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address, Latitude, Longitude);
+                        // if (!err || res != null) {
+                        //     if (res.length > 0) {
+                        //         Address = res[0].formattedAddress;
+                        //         row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address.toString());
+                        //         // row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address.toString(), Latitude, Longitude);
+                        //     } else {
+                        //         Address = "N/A";
+                        //         row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address.toString());
+                        //         // row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address.toString(), Latitude, Longitude);
+                        //     }
+                        // } else {
+                        //     Address = "N/A";
+                        //     row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address);
+                        //     // row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address, Latitude, Longitude);
+                        // }
+                        if (resAddress == '' || resAddress == null) {
+                            resAddress = 'N/A';
                         }
+                        Address = resAddress;
+                        row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address.toString());
                         conf.rows.push(row);
                         GetData(i + 1);
                     })
@@ -3416,8 +3423,8 @@ router.get('/PrintParkingReportNew', function(req, res) {
                 var Longitude = '';
 
                 if (Array[i].Latitude != undefined && Array[i].Latitude != null && Array[i].Latitude != '' && Array[i].Longitude != undefined && Array[i].Longitude != null && response[i].Longitude != '') {
-                    geocoder.reverse({ lat: Array[i].Latitude, lon: Array[i].Longitude }, function(err, res) {
-
+                    // geocoder.reverse({ lat: Array[i].Latitude, lon: Array[i].Longitude }, function(err, res) {
+                    Commonfunction.GetAddressLatLong(Array[i].Latitude, Array[i].Longitude, function(resAddress) {
                         if (Array[i].StartTime != null && Array[i].StartTime != '' && Array[i].StartTime != undefined) {
                             StartTime = Array[i].StartTime;
                         }
@@ -3439,45 +3446,58 @@ router.get('/PrintParkingReportNew', function(req, res) {
                         if (Array[i].Longitude != null && Array[i].Longitude != '' && Array[i].Longitude != undefined) {
                             Longitude = Array[i].Longitude;
                         }
-                        if (!err || res != null) {
-                            if (res.length > 0) {
-                                Address = res[0].formattedAddress;
-                                // row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address.toString());
-                                table += '<tr>' +
-                                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + (i + 1) + '</td>' +
-                                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + Name.toString() + '</td>' +
-                                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + StartTime + '</td>' +
-                                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + EndTime + '</td>' +
-                                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + ParkingTime.toString() + '</td>' +
-                                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">' + Address.toString() + '</td>' +
-                                    '</tr>';
-                                // row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address.toString(), Latitude, Longitude);
-                            } else {
-                                Address = "N/A";
-                                table += '<tr>' +
-                                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + (i + 1) + '</td>' +
-                                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + Name.toString() + '</td>' +
-                                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + StartTime + '</td>' +
-                                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + EndTime + '</td>' +
-                                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + ParkingTime.toString() + '</td>' +
-                                    '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">' + Address.toString() + '</td>' +
-                                    '</tr>';
-                                // row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address.toString());
-                                // row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address.toString(), Latitude, Longitude);
-                            }
-                        } else {
-                            Address = "N/A";
-                            table += '<tr>' +
-                                '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + (i + 1) + '</td>' +
-                                '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + Name.toString() + '</td>' +
-                                '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + StartTime + '</td>' +
-                                '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + EndTime + '</td>' +
-                                '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + ParkingTime.toString() + '</td>' +
-                                '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">' + Address.toString() + '</td>' +
-                                '</tr>';
-                            // row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address);
-                            // row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address, Latitude, Longitude);
+                        // if (!err || res != null) {
+                        //     if (res.length > 0) {
+                        //         Address = res[0].formattedAddress;
+                        //         // row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address.toString());
+                        //         table += '<tr>' +
+                        //             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + (i + 1) + '</td>' +
+                        //             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + Name.toString() + '</td>' +
+                        //             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + StartTime + '</td>' +
+                        //             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + EndTime + '</td>' +
+                        //             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + ParkingTime.toString() + '</td>' +
+                        //             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">' + Address.toString() + '</td>' +
+                        //             '</tr>';
+                        //         // row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address.toString(), Latitude, Longitude);
+                        //     } else {
+                        //         Address = "N/A";
+                        //         table += '<tr>' +
+                        //             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + (i + 1) + '</td>' +
+                        //             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + Name.toString() + '</td>' +
+                        //             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + StartTime + '</td>' +
+                        //             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + EndTime + '</td>' +
+                        //             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + ParkingTime.toString() + '</td>' +
+                        //             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">' + Address.toString() + '</td>' +
+                        //             '</tr>';
+                        //         // row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address.toString());
+                        //         // row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address.toString(), Latitude, Longitude);
+                        //     }
+                        // } else {
+                        //     Address = "N/A";
+                        //     table += '<tr>' +
+                        //         '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + (i + 1) + '</td>' +
+                        //         '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + Name.toString() + '</td>' +
+                        //         '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + StartTime + '</td>' +
+                        //         '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + EndTime + '</td>' +
+                        //         '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + ParkingTime.toString() + '</td>' +
+                        //         '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">' + Address.toString() + '</td>' +
+                        //         '</tr>';
+                        //     // row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address);
+                        //     // row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address, Latitude, Longitude);
+                        // }
+
+                        if (resAddress == '' || resAddress == null) {
+                            resAddress = 'N/A';
                         }
+                        Address = resAddress;
+                        table += '<tr>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + (i + 1) + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + Name.toString() + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + StartTime + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + EndTime + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + ParkingTime.toString() + '</td>' +
+                            '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">' + Address.toString() + '</td>' +
+                            '</tr>';
                         GetData(i + 1);
                     })
                 } else {
@@ -4731,14 +4751,14 @@ router.get('/ExportDailyStatReport', function(req, res) {
             caption: 'Invalid Location',
             type: 'number'
         }, {
-            caption: 'Mileage(km)',
+            caption: 'Mileage',
             type: 'number'
         }, {
-            caption: 'Average Speed(km/h)',
+            caption: 'Average Speed',
             type: 'number'
         },
         {
-            caption: 'Max Speed(km/h)',
+            caption: 'Max Speed',
             type: 'number'
         },
         {
@@ -6252,9 +6272,9 @@ router.get('/ExportDriverReport', function(req, res) {
     conf.name = "Sheet1";
 
     if (req.query.SpeedValue == 'MPH') {
-        var Caption6090speed = "30-50 Speed (m/h)";
-        var Caption90130speed = "50-80 Speed (m/h)";
-        var Caption130speed = "Over 80 Speed (m/h)";
+        var Caption6090speed = "30-50 Speed (mph)";
+        var Caption90130speed = "50-80 Speed (mph)";
+        var Caption130speed = "Over 80 Speed (mph)";
     } else {
         var Caption6090speed = "60-90 Speed (km/h)";
         var Caption90130speed = "90-130 Speed (km/h)";
@@ -6960,9 +6980,9 @@ router.get('/PrintDriverReportNew', function(req, res) {
                 var TodayDate = momentz.utc(new Date()).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
 
                 if (req.query.SpeedValue == 'MPH') {
-                    var Caption6090speed = "30-50 Speed (m/h)";
-                    var Caption90130speed = "50-80 Speed (m/h)";
-                    var Caption130speed = "Over 80 Speed (m/h)";
+                    var Caption6090speed = "30-50 Speed (mph)";
+                    var Caption90130speed = "50-80 Speed (mph)";
+                    var Caption130speed = "Over 80 Speed (mph)";
                 } else {
                     var Caption6090speed = "60-90 Speed (km/h)";
                     var Caption90130speed = "90-130 Speed (km/h)";
@@ -7379,9 +7399,9 @@ router.get('/ExportDriverReportNew', function(req, res) {
     conf.name = "Sheet1";
 
     if (req.query.SpeedValue == 'MPH') {
-        var Caption6090speed = "30-50 Speed (m/h)";
-        var Caption90130speed = "50-80 Speed (m/h)";
-        var Caption130speed = "Over 80 Speed (m/h)";
+        var Caption6090speed = "30-50 Speed (mph)";
+        var Caption90130speed = "50-80 Speed (mph)";
+        var Caption130speed = "Over 80 Speed (mph)";
     } else {
         var Caption6090speed = "60-90 Speed (km/h)";
         var Caption90130speed = "90-130 Speed (km/h)";
@@ -8279,9 +8299,9 @@ router.get('/ExportAllWoringHourForReport', function(req, res) {
                     DeviceId: DeviceId,
                     DrivingTime: TotalDrivingTimeDisplay,
                     Parkingtime: TotalParkingTimeDisplay,
-                    AverageSpeed: AverageSpeed + " km/h",
-                    HighestSpeed: HighestSpeed.toFixed(2) + " km/h",
-                    TotalMileage: TotalMileage.toFixed(2) + " km",
+                    AverageSpeed: AverageSpeed,
+                    HighestSpeed: HighestSpeed.toFixed(2),
+                    TotalMileage: TotalMileage.toFixed(2),
                     OverSpeed: OverSpeed
                 }
             });
@@ -8564,9 +8584,9 @@ router.get('/ExportAllWoringHourForReportNew', function(req, res) {
                     DeviceId: DeviceId,
                     DrivingTime: TotalDrivingTimeDisplay,
                     Parkingtime: TotalParkingTimeDisplay,
-                    AverageSpeed: AverageSpeed + " km/h",
-                    HighestSpeed: HighestSpeed.toFixed(2) + " km/h",
-                    TotalMileage: TotalMileage.toFixed(2) + " km",
+                    AverageSpeed: AverageSpeed,
+                    HighestSpeed: HighestSpeed.toFixed(2),
+                    TotalMileage: TotalMileage.toFixed(2),
                     OverSpeed: OverSpeed,
                     TotalTiming: TotalTimingDisplay,
                 }
@@ -8768,9 +8788,9 @@ router.get('/PrintAllWoringHourForReportNew', function(req, res) {
                     DeviceId: DeviceId,
                     DrivingTime: TotalDrivingTimeDisplay,
                     Parkingtime: TotalParkingTimeDisplay,
-                    AverageSpeed: AverageSpeed + " km/h",
-                    HighestSpeed: HighestSpeed.toFixed(2) + " km/h",
-                    TotalMileage: TotalMileage.toFixed(2) + " km",
+                    AverageSpeed: AverageSpeed,
+                    HighestSpeed: HighestSpeed.toFixed(2),
+                    TotalMileage: TotalMileage.toFixed(2),
                     OverSpeed: OverSpeed,
                     TotalTiming: TotalTimingDisplay,
                 }
@@ -8810,7 +8830,7 @@ router.get('/PrintAllWoringHourForReportNew', function(req, res) {
                 '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Parking Time</th>' +
                 '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Total Time</th>' +
                 '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Total Mileage</th>' +
-                '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Average Speed(km/h)</th>' +
+                '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Average Speed</th>' +
                 '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Highest Speed</th>' +
                 '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">Over Speed(Times)</th></tr>' +
                 '</thead><tbody>';

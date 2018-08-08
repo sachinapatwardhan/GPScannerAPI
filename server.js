@@ -35,16 +35,16 @@ global.net = require('net');
 global.Sequelize = require('sequelize');
 global.sequelize = require('./models1').sequelize;
 
-global.NodeGeocoder = require('node-geocoder');
-var options = {
-    provider: 'google',
+// global.NodeGeocoder = require('node-geocoder');
+// var options = {
+//     provider: 'google',
 
-    // Optional depending on the providers
-    httpAdapter: 'https', // Default
-    apiKey: 'AIzaSyAzzv0uzTJsDnsxVoBKYg1xNn8bCBrMErM', // for Mapquest, OpenCage, Google Premier
-    formatter: null // 'gpx', 'string', ...
-};
-global.geocoder = NodeGeocoder(options);
+//     // Optional depending on the providers
+//     httpAdapter: 'https', // Default
+//     apiKey: 'AIzaSyAzzv0uzTJsDnsxVoBKYg1xNn8bCBrMErM', // for Mapquest, OpenCage, Google Premier
+//     formatter: null // 'gpx', 'string', ...
+// };
+// global.geocoder = NodeGeocoder(options);
 
 //Socket and Token
 global.SocketPort = process.env.SocketPort;
@@ -56,6 +56,9 @@ global.Mysqluser = process.env.Mysqluser;
 global.Mysqlpassword = process.env.Mysqlpassword;
 global.Mysqldatabase = process.env.Mysqldatabase;
 global.IsProduction = process.env.IsProduction;
+
+global.ObjMyPinIgnition = new Object();
+global.ObjMyPinIdle = new Object();
 
 //mysql connection
 // global.connection = mysql.createConnection({
@@ -404,6 +407,14 @@ io.sockets.on('connection', function(socket) {
 
     //GPS Data
     socket.on('Command9955', function(objGPSData) {
+        objGPSData.Deviceid = objGPSData.DeviceId;
+        io.sockets.emit(objGPSData.DeviceId + 'BikeRoute', JSON.stringify(objGPSData));
+        //for MyPinHere
+        Command9955(objGPSData, function(res) {})
+    });
+
+    //GPS Data for Phillippines Device
+    socket.on('GPSDATA', function(objGPSData) {
         io.sockets.emit(objGPSData.DeviceId + 'BikeRoute', JSON.stringify(objGPSData));
     });
 
@@ -426,43 +437,37 @@ io.sockets.on('connection', function(socket) {
     //Command Concox GPS
     socket.on('CommandConcoxGPS', function(data) {
         // console.log('socket.io server received 5001 : ' + data);
-        CommandConcoxGPS(data, function(res) {
-
-        })
+        CommandConcoxGPS(data, function(res) {})
     });
 
     //Command Concox Alarm
     socket.on('CommandConcoxAlarm', function(data) {
         // console.log('socket.io server received 5001 : ' + data);
-        CommandConcoxAlarm(data, function(res) {
-
-        })
+        CommandConcoxAlarm(data, function(res) {})
     });
 
     //Command Concox HeartBeat
     socket.on('CommandConcoxHeartBeat', function(data) {
         // console.log('socket.io server received 5001 : ' + data);
-        CommandConcoxHeartBeat(data, function(res) {
-
-        })
+        CommandConcoxHeartBeat(data, function(res) {})
     });
 
     //Update Device Status
     socket.on('CommandDeviceStatus', function(data) {
         // console.log('socket.io server received : ' + data);
         var objdata = JSON.parse(data);
-        CommandDeviceStatus(objdata, function(res) {
-
-        });
+        CommandDeviceStatus(objdata, function(res) {});
     });
 
     //Update Device Status for new socket server
     socket.on('UpdateDeviceStatusNewSocket', function(data) {
+        data.Deviceid = data.DeviceId;
         io.sockets.emit(data.DeviceId + 'BikeDeviceStatus', JSON.stringify(data));
     });
 
     // Device Alarm for new socket server
     socket.on('DeviceAlarm', function(data) {
+        SendEmailNotification(data);
         io.sockets.emit(data.IdUser + 'DeviceAlarm', JSON.stringify(data));
         data.Id = 0;
         io.sockets.emit(data.IdUser + 'DeviceNotificationCount', JSON.stringify(data));
@@ -590,5 +595,8 @@ app.use('/assignretailer', require('./controllers/assignretailer'));
 app.use('/licence', require('./controllers/licence'));
 app.use('/billing', require('./controllers/billing'));
 app.use('/fuelCalibration', require('./controllers/fuelcalibration'));
-// app.use('/billingservice', require('./controllers/billingservice.js'));
+app.use('/billingservice', require('./controllers/billingservice.js'));
+app.use('/import', require('./controllers/import.js'));
+app.use('/philireport', require('./controllers/philireport.js'));
+app.use('/Report_MyPinHere', require('./controllers/Report_MyPinHere.js'));
 // MAARK Install App End
