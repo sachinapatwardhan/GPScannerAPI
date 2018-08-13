@@ -7,15 +7,21 @@ router.get('/SetfullfuelPoint', function(req, res) {
     var DeviceId = req.query.deviceid; //'52852852852852';
     client.get(DeviceId, function(err, strgpsdata) {
         var AD1 = 0;
+        var GPSDate = 0;
         if (!err) {
             if (strgpsdata != null & strgpsdata != '' && strgpsdata != undefined) {
                 var objgps = JSON.parse(strgpsdata);
                 if (objgps.AD1 != null && objgps.AD1 != undefined && objgps.AD1 != '') {
                     AD1 = parseInt(objgps.AD1, 16);
                 }
+                GPSDate = objgps.Date;
             }
         }
-        res.json(AD1);
+        var obj = {
+            AD1: AD1,
+            GPSDate: GPSDate
+        }
+        res.json(obj);
     })
 })
 
