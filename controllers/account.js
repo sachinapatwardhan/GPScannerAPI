@@ -2128,6 +2128,8 @@ router.get('/MobileAppLoginNew', jsonParser, function(req, res) {
                     UserName: response.username,
                     Email: response.email,
                     Notification: response.Notification,
+                    SpeedValue: response.SpeedValue,
+                    IsIgnition: response.IsIgnition,
                     message: "Login Successfully..."
                 });
             })
