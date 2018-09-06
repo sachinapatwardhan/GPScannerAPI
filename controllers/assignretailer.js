@@ -4,7 +4,7 @@ var UserInRole = models.tbluserinrole;
 var Role = models.tblrole;
 var AgentRetailer = models.tblagentretailer;
 
-router.get('/GetAllSalesAgent', function(req, res) {
+router.get('/GetAllSalesAgent', function (req, res) {
 
     var objParam = req.query;
     var objColumns = objParam.columns;
@@ -69,9 +69,9 @@ router.get('/GetAllSalesAgent', function(req, res) {
         "from tbluserinformation left join tblappinfo on tbluserinformation.idApp = tblappinfo.id " +
         " inner join tbluserinrole on tbluserinrole.userId = tbluserinformation.Id " +
         " inner join tblrole on tblrole.Id = tbluserinrole.roleId " + search;
-    connection.query(query, function(err, response) {
+    connection.query(query, function (err, response) {
         if (response != undefined) {
-            connection.query(Countqry, function(err, lstCount, fields) {
+            connection.query(Countqry, function (err, lstCount, fields) {
                 var response1 = new Object();
                 response1.draw = objParam.draw;
                 response1.recordsTotal = lstCount[0].TotalRecord;
@@ -93,7 +93,7 @@ router.get('/GetAllSalesAgent', function(req, res) {
 
 })
 
-router.get('/GetAllRetailer', function(req, res) {
+router.get('/GetAllRetailer', function (req, res) {
     User.hasMany(UserInRole, {
         foreignKey: {
             name: 'userId',
@@ -116,24 +116,29 @@ router.get('/GetAllRetailer', function(req, res) {
                 where: { RoleName: 'Retailer' }
             }]
         }],
-    }).then(function(response) {
+    }).then(function (response) {
         console.log("******************************")
         res.json(response);
-    }).catch(function(error) {
+    }).catch(function (error) {
         res.json(error);
     })
 
 })
 
 
-router.get('/GetAllAssignRetailer', function(req, res) {
-    var query = "Select tblagentretailer.* from tblagentretailer inner join tbluserinformation on tblagentretailer.retailerId =tbluserinformation.Id  where idApp=" + req.query.idApp;
-    connection.query(query, function(err, response) {
+router.get('/GetAllAssignRetailer', function (req, res) {
+    var search = '';
+    if (req.query.idApp != undefined && req.query.idApp != null && req.query.idApp != '') {
+        search = " where idApp=" + req.query.idApp;
+    }
+    var query = "Select tblagentretailer.* ,tbluserinformation.idApp,tbluserinformation.email from tblagentretailer inner join tbluserinformation on tblagentretailer.retailerId =tbluserinformation.Id  " + search;
+    connection.query(query, function (err, response) {
         res.json(response);
     })
 })
 
-router.get('/SaveAssignRetailer', function(req, res) {
+
+router.get('/SaveAssignRetailer', function (req, res) {
 
     var objAssignRetailer = req.query;
     console.log(objAssignRetailer)
@@ -146,14 +151,14 @@ router.get('/SaveAssignRetailer', function(req, res) {
                 username: decoded.username,
                 password: decoded.password
             }
-        }).then(function(UserExist) {
+        }).then(function (UserExist) {
             if (UserExist != null) {
                 objAssignRetailer.createdDatetime = new Date();
-                AgentRetailer.findOne({ where: { agentId: objAssignRetailer.agentId, retailerId: objAssignRetailer.retailerId } }).then(function(AgentretailerExist) {
+                AgentRetailer.findOne({ where: { agentId: objAssignRetailer.agentId, retailerId: objAssignRetailer.retailerId } }).then(function (AgentretailerExist) {
                     if (!AgentretailerExist) {
-                        AgentRetailer.create(objAssignRetailer).then(function(response) {
+                        AgentRetailer.create(objAssignRetailer).then(function (response) {
                             if (response) {
-                                funAuditLog.CreateAuditLog('Save SIM', UserExist.username, 'Cerate New SIM Data- RetailerId('+ response.retailerId+')');
+                                funAuditLog.CreateAuditLog('Save SIM', UserExist.username, 'Cerate New SIM Data- RetailerId(' + response.retailerId + ')');
                                 res.json({ success: true, message: "Agent Retailer created successfully...", data: response });
                             } else {
                                 res.json({ success: false, message: "Agent Retailer not created...", data: response });
@@ -173,7 +178,7 @@ router.get('/SaveAssignRetailer', function(req, res) {
     }
 })
 
-router.get('/removeAssignRetailer', function(req, res) {
+router.get('/removeAssignRetailer', function (req, res) {
 
     var objAssignRetailer = req.query;
     objHeader = req.headers;
@@ -185,11 +190,11 @@ router.get('/removeAssignRetailer', function(req, res) {
                 username: decoded.username,
                 password: decoded.password
             }
-        }).then(function(UserExist) {
+        }).then(function (UserExist) {
             if (UserExist != null) {
-                AgentRetailer.destroy({ where: { agentId: objAssignRetailer.agentId, retailerId: objAssignRetailer.retailerId } }).then(function(response) {
+                AgentRetailer.destroy({ where: { agentId: objAssignRetailer.agentId, retailerId: objAssignRetailer.retailerId } }).then(function (response) {
                     if (response) {
-                        funAuditLog.CreateAuditLog('Delete  retailer', UserExist.username, 'Delete  retailer - UserID ('+ UserExist.id+')');
+                        funAuditLog.CreateAuditLog('Delete  retailer', UserExist.username, 'Delete  retailer - UserID (' + UserExist.id + ')');
                         res.json({ success: true, message: "Agent Retailer removed successfully...", data: response });
                     } else {
                         res.json({ success: false, message: "Agent Retailer not remove...", data: response });
