@@ -4,6 +4,11 @@ require('dotenv').config()
 global.express = require('express');
 //var router = express.Router();
 global.app = express();
+global.Promise = require("bluebird");
+Promise.config({
+    longStackTraces: true,
+    warnings: true
+})
 var x = new Date();
 var offset = -x.getTimezoneOffset();
 global.CurrentOffset = (('00' + offset).slice(-2) >= 0 ? "+" : "-") + ('00' + parseInt(offset / 60).toString()).slice(-2) + ":" + offset % 60;
@@ -35,16 +40,16 @@ global.net = require('net');
 global.Sequelize = require('sequelize');
 global.sequelize = require('./models1').sequelize;
 
-global.NodeGeocoder = require('node-geocoder');
-var options = {
-    provider: 'google',
+// global.NodeGeocoder = require('node-geocoder');
+// var options = {
+//     provider: 'google',
 
-    // Optional depending on the providers
-    httpAdapter: 'https', // Default
-    apiKey: 'AIzaSyAzzv0uzTJsDnsxVoBKYg1xNn8bCBrMErM', // for Mapquest, OpenCage, Google Premier
-    formatter: null // 'gpx', 'string', ...
-};
-global.geocoder = NodeGeocoder(options);
+//     // Optional depending on the providers
+//     httpAdapter: 'https', // Default
+//     apiKey: 'AIzaSyAzzv0uzTJsDnsxVoBKYg1xNn8bCBrMErM', // for Mapquest, OpenCage, Google Premier
+//     formatter: null // 'gpx', 'string', ...
+// };
+// global.geocoder = NodeGeocoder(options);
 
 //Socket and Token
 global.SocketPort = process.env.SocketPort;
@@ -56,6 +61,9 @@ global.Mysqluser = process.env.Mysqluser;
 global.Mysqlpassword = process.env.Mysqlpassword;
 global.Mysqldatabase = process.env.Mysqldatabase;
 global.IsProduction = process.env.IsProduction;
+
+global.ObjMyPinIgnition = new Object();
+global.ObjMyPinIdle = new Object();
 
 //mysql connection
 // global.connection = mysql.createConnection({
@@ -141,7 +149,7 @@ if (process.env.IsProduction == true || process.env.IsProduction == "true") {
     });
 }
 
-client.on("error", function(err) {
+client.on("error", function (err) {
     console.log("Error " + err);
 });
 
@@ -237,7 +245,7 @@ function SetsmtpConfig(data, mail, callback) {
     };
     // var obj = new Object()
     global.transporter = nodemailer.createTransport(smtpTransport(smtpConfig));
-    transporter.sendMail(mail, function(error, response) {
+    transporter.sendMail(mail, function (error, response) {
         if (error) {
             callback({ success: false, error: error })
         } else {
@@ -276,7 +284,7 @@ if (process.env.IsProduction == true || process.env.IsProduction == "true") {
     });
 }
 
-client.on("error", function(err) {
+client.on("error", function (err) {
     console.log("Error " + err);
 });
 
@@ -287,12 +295,12 @@ client.on("error", function(err) {
 //============== Send SMS ======================//
 global.api_key = process.env.SMSAPIkey;
 global.api_secret = process.env.SMSapisecret;
-global.sendSMS = function(obj, callback) {
+global.sendSMS = function (obj, callback) {
     // var SMSbody = obj.body.replace(/ /g, "%20");
     request.get({
         url: 'https://rest.nexmo.com/sms/json?api_key=' + api_key + '&api_secret=' + api_secret + '&text=' + obj.body + '&to=' + obj.To + '&from=Gipsina'
-            // url: 'http://sms.bugzstudio.com/websmsapi/ISendSMS.aspx?username=' + SMSUserName + '&password=' + SMSPassword + '&message=' + SMSbody + '&mobile=' + obj.To + '&sender=gintell&type=1'
-    }, function(error, response, body) {
+        // url: 'http://sms.bugzstudio.com/websmsapi/ISendSMS.aspx?username=' + SMSUserName + '&password=' + SMSPassword + '&message=' + SMSbody + '&mobile=' + obj.To + '&sender=gintell&type=1'
+    }, function (error, response, body) {
         // console.log(error)
         // console.log("################################")
         // console.log(response)
@@ -346,19 +354,19 @@ global.sendSMS = function(obj, callback) {
     });
 }
 
-app.get('/SendTestSMS', function(req, res) {
+app.get('/SendTestSMS', function (req, res) {
     console.log("Calll")
     var obj = new Object();
     obj.To = '919727850580';
     obj.body = 'This SMS is for Test.';
-    global.sendSMS(obj, function(response) {
+    global.sendSMS(obj, function (response) {
         res.send(response);
     })
 });
 
 // var models = require("./models1");
 app.use(passport.initialize());
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept,Authorization, Access-Control-Allow-Headers");
@@ -372,97 +380,99 @@ var http = require('http').Server(app);
 // var io = require('socket.io')(http),
 global.io = require('socket.io')(http);
 
-app.get('/', function(req, res) {
+app.get('/', function (req, res) {
     res.sendFile(__dirname + '/index.html');
 });
 
-app.get('/WebCash', function(req, res) {
+app.get('/WebCash', function (req, res) {
     res.redirect('/WebCash.html?Message=' + req.query.Message + "&ApiRoutePath=" + process.env.ApiRoutePath)
 });
 
-app.get('/loaderio-eecfb734fd04534c9d0a45668de1f60e', function(req, res) {
+app.get('/loaderio-eecfb734fd04534c9d0a45668de1f60e', function (req, res) {
     res.send('loaderio-eecfb734fd04534c9d0a45668de1f60e');
 });
 
-app.get('/loaderio-77f8cf2fe818b42b0353bbe2a21da573', function(req, res) {
+app.get('/loaderio-77f8cf2fe818b42b0353bbe2a21da573', function (req, res) {
     res.send('loaderio-77f8cf2fe818b42b0353bbe2a21da573');
 });
 
 app.use(express.static(__dirname + '/'));
 app.use(swStats.getMiddleware({})); //ian: added by ian
 
-http.listen(process.env.APIPort, function() {
+http.listen(process.env.APIPort, function () {
     console.log('listening on *:' + process.env.APIPort);
 });
 
-io.sockets.on('connection', function(socket) {
+io.sockets.on('connection', function (socket) {
     // console.log('connection...');
-    socket.on('emit_from_client', function(data) {
+    socket.on('emit_from_client', function (data) {
         // console.log('socket.io server received : ' + data);
         io.sockets.emit('emit_from_server', data);
     });
 
     //GPS Data
-    socket.on('Command9955', function(objGPSData) {
+    socket.on('Command9955', function (objGPSData) {
+        objGPSData.Deviceid = objGPSData.DeviceId;
+        io.sockets.emit(objGPSData.DeviceId + 'BikeRoute', JSON.stringify(objGPSData));
+        //for MyPinHere
+        Command9955(objGPSData, function (res) { })
+    });
+
+    //GPS Data for Phillippines Device
+    socket.on('GPSDATA', function (objGPSData) {
         io.sockets.emit(objGPSData.DeviceId + 'BikeRoute', JSON.stringify(objGPSData));
     });
 
     //CAN-BUS Data
-    socket.on('Command9901', function(objCanbusData) {
+    socket.on('Command9901', function (objCanbusData) {
         io.sockets.emit(objCanbusData.DeviceId + 'canbusdata', JSON.stringify(objCanbusData));
     });
 
     //Driving Behavior Data
-    socket.on('Command9902', function(objDrivingData) {
+    socket.on('Command9902', function (objDrivingData) {
         io.sockets.emit(objDrivingData.DeviceId + 'drivingdata', JSON.stringify(objDrivingData));
     });
 
     // Journey Route Complete
-    socket.on('JourneyRouteComplete', function(data) {
+    socket.on('JourneyRouteComplete', function (data) {
         // console.log('socket.io server received 5001 : ' + data);
         io.sockets.emit(data + 'JourneyRouteComplete', "Complete");
     });
 
     //Command Concox GPS
-    socket.on('CommandConcoxGPS', function(data) {
+    socket.on('CommandConcoxGPS', function (data) {
         // console.log('socket.io server received 5001 : ' + data);
-        CommandConcoxGPS(data, function(res) {
-
-        })
+        CommandConcoxGPS(data, function (res) { })
     });
 
     //Command Concox Alarm
-    socket.on('CommandConcoxAlarm', function(data) {
+    socket.on('CommandConcoxAlarm', function (data) {
         // console.log('socket.io server received 5001 : ' + data);
-        CommandConcoxAlarm(data, function(res) {
-
-        })
+        CommandConcoxAlarm(data, function (res) { })
     });
 
     //Command Concox HeartBeat
-    socket.on('CommandConcoxHeartBeat', function(data) {
+    socket.on('CommandConcoxHeartBeat', function (data) {
         // console.log('socket.io server received 5001 : ' + data);
-        CommandConcoxHeartBeat(data, function(res) {
-
-        })
+        CommandConcoxHeartBeat(data, function (res) { })
     });
 
     //Update Device Status
-    socket.on('CommandDeviceStatus', function(data) {
+    socket.on('CommandDeviceStatus', function (data) {
         // console.log('socket.io server received : ' + data);
         var objdata = JSON.parse(data);
-        CommandDeviceStatus(objdata, function(res) {
-
-        });
+        CommandDeviceStatus(objdata, function (res) { });
     });
 
     //Update Device Status for new socket server
-    socket.on('UpdateDeviceStatusNewSocket', function(data) {
+    socket.on('UpdateDeviceStatusNewSocket', function (data) {
+        data.Deviceid = data.DeviceId;
         io.sockets.emit(data.DeviceId + 'BikeDeviceStatus', JSON.stringify(data));
     });
 
     // Device Alarm for new socket server
-    socket.on('DeviceAlarm', function(data) {
+    socket.on('DeviceAlarm', function (data) {
+        SendEmailNotification(data);
         io.sockets.emit(data.IdUser + 'DeviceAlarm', JSON.stringify(data));
         data.Id = 0;
         io.sockets.emit(data.IdUser + 'DeviceNotificationCount', JSON.stringify(data));
@@ -590,5 +600,9 @@ app.use('/assignretailer', require('./controllers/assignretailer'));
 app.use('/licence', require('./controllers/licence'));
 app.use('/billing', require('./controllers/billing'));
 app.use('/fuelCalibration', require('./controllers/fuelcalibration'));
-// app.use('/billingservice', require('./controllers/billingservice.js'));
+app.use('/billingservice', require('./controllers/billingservice.js'));
+app.use('/import', require('./controllers/import.js'));
+app.use('/philireport', require('./controllers/philireport.js'));
+app.use('/Report_MyPinHere', require('./controllers/Report_MyPinHere.js'));
+app.use('/assignagentretailer', require('./controllers/assignagentretailer.js'));
 // MAARK Install App End

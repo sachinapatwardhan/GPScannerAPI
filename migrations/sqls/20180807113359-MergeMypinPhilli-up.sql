@@ -1,0 +1,31 @@
+/* Replace with your SQL commands */
+
+ALTER TABLE `tbladvancefence` 
+ADD COLUMN `range` VARCHAR(100) NULL DEFAULT NULL AFTER `CreatedDate`,
+ADD COLUMN `status` TINYINT(1) NULL DEFAULT NULL AFTER `range`,
+ADD COLUMN `lat` VARCHAR(5000) NULL DEFAULT NULL AFTER `status`,
+ADD COLUMN `lng` VARCHAR(5000) NULL DEFAULT NULL AFTER `lat`,
+ADD COLUMN `fencedraw` VARCHAR(50) NULL DEFAULT NULL AFTER `lng`,
+ADD COLUMN `IsFenceOnline` TINYINT(1) NULL DEFAULT '1' AFTER `fencedraw`;
+
+
+ALTER TABLE `tbluserinformation` 
+ADD COLUMN `IsIgnition` TINYINT(1) NULL DEFAULT '0' AFTER `IdleMinute`,
+ADD COLUMN `IsEmail` TINYINT(1) NULL DEFAULT '0' AFTER `IsIgnition`,
+CHANGE COLUMN `IsMobileVerify` `IsMobileVerify` TINYINT(1) NULL DEFAULT b'0' ;
+
+
+CREATE TABLE `tblappoption` (
+  `Id` int(11) NOT NULL AUTO_INCREMENT,
+  `idApp` int(11) DEFAULT NULL,
+  `Type` varchar(200) DEFAULT NULL,
+  `Value` varchar(100) DEFAULT NULL,
+  PRIMARY KEY (`Id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+ALTER TABLE `tblalarm` 
+CHANGE COLUMN `Direction` `Direction` VARCHAR(100) NOT NULL ,
+CHANGE COLUMN `Status` `Status` VARCHAR(100) NOT NULL ;
+
+
+

@@ -4,8 +4,74 @@ var express = require('express'),
 var User = models.tbluserinformation;
 var AppInfo = models.tblappinfo;
 var Commonfunction = require('./common.js');
+var AppOption = models.tblappoption;
 
 //End of Tables
+
+router.post('/UpdateSpeedUnit', jsonParser, function(req, res) {
+    objUser = req.body;
+    objHeader = req.headers;
+
+    var token = getToken(objHeader);
+    if (token) {
+        var decoded = jwt.decode(token, TokenKey);
+
+        User.findOne({
+            where: {
+                username: decoded.username,
+                password: decoded.password,
+                idApp: objUser.idApp,
+            }
+        }).then(function(UserExist) {
+            if (UserExist != null) {
+                UserExist.updateAttributes({ SpeedValue: objUser.SpeedValue }).then(function(responseUser) {
+                    funAuditLog.CreateAuditLog('UpdateMobileUserOwner', UserExist.username, 'Update User');
+                    res.json({
+                        success: true,
+                        message: "Speed unit updated successfully...",
+                        data: responseUser
+                    });
+                })
+
+            } else {
+                res.json(InvalidToken);
+            }
+        })
+    } else {
+        res.json(InvalidToken);
+    }
+})
+
+router.get('/GetAllAppOptionById', function(req, res) {
+    AppOption.findAll({ where: { idApp: req.query.idApp } }).then(function(response) {
+        res.json(response);
+    })
+})
+
+router.get('/SaveAppOptionByApp', function(req, res) {
+    AppOption.findOne({ where: { idApp: req.query.idApp, Type: req.query.Type } }).then(function(response) {
+        if (response) {
+            response.updateAttributes({ Value: req.query.Value }).then(function(responseAppOption) {
+                res.json({
+                    success: true,
+                    message: "Speed unit updated successfully..."
+                });
+            })
+        } else {
+            var objdata = {
+                idApp: req.query.idApp,
+                Type: req.query.Type,
+                Value: req.query.Value
+            }
+            AppOption.create(objdata).then(function(resAppOption) {
+                res.json({
+                    success: true,
+                    message: "Speed unit created successfully..."
+                });
+            });
+        }
+    })
+})
 
 router.get('/GetAllAppInfo', function(req, res) {
     var objParam = req.query;

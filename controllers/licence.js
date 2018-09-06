@@ -459,10 +459,17 @@ router.get('/SwipeDeviceAdmin', function(req, res) {
                                                                                 renewaldate: resUpdateVehical.renewaldate,
                                                                                 CreatedDate: resUpdateVehical.CreatedDate,
                                                                                 CreatedBy: req.query.CreatedBy,
+                                                                                DeviceType: GpsDeviceExist.Type,
                                                                             }
                                                                             return Vehicle.create(obj)
                                                                                 .then(function(resVreateVehical) {
                                                                                     Commonfunction.UpdateVehicleRedis(resVreateVehical.deviceid, 'Vehicle');
+                                                                                    console.log(GpsDeviceExist.CountryId, "!= 30 &&", obj.DeviceType)
+                                                                                    if (GpsDeviceExist.CountryId != 30 && obj.DeviceType == 'MT05') {
+                                                                                        var CurrentDate = GetCurrentDate();
+                                                                                        var query = "INSERT INTO tbldeviceaccvalueset (DeviceId,CreatedDate ) VALUES ('" + obj.deviceid + "', '" + CurrentDate + "');";
+                                                                                        connectionbikedata.query(query, function(err, rows, fields) {});
+                                                                                    }
                                                                                     funAuditLogLicence.CreateAuditLogLicence('Swap Licence Device', null, req.query.DeviceId, null, null, req.query.CreatedBy, 'Create new vehical with deviceid :' + req.query.DeviceId + '.');
 
                                                                                     return DeviceAgentRetailer.findOne({
@@ -645,12 +652,13 @@ router.post('/SwipeDevice', jsonParser, function(req, res) {
                                                                 renewaldate: resUpdateVehical.renewaldate,
                                                                 CreatedDate: resUpdateVehical.CreatedDate,
                                                                 CreatedBy: req.body.CreatedBy,
+                                                                DevcieType: resUpdateVehical.DevcieType
                                                             }
                                                             return Vehicle.create(obj)
                                                                 .then(function(resVreateVehical) {
                                                                     Commonfunction.UpdateVehicleRedis(resVreateVehical, 'Vehicle')
                                                                     funAuditLogLicence.CreateAuditLogLicence('Swap Licence Device', null, req.body.NewDeviceId, null, null, req.body.CreatedBy, 'Create new vehical with deviceid :' + req.body.NewDeviceId + '.');
-
+                                                                    updateDeviceAccValue(obj.deviceid);
                                                                     return OrderService.findOne({
                                                                             where: {
                                                                                 OrderNotes: req.body.OldDeviceId
@@ -922,5 +930,29 @@ router.get('/CreateLicenceNumbers', function(req, res) {
     // }
 });
 // insertLicenceno();
+
+function updateDeviceAccValue(deviceid) {
+    GpsDevice.findOne({ where: { DeviceId: deviceid } }).then(function(GpsDeviceExits) {
+        if (GpsDeviceExits.CountryId != 30 && GpsDeviceExits.Type == 'MT05') {
+            var CurrentDate = GetCurrentDate();
+            var query = "INSERT INTO tbldeviceaccvalueset (DeviceId,CreatedDate ) VALUES ('" + deviceid + "', '" + CurrentDate + "');";
+            connectionbikedata.query(query, function(err, rows, fields) {});
+        }
+    })
+}
+
+function GetCurrentDate() {
+    var today = new Date();
+
+    var sec = today.getUTCSeconds();
+    var min = today.getUTCMinutes();
+    var hour = today.getUTCHours();
+
+    var year = today.getUTCFullYear();
+    var month = today.getUTCMonth() + 1; // beware: January = 0; February = 1, etc.
+    var day = today.getUTCDate();
+
+    return year + "-" + month + "-" + day + " " + hour + ":" + min + ":" + sec;
+}
 
 module.exports = router

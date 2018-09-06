@@ -14,14 +14,93 @@ var WebCashconfig = require('./../config/webcash.json');
 
 //////////
 
+router.get('/GetAllRenewData', function (req, res) {
+    var objParam = req.query;
+    var objColumns = objParam.columns;
+    var objOrder = objParam.order;
+    var objSearch = objParam.search;
+    var Orderby = objColumns[parseInt(objOrder[0].column)].data + ' ' + objOrder[0].dir;
+    var search = '';
+
+    if (objSearch != null && objSearch != '') {
+        search += ' and (tl.DeviceId like "%' + objSearch + '%" or ';
+        search = search + 'tl.ExpiryDate like "%' + objSearch + '%" or ';
+        search = search + 'tu.email like "%' + objSearch + '%" or ';
+        search = search + 'tu.phone like "%' + objSearch + '%" or ';
+        search = search + 'ta.AppName like "%' + objSearch + '%" or ';
+        search = search + 'tl.LicenceType like "%' + objSearch + '%" or ';
+        search = search + 'tl.LicenceRenewalType like "%' + objSearch + '%" or ';
+        search = search + 'tv.Name like "%' + objSearch + '%") ';
+    };
+
+    if (req.query.StartDate != '' && req.query.EndDate != '') {
+        if (search == '') {
+            search += " AND tl.ExpiryDate between  '" + convertdateformat(req.query.StartDate, 3) + "' AND '" + convertdateformat(req.query.EndDate, 3) + "'";
+        } else {
+            search += search + " AND   tl.ExpiryDate between  '" + convertdateformat(req.query.StartDate, 3) + "' AND '" + convertdateformat(req.query.EndDate, 3) + "'";
+        }
+    } else if (req.query.StartDate != null && req.query.StartDate != '' && req.query.StartDate != undefined) {
+        if (search == '') {
+            search += " AND  tl.ExpiryDate >= '" + convertdateformat(req.query.StartDate, 3) + "'";
+        } else {
+            search += " AND tl.ExpiryDate >= '" + convertdateformat(req.query.StartDate, 3) + "'";
+        }
+    } else if (req.query.EndDate != null && req.query.EndDate != '' && req.query.EndDate != undefined) {
+        if (search == '') {
+            search += " AND tl.ExpiryDate <= '" + convertdateformat(req.query.EndDate, 3) + "'";
+        } else {
+            search += " AND tl.ExpiryDate <= '" + convertdateformat(req.query.EndDate, 3) + "'";
+        }
+    }
+
+    if (req.query.idApp != null && req.query.idApp != undefined && req.query.idApp != '') {
+        search += " and ta.Id=" + req.query.idApp + " ";
+    }
+
+    var query = "SELECT tl.Id, tu.email,tl.DeviceId,tv.iduser,tu.phone,tv.Name as VehicleName,ta.Id as idApp,ta.AppName,tl.LicenceRenewalType,tl.LicenceType,ta.LicenceRenewalType as appLicenceRenewalType,ta.LicenceType as appLicenceType, " +
+        "CONVERT_TZ(tl.ExpiryDate,'+00:00','" + CurrentOffset + "') as ExpiryDate " +
+        " from tbllicencemanager as tl " +
+        " LEFT JOIN tblappinfo as ta ON ta.Id= tl.idApp" +
+        " INNER JOIN (Select * from tblvehicle where IsDelete=0) tv on tv.deviceid =tl.DeviceId " +
+        " INNER JOIN tbluserinformation as tu ON tv.iduser = tu.id " +
+        " where tl.IsDeleted=0  " + search +
+        " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
+    var countquery = "SELECT count(*) as TotalRecord " +
+        " from tbllicencemanager as tl " +
+        " LEFT JOIN tblappinfo as ta ON ta.Id= tl.idApp" +
+        " INNER JOIN (Select * from tblvehicle where IsDelete=0)  tv on tv.deviceid =tl.DeviceId " +
+        " INNER JOIN tbluserinformation as tu ON tv.iduser = tu.id " +
+        " where tl.IsDeleted=0 " + search;
+    connection.query(query, function (err, response) {
+        if (response != undefined) {
+            connection.query(countquery, function (err, lstCount, fields) {
+                var response1 = new Object();
+                response1.draw = objParam.draw;
+                response1.recordsTotal = lstCount[0].TotalRecord;
+                response1.recordsFiltered = lstCount[0].TotalRecord;
+                response1.data = response;
+                res.json(response1);
+            });
+        } else {
+            console.log(err);
+            var response1 = new Object();
+            response1.draw = objParam.draw;
+            response1.recordsTotal = 0;
+            response1.recordsFiltered = 0;
+            response1.data = [];
+            res.json(response1);
+        }
+    })
+})
+
 // Billing API start
-router.get('/GetAllVehicleExpirebyUser', jsonParser, function(req, res) {
+router.get('/GetAllVehicleExpirebyUser', jsonParser, function (req, res) {
 
     var query = "SELECT tv.id,tv.Name,tv.deviceid,tv.renewaldate,tl.LicenceRenewalType,tl.LicenceType,tl.id as LicenceId,tl.LicenceNo " +
         "FROM tblvehicle tv " +
         "left join tbllicencemanager tl on tv.deviceid=tl.DeviceId and tl.IsDeleted=false " +
         "where tv.iduser=" + req.query.idUser + " and tv.IsDelete=false;";
-    connection.query(query, function(err, lstAllVehicle, fields) {
+    connection.query(query, function (err, lstAllVehicle, fields) {
         if (!err) {
             res.json(lstAllVehicle);
         } else {
@@ -30,7 +109,7 @@ router.get('/GetAllVehicleExpirebyUser', jsonParser, function(req, res) {
     })
 })
 
-router.get('/GetPriceByApp', jsonParser, function(req, res) {
+router.get('/GetPriceByApp', jsonParser, function (req, res) {
 
     var query = "SELECT p.Id,p.ProductTypeId,p.Name,p.Sku as LicenceType,pam.ProductAttributeId,pa.Name as CountryName,pav.Name as LicenceRenewalType,pav.PriceAdjustment as Price " +
         "FROM product p  " +
@@ -39,7 +118,7 @@ router.get('/GetPriceByApp', jsonParser, function(req, res) {
         "inner join tbluserinformation tu on pa.Name= tu.country and tu.id=" + req.query.idUser + " " +
         "inner join productattributevalue pav on pav.ProductAttributeMappingId=pam.Id " +
         "where p.ProductTypeId=" + req.query.idApp + " and p.Name='Licence Renew'";
-    connection.query(query, function(err, lstAllPrice, fields) {
+    connection.query(query, function (err, lstAllPrice, fields) {
         if (!err) {
             res.json(lstAllPrice);
         } else {
@@ -48,7 +127,7 @@ router.get('/GetPriceByApp', jsonParser, function(req, res) {
     })
 })
 
-router.post('/SaveOrderService', jsonParser, function(req, res) {
+router.post('/SaveOrderService', jsonParser, function (req, res) {
     objOrderservice = req.body;
     objHeader = req.headers;
     var OrderTotal = 0;
@@ -66,7 +145,7 @@ router.post('/SaveOrderService', jsonParser, function(req, res) {
                 username: decoded.username,
                 password: decoded.password
             }
-        }).then(function(UserExist) {
+        }).then(function (UserExist) {
 
             if (!UserExist) {
                 err.message = 'Token';
@@ -123,7 +202,7 @@ router.post('/SaveOrderService', jsonParser, function(req, res) {
 
             return OrderService.create(objOrder);
 
-        }).then(function(resOrder) {
+        }).then(function (resOrder) {
             if (!resOrder) {
                 err.message = 'Order could not created. Try again later.';
                 throw err;
@@ -157,94 +236,94 @@ router.post('/SaveOrderService', jsonParser, function(req, res) {
 
         })
 
-        // .then(function(resOrderServiceItem) {
+            // .then(function(resOrderServiceItem) {
 
-        //     return LicenceManager.findAll({
-        //         where: {
-        //             Id: {
-        //                 $in: lstLicenceId
-        //             },
-        //             IsDeleted: false
-        //         }
-        //     }).then(function(lstLicenceList) {
-        //         return Vehicle.findAll({
-        //             where: {
-        //                 deviceid: {
-        //                     $in: lstDeviceId
-        //                 },
-        //                 IsDelete: false
-        //             }
-        //         }).then(function(lstVehicleList) {
-        //             return [lstLicenceList, lstVehicleList];
-        //         })
-        //     })
+            //     return LicenceManager.findAll({
+            //         where: {
+            //             Id: {
+            //                 $in: lstLicenceId
+            //             },
+            //             IsDeleted: false
+            //         }
+            //     }).then(function(lstLicenceList) {
+            //         return Vehicle.findAll({
+            //             where: {
+            //                 deviceid: {
+            //                     $in: lstDeviceId
+            //                 },
+            //                 IsDelete: false
+            //             }
+            //         }).then(function(lstVehicleList) {
+            //             return [lstLicenceList, lstVehicleList];
+            //         })
+            //     })
 
-        // }).spread(function(lstLicenceList, lstVehicleList) {
-        //     var TotalRecords = lstLicenceList.length;
-        //     // if (TotalRecords < lstVehicleList.length) {
-        //     //     TotalRecords = lstVehicleList.length;
-        //     // }
+            // }).spread(function(lstLicenceList, lstVehicleList) {
+            //     var TotalRecords = lstLicenceList.length;
+            //     // if (TotalRecords < lstVehicleList.length) {
+            //     //     TotalRecords = lstVehicleList.length;
+            //     // }
 
-        //     function UpdateLicenceVehicle(j) {
-        //         if (j < TotalRecords) {
-        //             var UpdateDeviceId = lstLicenceList[j].DeviceId;
-        //             var AddMonth = 0;
-        //             if (lstLicenceList[j].LicenceRenewalType == 'Monthly') {
-        //                 AddMonth = 1;
-        //             } else if (lstLicenceList[j].LicenceRenewalType == 'Quarterly') {
-        //                 AddMonth = 3;
-        //             } else if (lstLicenceList[j].LicenceRenewalType == 'Yearly') {
-        //                 AddMonth = 12;
-        //             }
+            //     function UpdateLicenceVehicle(j) {
+            //         if (j < TotalRecords) {
+            //             var UpdateDeviceId = lstLicenceList[j].DeviceId;
+            //             var AddMonth = 0;
+            //             if (lstLicenceList[j].LicenceRenewalType == 'Monthly') {
+            //                 AddMonth = 1;
+            //             } else if (lstLicenceList[j].LicenceRenewalType == 'Quarterly') {
+            //                 AddMonth = 3;
+            //             } else if (lstLicenceList[j].LicenceRenewalType == 'Yearly') {
+            //                 AddMonth = 12;
+            //             }
 
-        //             var oldexpdate = lstLicenceList[j].ExpiryDate;
-        //             var date = new Date(lstLicenceList[j].ExpiryDate);
-        //             var updatedDate = convertdateformat(date.setMonth(date.getMonth() + AddMonth), 3);
+            //             var oldexpdate = lstLicenceList[j].ExpiryDate;
+            //             var date = new Date(lstLicenceList[j].ExpiryDate);
+            //             var updatedDate = convertdateformat(date.setMonth(date.getMonth() + AddMonth), 3);
 
-        //             var timeDiff = (new Date(oldexpdate)).getTime() - (new Date()).getTime();
-        //             var diffDays = Math.round(timeDiff / (1000 * 3600 * 24));
-        //             days = diffDays;
-        //             if (days < 0) {
-        //                 date = new Date();
-        //                 updatedDate = convertdateformat(date.setMonth(date.getMonth() + AddMonth), 3);
-        //             }
-        //             lstLicenceList[j].updateAttributes({ ExpiryDate: updatedDate }).then(function(resUpdateExpiryLicence) {
-        //                 var objVehicle = u.findWhere(lstVehicleList, { deviceid: UpdateDeviceId });
-        //                 if (objVehicle != undefined) {
-        //                     return objVehicle.updateAttributes({ renewaldate: updatedDate });
-        //                 } else {
-        //                     return {};
-        //                 }
-        //             }).then(function(resVehicleUpdate) {
-        //                 UpdateLicenceVehicle(j + 1);
-        //             });
+            //             var timeDiff = (new Date(oldexpdate)).getTime() - (new Date()).getTime();
+            //             var diffDays = Math.round(timeDiff / (1000 * 3600 * 24));
+            //             days = diffDays;
+            //             if (days < 0) {
+            //                 date = new Date();
+            //                 updatedDate = convertdateformat(date.setMonth(date.getMonth() + AddMonth), 3);
+            //             }
+            //             lstLicenceList[j].updateAttributes({ ExpiryDate: updatedDate }).then(function(resUpdateExpiryLicence) {
+            //                 var objVehicle = u.findWhere(lstVehicleList, { deviceid: UpdateDeviceId });
+            //                 if (objVehicle != undefined) {
+            //                     return objVehicle.updateAttributes({ renewaldate: updatedDate });
+            //                 } else {
+            //                     return {};
+            //                 }
+            //             }).then(function(resVehicleUpdate) {
+            //                 UpdateLicenceVehicle(j + 1);
+            //             });
 
-        //         } else {
-        //             return {
-        //                 success: true,
-        //                 message: 'Device Renew successfully.',
-        //             };
-        //         }
-        //     }
-        //     UpdateLicenceVehicle(0);
+            //         } else {
+            //             return {
+            //                 success: true,
+            //                 message: 'Device Renew successfully.',
+            //             };
+            //         }
+            //     }
+            //     UpdateLicenceVehicle(0);
 
-        // })
-        .then(function(resOrderServiceItem) {
-            res.json({
-                success: true,
-                message: 'Order created successfully.',
-            });
-        }).catch(function(err) {
-            if (err.message === 'Token') {
-                res.json(InvalidToken);
-            } else {
+            // })
+            .then(function (resOrderServiceItem) {
                 res.json({
-                    success: false,
-                    message: "Order Could not created. Try again later."
+                    success: true,
+                    message: 'Order created successfully.',
                 });
-                console.error('[' + moment().format('DD/MM/YYYY hh:mm:ss a') + '] ' + (err.stack || err.message));
-            }
-        });
+            }).catch(function (err) {
+                if (err.message === 'Token') {
+                    res.json(InvalidToken);
+                } else {
+                    res.json({
+                        success: false,
+                        message: "Order Could not created. Try again later."
+                    });
+                    console.error('[' + moment().format('DD/MM/YYYY hh:mm:ss a') + '] ' + (err.stack || err.message));
+                }
+            });
     } else {
         res.json(InvalidToken);
     }
@@ -274,7 +353,7 @@ function convertdateformat(date1, flg) {
 // Billing API End
 
 //Order API start
-router.get('/GetAllVehicleOrderbyUser', jsonParser, function(req, res) {
+router.get('/GetAllVehicleOrderbyUser', jsonParser, function (req, res) {
 
     var objParam = req.query;
     // var objColumns = objParam.columns;
@@ -319,17 +398,17 @@ router.get('/GetAllVehicleOrderbyUser', jsonParser, function(req, res) {
         "inner join tblorderservicestatus toss on tos.OrderStatusId=toss.id;";
 
     var countquery = "SELECT count(id) as TotalRecord FROM tblorderservice " + wherestatus + " ORDER BY CreatedOnUtc desc"
-    connection.query(query, function(err, lstAllOrder, fields) {
+    connection.query(query, function (err, lstAllOrder, fields) {
 
-        connection.query(countquery, function(err, TotalRecord, fields) {
+        connection.query(countquery, function (err, TotalRecord, fields) {
 
 
-            var groups = u.groupBy(lstAllOrder, function(o) {
+            var groups = u.groupBy(lstAllOrder, function (o) {
 
                 return o.id;
             });
 
-            var lstfinaldata = u.map(groups, function(group, id) {
+            var lstfinaldata = u.map(groups, function (group, id) {
                 var lstOrderdetail = [];
                 for (var i = 0; i < group.length; i++) {
                     var obj = new Object();
@@ -360,7 +439,7 @@ router.get('/GetAllVehicleOrderbyUser', jsonParser, function(req, res) {
                 }
             });
 
-            lstfinaldata = u.sortBy(lstfinaldata, function(o) { return -o.CreatedOnUtc; })
+            lstfinaldata = u.sortBy(lstfinaldata, function (o) { return -o.CreatedOnUtc; })
 
             var response1 = new Object();
             response1.draw = objParam.draw;
@@ -410,7 +489,7 @@ router.get('/GetAllVehicleOrderbyUser', jsonParser, function(req, res) {
 })
 
 
-router.get('/GetBillingdata', function(req, res) {
+router.get('/GetBillingdata', function (req, res) {
     try {
         var dataall = req.query.data;
         // var EncodePass = jwt.encode(Passwordaa, "bugz");
@@ -427,10 +506,10 @@ router.get('/GetBillingdata', function(req, res) {
     };
 });
 
-router.get('/GetEncryptedBillingdata', function(req, res) {
+router.get('/GetEncryptedBillingdata', function (req, res) {
     try {
         var objdata = {};
-        req.query.Message.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(str, key, value) {
+        req.query.Message.replace(/[?&]+([^=&]+)=([^&]*)/gi, function (str, key, value) {
             objdata[key] = value;
         });
         //console.log(objdata);
@@ -446,7 +525,7 @@ router.get('/GetEncryptedBillingdata', function(req, res) {
     };
 });
 
-router.post('/WebCashResponseUrl', jsonParser, function(req, res) {
+router.post('/WebCashResponseUrl', jsonParser, function (req, res) {
     var resdata = req.body;
     var resdataparam = req.query;
 
@@ -464,7 +543,7 @@ router.post('/WebCashResponseUrl', jsonParser, function(req, res) {
 
     OrderService.findOne({
         where: { PurchaseOrderNumber: resdataparam.OrderNumber },
-    }).then(function(response) {
+    }).then(function (response) {
         if (response != null) {
             if (JSON.stringify(resdata) == "{}") {
                 var QString = "ord_mercID=" + MerchantID + "&ord_mercref=" + response.CaptureTransactionResult + "&ord_totalamt=" + parseFloat(response.OrderTotal).toFixed(2);
@@ -473,7 +552,7 @@ router.post('/WebCashResponseUrl', jsonParser, function(req, res) {
                     headers: { 'content-type': 'application/x-www-form-urlencoded' },
                     url: Merchantenquiry + QString,
                     //body: QString
-                }, function(error, resWebCase, resData) {
+                }, function (error, resWebCase, resData) {
                     if (resData != null) {
                         var Status = '';
                         var StatusMessage = '';
@@ -496,14 +575,14 @@ router.post('/WebCashResponseUrl', jsonParser, function(req, res) {
                             OrderStatus = 1;
                         }
 
-                        response.updateAttributes({ AuthorizationTransactionResult: Status, OrderStatusId: OrderStatus }).then(function(resupdatedata) {
+                        response.updateAttributes({ AuthorizationTransactionResult: Status, OrderStatusId: OrderStatus }).then(function (resupdatedata) {
 
                             if (Status == "Success") {
                                 OrderServiceDetail.findAll({
                                     where: {
                                         OrderId: response.id
                                     }
-                                }).then(function(lstOrderItem) {
+                                }).then(function (lstOrderItem) {
                                     var lstDeviceId = [];
 
                                     for (var i = 0; i < lstOrderItem.length; i++) {
@@ -517,7 +596,7 @@ router.post('/WebCashResponseUrl', jsonParser, function(req, res) {
                                             },
                                             IsDeleted: false
                                         }
-                                    }).then(function(lstLicenceList) {
+                                    }).then(function (lstLicenceList) {
                                         return Vehicle.findAll({
                                             where: {
                                                 deviceid: {
@@ -525,12 +604,12 @@ router.post('/WebCashResponseUrl', jsonParser, function(req, res) {
                                                 },
                                                 IsDelete: false
                                             }
-                                        }).then(function(lstVehicleList) {
+                                        }).then(function (lstVehicleList) {
                                             return [lstLicenceList, lstVehicleList];
                                         })
                                     })
 
-                                }).spread(function(lstLicenceList, lstVehicleList) {
+                                }).spread(function (lstLicenceList, lstVehicleList) {
                                     var TotalRecords = lstLicenceList.length;
                                     // if (TotalRecords < lstVehicleList.length) {
                                     //     TotalRecords = lstVehicleList.length;
@@ -559,15 +638,19 @@ router.post('/WebCashResponseUrl', jsonParser, function(req, res) {
                                                 date = new Date();
                                                 updatedDate = convertdateformat(date.setMonth(date.getMonth() + AddMonth), 3);
                                             }
-                                            lstLicenceList[j].updateAttributes({ ExpiryDate: updatedDate }).then(function(resUpdateExpiryLicence) {
+                                            lstLicenceList[j].updateAttributes({ ExpiryDate: updatedDate }).then(function (resUpdateExpiryLicence) {
                                                 var objVehicle = u.findWhere(lstVehicleList, { deviceid: UpdateDeviceId });
                                                 if (objVehicle != undefined) {
                                                     return objVehicle.updateAttributes({ renewaldate: updatedDate });
-                                                    Commonfunction.UpdateVehicleRedis(objVehicle.deviceid, 'Vehicle');
+
                                                 } else {
                                                     return {};
                                                 }
-                                            }).then(function(resVehicleUpdate) {
+                                            }).then(function (resVehicleUpdate) {
+                                                var objVehicle = u.findWhere(lstVehicleList, { deviceid: UpdateDeviceId });
+                                                if (objVehicle != undefined) {
+                                                    Commonfunction.UpdateVehicleRedis(objVehicle.deviceid, 'Vehicle');
+                                                }
                                                 UpdateLicenceVehicle(j + 1);
                                             });
 
@@ -580,7 +663,7 @@ router.post('/WebCashResponseUrl', jsonParser, function(req, res) {
                                     }
                                     UpdateLicenceVehicle(0);
 
-                                }).then(function(resOrderServiceItem) {
+                                }).then(function (resOrderServiceItem) {
                                     var objres = {
                                         success: true,
                                         Message: StatusMessage
@@ -640,14 +723,14 @@ router.post('/WebCashResponseUrl', jsonParser, function(req, res) {
                     OrderStatus = 1;
                 }
 
-                response.updateAttributes({ AuthorizationTransactionResult: Status, OrderStatusId: OrderStatus }).then(function(resupdatedata) {
+                response.updateAttributes({ AuthorizationTransactionResult: Status, OrderStatusId: OrderStatus }).then(function (resupdatedata) {
 
                     if (Status == "Success") {
                         OrderServiceDetail.findAll({
                             where: {
                                 OrderId: response.id
                             }
-                        }).then(function(lstOrderItem) {
+                        }).then(function (lstOrderItem) {
                             var lstDeviceId = [];
 
                             for (var i = 0; i < lstOrderItem.length; i++) {
@@ -661,7 +744,7 @@ router.post('/WebCashResponseUrl', jsonParser, function(req, res) {
                                     },
                                     IsDeleted: false
                                 }
-                            }).then(function(lstLicenceList) {
+                            }).then(function (lstLicenceList) {
                                 return Vehicle.findAll({
                                     where: {
                                         deviceid: {
@@ -669,12 +752,12 @@ router.post('/WebCashResponseUrl', jsonParser, function(req, res) {
                                         },
                                         IsDelete: false
                                     }
-                                }).then(function(lstVehicleList) {
+                                }).then(function (lstVehicleList) {
                                     return [lstLicenceList, lstVehicleList];
                                 })
                             })
 
-                        }).spread(function(lstLicenceList, lstVehicleList) {
+                        }).spread(function (lstLicenceList, lstVehicleList) {
                             var TotalRecords = lstLicenceList.length;
                             // if (TotalRecords < lstVehicleList.length) {
                             //     TotalRecords = lstVehicleList.length;
@@ -703,14 +786,18 @@ router.post('/WebCashResponseUrl', jsonParser, function(req, res) {
                                         date = new Date();
                                         updatedDate = convertdateformat(date.setMonth(date.getMonth() + AddMonth), 3);
                                     }
-                                    lstLicenceList[j].updateAttributes({ ExpiryDate: updatedDate }).then(function(resUpdateExpiryLicence) {
+                                    lstLicenceList[j].updateAttributes({ ExpiryDate: updatedDate }).then(function (resUpdateExpiryLicence) {
                                         var objVehicle = u.findWhere(lstVehicleList, { deviceid: UpdateDeviceId });
                                         if (objVehicle != undefined) {
                                             return objVehicle.updateAttributes({ renewaldate: updatedDate });
                                         } else {
                                             return {};
                                         }
-                                    }).then(function(resVehicleUpdate) {
+                                    }).then(function (resVehicleUpdate) {
+                                        var objVehicle = u.findWhere(lstVehicleList, { deviceid: UpdateDeviceId });
+                                        if (objVehicle != undefined) {
+                                            Commonfunction.UpdateVehicleRedis(objVehicle.deviceid, 'Vehicle');
+                                        }
                                         UpdateLicenceVehicle(j + 1);
                                     });
 
@@ -723,7 +810,7 @@ router.post('/WebCashResponseUrl', jsonParser, function(req, res) {
                             }
                             UpdateLicenceVehicle(0);
 
-                        }).then(function(resOrderServiceItem) {
+                        }).then(function (resOrderServiceItem) {
                             var objres = {
                                 success: true,
                                 Message: StatusMessage
@@ -750,7 +837,7 @@ router.post('/WebCashResponseUrl', jsonParser, function(req, res) {
             io.sockets.emit(resdataparam.OrderNumber + 'ApiResponse', JSON.stringify(res));
             //res.send('RECEIVEOK');
         }
-    }).catch(function(error) {
+    }).catch(function (error) {
         var res = {
             success: false,
             message: "Payment failed",
@@ -764,21 +851,21 @@ router.post('/WebCashResponseUrl', jsonParser, function(req, res) {
 
 });
 
-router.get('/UpdateReferenceNumber', function(req, res) {
+router.get('/UpdateReferenceNumber', function (req, res) {
     var PurchaseOrderNumber = new Date();
     var RefNumber = "T" + GetRandomWord() + Date.parse(PurchaseOrderNumber)
     OrderService.findOne({
         where: { PurchaseOrderNumber: req.query.OrderNumber },
-    }).then(function(response) {
+    }).then(function (response) {
         return response.updateAttributes({ CaptureTransactionResult: RefNumber });
-    }).then(function(resupdate) {
+    }).then(function (resupdate) {
         var obj = {
             success: true,
             message: "Reference Number UpdatedSuccessfully",
             data: RefNumber
         }
         res.json(obj);
-    }).catch(function(error) {
+    }).catch(function (error) {
         var obj = {
             success: false,
             message: "Reference Number can not update",
@@ -787,7 +874,7 @@ router.get('/UpdateReferenceNumber', function(req, res) {
     })
 });
 
-router.post('/SaveOrderServiceNew', jsonParser, function(req, res) {
+router.post('/SaveOrderServiceNew', jsonParser, function (req, res) {
     objOrderservice = req.body;
     objHeader = req.headers;
     var OrderTotal = objOrderservice.OrderTotal;
@@ -805,7 +892,7 @@ router.post('/SaveOrderServiceNew', jsonParser, function(req, res) {
                 username: decoded.username,
                 password: decoded.password
             }
-        }).then(function(UserExist) {
+        }).then(function (UserExist) {
 
             if (!UserExist) {
                 err.message = 'Token';
@@ -863,7 +950,7 @@ router.post('/SaveOrderServiceNew', jsonParser, function(req, res) {
             objOrder.AuthorizationTransactionResult = 'Success';
 
             return OrderService.create(objOrder);
-        }).then(function(resOrder) {
+        }).then(function (resOrder) {
             if (!resOrder) {
                 err.message = 'Order could not created. Try again later.';
                 throw err;
@@ -970,12 +1057,12 @@ router.post('/SaveOrderServiceNew', jsonParser, function(req, res) {
             //     });
 
 
-        }).then(function() {
+        }).then(function () {
             res.json({
                 success: true,
                 message: 'Order created successfully.',
             });
-        }).catch(function(err) {
+        }).catch(function (err) {
             if (err.message === 'Token') {
                 res.json(InvalidToken);
             } else {
@@ -991,7 +1078,321 @@ router.post('/SaveOrderServiceNew', jsonParser, function(req, res) {
     }
 })
 
-router.get('/SendPaymentLink', function(req, res) {
+router.post('/SaveOrderServiceRenew', jsonParser, function (req, res) {
+    objOrderservice = req.body;
+    objHeader = req.headers;
+    var OrderTotal = objOrderservice.OrderTotal;
+    var Remark = objOrderservice.Remark;
+    var DeviceId = ''
+    var lstProduct = objOrderservice.lstProduct;
+    var lstLicenceId = [];
+    var lstDeviceId = [];
+    var PurchaseOrderNumber = new Date();
+    OrderNumber = "BILLNO" + GetRandomWord() + Date.parse(PurchaseOrderNumber)
+    var token = getToken(objHeader);
+    if (token) {
+        var decoded = jwt.decode(token, TokenKey);
+        User.findOne({
+            where: {
+                username: decoded.username,
+                password: decoded.password
+            }
+        }).then(function (UserExist) {
+
+            if (!UserExist) {
+                err.message = 'Token';
+                throw err;
+            }
+
+            for (var i = 0; i < lstProduct.length; i++) {
+                // OrderTotal = OrderTotal + lstProduct[i].RenewPrice;
+                if (DeviceId == '') {
+                    DeviceId = lstProduct[i].deviceid;
+                } else {
+                    DeviceId = DeviceId + "," + lstProduct[i].deviceid;
+                }
+            }
+            console.log("Order Total = " + OrderTotal)
+            var objOrder = new Object();
+            objOrder.CustomerId = objOrderservice.idUser;
+            objOrder.CreatedOnUtc = new Date();
+            // objOrder.ExpiryDate = AddDate(objOrder.CreatedOnUtc, 1, "Year");
+            // objOrder.ExpiryDurationValue = 1;
+            // objOrder.ExpiryDurationType = "Year";
+            objOrder.MerchantId = 0;
+            objOrder.PurchaseOrderNumber = OrderNumber;
+            objOrder.CustomerCurrencyCode = "MYR / Rs";
+            objOrder.OrderTotal = OrderTotal;
+            objOrder.OrderNotes = DeviceId;
+            objOrder.SettlementCur = "MYR / Rs";
+            objOrder.OrderStatusId = 2;
+            objOrder.SubscriptionTransactionId = objOrderservice.idApp;
+            objOrder.ShippingStatusId = 0;
+            objOrder.PaymentMethodSystemName = "CASH";
+            objOrder.CustomerTaxDisplayTypeId = 0;
+            objOrder.OrderSubtotalInclTax = OrderTotal;
+            objOrder.OrderSubtotalExclTax = OrderTotal;
+            objOrder.OrderSubTotalDiscountInclTax = 0;
+            objOrder.OrderSubTotalDiscountExclTax = 0;
+            objOrder.OrderShippingInclTax = 0;
+            objOrder.OrderShippingExclTax = 0;
+            objOrder.TaxRates = 0;
+            objOrder.OrderTax = 0;
+            objOrder.OrderDiscount = 0;
+            objOrder.RefundedAmount = 0;
+            objOrder.RewardPointsWereAdded = 0;
+            objOrder.CustomerLanguageId = 0;
+            objOrder.AffiliateId = 0;
+            objOrder.AllowStoringCreditCardNumber = 0;
+            objOrder.CreatedBy = decoded.username;
+            objOrder.PaymentMethodAdditionalFeeInclTax = 0;
+            objOrder.PaymentMethodAdditionalFeeExclTax = 0;
+            objOrder.ProcessingCharges = 0;
+            objOrder.PaymentStatusId = null;
+            objOrder.Deleted = false;
+            objOrder.ShippAddress1 = lstProduct[0].CountryName;
+            objOrder.OrderStatus = 2;
+            objOrder.AuthorizationTransactionResult = 'Success';
+            objOrder.Terms = Remark;
+            objOrder.ModifiedDate = new Date();
+            objOrder.Courier = decoded.username;
+
+            return OrderService.create(objOrder);
+        }).then(function (resOrder) {
+            if (!resOrder) {
+                err.message = 'Order could not created. Try again later.';
+                throw err;
+            }
+            var lstOrderServiceItem = [];
+            for (i = 0; i < lstProduct.length; i++) {
+                var objOrderDetail = new Object();
+                var RefNumber = "T" + GetRandomWord() + Date.parse(PurchaseOrderNumber);
+                objOrderDetail.OrderId = resOrder.id;
+                objOrderDetail.ProductId = lstProduct[i].ProductId;
+                objOrderDetail.ProductName = lstProduct[i].deviceid;
+                objOrderDetail.Quantity = 1;
+                objOrderDetail.UnitPriceInclTax = lstProduct[i].RenewPrice;
+                objOrderDetail.UnitPriceExclTax = lstProduct[i].RenewPrice;
+                objOrderDetail.idOrderStatus = 2;
+                objOrderDetail.PriceInclTax = lstProduct[i].RenewPrice;
+                objOrderDetail.PriceExclTax = lstProduct[i].RenewPrice;
+                objOrderDetail.UOM = lstProduct[i].UOM;
+                objOrderDetail.sku = lstProduct[i].LicenceType;
+                objOrderDetail.Attribute = lstProduct[i].LicenceNo;
+                objOrderDetail.AttributeValue = lstProduct[i].LicenceRenewalType;
+                objOrderDetail.AttributeDescription = lstProduct[i].Name;
+                objOrderDetail.AttributesXml = lstProduct[i].ExpireDate;
+                objOrderDetail.ItemWeight = lstProduct[i].NextExpireDate;
+                objOrderDetail.CaptureTransactionResult = lstProduct[i].RefNumber;
+                lstOrderServiceItem.push(objOrderDetail);
+                lstLicenceId.push(lstProduct[i].LicenceId);
+                lstDeviceId.push(lstProduct[i].deviceid);
+            }
+            return OrderServiceDetail.bulkCreate(lstOrderServiceItem);
+
+        }).then(function (resOrderServiceItem) {
+            // res.json({
+            //     success: true,
+            //     message: 'Order created successfully.',
+
+            return [LicenceManager.findAll({
+                where: {
+                    Id: {
+                        $in: lstLicenceId
+                    },
+                    IsDeleted: false
+                }
+            }), Vehicle.findAll({
+                where: {
+                    deviceid: {
+                        $in: lstDeviceId
+                    },
+                    IsDelete: false
+                }
+            })];
+            // return LicenceManager.findAll({
+            //     where: {
+            //         Id: {
+            //             $in: lstLicenceId
+            //         },
+            //         IsDeleted: false
+            //     }
+            // }).then(function (lstLicenceList) {
+            //     return Vehicle.findAll({
+            //         where: {
+            //             deviceid: {
+            //                 $in: lstDeviceId
+            //             },
+            //             IsDelete: false
+            //         }
+            //     }).then(function (lstVehicleList) {
+            //         return [lstLicenceList, lstVehicleList];
+            //     })
+            // })
+
+        }).spread(function (lstLicenceList, lstVehicleList) {
+            var TotalRecords = lstLicenceList.length;
+            function UpdateLicenceVehicle(j) {
+                if (j < TotalRecords) {
+                    var UpdateDeviceId = lstLicenceList[j].DeviceId;
+                    var AddMonth = 0;
+                    if (lstLicenceList[j].LicenceRenewalType == 'Monthly') {
+                        AddMonth = 1;
+                    } else if (lstLicenceList[j].LicenceRenewalType == 'Quarterly') {
+                        AddMonth = 3;
+                    } else if (lstLicenceList[j].LicenceRenewalType == 'Yearly') {
+                        AddMonth = 12;
+                    }
+
+                    var oldexpdate = lstLicenceList[j].ExpiryDate;
+                    var date = new Date(lstLicenceList[j].ExpiryDate);
+                    var updatedDate = convertdateformat(date.setMonth(date.getMonth() + AddMonth), 3);
+
+                    var timeDiff = (new Date(oldexpdate)).getTime() - (new Date()).getTime();
+                    var diffDays = Math.round(timeDiff / (1000 * 3600 * 24));
+                    days = diffDays;
+                    if (days < 0) {
+                        date = new Date();
+                        updatedDate = convertdateformat(date.setMonth(date.getMonth() + AddMonth), 3);
+                    }
+                    lstLicenceList[j].updateAttributes({ ExpiryDate: updatedDate }).then((resUpdateExpiryLicence) => {
+                        var objVehicle = u.findWhere(lstVehicleList, { deviceid: UpdateDeviceId });
+                        if (objVehicle != undefined) {
+                            objVehicle.updateAttributes({ renewaldate: updatedDate }).then((resVehicleUpdate) => {
+                                Commonfunction.UpdateVehicleRedis(objVehicle.deviceid, 'Vehicle');
+                                UpdateLicenceVehicle(j + 1);
+                            });
+                        } else {
+                            UpdateLicenceVehicle(j + 1);
+                        }
+                    })
+
+                } else {
+                    res.json({
+                        success: true,
+                        message: 'Order created successfully.',
+                    });
+                }
+            }
+            UpdateLicenceVehicle(0);
+        })
+            // .then(function (aaa) {
+            //     console.log(aaa)
+            //     console.log("order create succerss final");
+            //     res.json({
+            //         success: true,
+            //         message: 'Order created successfully.',
+            //     });
+            // })
+
+            .catch(function (err) {
+                if (err.message === 'Token') {
+                    res.json(InvalidToken);
+                } else {
+                    res.json({
+                        success: false,
+                        message: "Order Could not created. Try again later."
+                    });
+                    console.error('[' + moment().format('DD/MM/YYYY hh:mm:ss a') + '] ' + (err.stack || err.message));
+                }
+            });
+    } else {
+        res.json(InvalidToken);
+    }
+})
+
+router.post('/SendEmailNotification', jsonParser, function (req, res) {
+    var ObjRenewList = req.body;
+    var lstRenewListAll = ObjRenewList.lstRenewalList;
+    var lstidApp = [];
+    var groups = u.groupBy(lstRenewListAll, function (value) {
+        return value.iduser + '#' + value.idApp;
+    });
+    var lstRenewList = u.map(groups, function (group) {
+        lstidApp.push(group[0].idApp);
+        return {
+            iduser: group[0].iduser,
+            idApp: group[0].idApp,
+            email: group[0].email,
+            AppName: group[0].AppName,
+            lstvehicle: group
+        }
+    });
+    var objHeader = req.headers;
+    var token = getToken(objHeader);
+    if (token) {
+        var decoded = jwt.decode(token, TokenKey);
+        User.findOne({
+            where: {
+                username: decoded.username,
+                password: decoded.password
+            }
+        }).then(function (UserExist) {
+
+            if (!UserExist) {
+                err.message = 'Token';
+                throw err;
+            }
+            return [SystemEmail.findAll({ where: { IdApp: { $in: lstidApp } } }), EmailTemplate.findOne({ where: { Type: "Renew Device Email", } })];
+        }).spread(function (lstAppEmail, objEmailTemplate) {
+            if (objEmailTemplate != null) {
+                function SendEmailonebyOne(j) {
+                    if (j < lstRenewList.length) {
+                        var objRenewdata = lstRenewList[j];
+                        var objEmail = u.findWhere(lstAppEmail, { IdApp: objRenewdata.idApp });
+                        var OrderDetail = "";
+                        for (var i = 0; i < objRenewdata.lstvehicle.length; i++) {
+                            OrderDetail = OrderDetail + '<div>&nbsp;</div>' +
+                                '<div>' + (i + 1).toString() + '.<span style="white-space:pre"> </span>' + objRenewdata.lstvehicle[i].VehicleName + ' (' + objRenewdata.lstvehicle[i].DeviceId + ') -&gt; ' + objRenewdata.lstvehicle[i].ExpiryDate + '</div>' +
+                                '<div>-----------------------------------------</div>';
+                        }
+
+                        var body = objEmailTemplate.EmailBody.replace(/{Email}/g, objRenewdata.email).replace(/{AppName}/g, objRenewdata.AppName).replace("{OrderDetail}", OrderDetail);
+                        var mail = {
+                            from: objEmail.DefaultEmailFrom,
+                            to: objRenewdata.email,
+                            subject: objEmailTemplate.EmailSubject,
+                            html: body
+                        };
+                        SetsmtpConfig(objEmail, mail, function (EmailSettingCreated) {
+                            // console.log(EmailSettingCreated)
+                        })
+                        funAuditLog.CreateAuditLog('Renew Device Email', decoded.username, 'Renew Device Email Send: (' + objRenewdata.email + ')');
+                        SendEmailonebyOne(j + 1);
+                    } else {
+                        res.json({
+                            success: true,
+                            message: "Email Send to Customer Successfully.",
+                        });
+                    }
+                }
+                SendEmailonebyOne(0);
+            } else {
+                var obj = {
+                    success: false,
+                    message: "Please Add Renew Device Email Template.",
+                }
+                res.json(obj);
+            }
+        }).catch(function (error) {
+            console.log(error)
+            if (error.message === 'Token') {
+                res.json(InvalidToken);
+            } else {
+                var obj = {
+                    success: false,
+                    message: "Email can not send.",
+                    data: error
+                }
+                res.json(obj);
+            }
+        })
+    } else {
+        res.json(InvalidToken);
+    }
+});
+
+router.get('/SendPaymentLink', function (req, res) {
     objHeader = req.headers;
     var token = getToken(objHeader);
     if (token) {
@@ -1001,21 +1402,21 @@ router.get('/SendPaymentLink', function(req, res) {
                 username: decoded.username,
                 password: decoded.password
             }
-        }).then(function(UserExist) {
+        }).then(function (UserExist) {
 
             if (!UserExist) {
                 err.message = 'Token';
                 throw err;
             }
             return Setting.findOne({ where: { Name: 'OrderServicePaymentLink' }, });
-        }).then(function(response) {
+        }).then(function (response) {
             return [response, SystemEmail.findOne({ where: { IdApp: req.query.idApp } }), EmailTemplate.findOne({ where: { Type: "Order Service Payment Link Email", } })];
-        }).spread(function(objSetting, objEmail, objEmailTemplate) {
+        }).spread(function (objSetting, objEmail, objEmailTemplate) {
             if (objSetting != null && objEmailTemplate != null) {
                 var TotalAmount = parseFloat(req.query.OrderTotal).toFixed(2);
                 var urldata = req.query.id + "," + req.query.username + "," + req.query.Email;
                 var query = "select tblorderserviceitem.* ,tblorderservice.OrderStatusId,tblorderservice.ImageUrl,tblorderservice.PurchaseOrderNumber,tblorderservice.OrderTotal from tblorderserviceitem inner join tblorderservice on tblorderservice.id= tblorderserviceitem.OrderId where tblorderserviceitem.OrderId=" + req.query.id;
-                connection.query(query, function(err, lstorderdetail, fields) {
+                connection.query(query, function (err, lstorderdetail, fields) {
                     var OrderDetail = "";
                     for (var i = 0; i < lstorderdetail.length; i++) {
                         OrderDetail = OrderDetail + '<div>&nbsp;</div>' +
@@ -1033,7 +1434,7 @@ router.get('/SendPaymentLink', function(req, res) {
                         subject: objEmailTemplate.EmailSubject,
                         html: body
                     };
-                    SetsmtpConfig(objEmail, mail, function(EmailSettingCreated) {
+                    SetsmtpConfig(objEmail, mail, function (EmailSettingCreated) {
                         // console.log(EmailSettingCreated)
                     })
                     funAuditLog.CreateAuditLog('Payment Link', decoded.username, 'Payment Link Send: (' + req.query.Email + ')');
@@ -1057,7 +1458,7 @@ router.get('/SendPaymentLink', function(req, res) {
                     res.json(obj);
                 }
             }
-        }).catch(function(error) {
+        }).catch(function (error) {
             if (error.message === 'Token') {
                 res.json(InvalidToken);
             } else {
@@ -1073,7 +1474,7 @@ router.get('/SendPaymentLink', function(req, res) {
     }
 });
 
-router.get('/MakeStatusPaid', function(req, res) {
+router.get('/MakeStatusPaid', function (req, res) {
     objHeader = req.headers;
     var token = getToken(objHeader);
     if (token) {
@@ -1083,27 +1484,27 @@ router.get('/MakeStatusPaid', function(req, res) {
                 username: decoded.username,
                 password: decoded.password
             }
-        }).then(function(UserExist) {
+        }).then(function (UserExist) {
             if (!UserExist) {
                 err.message = 'Token';
                 throw err;
             }
             return OrderService.findOne({ where: { id: req.query.id } });
 
-        }).then(function(resOrderFind) {
+        }).then(function (resOrderFind) {
             if (resOrderFind != null) {
                 resOrderFind.updateAttributes({
                     OrderStatusId: req.query.status,
                     Terms: req.query.Remark,
                     ModifiedDate: new Date(),
                     Courier: decoded.username
-                }).then(function(resUpdate) {
+                }).then(function (resUpdate) {
 
                     OrderServiceDetail.findAll({
                         where: {
                             OrderId: req.query.id
                         }
-                    }).then(function(lstOrderItem) {
+                    }).then(function (lstOrderItem) {
                         var lstDeviceId = [];
 
                         for (var i = 0; i < lstOrderItem.length; i++) {
@@ -1117,7 +1518,7 @@ router.get('/MakeStatusPaid', function(req, res) {
                                 },
                                 IsDeleted: false
                             }
-                        }).then(function(lstLicenceList) {
+                        }).then(function (lstLicenceList) {
                             return Vehicle.findAll({
                                 where: {
                                     deviceid: {
@@ -1125,12 +1526,12 @@ router.get('/MakeStatusPaid', function(req, res) {
                                     },
                                     IsDelete: false
                                 }
-                            }).then(function(lstVehicleList) {
+                            }).then(function (lstVehicleList) {
                                 return [lstLicenceList, lstVehicleList];
                             })
                         })
 
-                    }).spread(function(lstLicenceList, lstVehicleList) {
+                    }).spread(function (lstLicenceList, lstVehicleList) {
                         var TotalRecords = lstLicenceList.length;
                         // if (TotalRecords < lstVehicleList.length) {
                         //     TotalRecords = lstVehicleList.length;
@@ -1160,15 +1561,18 @@ router.get('/MakeStatusPaid', function(req, res) {
                                     date = new Date();
                                     updatedDate = convertdateformat(date.setMonth(date.getMonth() + AddMonth), 3);
                                 }
-                                lstLicenceList[j].updateAttributes({ ExpiryDate: updatedDate }).then(function(resUpdateExpiryLicence) {
+                                lstLicenceList[j].updateAttributes({ ExpiryDate: updatedDate }).then(function (resUpdateExpiryLicence) {
                                     var objVehicle = u.findWhere(lstVehicleList, { deviceid: UpdateDeviceId });
                                     if (objVehicle != undefined) {
                                         return objVehicle.updateAttributes({ renewaldate: updatedDate });
-                                        Commonfunction.UpdateVehicleRedis(objVehicle.deviceid, 'Vehicle');
                                     } else {
                                         return {};
                                     }
-                                }).then(function(resVehicleUpdate) {
+                                }).then(function (resVehicleUpdate) {
+                                    var objVehicle = u.findWhere(lstVehicleList, { deviceid: UpdateDeviceId });
+                                    if (objVehicle != undefined) {
+                                        Commonfunction.UpdateVehicleRedis(objVehicle.deviceid, 'Vehicle');
+                                    }
                                     UpdateLicenceVehicle(j + 1);
                                 });
 
@@ -1181,7 +1585,7 @@ router.get('/MakeStatusPaid', function(req, res) {
                         }
                         UpdateLicenceVehicle(0);
 
-                    }).then(function(resOrderServiceItem) {
+                    }).then(function (resOrderServiceItem) {
                         var objres = {
                             success: true,
                             message: 'Order Service paid Successfully.',
@@ -1201,7 +1605,7 @@ router.get('/MakeStatusPaid', function(req, res) {
                     message: "Order Service can not found. Try again later."
                 });
             }
-        }).catch(function(error) {
+        }).catch(function (error) {
             if (err.message === 'Token') {
                 res.json(InvalidToken);
             } else {
@@ -1219,17 +1623,17 @@ router.get('/MakeStatusPaid', function(req, res) {
 })
 
 //Image APi
-router.post('/uploadImage', function(req, res) {
+router.post('/uploadImage', function (req, res) {
     var form = new formidable.IncomingForm();
 
     form.uploadDir = __dirname + '/../MediaUploads/PaymentReceipt';
     var FileName = [];
     var lstOrder = [];
     //file upload path
-    form.parse(req, function(err, fields, files) {
+    form.parse(req, function (err, fields, files) {
         //you can get fields here
     });
-    form.on('fileBegin', function(name, file) {
+    form.on('fileBegin', function (name, file) {
         var ext = file.name.substring(file.name.lastIndexOf('.'), file.name.length);
         var NewName = GetImageNameFromDate();
         if (ext.indexOf('?') > -1) {
@@ -1246,7 +1650,7 @@ router.post('/uploadImage', function(req, res) {
 
         //modify file path
     });
-    form.on('end', function() {
+    form.on('end', function () {
         var i = 0;
 
         function uploader(i) {
@@ -1256,11 +1660,11 @@ router.post('/uploadImage', function(req, res) {
                     where: {
                         id: orderId
                     }
-                }).then(function(response) {
+                }).then(function (response) {
                     if (response != null) {
                         if (response.ImageUrl != '' && response.ImageUrl != null) {
                             var oldFile = __dirname + '/../MediaUploads/PaymentReceipt/' + response.ImageUrl;
-                            fs.exists(oldFile, function(exists) {
+                            fs.exists(oldFile, function (exists) {
                                 if (exists) {
                                     fs.unlink(oldFile);
                                 }
@@ -1268,7 +1672,7 @@ router.post('/uploadImage', function(req, res) {
                         };
                         response.updateAttributes({
                             ImageUrl: FileName[i]
-                        }).then(function(resUpdate) {
+                        }).then(function (resUpdate) {
                             if ((i + 1) == FileName.length) {
                                 res.json({
                                     success: true,
@@ -1296,19 +1700,19 @@ router.post('/uploadImage', function(req, res) {
 });
 
 
-router.get('/DeleteOrderReceipt', function(req, res) {
+router.get('/DeleteOrderReceipt', function (req, res) {
     objHeader = req.headers;
     var token = getToken(objHeader);
     if (token) {
         var decoded = jwt.decode(token, TokenKey);
-        User.findOne({ where: { username: decoded.username, password: decoded.password } }).then(function(UserExist) {
+        User.findOne({ where: { username: decoded.username, password: decoded.password } }).then(function (UserExist) {
             if (UserExist != null) {
                 OrderService.findOne({
                     where: { id: req.query.id },
-                }).then(function(response) {
+                }).then(function (response) {
                     if (response.ImageUrl != '' && response.ImageUrl != null) {
                         var oldFile = __dirname + '/../MediaUploads/PaymentReceipt/' + response.ImageUrl;
-                        fs.exists(oldFile, function(exists) {
+                        fs.exists(oldFile, function (exists) {
                             if (exists) {
                                 fs.unlink(oldFile);
                             }
@@ -1316,13 +1720,13 @@ router.get('/DeleteOrderReceipt', function(req, res) {
                     };
                     funAuditLog.CreateAuditLog('DeleteOrderReceipt', UserExist.username, "DeleteOrderReceipt User: " + UserExist.username + " idOrder : " + req.query.id + " ImageUrl : " + response.ImageUrl + " ");
                     return response.updateAttributes({ ImageUrl: null });
-                }).then(function(resupdate) {
+                }).then(function (resupdate) {
                     var obj = {
                         success: true,
                         message: "Receipt Delete Successfully",
                     }
                     res.json(obj);
-                }).catch(function(error) {
+                }).catch(function (error) {
                     var obj = {
                         success: false,
                         message: "Receipt can not Delete",
@@ -1340,7 +1744,7 @@ router.get('/DeleteOrderReceipt', function(req, res) {
 });
 
 
-router.get('/GetAllOrderDetailsByOrderId', function(req, res) {
+router.get('/GetAllOrderDetailsByOrderId', function (req, res) {
     // console.log(req.query)
     // OrderServiceDetail.findAll({ where: { OrderId: req.query.OrderId } }).then(function(response) {
     //     res.json(response)
@@ -1351,7 +1755,7 @@ router.get('/GetAllOrderDetailsByOrderId', function(req, res) {
     var username = url[1];
     var email = url[2];
     var query = "select tblorderserviceitem.* ,tblorderservice.OrderStatusId,tblorderservice.ImageUrl,tblorderservice.PurchaseOrderNumber,tblorderservice.OrderTotal from tblorderserviceitem inner join tblorderservice on tblorderservice.id= tblorderserviceitem.OrderId where tblorderserviceitem.OrderId=" + OrderId;
-    connection.query(query, function(err, response, fields) {
+    connection.query(query, function (err, response, fields) {
         var obj = new Object();
         obj.lstOrderDetail = response;
         obj.username = username;

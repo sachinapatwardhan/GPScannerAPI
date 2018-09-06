@@ -13,6 +13,9 @@ var GPSDevice = models.tblgpsdevice;
 var ServiceEnhacement = models.tblserviceenhancement;
 var ServiceEnhacementType = models.tblserviceenhancementtype;
 var ServiceEnhancementNotification = models.tblserviceenhancementnotification;
+var SystemEmail = models.tblemailsettingsys;
+var EmailTemplate = models.tblemailtemplate;
+var Setting = models.tblsetting;
 var momentz = require('moment-timezone');
 var CommonFunction = require('./common.js');
 
@@ -626,6 +629,917 @@ function customPassword() {
     return password;
 }
 //End of Private functions
+
+//5000 - Login
+router.get('/Command5000', function(req, res) {
+
+    var line = req.query.Code;
+    console.log("Login = " + line);
+
+    var DeviceId = line.substring(8, 22);
+
+    var CurrentDate = GetCurrentDate();
+    var response = '40400012' + DeviceId + '400001';
+    response = response + CalculateCRCbyHex(response) + '0D0A';
+    connection.query("SELECT * from tblgpsdevice where DeviceId=" + DeviceId, function(err, rows, fields) {
+        if (!err) {
+            //if (rows.length > 0) {
+            //tblapisresponse Entry
+            // var ResponceQuery = "INSERT INTO tblapisresponse (Code,Response,Datetime) VALUES ('5000', '" + response + "', '" + CurrentDate + "');";
+            // connection.query(ResponceQuery, function(err, rows1, fields) {
+            res.send(response);
+            // });
+            // } else {
+            //     //tblPetgps Entry
+
+            //     var ResponceQuery = "INSERT INTO tblgpsdevice (Code,Response,Datetime) VALUES ('5000', '" + response + "', '" + CurrentDate + "');";
+            //     connection.query(ResponceQuery, function(err, rows1, fields) {
+            //         res.json(response);
+            //     });
+            //     //});
+            // }
+        }
+    })
+
+
+})
+
+//Command5001 - Heartbeat Command
+global.Command5001 = function(line, Callback) {
+    console.log("HandShak = " + line);
+    try {
+        //Server Reconnet If Disconneted
+        if (connection.state == 'disconnected') {
+            global.connection = mysql.createConnection({
+                host: MysqlHost,
+                user: Mysqluser,
+                password: Mysqlpassword,
+                database: Mysqldatabase,
+                multipleStatements: true
+            });
+        }
+
+        var DeviceId = line.substring(8, 22);
+
+        var CurrentDate = GetCurrentDate();
+
+        //tblPetgps Entry
+        var query = "INSERT INTO tblhandshake (DeviceId,Datetime ) VALUES ('" + DeviceId + "', '" + CurrentDate + "');";
+        connection.query(query, function(err, rows, fields) {
+
+            connection.query("Update tblvehicle set HandshakDatetime='" + CurrentDate + "',IsOnline=true where deviceid=" + DeviceId, function(err, rows1, fields) {
+                var objConnection = {
+                    DeviceId: DeviceId,
+                    Status: true
+                }
+                io.sockets.emit('BikeDeviceStatus', JSON.stringify(objConnection));
+                io.sockets.emit(DeviceId + 'BikeDeviceStatus', JSON.stringify(objConnection));
+            });
+
+        });
+    } catch (ex) {
+        console.log("Error Heartbeat Data = " + line);
+    }
+};
+
+//Command9955 - GPS Command
+global.Command9955 = function(objConnection, Callback) {
+    var DeviceId = objConnection.DeviceId;
+    client.get(DeviceId + "ProjectIgnitionStatus", function(err, ProjectIgnitionStatus) {
+        if (!err) {
+            if (ProjectIgnitionStatus == 'true') {
+                //Server Reconnet If Disconneted
+                if (connection.state == 'disconnected') {
+                    global.connection = mysql.createConnection({
+                        host: MysqlHost,
+                        user: Mysqluser,
+                        password: Mysqlpassword,
+                        database: Mysqldatabase,
+                        multipleStatements: true
+                    });
+                }
+                objConnection.Deviceid = DeviceId;
+                var CurrentDate = GetCurrentDate();
+                // var objConnection = {
+                //     Position: Position,
+                //     Speed: Speed,
+                //     Deviceid: DeviceId,
+                //     Latitude: Latitude,
+                //     Longitude: Longitude,
+                //     Direction: Direction,
+                //     OdoMeter: Odometer,
+                //     IsRelayToStopTheCar: IsRelayToStopTheCar,
+                //     IsSirenSound: IsSirenSound,
+                //     IsUserDefined: IsUserDefined,
+                //     IsLockTheDoor: IsLockTheDoor,
+                //     IsUnlockTheDoor: IsUnlockTheDoor,
+                //     IsSOS: IsSOS,
+                //     IsWiringForAntiTamper: IsWiringForAntiTamper,
+                //     IsDoor: IsDoor,
+                //     IsEngine: IsPatchEngine,
+                //     IsOriginalSirenTriggeringStatus: IsOriginalSirenTriggeringStatus,
+                //     Date: unixDateStemp,
+                //     AD1: AD1,
+                //     AD2: AD2
+                // }
+
+                // if (objConnection.Position == 'A') {
+                //     client.set(DeviceId, JSON.stringify(objConnection), function(err, replies) {});
+                //     // io.sockets.emit('BikeRoute', JSON.stringify(objConnection));
+                //     io.sockets.emit(DeviceId + 'BikeRoute', JSON.stringify(objConnection));
+                // }
+                var VehicleStatus = 0;
+                if (objConnection.Speed == 0 && objConnection.IsEngine == true) {
+                    VehicleStatus = 2;
+                } else {
+                    VehicleStatus = 1;
+                }
+
+                //Ignition Status
+                var IsEngineStatusGet = false;
+                var IsEngineStatusChange = false;
+                client.get(DeviceId + "EngineStatus1", function(err, strEngineStatus) {
+                    if (!err) {
+                        if (strEngineStatus != null && strEngineStatus != undefined && strEngineStatus != '' && strEngineStatus != 'null' && strEngineStatus != 'undefined') {
+                            IsEngineStatusGet = true;
+                            var objEngineStatus = JSON.parse(strEngineStatus);
+                            if (objEngineStatus.IsEngine != objConnection.IsEngine) {
+                                IsEngineStatusChange = true;
+                            }
+                        }
+                    }
+
+                    if (IsEngineStatusGet == false || IsEngineStatusChange == true) {
+                        var objnewEngineStatus = {
+                            IsEngine: objConnection.IsEngine,
+                            Date: objConnection.Date
+                        }
+                        client.set(DeviceId + "EngineStatus1", JSON.stringify(objnewEngineStatus), function(err, replies) {});
+
+                        // var NewDeviceId = DeviceId.substring(DeviceId.length - 7);
+                        // var Ids = "3" + unixDateStemp.toString() + NewDeviceId;
+                        // var IsEnginetStaus = 0;
+                        // if (IsPatchEngine == true) {
+                        //     IsEnginetStaus = 1;
+                        // }
+                        // var query = "INSERT INTO tblvehicletransaction (id,DeviceId,Type,Status,Date,CreatedDate,Latitude,Longitude,Odometer) VALUES (" + Ids + ",'" + DeviceId + "','EngineStatus'," + IsEnginetStaus + "," + unixDateStemp + ",'" + CurrentDate + "','" + Latitude + "','" + Longitude + "'," + Odometer + ");";
+                        // connectionSocketAPIEngineStatus.query(query, function(err, rows, fields) {});
+
+                        var AlarmCode = '07';
+                        if (objConnection.IsEngine == true) {
+                            AlarmCode = '08';
+                        }
+
+                        if (ObjMyPinIgnition[DeviceId] != null && ObjMyPinIgnition[DeviceId] != undefined && ObjMyPinIgnition[DeviceId] != '') {
+                            if ((ObjMyPinIgnition[DeviceId].Ignition != objConnection.IsEngine) || (ObjMyPinIgnition[DeviceId].Ignition == objConnection.IsEngine && ObjMyPinIgnition[DeviceId].Alert == false)) {
+                                ObjMyPinIgnition[DeviceId].Ignition = objConnection.IsEngine;
+                                ObjMyPinIgnition[DeviceId].Alert = true;
+
+                                UpdateIgnitionQuery();
+                            }
+                        } else {
+                            ObjMyPinIgnition[DeviceId] = {
+                                Ignition: objConnection.IsEngine,
+                                Alert: true
+                            }
+                            UpdateIgnitionQuery();
+                        }
+
+                        function UpdateIgnitionQuery() {
+                            var query = "INSERT INTO tblalarm (Datetime, Date, Latitude,Longitude,GPSPositioning,Speed,Direction,Status,DeviceId,AlarmCode,CreatedDate ) VALUES ('" + objConnection.GPSDateTime + "', '" + objConnection.Date + "', '" + objConnection.Latitude + "', '" + objConnection.Longitude + "', '" + objConnection.Position + "', '" + objConnection.Speed + "', '" + objConnection.Direction + "', '" + objConnection.inputoutputSTatus + "', '" + DeviceId + "','" + AlarmCode + "','" + CurrentDate + "');";
+                            connection.query(query, function(err, rows, fields) {
+
+                                connection.query("SELECT id,Name,iduser,deviceid from tblvehicle where deviceid='" + DeviceId + "' and IsDelete=false", function(err, lstVehicle, fields) {
+                                    if (!err && lstVehicle.length > 0) {
+                                        var objVehicle = lstVehicle[0];
+                                        connection.query("SELECT * from tblsharedevice where idVehicle=" + objVehicle.id + " and IsSharedUserNotification=true and IsNotification=true", function(err, lstShareUser, fields) {
+                                            var lstAllUser = [objVehicle.iduser];
+                                            var AllUser = objVehicle.iduser.toString();
+                                            if (!err && lstShareUser.length > 0) {
+                                                for (var i = 0; i < lstShareUser.length; i++) {
+                                                    lstAllUser.push(lstShareUser[i].idUser)
+                                                    AllUser = AllUser + ',' + lstShareUser[i].idUser;
+                                                }
+                                            }
+                                            connection.query("SELECT tu.id,tu.idApp, tu.username,tu.email,tu.Notification, ta.AppName, ta.IOSCertificate, ta.IOSKey, ta.AndroidId, ta.AndroidSenderId FROM tbluserinformation as tu inner Join tblappinfo as ta ON ta.id = tu.idApp where tu.id=" + objVehicle.iduser, function(err, objAppInfo, fields) {
+
+                                                for (var i = 0; i < lstAllUser.length; i++) {
+                                                    var objConnection1 = {
+                                                        AlarmCode: AlarmCode.toString(),
+                                                        DeviceId: DeviceId,
+                                                        Datetime: objConnection.GPSDateTime,
+                                                        Date: objConnection.Date,
+                                                        IdUser: lstAllUser[i],
+                                                        Name: objVehicle.Name
+                                                    }
+                                                    io.sockets.emit(lstAllUser[i] + 'DeviceAlarm', JSON.stringify(objConnection1));
+                                                    ObjMyPinIgnition[DeviceId].Alert = true;
+
+
+                                                    var objPushnotificationCount = {
+                                                        Id: rows.insertId,
+                                                        Latitude: objConnection.Latitude,
+                                                        Longitude: objConnection.Longitude,
+                                                        GPSPositioning: objConnection.Position,
+                                                        Speed: objConnection.Speed,
+                                                        Direction: objConnection.Direction,
+                                                        Status: objConnection.inputoutputSTatus,
+                                                        AlarmCode: AlarmCode.toString(),
+                                                        DeviceId: DeviceId,
+                                                        CreatedDate: CurrentDate,
+                                                        Datetime: objConnection.GPSDateTime,
+                                                        Date: objConnection.Date,
+                                                        FenceName: null,
+                                                        UserId: lstAllUser[i],
+                                                        IsRead: false,
+                                                        // Name: objVehicle.Name
+                                                    }
+
+                                                    io.sockets.emit(lstAllUser[i] + 'DeviceNotificationCount', JSON.stringify(objPushnotificationCount));
+                                                }
+
+                                                client.get(DeviceId + "IgnitionStatus", function(err, UserIgnitionStatus) {
+                                                    if (!err) {
+                                                        if (UserIgnitionStatus != null && UserIgnitionStatus != undefined && UserIgnitionStatus != '' && UserIgnitionStatus != 'null' && UserIgnitionStatus != 'undefined') {
+                                                            if (UserIgnitionStatus == 'true') {
+                                                                var Message = "";
+                                                                var soundname = "Default";
+
+                                                                if (AlarmCode == '08') {
+                                                                    Message = 'Vehicle ' + objVehicle.Name + ' Ignition ON alert! Please check!';
+                                                                    soundname = 'Default';
+                                                                } else if (AlarmCode == '07') {
+                                                                    Message = 'Vehicle ' + objVehicle.Name + ' Ignition OFF alert! Please check!';
+                                                                    soundname = 'Default';
+                                                                }
+
+                                                                var PushNotificationdata = {
+                                                                    title: 'Alert',
+                                                                    message: Message,
+                                                                    // Fence: 'Default',
+                                                                    soundname: soundname,
+                                                                    otherfields: {
+                                                                        deviceid: DeviceId,
+                                                                        Id: objVehicle.id,
+                                                                        VehicleName: objVehicle.Name,
+                                                                        AlarmCode: AlarmCode,
+                                                                        Type: 'Alarm'
+                                                                    }
+                                                                };
+                                                                // console.log(AllUser)
+
+
+                                                                SendPushNotification(PushNotificationdata, AllUser, objAppInfo[0]);
+                                                                // if (new Date(GPSDateTime) <= new Date()) {
+                                                                // io.sockets.emit('DeviceAlarm', JSON.stringify(objConnection));
+
+                                                                var objConnection1 = {
+                                                                    AlarmCode: AlarmCode.toString(),
+                                                                    DeviceId: DeviceId,
+                                                                    Datetime: objConnection.GPSDateTime,
+                                                                    Date: objConnection.Date,
+                                                                    Name: objVehicle.Name
+                                                                }
+
+                                                                client.get(DeviceId + "EmailNotificationSend", function(err, UserEmailStatus) {
+                                                                    // console.log("Redis Error ============================================================", err, UserEmailStatus)
+                                                                    if (!err) {
+                                                                        if (UserEmailStatus != null && UserEmailStatus != undefined && UserEmailStatus != '' && UserEmailStatus != 'null' && UserEmailStatus != 'undefined') {
+                                                                            if (UserEmailStatus == 'true') {
+                                                                                notifyMe(objConnection1)
+                                                                                var Emails = objAppInfo[0].email;
+                                                                                var body = '<p>Dear Valued Customer,</p>' +
+                                                                                    "<p>It&#39;s an information E-mail.</p>" +
+                                                                                    "<p>" + objConnection1.Message + "</p>" +
+                                                                                    "<p>Click on the below link to view vehicle alert live location: <br />" +
+                                                                                    "<a href='http://maps.google.com/maps?q=" + objConnection.Latitude + "," + objConnection.Longitude + "' target='_blank'>http://maps.google.com/maps?q=" + objConnection.Latitude + "," + objConnection.Longitude + "</a></p>" +
+                                                                                    "<p>Thanks</p>" +
+                                                                                    "<p>Sincerely,<br />" +
+                                                                                    objAppInfo[0].AppName + " Support Team</p>";
+
+                                                                                SystemEmail.findOne({ where: { IdApp: objAppInfo[0].idApp } }).then(function(objSystemEmail) {
+                                                                                    var mail = {
+                                                                                        from: objSystemEmail.DefaultEmailFrom,
+                                                                                        to: Emails,
+                                                                                        subject: objAppInfo[0].AppName + " " + objConnection1.title,
+                                                                                        html: body
+                                                                                    };
+                                                                                    SetsmtpConfig(objSystemEmail, mail, function(EmailSettingCreated) {
+                                                                                        // console.log("################################# Email ###########################################")
+                                                                                        // console.log(EmailSettingCreated)
+                                                                                    })
+                                                                                })
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                })
+
+                                                                // }
+
+                                                            }
+                                                        }
+                                                    }
+                                                });
+
+                                            });
+                                        })
+                                    }
+                                });
+
+                            });
+                        }
+                    }
+                });
+
+                //Vehical status (Idle minute check)
+                var IsVehicleStatusGet = false;
+                var IsVehicleStatusChange = false;
+                var IsLastVehicleStatusIdle = false;
+                var IsLastVehicleStatusMaintenance = false;
+                var LastVehicleStatusIdleunixtime = 0;
+                var LastVehicleStatus = 0;
+                client.get(DeviceId + "VehicleStatus1", function(err, strVehicleStatus) {
+                    if (!err) {
+                        if (strVehicleStatus != null && strVehicleStatus != undefined && strVehicleStatus != '' && strVehicleStatus != 'null' && strVehicleStatus != 'undefined') {
+                            IsVehicleStatusGet = true;
+                            var objVehicleStatus = JSON.parse(strVehicleStatus);
+                            if (objVehicleStatus.VehicleStatus != VehicleStatus) {
+                                IsVehicleStatusChange = true;
+                                LastVehicleStatus = objVehicleStatus.VehicleStatus;
+                                if (objVehicleStatus.IsLastVehicleStatusIdle == true) {
+                                    IsLastVehicleStatusIdle = true;
+                                    LastVehicleStatusIdleunixtime = objVehicleStatus.LastVehicleStatusIdleunixtime;
+
+                                }
+                            }
+                        }
+                    }
+
+                    if (IsVehicleStatusGet == false || IsVehicleStatusChange == true) {
+                        if (VehicleStatus == 2 && IsVehicleStatusGet == true) {
+
+                            if (IsLastVehicleStatusIdle == false) {
+                                var objnewVehicleStatus = {
+                                    VehicleStatus: LastVehicleStatus,
+                                    Date: objConnection.Date,
+                                    IsLastVehicleStatusIdle: true,
+                                    LastVehicleStatusIdleunixtime: objConnection.Date
+                                }
+                                client.set(DeviceId + "VehicleStatus1", JSON.stringify(objnewVehicleStatus), function(err, replies) {});
+                                VehicleStatus = LastVehicleStatus;
+
+                                if (ObjMyPinIdle[DeviceId] != null && ObjMyPinIdle[DeviceId] != undefined && ObjMyPinIdle[DeviceId] != '') {
+                                    ObjMyPinIdle[DeviceId].Alert = false;
+                                } else {
+                                    ObjMyPinIdle[DeviceId] = {
+                                        Alert: false
+                                    }
+                                }
+
+                            } else {
+                                var minute = 0;
+                                client.get(DeviceId + "IdleMinute", function(err, repliesMinute) {
+                                    if (repliesMinute != null && repliesMinute != undefined && repliesMinute != '' && repliesMinute != 'null' && repliesMinute != 'undefined') {
+                                        minute = parseInt(repliesMinute);
+                                    }
+
+                                    if ((objConnection.Date - LastVehicleStatusIdleunixtime) >= (minute * 60)) {
+                                        var objnewVehicleStatus = {
+                                            VehicleStatus: VehicleStatus,
+                                            Date: objConnection.Date,
+                                            IsLastVehicleStatusIdle: false,
+                                            LastVehicleStatusIdleunixtime: 0
+                                        }
+
+                                        client.set(DeviceId + "VehicleStatus1", JSON.stringify(objnewVehicleStatus), function(err, replies) {});
+
+                                        if (ObjMyPinIdle[DeviceId] != null && ObjMyPinIdle[DeviceId] != undefined && ObjMyPinIdle[DeviceId] != '') {
+                                            if (ObjMyPinIdle[DeviceId].Alert == false) {
+                                                ObjMyPinIdle[DeviceId].Alert = true;
+                                                UpdateIdleQuery();
+                                            }
+                                        } else {
+                                            ObjMyPinIdle[DeviceId] = {
+                                                Alert: true
+                                            }
+                                            UpdateIdleQuery();
+                                        }
+
+                                        function UpdateIdleQuery() {
+                                            var AlarmCode = 84;
+                                            var query = "INSERT INTO tblalarm (Datetime, Date, Latitude,Longitude,GPSPositioning,Speed,Direction,Status,DeviceId,AlarmCode,CreatedDate,FenceName ) VALUES ('" + objConnection.GPSDateTime + "', '" + objConnection.Date + "', '" + objConnection.Latitude + "', '" + objConnection.Longitude + "', '" + objConnection.Position + "', '" + objConnection.Speed + "', '" + objConnection.Direction + "', '" + objConnection.inputoutputSTatus + "', '" + DeviceId + "','" + AlarmCode + "','" + CurrentDate + "', '" + minute + " minute');";
+                                            connection.query(query, function(err, rows, fields) {
+                                                connection.query("SELECT id,Name,iduser,deviceid from tblvehicle where deviceid='" + DeviceId + "' and IsDelete=false", function(err, lstVehicle, fields) {
+                                                    if (!err && lstVehicle.length > 0) {
+                                                        var objVehicle = lstVehicle[0];
+                                                        connection.query("SELECT * from tblsharedevice where idVehicle=" + objVehicle.id + " and IsSharedUserNotification=true and IsNotification=true", function(err, lstShareUser, fields) {
+                                                            var lstAllUser = [objVehicle.iduser];
+                                                            var AllUser = objVehicle.iduser.toString();
+                                                            if (!err && lstShareUser.length > 0) {
+                                                                for (var i = 0; i < lstShareUser.length; i++) {
+                                                                    lstAllUser.push(lstShareUser[i].idUser)
+                                                                    AllUser = AllUser + ',' + lstShareUser[i].idUser;
+                                                                }
+                                                            }
+                                                            connection.query("SELECT tu.id,tu.idApp, tu.username,tu.email,tu.Notification, ta.AppName, ta.IOSCertificate, ta.IOSKey, ta.AndroidId, ta.AndroidSenderId FROM tbluserinformation as tu inner Join tblappinfo as ta ON ta.id = tu.idApp where tu.id=" + objVehicle.iduser, function(err, objAppInfo, fields) {
+
+                                                                for (var i = 0; i < lstAllUser.length; i++) {
+                                                                    var objConnectionAlarm = {
+                                                                        AlarmCode: AlarmCode.toString(),
+                                                                        DeviceId: DeviceId,
+                                                                        Datetime: objConnection.GPSDateTime,
+                                                                        Date: objConnection.Date,
+                                                                        IdUser: lstAllUser[i],
+                                                                        Name: objVehicle.Name
+                                                                    }
+                                                                    io.sockets.emit(lstAllUser[i] + 'DeviceAlarm', JSON.stringify(objConnectionAlarm));
+
+                                                                    var objPushnotificationCount = {
+                                                                        Id: rows.insertId,
+                                                                        Latitude: objConnection.Latitude,
+                                                                        Longitude: objConnection.Longitude,
+                                                                        GPSPositioning: objConnection.Position,
+                                                                        Speed: objConnection.Speed,
+                                                                        Direction: objConnection.Direction,
+                                                                        Status: objConnection.inputoutputSTatus,
+                                                                        AlarmCode: AlarmCode.toString(),
+                                                                        DeviceId: DeviceId,
+                                                                        CreatedDate: CurrentDate,
+                                                                        Datetime: objConnection.GPSDateTime,
+                                                                        Date: objConnection.Date,
+                                                                        FenceName: null,
+                                                                        UserId: lstAllUser[i],
+                                                                        IsRead: false,
+                                                                    }
+
+                                                                    io.sockets.emit(lstAllUser[i] + 'DeviceNotificationCount', JSON.stringify(objPushnotificationCount));
+                                                                }
+
+                                                                var Message = 'Vehicle ' + objVehicle.Name + ' Vehical Idle alert! Please check!';
+                                                                var soundname = 'Default';
+
+                                                                var PushNotificationdata = {
+                                                                    title: 'Alert',
+                                                                    message: Message,
+                                                                    // Fence: 'Default',
+                                                                    soundname: soundname,
+                                                                    otherfields: {
+                                                                        deviceid: DeviceId,
+                                                                        Id: objVehicle.id,
+                                                                        VehicleName: objVehicle.Name,
+                                                                        AlarmCode: AlarmCode,
+                                                                        Type: 'Alarm'
+                                                                    }
+                                                                };
+
+
+                                                                SendPushNotification(PushNotificationdata, AllUser, objAppInfo[0]);
+
+                                                                var objConnection1 = {
+                                                                    AlarmCode: AlarmCode.toString(),
+                                                                    DeviceId: DeviceId,
+                                                                    Datetime: objConnection.GPSDateTime,
+                                                                    Date: objConnection.Date,
+                                                                    Name: objVehicle.Name,
+                                                                    Time: minute
+                                                                }
+
+                                                                client.get(DeviceId + "EmailNotificationSend", function(err, UserEmailStatus) {
+                                                                    // console.log("Redis Error ============================================================", err, UserEmailStatus)
+                                                                    if (!err) {
+                                                                        if (UserEmailStatus != null && UserEmailStatus != undefined && UserEmailStatus != '' && UserEmailStatus != 'null' && UserEmailStatus != 'undefined') {
+                                                                            if (UserEmailStatus == 'true') {
+                                                                                notifyMe(objConnection1)
+                                                                                var Emails = objAppInfo[0].email;
+                                                                                var body = '<p>Dear Valued Customer,</p>' +
+                                                                                    "<p>It&#39;s an information E-mail.</p>" +
+                                                                                    "<p>" + objConnection1.Message + "</p>" +
+                                                                                    "<p>Click on the below link to view vehicle alert live location: <br />" +
+                                                                                    "<a href='http://maps.google.com/maps?q=" + objConnection.Latitude + "," + objConnection.Longitude + "' target='_blank'>http://maps.google.com/maps?q=" + objConnection.Latitude + "," + objConnection.Longitude + "</a></p>" +
+                                                                                    "<p>Thanks</p>" +
+                                                                                    "<p>Sincerely,<br />" +
+                                                                                    objAppInfo[0].AppName + " Support Team</p>";
+
+                                                                                SystemEmail.findOne({ where: { IdApp: objAppInfo[0].idApp } }).then(function(objSystemEmail) {
+                                                                                    var mail = {
+                                                                                        from: objSystemEmail.DefaultEmailFrom,
+                                                                                        to: Emails,
+                                                                                        subject: objAppInfo[0].AppName + " " + objConnection1.title,
+                                                                                        html: body
+                                                                                    };
+                                                                                    SetsmtpConfig(objSystemEmail, mail, function(EmailSettingCreated) {
+                                                                                        // console.log("################################# Email ###########################################")
+                                                                                        // console.log(EmailSettingCreated)
+                                                                                    })
+                                                                                })
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                })
+                                                            });
+                                                        })
+                                                    }
+                                                });
+                                            });
+                                        }
+                                    } else {
+                                        VehicleStatus = LastVehicleStatus;
+                                        if (ObjMyPinIdle[DeviceId] != null && ObjMyPinIdle[DeviceId] != undefined && ObjMyPinIdle[DeviceId] != '') {
+                                            ObjMyPinIdle[DeviceId].Alert = false;
+                                        } else {
+                                            ObjMyPinIdle[DeviceId] = {
+                                                Alert: false
+                                            }
+                                        }
+                                    }
+                                })
+                            }
+                        } else {
+                            var objnewVehicleStatus = {
+                                VehicleStatus: VehicleStatus,
+                                Date: objConnection.Date,
+                                IsLastVehicleStatusIdle: false,
+                                LastVehicleStatusIdleunixtime: 0
+                            }
+
+                            client.set(DeviceId + "VehicleStatus1", JSON.stringify(objnewVehicleStatus), function(err, replies) {});
+                            if (ObjMyPinIdle[DeviceId] != null && ObjMyPinIdle[DeviceId] != undefined && ObjMyPinIdle[DeviceId] != '') {
+                                ObjMyPinIdle[DeviceId].Alert = false;
+                            } else {
+                                ObjMyPinIdle[DeviceId] = {
+                                    Alert: false
+                                }
+                            }
+                        }
+                    }
+
+                });
+
+            }
+        }
+    });
+
+};
+
+//Command9999 - Alarm Command
+global.Command9999 = function(line, Callback) {
+    console.log("Alarm Data = " + line);
+    try {
+        //Server Reconnet If Disconneted
+        if (connection.state == 'disconnected') {
+            global.connection = mysql.createConnection({
+                host: MysqlHost,
+                user: Mysqluser,
+                password: Mysqlpassword,
+                database: Mysqldatabase,
+                multipleStatements: true
+            });
+        }
+        // var line = req.query.Code;
+        // console.log("muyyyyy", line);
+        var DeviceId = line.substring(8, 22);
+        var AlarmCode = line.substring(26, 28);
+        var GPSData = hex2a(line.substring(28, (line.length - 8)));
+        var lstGPSAllData = GPSData.split('|');
+
+        var lstLocationData = lstGPSAllData[0].split(',');
+
+
+        var Date1 = lstLocationData[8];
+        var Position = lstLocationData[1];
+        var Lat = lstLocationData[2];
+        var LatDirection = lstLocationData[3];
+        var Lan = lstLocationData[4];
+        var LanDirection = lstLocationData[5];
+        var Speed = (parseFloat(lstLocationData[6]) * 1.852);
+        var Time = lstLocationData[0];
+        var Direction = lstLocationData[7];
+
+        var HDOP = lstGPSAllData[1];
+        var altitude = lstGPSAllData[2];
+        var inputoutputSTatus = lstGPSAllData[3];
+        var lstAD = lstGPSAllData[4].split(',')
+        var AD1 = lstAD[0];
+        var AD2 = lstAD[1];
+        var Odometer = lstGPSAllData[5];
+        var RFID = lstGPSAllData[6];
+
+
+        var day = parseInt(Date1.substring(0, 2));
+        var month = parseInt(Date1.substring(2, 4));
+        var year = parseInt("20" + Date1.substring(4, 6));
+        var hour = parseInt(Time.substring(0, 2));
+        var min = parseInt(Time.substring(2, 4));
+        var sec = parseInt(Time.substring(4, 6));
+
+        // // var GPSDateTime = Date.UTC(year, month, day, hour, min, sec);
+        var GPSDateTime = year + "-" + month + "-" + day + " " + hour + ":" + min + ":" + sec;
+        var GPSDate = year + "-" + month + "-" + day;
+        var CurrentDate = GetCurrentDate();
+        var convertDate = convertdateformat(GPSDateTime);
+        var unixDateStemp = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
+        var Latitude = global.deg_to_lat_long(Lat, LatDirection);
+        var Longitude = global.deg_to_lat_long(Lan, LanDirection);
+
+        var Status = '0';
+        var Sign = '0';
+        var ReserveSection = '0';
+        var IsAdvanture = false;
+
+        // console.log(Latitude)
+        // console.log(Longitude)
+        // console.log(GPSDateTime)
+        if (AlarmCode != '81') {
+            var query = "INSERT INTO tblalarm (Datetime, Date, Latitude,Longitude,GPSPositioning,Speed,Direction,Status,DeviceId,AlarmCode,CreatedDate ) VALUES ('" + GPSDateTime + "', '" + unixDateStemp + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + inputoutputSTatus + "', '" + DeviceId + "','" + AlarmCode + "','" + CurrentDate + "');";
+            connection.query(query, function(err, rows, fields) {
+
+
+                connection.query("SELECT id,Name,iduser,deviceid from tblvehicle where deviceid=" + DeviceId + " and IsDelete=false", function(err, lstVehicle, fields) {
+                    if (!err && lstVehicle.length > 0) {
+                        var objVehicle = lstVehicle[0];
+                        connection.query("SELECT * from tblsharedevice where idVehicle=" + objVehicle.id + " and IsSharedUserNotification=true and IsNotification=true", function(err, lstShareUser, fields) {
+                            var lstAllUser = [objVehicle.iduser];
+                            var AllUser = objVehicle.iduser.toString();
+                            if (!err && lstShareUser.length > 0) {
+                                for (var i = 0; i < lstShareUser.length; i++) {
+                                    lstAllUser.push(lstShareUser[i].idUser)
+                                    AllUser = AllUser + ',' + lstShareUser[i].idUser;
+                                }
+                            }
+                            connection.query("SELECT tu.id,tu.idApp, tu.username,tu.email,tu.Notification, ta.AppName, ta.IOSCertificate, ta.IOSKey, ta.AndroidId, ta.AndroidSenderId FROM tbluserinformation as tu inner Join tblappinfo as ta ON ta.id = tu.idApp where tu.id=" + objVehicle.iduser, function(err, objAppInfo, fields) {
+
+                                var Message = "";
+                                var soundname = "";
+
+                                if (AlarmCode == '04') {
+                                    Message = 'Vehicle ' + objVehicle.Name + ' Engine ON alert! Please check!';
+                                    soundname = 'Default';
+                                } else if (AlarmCode == '03') {
+                                    Message = 'Vehicle ' + objVehicle.Name + ' Door Open alert! Please check!';
+                                    soundname = 'Default';
+                                } else if (AlarmCode == '10') {
+                                    Message = 'Vehicle ' + objVehicle.Name + ' Low Bettry alert! Please check!';
+                                    soundname = 'Default';
+                                } else if (AlarmCode == '11') {
+                                    Message = 'Vehicle ' + objVehicle.Name + ' Max Speed alert! Please check!';
+                                    soundname = 'Default';
+                                } else if (AlarmCode == '12') {
+                                    Message = 'Vehicle ' + objVehicle.Name + ' Movement alert! Please check!';
+                                    soundname = 'Default';
+                                } else if (AlarmCode == '30') {
+                                    Message = 'Vehicle ' + objVehicle.Name + ' Vibration alert! Please check!';
+                                    soundname = 'Default';
+                                } else if (AlarmCode == '50') {
+                                    Message = 'Vehicle ' + objVehicle.Name + ' External Power Cut alert! Please check!';
+                                    soundname = 'sound50';
+                                } else if (AlarmCode == '05') {
+                                    Message = 'Vehicle ' + objVehicle.Name + ' Original Triggering alert! Please check!';
+                                    soundname = 'Default';
+                                } else if (AlarmCode == '02') {
+                                    Message = 'Vehicle ' + objVehicle.Name + ' Line Broken alert! Please check!';
+                                    soundname = 'Default';
+                                } else if (AlarmCode == '52') {
+                                    Message = 'Vehicle ' + objVehicle.Name + ' Veer Report alert! Please check!';
+                                    soundname = 'Default';
+                                } else if (AlarmCode == '60') {
+                                    Message = 'Vehicle ' + objVehicle.Name + ' Fuel Driving alert! Please check!';
+                                    soundname = 'Default';
+                                } else if (AlarmCode == '71') {
+                                    Message = 'Vehicle ' + objVehicle.Name + ' Crash alert! Please check!';
+                                    soundname = 'Default';
+                                } else if (AlarmCode == '72') {
+                                    Message = 'Vehicle ' + objVehicle.Name + ' Acceleration alert! Please check!';
+                                    soundname = 'Default';
+                                } else if (AlarmCode == '81') {
+                                    Message = 'Vehicle ' + objVehicle.Name + ' Fuel Loss alert! Please check!';
+                                    soundname = 'Default';
+                                } else {
+                                    soundname = 'Default';
+                                }
+
+                                var PushNotificationdata = {
+                                    title: 'Alert',
+                                    message: Message,
+                                    // Fence: 'Default',
+                                    soundname: soundname,
+                                    otherfields: {
+                                        deviceid: DeviceId,
+                                        Id: objVehicle.id,
+                                        VehicleName: objVehicle.Name,
+                                        AlarmCode: AlarmCode,
+                                        Type: 'Alarm'
+                                    }
+                                };
+                                // console.log(AllUser)
+                                SendPushNotification(PushNotificationdata, AllUser, objAppInfo[0]);
+                                // if (new Date(GPSDateTime) <= new Date()) {
+                                // io.sockets.emit('DeviceAlarm', JSON.stringify(objConnection));
+                                for (var i = 0; i < lstAllUser.length; i++) {
+                                    var objConnection = {
+                                        AlarmCode: AlarmCode.toString(),
+                                        DeviceId: DeviceId,
+                                        Datetime: GPSDateTime,
+                                        Date: unixDateStemp,
+                                        IdUser: lstAllUser[i],
+                                        Name: objVehicle.Name
+                                    }
+
+                                    io.sockets.emit(lstAllUser[i] + 'DeviceAlarm', JSON.stringify(objConnection));
+
+                                    var objPushnotificationCount = {
+                                        Id: rows.insertId,
+                                        Latitude: Latitude,
+                                        Longitude: Longitude,
+                                        GPSPositioning: Position,
+                                        Speed: Speed,
+                                        Direction: Direction,
+                                        Status: inputoutputSTatus,
+                                        AlarmCode: AlarmCode.toString(),
+                                        DeviceId: DeviceId,
+                                        CreatedDate: CurrentDate,
+                                        Datetime: GPSDateTime,
+                                        Date: unixDateStemp,
+                                        FenceName: null,
+                                        UserId: lstAllUser[i],
+                                        IsRead: false,
+                                        // Name: objVehicle.Name
+                                    }
+
+                                    io.sockets.emit(lstAllUser[i] + 'DeviceNotificationCount', JSON.stringify(objPushnotificationCount));
+                                }
+
+                                var objConnection1 = {
+                                    AlarmCode: AlarmCode.toString(),
+                                    DeviceId: DeviceId,
+                                    Datetime: GPSDateTime,
+                                    Date: unixDateStemp,
+                                    Name: objVehicle.Name
+                                }
+
+                                client.get(DeviceId + "EmailNotificationSend", function(err, UserEmailStatus) {
+                                        // console.log("Redis Error ============================================================", err, UserEmailStatus)
+                                        if (!err) {
+                                            if (UserEmailStatus != null && UserEmailStatus != undefined && UserEmailStatus != '' && UserEmailStatus != 'null' && UserEmailStatus != 'undefined') {
+                                                if (UserEmailStatus == 'true') {
+                                                    notifyMe(objConnection1)
+                                                    var Emails = objAppInfo[0].email;
+                                                    var body = '<p>Dear Valued Customer,</p>' +
+                                                        "<p>It&#39;s an information E-mail.</p>" +
+                                                        "<p>" + objConnection1.Message + "</p>" +
+                                                        "<p>Click on the below link to view vehicle alert live location: <br />" +
+                                                        "<a href='http://maps.google.com/maps?q=" + Latitude + "," + Longitude + "' target='_blank'>http://maps.google.com/maps?q=" + Latitude + "," + Longitude + "</a></p>" +
+                                                        "<p>Thanks</p>" +
+                                                        "<p>Sincerely,<br />" +
+                                                        objAppInfo[0].AppName + " Support Team</p>";
+
+                                                    console.log(Emails)
+                                                    console.log(body)
+                                                    SystemEmail.findOne({ where: { IdApp: objAppInfo[0].idApp } }).then(function(objSystemEmail) {
+                                                        var mail = {
+                                                            from: objSystemEmail.DefaultEmailFrom,
+                                                            to: Emails,
+                                                            subject: objAppInfo[0].AppName + " " + objConnection1.title,
+                                                            html: body
+                                                        };
+                                                        SetsmtpConfig(objSystemEmail, mail, function(EmailSettingCreated) {
+                                                            // console.log("################################# Email ###########################################")
+                                                            // console.log(EmailSettingCreated)
+                                                        })
+                                                    })
+                                                }
+                                            }
+                                        }
+                                    })
+                                    // }
+
+                            });
+                        })
+                    }
+                });
+
+
+            });
+        }
+    } catch (ex) {
+        console.log("Error Alarm Data = " + line);
+    }
+};
+
+// send email notification for Alarm
+global.SendEmailNotification = function(objConnection) {
+    client.get(objConnection.DeviceId + "EmailNotificationSend", function(err, UserEmailStatus) {
+        if (!err) {
+            if (UserEmailStatus != null && UserEmailStatus != undefined && UserEmailStatus != '' && UserEmailStatus != 'null' && UserEmailStatus != 'undefined') {
+                if (UserEmailStatus == 'true') {
+                    connection.query("SELECT tu.id,tu.idApp, tu.username,tu.email,tu.Notification, ta.AppName, ta.IOSCertificate, ta.IOSKey, ta.AndroidId, ta.AndroidSenderId FROM tbluserinformation as tu inner Join tblappinfo as ta ON ta.id = tu.idApp where tu.id=" + objConnection.UserId, function(err, objAppInfo, fields) {
+                        notifyMe(objConnection)
+                        var Emails = objAppInfo[0].email;
+                        var body = '<p>Dear Valued Customer,</p>' +
+                            "<p>It&#39;s an information E-mail.</p>" +
+                            "<p>" + objConnection.Message + "</p>" +
+                            "<p>Click on the below link to view vehicle alert live location: <br />" +
+                            "<a href='http://maps.google.com/maps?q=" + objConnection.Latitude + "," + objConnection.Longitude + "' target='_blank'>http://maps.google.com/maps?q=" + objConnection.Latitude + "," + objConnection.Longitude + "</a></p>" +
+                            "<p>Thanks</p>" +
+                            "<p>Sincerely,<br />" +
+                            objAppInfo[0].AppName + " Support Team</p>";
+
+                        SystemEmail.findOne({ where: { IdApp: objAppInfo[0].idApp } }).then(function(objSystemEmail) {
+                            var mail = {
+                                from: objSystemEmail.DefaultEmailFrom,
+                                to: Emails,
+                                subject: objAppInfo[0].AppName + " " + objConnection.title,
+                                html: body
+                            };
+                            SetsmtpConfig(objSystemEmail, mail, function(EmailSettingCreated) {
+                                // console.log("################################# Email ###########################################")
+                                // console.log(EmailSettingCreated)
+                            })
+                        })
+                    });
+                }
+            }
+        }
+    })
+}
+
+function notifyMe(o) {
+    var title = '';
+    var Message = '';
+    if (o.AlarmCode == '04') {
+        title = 'Vehicle ' + o.Name + ' Speed alert';
+        Message = "We would like to inform you that your vehicle " + o.Name + " reached over speed."
+    } else if (o.AlarmCode == '03') {
+        title = 'Vehicle ' + o.Name + ' Door open alert';
+        Message = "We would like to notify you that a Door open alert was detected on your vehicle " + o.Name + ".";
+    } else if (o.AlarmCode == '10') {
+        title = 'Vehicle ' + o.Name + ' Low battery alert';
+        Message = "We would like to notify you that a Low battery alert was detected on your vehicle " + o.Name + ".";
+    } else if (o.AlarmCode == '11') {
+        title = 'Vehicle ' + o.Name + ' Max Speed alert';
+        Message = "We would like to inform you that your vehicle " + o.Name + " reached max speed."
+    } else if (o.AlarmCode == '12') {
+        title = 'Vehicle ' + o.Name + ' Movement watch alert';
+        Message = "We would like to notify you that a Movement alert was detected on your vehicle " + o.Name + ".";
+    } else if (o.AlarmCode == '6') {
+        title = 'Vehicle ' + o.Name + ' Fence alert';
+        Message = "We would like to inform you that your vehicle " + o.Name + " is " + o.FenceName + " Fence IN.";
+    } else if (o.AlarmCode == '66') {
+        title = 'Vehicle ' + o.Name + ' Fence alert';
+        Message = "We would like to inform you that your vehicle " + o.Name + " is " + o.FenceName + " Fence OUT."
+    } else if (o.AlarmCode == '30') {
+        title = 'Vehicle ' + o.Name + ' Vibration alert';
+        Message = "We would like to notify you that a Vibration alert was detected on your vehicle " + o.Name + ".";
+    } else if (o.AlarmCode == '50') {
+        title = 'Vehicle ' + o.Name + ' External power cut alert';
+        Message = "We would like to notify you that an External power cut alert was detected on your vehicle " + o.Name + ".";
+    } else if (o.AlarmCode == '05') {
+        title = 'Vehicle ' + o.Name + ' Original triggering alert';
+        Message = "We would like to notify you that an Original triggering alert was detected on your vehicle " + o.Name + ".";
+    } else if (o.AlarmCode == '02') {
+        title = 'Vehicle ' + o.Name + ' Line broken alert';
+        Message = "We would like to notify you that a Line broken alert was detected on your vehicle " + o.Name + ".";
+    } else if (o.AlarmCode == '52') {
+        title = 'Vehicle ' + o.Name + ' Veer report alert';
+        Message = "We would like to notify you that a Veer report alert was detected on your vehicle " + o.Name + ".";
+    } else if (o.AlarmCode == '60') {
+        title = 'Vehicle ' + o.Name + ' Fuel driving alert';
+        Message = "We would like to notify you that a Fuel driving alert was detected on your vehicle " + o.Name + ".";
+    } else if (o.AlarmCode == '71') {
+        title = 'Vehicle ' + o.Name + ' Crash alert';
+        Message = "We would like to notify you that a Crash alert was detected on your vehicle " + o.Name + ".";
+    } else if (o.AlarmCode == '72') {
+        title = 'Vehicle ' + o.Name + ' Acceleration alert';
+        Message = "We would like to notify you that an Acceleration alert was detected on your vehicle " + o.Name + ".";
+    } else if (o.AlarmCode == '81') {
+        title = 'Vehicle ' + o.Name + ' Fuel theft  alert';
+        Message = "We would like to notify you that a Fuel theft alert was detected on your vehicle " + o.Name + ".";
+    } else if (o.AlarmCode == '04') {
+        title = 'Vehicle ' + o.Name + ' Engine ON alert';
+        Message = "We would like to notify you that an Engine ON alert was detected on your vehicle " + o.Name + ".";
+    } else if (o.AlarmCode == '08') {
+        title = 'Vehicle ' + o.Name + ' Ignition alert';
+        Message = "We would like to notify you that an Ignition ON alert was detected on your vehicle " + o.Name + ".";
+    } else if (o.AlarmCode == '07') {
+        title = 'Vehicle ' + o.Name + ' Ignition  alert';
+        Message = "We would like to notify you that an Ignition Off alert was detected on your vehicle " + o.Name + ".";
+    } else if (o.AlarmCode == '84') {
+        title = 'Vehicle ' + o.Name + ' Idle  alert';
+        Message = "We would like to notify you that your vehicle " + o.Name + " is Idle from last " + o.Time + " minute.";
+    }
+    o.title = title;
+    o.Message = Message;
+}
+
+//Command9901 - CAN-BUS Command
+global.Command9901 = function(objCanbusData, Callback) {
+    io.sockets.emit(objCanbusData.DeviceId + 'canbusdata', JSON.stringify(objCanbusData));
+};
+
+//Command9902 -  Driving Behavior Command
+global.Command9902 = function(objDrivingData, Callback) {
+    io.sockets.emit(objDrivingData.DeviceId + 'drivingdata', JSON.stringify(objDrivingData));
+};
+
 
 //Send Speed Data
 router.get('/SendSpeedData', function(req, res) {

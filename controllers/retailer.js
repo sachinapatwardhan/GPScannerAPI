@@ -388,7 +388,6 @@
                 ]
             })
             .then(function(rDeviceAgentRetailer) {
-                // console.log("************************", rDeviceAgentRetailer)
                 if (!rDeviceAgentRetailer) {
                     var err = new Error('GPS device not found.');
                     err.name = 'BugzError';
@@ -410,10 +409,12 @@
                                 lastModifiedDatetime: moment()
                             });
                         }).then(function(rDeviceAgentRetailer) {
-
+                            var CountryId = null;
                             User.findOne({ where: { id: req.body.retailerId } }).then(function(userexits) {
                                     GPSDevice.findOne({ where: { DeviceId: objVehicle.deviceid } }).then(function(GPSDevicefound) {
                                         if (GPSDevicefound) {
+                                            CountryId = GPSDevicefound.CountryId;
+                                            objVehicle.DeviceType = GPSDevicefound.Type;
                                             GPSDevicefound.updateAttributes({ idSim: req.body.idSim }).then(function(GPSDeviceupdated) {
                                                 if (GPSDeviceupdated) {
                                                     funAuditLog.CreateAuditLog('update idSim GPSDevice ', userexits.username, 'update idSim GPSDevice (DeviceId:' + GPSDevicefound.DeviceId + ') throgth Device activation ');
@@ -467,6 +468,13 @@
                                                     objVehicle.renewaldate = LicenceNores.data.ExpiryDate;
                                                     Vehicle.create(objVehicle).then(function(vehicleCreated) {
                                                         if (vehicleCreated) {
+                                                            if (CountryId != 30 && objVehicle.DeviceType == 'MT05') {
+                                                                var CurrentDate = GetCurrentDate();
+                                                                var query = "INSERT INTO tbldeviceaccvalueset (DeviceId,CreatedDate ) VALUES ('" + objVehicle.deviceid + "', '" + CurrentDate + "');";
+                                                                connectionbikedata.query(query, function(err, rows, fields) {
+
+                                                                });
+                                                            }
                                                             Commonfunction.UpdateVehicleRedis(objVehicle.deviceid);
                                                             funAuditLog.CreateAuditLog('Create Vehicle through device Activation', userexits.username, 'Save Vehicle (DeviceId:' + vehicleCreated.deviceid + ') through device Activation');
                                                             callActiveDevice()
@@ -560,5 +568,18 @@
         });
     });
 
+    function GetCurrentDate() {
+        var today = new Date();
+
+        var sec = today.getUTCSeconds();
+        var min = today.getUTCMinutes();
+        var hour = today.getUTCHours();
+
+        var year = today.getUTCFullYear();
+        var month = today.getUTCMonth() + 1; // beware: January = 0; February = 1, etc.
+        var day = today.getUTCDate();
+
+        return year + "-" + month + "-" + day + " " + hour + ":" + min + ":" + sec;
+    }
     module.exports = router;
 })();

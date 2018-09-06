@@ -7,17 +7,81 @@ router.get('/SetfullfuelPoint', function(req, res) {
     var DeviceId = req.query.deviceid; //'52852852852852';
     client.get(DeviceId, function(err, strgpsdata) {
         var AD1 = 0;
+        var GPSDate = 0;
         if (!err) {
             if (strgpsdata != null & strgpsdata != '' && strgpsdata != undefined) {
                 var objgps = JSON.parse(strgpsdata);
                 if (objgps.AD1 != null && objgps.AD1 != undefined && objgps.AD1 != '') {
                     AD1 = parseInt(objgps.AD1, 16);
                 }
+                GPSDate = objgps.Date;
             }
         }
-        res.json(AD1);
+        var obj = {
+            AD1: AD1,
+            GPSDate: GPSDate
+        }
+        res.json(obj);
     })
 })
+
+router.get('/GetVehicleDetail', function(req, res) {
+    connection.query("SELECT * from tblvehicle where deviceid='" + req.query.DeviceId + "' and IsDelete = false;", function(err, rows, fields) {
+        if (!err && rows.length > 0) {
+            var obj = new Object();
+            obj.id = rows[0].id;
+            obj.iduser = rows[0].iduser;
+            obj.Name = rows[0].Name;
+            obj.deviceid = rows[0].deviceid;
+            obj.IsOnline = rows[0].IsOnline;
+            obj.DeviceType = rows[0].DeviceType;
+            obj.DeviceCompany = rows[0].DeviceCompany;
+            obj.VehicleType = rows[0].VehicleType;
+            client.get(req.query.DeviceId, function(err, strgpsdata) {
+                if (!err) {
+                    if (strgpsdata != null & strgpsdata != '' && strgpsdata != undefined) {
+                        var objgps = JSON.parse(strgpsdata);
+                        obj.IsEngine = objgps.IsEngine;
+                        obj.Latitude = objgps.Latitude;
+                        obj.Longitude = objgps.Longitude;
+                        obj.Date = objgps.Date;
+                        obj.Speed = objgps.Speed;
+                        obj.Direction = objgps.Direction;
+                        obj.OdoMeter = objgps.OdoMeter;
+                        obj.AD1 = objgps.AD1;
+                        obj.AD2 = objgps.AD2;
+                        obj.IsWiringForAntiTamper = objgps.IsWiringForAntiTamper;
+
+                    } else {
+                        obj.IsEngine = null;
+                        obj.Latitude = null;
+                        obj.Longitude = null;
+                        obj.Date = null;
+                        obj.Speed = null;
+                        obj.Direction = null;
+                        obj.OdoMeter = null;
+                        obj.AD1 = 0;
+                        obj.AD2 = 0;
+                    }
+                } else {
+                    obj.IsEngine = null;
+                    obj.Latitude = null;
+                    obj.Longitude = null;
+                    obj.Date = null;
+                    obj.Speed = null;
+                    obj.Direction = null;
+                    obj.OdoMeter = null;
+                    obj.AD1 = 0;
+                    obj.AD2 = 0;
+                }
+                res.json({ success: true, data: obj });
+            });
+
+        } else {
+            res.json({ success: false, data: null });
+        }
+    });
+});
 
 router.get('/SetVehicleFuelData', function(req, res) {
     var fullfuelpoint = 0;

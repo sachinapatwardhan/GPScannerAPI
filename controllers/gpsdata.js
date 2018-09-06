@@ -5316,14 +5316,12 @@ router.get('/ExportDriverReportNew', function(req, res) {
 
 function getGeocodeGenrate(lat, long, callback) {
     var Address = "No Address Found";
-    geocoder.reverse({ lat: lat, lon: long }, function(err, res) {
-
-        if (res != null) {
-            Address = res[0].formattedAddress;
+    Commonfunction.GetAddressLatLong(lat, long, function(resAddress) {
+        if (resAddress != '') {
+            Address = resAddress;
         }
-
         return callback(Address);
-    })
+    });
 }
 
 
@@ -5514,16 +5512,16 @@ router.get('/DeleteAccount', function(req, res) {
                         },
                         defaults: obj
                     }).then(function(CashCreate) {
-                        if (CashCreate) {
+                        if (CashCreate[1]) {
                             funAuditLog.CreateAuditLog('Delete Account', decoded.username, 'Save GpsDeleteCash data Userid: (' + obj.idUser + ')');
                             res.json({
                                 success: true,
-                                message: "Account Deleted Successfully",
+                                message: "Your account deletion is under process. We will notify you over email.",
                             })
                         } else {
                             res.json({
                                 success: false,
-                                message: "Account not Deleted Successfully",
+                                message: "You have already requested for account termination. It is under process. Please wait, you will be notified via email.",
                             })
                         }
 

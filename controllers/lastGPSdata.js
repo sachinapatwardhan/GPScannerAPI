@@ -39,6 +39,11 @@ router.get('/getlastgpsdata', function(req, res) {
                             objfinaldata.Position = lstlastrecord.Position;
                             objfinaldata.Direction = lstlastrecord.Direction;
                             objfinaldata.EngineStatus = lstlastrecord.IsEngine;
+                            if (lstlastrecord.OdoMeter != null && lstlastrecord.OdoMeter != undefined) {
+                                objfinaldata.OdoMeter = Math.floor(parseInt(lstlastrecord.OdoMeter) / 1000);
+                            } else {
+                                objfinaldata.OdoMeter = 0;
+                            }
                             finaldata = objfinaldata;
                         }
 

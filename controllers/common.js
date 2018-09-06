@@ -1,5 +1,14 @@
 var redis = require('redis');
 var mysql = require('mysql');
+var request = require('request');
+var NodeGeocoder = require('node-geocoder');
+var options = {
+    provider: 'google',
+    httpAdapter: 'https', // Default
+    apiKey: 'AIzaSyAzzv0uzTJsDnsxVoBKYg1xNn8bCBrMErM', // for Mapquest, OpenCage, Google Premier
+    formatter: null // 'gpx', 'string', ...
+};
+var geocoder = NodeGeocoder(options);
 var MysqlConnection;
 if (process.env.IsProduction == true || process.env.IsProduction == "true") {
     var RedisClient = redis.createClient({
@@ -206,8 +215,84 @@ function mysqlConnectionSetup() {
     }
 }
 
+function GetAddressLatLong(Latitude, Longitude, CallBack) {
+    if (process.env.GeocodingService == 'google') {
+        geocoder.reverse({ lat: Latitude, lon: Longitude }, function(err, res) {
+            if (!err || res != null) {
+                if (res.length > 0) {
+                    return CallBack(res[0].formattedAddress);
+                } else {
+                    return CallBack('');
+                }
+            } else {
+                return CallBack('');
+            }
+        });
+    } else {
+        var lat = Latitude;
+        var lon = Longitude;
+        var url = 'https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=' + lat + '&lon=' + lon;
+        request.get(url, function(err, response, data) {
+            if (!err) {
+                try {
+                    data = JSON.parse(data);
+                    return CallBack(data.display_name);
+                } catch (ex) {
+                    return CallBack('');
+                }
+            } else {
+                return CallBack('');
+            }
+        });
+    }
+}
+
+function GetLatLongAddress(Address, CallBack) {
+    if (process.env.GeocodingService == 'google') {
+        geocoder.geocode(Address, function(err, res) {
+            if (!err || res != null) {
+                if (res.length > 0) {
+                    var obj = new Object();
+                    obj.Lat = res[0].latitude;
+                    obj.Lang = res[0].longitude;
+                    return CallBack(obj);
+                } else {
+                    return CallBack(null);
+                }
+            } else {
+                return CallBack(null);
+            }
+        });
+    } else {
+        var Address = Address;
+        var url = 'https://nominatim.openstreetmap.org/search.php?q=' + Address + '&format=jsonv2';
+        request.get(url, function(err, response, data) {
+            if (!err) {
+                try {
+                    data = JSON.parse(data);
+                    if (data.length > 0) {
+                        var obj = {
+                            Lat: parseFloat(data[0].lat),
+                            Lang: parseFloat(data[0].lon),
+                        }
+                        return CallBack(obj);
+                    } else {
+                        return CallBack(null);
+                    }
+                } catch (ex) {
+                    return CallBack(null);
+                }
+            } else {
+                return CallBack(null);
+            }
+        });
+    }
+}
+
 module.exports = {
     UpdateVehicleRedis: UpdateVehicleRedis,
     DeleteVehicleRedis: DeleteVehicleRedis,
-    UpdateAppInfoRedis: UpdateAppInfoRedis
+    UpdateAppInfoRedis: UpdateAppInfoRedis,
+    GetAddressLatLong: GetAddressLatLong,
+    GetLatLongAddress: GetLatLongAddress
 }

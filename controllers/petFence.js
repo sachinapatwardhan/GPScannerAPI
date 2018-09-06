@@ -651,6 +651,7 @@ router.post('/SaveFenceById', jsonParser, function(req, res) {
             }
         }).then(function(resFence) {
             Commonfunction.UpdateVehicleRedis(objFence.deviceId, 'Fence');
+            var IsPetInFence = true;
             // var IsPetInFence = true;
             // PetGPS.findOne({
             //     where: {

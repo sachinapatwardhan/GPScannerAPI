@@ -9,7 +9,25 @@ var Role = models.tblrole;
 var UserInRole = models.tbluserinrole;
 var AuditLog = models.tblauditlog;
 var EmailSetting = models.tblemailsettingsys;
+var WebCashconfig = require('./../config/webcash.json');
+var Commonfunction = require('./common.js');
 //End of Tables
+
+router.get('/GetAddressLatLong', function(req, res) {
+    var Lat = req.query.Lat;
+    var Lng = req.query.Lng;
+    Commonfunction.GetAddressLatLong(Lat, Lng, function(response) {
+        res.json(response)
+    })
+})
+
+
+router.get('/GetLatLongAddress', function(req, res) {
+    var Address = req.query.Address;
+    Commonfunction.GetLatLongAddress(Address, function(response) {
+        res.json(response)
+    })
+})
 
 //Global Message
 global.NoAccessPermission = {
@@ -17,7 +35,6 @@ global.NoAccessPermission = {
     message: "No Access Permission...",
     data: "AccessPermission"
 };
-
 
 global.InvalidToken = {
     success: false,
@@ -36,6 +53,21 @@ global.RecordNotFound = {
 //End of Global Message
 
 var https = require('https');
+
+router.get('/GetAddressLatLong', function(req, res) {
+    var Lat = req.query.Lat;
+    var Lng = req.query.Lng;
+    Commonfunction.GetAddressLatLong(Lat, Lng, function(response) {
+        res.json(response)
+    })
+})
+
+router.get('/GetLatLongAddress', function(req, res) {
+    var Address = req.query.Address;
+    Commonfunction.GetLatLongAddress(Address, function(response) {
+        res.json(response)
+    })
+})
 
 router.get('/GetGeoCodingServiceProvider', function(req, res) {
     // var ServiceProvider = 'google';
@@ -88,6 +120,13 @@ router.get('/SendOTP', function(req, res) {
         });
     });
 });
+
+router.get('/GetDirectionSpeedByAppName', function(req, res) {
+    res.json({
+        Speed: 5,
+        Direction: 30
+    });
+})
 
 router.post('/Getlocations', jsonParser, function(req, res) {
     console.log(req.body)
@@ -156,9 +195,9 @@ router.get('/GetDirectionSpeedByAppName', function(req, res) {
 
 router.get('/GetWebcashCredential', function(req, res) {
     res.json({
-        MID: '80000155',
-        MKey: '123456',
-        MURL: 'https://staging.webcash.com.my/wcgatewayinit.php'
+        MID: WebCashconfig.WebCash.MerchantID,
+        MKey: WebCashconfig.WebCash.MerchantKey,
+        MURL: WebCashconfig.WebCash.MUrl
     });
 });
 

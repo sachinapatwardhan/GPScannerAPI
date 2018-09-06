@@ -1607,6 +1607,7 @@ router.post('/SaveOrderService', jsonParser, function(req, res) {
                                         objVehicle.Name = objOrderservice.Name;
                                         objVehicle.idType = objOrderservice.idType;
                                         objVehicle.renewaldate = AddDate(objVehicle.CreatedDate, 1, "Year");
+                                        objVehicle.DeviceType = DeviceExist.Type;
                                         Vehicle.findOne({
                                             where: {
                                                 deviceid: objVehicle.deviceid,
@@ -1635,6 +1636,11 @@ router.post('/SaveOrderService', jsonParser, function(req, res) {
                                             } else {
                                                 Vehicle.create(objVehicle).then(function(vehicleCreated) {
                                                     if (vehicleCreated) {
+                                                        if (DeviceExist.CountryId != 30 && objVehicle.DeviceType == 'MT05') {
+                                                            var CurrentDate = GetCurrentDate();
+                                                            var query = "INSERT INTO tbldeviceaccvalueset (DeviceId,CreatedDate ) VALUES ('" + objVehicle.deviceid + "', '" + CurrentDate + "');";
+                                                            connectionbikedata.query(query, function(err, rows, fields) {});
+                                                        }
                                                         Commonfunction.UpdateVehicleRedis(objVehicle.deviceid);
                                                         funAuditLog.CreateAuditLog('Create Vehicle through Create Oder service', UserExist.username, 'Save Vehicle Type through Create Oder service / DeviceID (' + vehicleCreated.deviceid + ')');
                                                     }
@@ -1764,6 +1770,20 @@ function ExpireWalletTransaction() {
             }
         });
     } catch (err) {}
+}
+
+function GetCurrentDate() {
+    var today = new Date();
+
+    var sec = today.getUTCSeconds();
+    var min = today.getUTCMinutes();
+    var hour = today.getUTCHours();
+
+    var year = today.getUTCFullYear();
+    var month = today.getUTCMonth() + 1; // beware: January = 0; February = 1, etc.
+    var day = today.getUTCDate();
+
+    return year + "-" + month + "-" + day + " " + hour + ":" + min + ":" + sec;
 }
 
 module.exports = router

@@ -19,6 +19,31 @@ module.exports = function(sequelize, DataTypes) {
     CreatedDate: {
       type: DataTypes.DATE,
       allowNull: true
+    },
+    range: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    status: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true
+    },
+    lat: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    lng: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    fencedraw: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    IsFenceOnline: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+      defaultValue: '1'
     }
   }, {
     tableName: 'tbladvancefence'
