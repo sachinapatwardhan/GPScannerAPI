@@ -10,98 +10,98 @@ var Setting = models.tblsetting;
 var SystemEmail = models.tblemailsettingsys;
 var EmailTemplate = models.tblemailtemplate;
 
-var rule = new schedule.RecurrenceRule();
-// rule.minute = new schedule.Range(0, 0, 1);
-// call every day 9 AM 
-var GetAllExpiredSoonOrder = schedule.scheduleJob('0 0 9 * * *', function() {
-    //GetAllPrice
-    var query = "SELECT tu.id as userId,p.Id,p.ProductTypeId,p.Name,p.Sku as LicenceType,pam.ProductAttributeId,pa.Name as CountryName,pav.Name as LicenceRenewalType,pav.PriceAdjustment as Price " +
-        "FROM product p  " +
-        "inner join product_productattribute_mapping pam on p.Id = pam.ProductId  " +
-        "inner join productattribute pa on pa.Id = pam.ProductAttributeId   " +
-        "inner join tbluserinformation tu on pa.Name= tu.country " +
-        "inner join productattributevalue pav on pav.ProductAttributeMappingId=pam.Id " +
-        "where p.Name='Licence Renew'";
-    connection.query(query, function(err, lstAllPrice, fields) {
-        if (!err) {
-            var lstAllPrice = lstAllPrice;
-            var query = "SELECT ta.AppName,tu.idApp,tv.iduser,tv.id,tv.Name,tv.deviceid,tv.renewaldate,tl.LicenceRenewalType,tl.LicenceType,tl.id as LicenceId,tl.LicenceNo,tu.username,tu.email " +
-                "FROM tblvehicle tv " +
-                "left join tbllicencemanager tl on tv.deviceid=tl.DeviceId and tl.IsDeleted=false " +
-                "inner join tbluserinformation tu on tv.iduser = tu.id and  tu.country ='Malaysia' " +
-                "inner join tblappinfo ta on ta.id = tu.idApp and ta.AppName='Maark' " +
-                "where tv.IsDelete=false and Date(tv.renewaldate)='" + genratedate() + "'";
-            connection.query(query, function(err, response, fields) {
-                if (!err) {
-                    var groups = u.groupBy(response, function(value) {
-                        return value.iduser;
-                    });
-                    var lstAllVehicle = u.map(groups, function(group) {
-                        return {
-                            idUser: group[0].iduser,
-                            idApp: group[0].idApp,
-                            AppName: group[0].AppName,
-                            username: group[0].username,
-                            email: group[0].email,
-                            Order: group
-                        }
-                    })
+// var rule = new schedule.RecurrenceRule();
+// // rule.minute = new schedule.Range(0, 0, 1);
+// // call every day 9 AM 
+// var GetAllExpiredSoonOrder = schedule.scheduleJob('0 0 9 * * *', function() {
+//     //GetAllPrice
+//     var query = "SELECT tu.id as userId,p.Id,p.ProductTypeId,p.Name,p.Sku as LicenceType,pam.ProductAttributeId,pa.Name as CountryName,pav.Name as LicenceRenewalType,pav.PriceAdjustment as Price " +
+//         "FROM product p  " +
+//         "inner join product_productattribute_mapping pam on p.Id = pam.ProductId  " +
+//         "inner join productattribute pa on pa.Id = pam.ProductAttributeId   " +
+//         "inner join tbluserinformation tu on pa.Name= tu.country " +
+//         "inner join productattributevalue pav on pav.ProductAttributeMappingId=pam.Id " +
+//         "where p.Name='Licence Renew'";
+//     connection.query(query, function(err, lstAllPrice, fields) {
+//         if (!err) {
+//             var lstAllPrice = lstAllPrice;
+//             var query = "SELECT ta.AppName,tu.idApp,tv.iduser,tv.id,tv.Name,tv.deviceid,tv.renewaldate,tl.LicenceRenewalType,tl.LicenceType,tl.id as LicenceId,tl.LicenceNo,tu.username,tu.email " +
+//                 "FROM tblvehicle tv " +
+//                 "left join tbllicencemanager tl on tv.deviceid=tl.DeviceId and tl.IsDeleted=false " +
+//                 "inner join tbluserinformation tu on tv.iduser = tu.id and  tu.country ='Malaysia' " +
+//                 "inner join tblappinfo ta on ta.id = tu.idApp and ta.AppName='Maark' " +
+//                 "where tv.IsDelete=false and Date(tv.renewaldate)='" + genratedate() + "'";
+//             connection.query(query, function(err, response, fields) {
+//                 if (!err) {
+//                     var groups = u.groupBy(response, function(value) {
+//                         return value.iduser;
+//                     });
+//                     var lstAllVehicle = u.map(groups, function(group) {
+//                         return {
+//                             idUser: group[0].iduser,
+//                             idApp: group[0].idApp,
+//                             AppName: group[0].AppName,
+//                             username: group[0].username,
+//                             email: group[0].email,
+//                             Order: group
+//                         }
+//                     })
 
-                    function uploader(i) {
-                        if (i < lstAllVehicle.length) {
-                            var idUser = lstAllVehicle[i].idUser;
-                            var Order = lstAllVehicle[i].Order;
-                            var lstAllPrice1 = u.filter(lstAllPrice, function(o) { if (o.userId == idUser && o.ProductTypeId == lstAllVehicle[i].idApp) { return o; } });
-                            for (var j = 0; j < Order.length; j++) {
-                                var lstAllPrice2 = u.findWhere(lstAllPrice1, { LicenceRenewalType: Order[j].LicenceRenewalType, LicenceType: Order[j].LicenceType });
-                                if (lstAllPrice2 != undefined) {
-                                    Order[j].RenewPrice = lstAllPrice2.Price;
-                                    Order[j].CountryName = lstAllPrice2.CountryName;
-                                    Order[j].ProductId = lstAllPrice2.Id;
-                                } else {
-                                    Order[j].RenewPrice = 'N/A';
-                                    Order[j].CountryName = 'N/A';
-                                    Order[j].ProductId = null;
-                                }
-                                if (Order[j].renewaldate != null && Order[j].renewaldate != '') {
-                                    Order[j].ExpireDate = moment(Order[j].renewaldate).format('DD-MM-YYYY');
-                                } else {
-                                    Order[j].ExpireDate = 'N/A';
-                                }
+//                     function uploader(i) {
+//                         if (i < lstAllVehicle.length) {
+//                             var idUser = lstAllVehicle[i].idUser;
+//                             var Order = lstAllVehicle[i].Order;
+//                             var lstAllPrice1 = u.filter(lstAllPrice, function(o) { if (o.userId == idUser && o.ProductTypeId == lstAllVehicle[i].idApp) { return o; } });
+//                             for (var j = 0; j < Order.length; j++) {
+//                                 var lstAllPrice2 = u.findWhere(lstAllPrice1, { LicenceRenewalType: Order[j].LicenceRenewalType, LicenceType: Order[j].LicenceType });
+//                                 if (lstAllPrice2 != undefined) {
+//                                     Order[j].RenewPrice = lstAllPrice2.Price;
+//                                     Order[j].CountryName = lstAllPrice2.CountryName;
+//                                     Order[j].ProductId = lstAllPrice2.Id;
+//                                 } else {
+//                                     Order[j].RenewPrice = 'N/A';
+//                                     Order[j].CountryName = 'N/A';
+//                                     Order[j].ProductId = null;
+//                                 }
+//                                 if (Order[j].renewaldate != null && Order[j].renewaldate != '') {
+//                                     Order[j].ExpireDate = moment(Order[j].renewaldate).format('DD-MM-YYYY');
+//                                 } else {
+//                                     Order[j].ExpireDate = 'N/A';
+//                                 }
 
-                                if (Order[j].LicenceRenewalType != null && Order[j].LicenceRenewalType != '') {
-                                    var nextRenewalDate = new Date(Order[j].renewaldate);
-                                    if (Order[j].LicenceRenewalType == 'Monthly') {
-                                        Order[j].UOM = '1M';
-                                        nextRenewalDate = nextRenewalDate.setMonth(nextRenewalDate.getMonth() + 1);
-                                    } else if (Order[j].LicenceRenewalType == 'Quarterly') {
-                                        Order[j].UOM = '3M';
-                                        nextRenewalDate = nextRenewalDate.setMonth(nextRenewalDate.getMonth() + 3);
-                                    } else {
-                                        Order[j].UOM = '12M';
-                                        nextRenewalDate = nextRenewalDate.setMonth(nextRenewalDate.getMonth() + 12);
-                                    }
-                                    Order[j].NextExpireDate = moment(nextRenewalDate).format('DD-MM-YYYY');
+//                                 if (Order[j].LicenceRenewalType != null && Order[j].LicenceRenewalType != '') {
+//                                     var nextRenewalDate = new Date(Order[j].renewaldate);
+//                                     if (Order[j].LicenceRenewalType == 'Monthly') {
+//                                         Order[j].UOM = '1M';
+//                                         nextRenewalDate = nextRenewalDate.setMonth(nextRenewalDate.getMonth() + 1);
+//                                     } else if (Order[j].LicenceRenewalType == 'Quarterly') {
+//                                         Order[j].UOM = '3M';
+//                                         nextRenewalDate = nextRenewalDate.setMonth(nextRenewalDate.getMonth() + 3);
+//                                     } else {
+//                                         Order[j].UOM = '12M';
+//                                         nextRenewalDate = nextRenewalDate.setMonth(nextRenewalDate.getMonth() + 12);
+//                                     }
+//                                     Order[j].NextExpireDate = moment(nextRenewalDate).format('DD-MM-YYYY');
 
-                                } else {
-                                    Order[j].UOM = 'N/A';
-                                }
-                            }
-                            if (lstAllVehicle[i].AppName == 'Maark') {
-                                CreateOrder(lstAllVehicle[i], function(Ordercreated) {
-                                    uploader(i + 1);
-                                });
-                            }
+//                                 } else {
+//                                     Order[j].UOM = 'N/A';
+//                                 }
+//                             }
+//                             if (lstAllVehicle[i].AppName == 'Maark') {
+//                                 CreateOrder(lstAllVehicle[i], function(Ordercreated) {
+//                                     uploader(i + 1);
+//                                 });
+//                             }
 
-                        }
-                    }
-                    uploader(0)
-                        // lstAllVehicle
-                } else {}
-            })
-        } else {}
-    })
-})
+//                         }
+//                     }
+//                     uploader(0)
+//                         // lstAllVehicle
+//                 } else {}
+//             })
+//         } else {}
+//     })
+// })
 
 // GetAllExpiredSoonOrder()
 
@@ -166,7 +166,7 @@ function CreateOrder(objOrderservice, CallbackOrder) {
     objOrder.OrderStatus = 2;
     objOrder.AuthorizationTransactionResult = 'Success';
     var OrderId = '';
-    return OrderService.create(objOrder).then(function(resOrder) {
+    return OrderService.create(objOrder).then(function (resOrder) {
         if (!resOrder) {
             err.message = 'Order could not created. Try again later.';
             throw err;
@@ -291,7 +291,7 @@ function CreateOrder(objOrderservice, CallbackOrder) {
         //     });
 
 
-    }).then(function() {
+    }).then(function () {
 
         var LinkInfo = {
             id: OrderId,
@@ -303,17 +303,17 @@ function CreateOrder(objOrderservice, CallbackOrder) {
             AppName: objOrderservice.AppName,
             username: objOrderservice.username,
         }
-        SendPaymentLink(LinkInfo, function(callbacklink) {
-                return CallbackOrder({
-                    success: true,
-                    message: "Order created ...",
-                });
-            })
-            // res.json({
-            //     success: true,
-            //     message: 'Order created successfully.',
-            // });
-    }).catch(function(err) {
+        SendPaymentLink(LinkInfo, function (callbacklink) {
+            return CallbackOrder({
+                success: true,
+                message: "Order created ...",
+            });
+        })
+        // res.json({
+        //     success: true,
+        //     message: 'Order created successfully.',
+        // });
+    }).catch(function (err) {
         if (err.message === 'Token') {
             // res.json(InvalidToken);
         } else {
@@ -329,14 +329,14 @@ function CreateOrder(objOrderservice, CallbackOrder) {
 
 
 function SendPaymentLink(LinkInfo, Callback) {
-    Setting.findOne({ where: { Name: 'OrderServicePaymentLink' }, }).then(function(response) {
+    Setting.findOne({ where: { Name: 'OrderServicePaymentLink' }, }).then(function (response) {
         return [response, SystemEmail.findOne({ where: { IdApp: LinkInfo.idApp } }), EmailTemplate.findOne({ where: { Type: "Order Service Payment Link Email", } })];
-    }).spread(function(objSetting, objEmail, objEmailTemplate) {
+    }).spread(function (objSetting, objEmail, objEmailTemplate) {
         if (objSetting != null && objEmailTemplate != null) {
             var TotalAmount = parseFloat(LinkInfo.OrderTotal).toFixed(2);
             var urldata = LinkInfo.id + "," + LinkInfo.username + "," + LinkInfo.Email;
             var query = "select tblorderserviceitem.* ,tblorderservice.OrderStatusId,tblorderservice.ImageUrl,tblorderservice.PurchaseOrderNumber,tblorderservice.OrderTotal from tblorderserviceitem inner join tblorderservice on tblorderservice.id= tblorderserviceitem.OrderId where tblorderserviceitem.OrderId=" + LinkInfo.id;
-            connection.query(query, function(err, lstorderdetail, fields) {
+            connection.query(query, function (err, lstorderdetail, fields) {
                 var OrderDetail = "";
                 for (var i = 0; i < lstorderdetail.length; i++) {
                     OrderDetail = OrderDetail + '<div>&nbsp;</div>' +
@@ -354,7 +354,7 @@ function SendPaymentLink(LinkInfo, Callback) {
                     subject: objEmailTemplate.EmailSubject,
                     html: body
                 };
-                SetsmtpConfig(objEmail, mail, function(EmailSettingCreated) {
+                SetsmtpConfig(objEmail, mail, function (EmailSettingCreated) {
                     // console.log(EmailSettingCreated)
                 })
 
@@ -379,7 +379,7 @@ function SendPaymentLink(LinkInfo, Callback) {
                 return Callback(obj);
             }
         }
-    }).catch(function(error) {
+    }).catch(function (error) {
         if (error.message === 'Token') {
             res.json(InvalidToken);
         } else {
@@ -428,7 +428,7 @@ function convertdateformat(date1, flg) {
 
 //Create first time Order
 
-router.get('/SendBillingServiceMail', function(req, res) {
+router.get('/SendBillingServiceMail', function (req, res) {
 
     var query = "SELECT tu.id as userId,p.Id,p.ProductTypeId,p.Name,p.Sku as LicenceType,pam.ProductAttributeId,pa.Name as CountryName,pav.Name as LicenceRenewalType,pav.PriceAdjustment as Price " +
         "FROM product p  " +
@@ -437,7 +437,7 @@ router.get('/SendBillingServiceMail', function(req, res) {
         "inner join tbluserinformation tu on pa.Name= tu.country " +
         "inner join productattributevalue pav on pav.ProductAttributeMappingId=pam.Id " +
         "where p.Name='Licence Renew'";
-    connection.query(query, function(err, lstAllPrice, fields) {
+    connection.query(query, function (err, lstAllPrice, fields) {
         if (!err) {
             var lstAllPrice = lstAllPrice;
             var StartDate = new Date();
@@ -450,12 +450,12 @@ router.get('/SendBillingServiceMail', function(req, res) {
                 "inner join tbluserinformation tu on tv.iduser = tu.id and  tu.country ='Malaysia' " +
                 "inner join tblappinfo ta on ta.id = tu.idApp and ta.AppName='Maark' " +
                 "where tv.IsDelete=false and  Date(tv.renewaldate)<'" + genratedateforFirstTime(EndDate) + "'";
-            connection.query(query, function(err, response, fields) {
+            connection.query(query, function (err, response, fields) {
                 if (!err) {
-                    var groups = u.groupBy(response, function(value) {
+                    var groups = u.groupBy(response, function (value) {
                         return value.iduser;
                     });
-                    var lstAllVehicle = u.map(groups, function(group) {
+                    var lstAllVehicle = u.map(groups, function (group) {
                         return {
                             idUser: group[0].iduser,
                             idApp: group[0].idApp,
@@ -470,7 +470,7 @@ router.get('/SendBillingServiceMail', function(req, res) {
                         if (i < lstAllVehicle.length) {
                             var idUser = lstAllVehicle[i].idUser;
                             var Order = lstAllVehicle[i].Order;
-                            var lstAllPrice1 = u.filter(lstAllPrice, function(o) { if (o.userId == idUser && o.ProductTypeId == lstAllVehicle[i].idApp) { return o; } });
+                            var lstAllPrice1 = u.filter(lstAllPrice, function (o) { if (o.userId == idUser && o.ProductTypeId == lstAllVehicle[i].idApp) { return o; } });
                             for (var j = 0; j < Order.length; j++) {
                                 var lstAllPrice2 = u.findWhere(lstAllPrice1, { LicenceRenewalType: Order[j].LicenceRenewalType, LicenceType: Order[j].LicenceType });
                                 if (lstAllPrice2 != undefined) {
@@ -507,7 +507,7 @@ router.get('/SendBillingServiceMail', function(req, res) {
                                 }
                             }
                             if (lstAllVehicle[i].AppName == 'Maark') {
-                                CreateOrder(lstAllVehicle[i], function(Ordercreated) {
+                                CreateOrder(lstAllVehicle[i], function (Ordercreated) {
                                     uploader(i + 1);
                                 });
                             }
@@ -515,10 +515,10 @@ router.get('/SendBillingServiceMail', function(req, res) {
                         }
                     }
                     uploader(0)
-                        // lstAllVehicle
-                } else {}
+                    // lstAllVehicle
+                } else { }
             })
-        } else {}
+        } else { }
     })
 })
 

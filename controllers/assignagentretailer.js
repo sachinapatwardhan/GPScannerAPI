@@ -43,8 +43,7 @@ router.get('/GetAllAgentRetailer', function(req, res) {
     if (objSearch != null && objSearch != '') {
         search = 'Where (tua.email like "%' + objSearch + '%" or ';
         search = search + 'tur.email like "%' + objSearch + '%" or ';
-        search = search + 'tv.Name like "%' + objSearch + '%" or ';
-        search = search + 'ta.AppName like "%' + objSearch + '%" or ';
+        search = search + 'tgd.AppName like "%' + objSearch + '%" or ';
         search = search + 'tda.deviceId like "%' + objSearch + '%") ';
     };
 
@@ -77,22 +76,20 @@ router.get('/GetAllAgentRetailer', function(req, res) {
         }
     }
 
-    var query = "SELECT tda.id,tda.agentId,tda.retailerId,tua.email as agent,tur.email as retailer,tv.Name,tda.deviceId,ta.AppName,tu.idApp, " +
-        "CONVERT_TZ(tda.createdDatetime,'+00:00','" + CurrentOffset + "') as CreatedDate " +
+    var query = "SELECT tda.id,tda.agentId,tda.retailerId,tua.email as agent,tur.email as retailer,tda.deviceId,tgd.AppName,ta.Id as idApp, " +
+        " CONVERT_TZ(tda.createdDatetime,'+00:00','" + CurrentOffset + "') as CreatedDate " +
         " FROM tbldeviceagentretailer tda " +
         " INNER JOIN tbluserinformation tua ON tua.id=tda.agentId" +
         " LEFT JOIN tbluserinformation tur ON tur.id=tda.retailerId" +
-        " INNER JOIN tblvehicle tv ON tv.deviceid=tda.deviceId" +
-        " INNER JOIN tbluserinformation tu ON tu.id = tv.iduser and tv.IsDelete=0" +
-        " INNER JOIN tblappinfo ta ON ta.Id = tu.idApp " + search +
+        " INNER JOIN tblgpsdevice tgd ON tgd.DeviceId=tda.deviceId" +
+        " INNER JOIN tblappinfo ta ON ta.AppName = tgd.AppName " + search +
         " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
     var Countqry = "SELECT count(*) as TotalRecord " +
         " FROM tbldeviceagentretailer tda " +
         " INNER JOIN tbluserinformation tua ON tua.id=tda.agentId" +
         " LEFT JOIN tbluserinformation tur ON tur.id=tda.retailerId" +
-        " INNER JOIN tblvehicle tv ON tv.deviceid=tda.deviceId" +
-        " INNER JOIN tbluserinformation tu ON tu.id = tv.iduser and tv.IsDelete=0" +
-        " INNER JOIN tblappinfo ta ON ta.Id = tu.idApp " + search;
+        " INNER JOIN tblgpsdevice tgd ON tgd.DeviceId=tda.deviceId" +
+        " INNER JOIN tblappinfo ta ON ta.AppName = tgd.AppName " + search;
     connection.query(query, function(err, response) {
         if (response != undefined) {
             connection.query(Countqry, function(err, lstCount, fields) {
@@ -334,7 +331,6 @@ router.get('/ExportAgentRetailer', function(req, res) {
     if (objSearch != null && objSearch != '') {
         search = 'Where (tua.email like "%' + objSearch + '%" or ';
         search = search + 'tur.email like "%' + objSearch + '%" or ';
-        search = search + 'tv.Name like "%' + objSearch + '%" or ';
         search = search + 'ta.AppName like "%' + objSearch + '%" or ';
         search = search + 'tda.deviceId like "%' + objSearch + '%") ';
     };
@@ -368,14 +364,13 @@ router.get('/ExportAgentRetailer', function(req, res) {
         }
     }
 
-    var query = "SELECT tda.id,tda.agentId,tda.retailerId,tua.email as agent,tur.email as retailer,tv.Name,tda.deviceId,ta.AppName,tu.idApp, " +
-        "CONVERT_TZ(tda.createdDatetime,'+00:00','" + CurrentOffset + "') as CreatedDate " +
+    var query = "SELECT tda.id,tda.agentId,tda.retailerId,tua.email as agent,tur.email as retailer,tda.deviceId,tgd.AppName,ta.Id as idApp, " +
+        " CONVERT_TZ(tda.createdDatetime,'+00:00','" + CurrentOffset + "') as CreatedDate " +
         " FROM tbldeviceagentretailer tda " +
         " INNER JOIN tbluserinformation tua ON tua.id=tda.agentId" +
         " LEFT JOIN tbluserinformation tur ON tur.id=tda.retailerId" +
-        " INNER JOIN tblvehicle tv ON tv.deviceid=tda.deviceId" +
-        " INNER JOIN tbluserinformation tu ON tu.id = tv.iduser and tv.IsDelete=0" +
-        " INNER JOIN tblappinfo ta ON ta.Id = tu.idApp " + search +
+        " INNER JOIN tblgpsdevice tgd ON tgd.DeviceId=tda.deviceId" +
+        " INNER JOIN tblappinfo ta ON ta.AppName = tgd.AppName " + search +
         " Order by tda.createdDatetime desc";
     connection.query(query, function(err, response) {
         if (response != undefined) {
