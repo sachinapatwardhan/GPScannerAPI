@@ -2273,6 +2273,7 @@ function AddNewShareDevice(objparam, callback) {
                                     obj.DeviceId = SharedEmailExit[i].DeviceId;
                                     obj.idUser = objparam.id;
                                     obj.idSharedUser = SharedEmailExit[i].idUser;
+                                    obj.JourneyFlag = SharedEmailExit[i].JourneyFlag;
                                     obj.idVehicle = vehicleExit.id;
                                     obj.IsActive = 1;
                                     obj.IsSharedUserNotification = 1;

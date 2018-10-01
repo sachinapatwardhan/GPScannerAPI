@@ -259,7 +259,7 @@ router.get('/GetAllInvitedEmail', jsonParser, function(req, res) {
 
 router.post('/InvitedNewUser', jsonParser, function(req, res) {
     objUser = req.body;
-
+    console.log(objUser)
     objHeader = req.headers;
 
     var token = getToken(objHeader);
@@ -276,6 +276,7 @@ router.post('/InvitedNewUser', jsonParser, function(req, res) {
                     ObjSharedEmail.idUser = objUser.idSharedUser;
                     ObjSharedEmail.CreatedDate = new Date();
                     ObjSharedEmail.CreatedBy = decoded.username;
+                    ObjSharedEmail.JourneyFlag = objUser.JourneyFlag;
                     SharedEmail.findOrCreate({
                         where: {
                             DeviceId: ObjSharedEmail.DeviceId,
@@ -336,7 +337,7 @@ router.post('/InvitedNewUser', jsonParser, function(req, res) {
 
                         } else {
                             if (SharedEmailExit[0].Status != 'Pending' && SharedEmailExit[0].Status != 'Complete') {
-                                var obj = { Status: "Pending", ModifiedBy: null, ModifiedDate: null, CreatedBy: decoded.username, CreatedDate: new Date() };
+                                var obj = { Status: "Pending", ModifiedBy: null, ModifiedDate: null, CreatedBy: decoded.username, CreatedDate: new Date(), JourneyFlag: objUser.JourneyFlag };
                                 SharedEmailExit[0].updateAttributes(obj).then(function(SystemEmailUpdate) {
                                     if (SystemEmailUpdate) {
                                         funAuditLog.CreateAuditLog('Create shared Email', decoded.username, 'Update shared Email');
@@ -520,7 +521,7 @@ router.get('/RejectSharedInvitation', function(req, res) {
             }
         }).then(function(response) {
             if (response != null) {
-                response.updateAttributes({ Status: 'Rejected By Main User', ModifiedDate: new Date(), ModifiedBy: decoded.username }).then(function(resUpdate) {
+                response.updateAttributes({ Status: 'Rejected By Main User', ModifiedDate: new Date(), ModifiedBy: decoded.username, JourneyFlag: false }).then(function(resUpdate) {
                     if (resUpdate != null) {
                         funAuditLog.CreateAuditLog('RejectSharedInvitation', decoded.username, response.SharedEmail + ' id Shared Invitation reject By Main User');
                         res.json({ success: true, message: "User Removed successfully...", data: resUpdate });
@@ -802,6 +803,84 @@ router.post('/InvitedNewUserByGroupShare', jsonParser, function(req, res) {
 
 })
 
+
+
+router.get('/ChangeJourneyShare', function(req, res) {
+    objHeader = req.headers;
+    var token = getToken(objHeader);
+    if (token) {
+        var decoded = jwt.decode(token, TokenKey);
+        User.findOne({ where: { username: decoded.username, password: decoded.password } }).then(function(UserExist) {
+            if (UserExist != null) {
+                SharedDevice.findOne({ where: { id: req.query.id } }).then(function(response) {
+                    if (response) {
+                        response.updateAttributes({ JourneyFlag: req.query.JourneyFlag }).then(function(updatedata) {
+                            if (updatedata) {
+                                updatePushNotificationRedisValue(response.idUser)
+                                var objConnection = {
+                                    JourneyFlag: updatedata.JourneyFlag,
+                                    DeviceId: response.DeviceId
+                                }
+                                io.sockets.emit(response.DeviceId + 'SharejourneyFlag', JSON.stringify(objConnection));
+                                if (updatedata.JourneyFlag == false) {
+                                    res.json({ success: true, message: 'Share user journey setting disable' });
+                                } else {
+                                    res.json({ success: true, message: 'Share user journey setting enable' });
+                                }
+                            } else {
+                                res.json({ success: false, message: 'Share user journey setting not updated' });
+                            }
+                        })
+                    } else { res.json(RecordNotFound); }
+                })
+
+            } else {
+                res.json(InvalidToken)
+            }
+        })
+    } else {
+        res.json(InvalidToken)
+    }
+
+})
+
+
+router.get('/ChangeJourneyShareInvitation', function(req, res) {
+    objHeader = req.headers;
+    var token = getToken(objHeader);
+    if (token) {
+        var decoded = jwt.decode(token, TokenKey);
+        User.findOne({ where: { username: decoded.username, password: decoded.password } }).then(function(UserExist) {
+            if (UserExist != null) {
+                SharedEmail.findOne({ where: { Id: req.query.Id } }).then(function(response) {
+                    if (response) {
+                        response.updateAttributes({ JourneyFlag: req.query.JourneyFlag }).then(function(updatedata) {
+                            if (updatedata) {
+                                var objConnection = {
+                                    JourneyFlag: updatedata.JourneyFlag,
+                                    DeviceId: response.DeviceId
+                                }
+                                if (updatedata.JourneyFlag == false) {
+                                    res.json({ success: true, message: 'Share user journey setting disable' });
+                                } else {
+                                    res.json({ success: true, message: 'Share user journey setting enable' });
+                                }
+                            } else {
+                                res.json({ success: false, message: 'Share user journey setting not updated' });
+                            }
+                        })
+                    } else { res.json(RecordNotFound); }
+                })
+
+            } else {
+                res.json(InvalidToken)
+            }
+        })
+    } else {
+        res.json(InvalidToken)
+    }
+
+})
 
 function updatePushNotificationRedisValue(id) {
     var query = "SELECT tv.deviceid " +

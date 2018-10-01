@@ -12,21 +12,113 @@ var momentz = require('moment-timezone');
 // })
 
 router.get('/getAllCompletedJourney', function(req, res) {
-    JourneyRoute.findAll({ where: { DeviceId: req.query.DeviceId, IsCompleted: 1, IsDelete: 0 }, order: 'StartTime desc' }).then(function(response) {
+    var search = {};
+    search['$and'] = [];
+    var obj = new Object();
+    obj['IsDelete'] = {
+        $eq: 0
+    };
+    search['$and'].push(obj);
+    var obj = new Object();
+    obj['IsCompleted'] = {
+        $eq: 1
+    };
+    search['$and'].push(obj);
+    if (req.query.DeviceId != null && req.query.DeviceId != '' && req.query.DeviceId != undefined) {
+
+        var obj = new Object();
+        obj['DeviceId'] = {
+            $eq: req.query.DeviceId
+        };
+        search['$and'].push(obj);
+    }
+    if (req.query.UserId != null && req.query.UserId != '' && req.query.UserId != undefined) {
+        var obj = new Object();
+        obj['UserId'] = {
+            $eq: req.query.UserId
+        };
+        search['$and'].push(obj);
+    }
+
+
+    JourneyRoute.belongsTo(User, {
+        foreignKey: {
+            name: 'UserId',
+            allowNull: false
+        }
+    });
+
+    JourneyRoute.findAll({
+        where: search,
+        include: [{
+            model: User,
+        }],
+        order: 'StartTime desc'
+    }).then(function(response) {
         res.json(response)
     })
 })
 
 
 router.get('/GetDeviceJourney', function(req, res) {
-    JourneyRoute.findAll({ where: { DeviceId: req.query.DeviceId, EndTime: { $ne: null }, IsDelete: 0 }, order: 'StartTime desc' }).then(function(response) {
+    var search = {};
+    search['$and'] = [];
+    var obj = new Object();
+    obj['IsDelete'] = {
+        $eq: 0
+    };
+    search['$and'].push(obj);
+    var obj = new Object();
+    obj['EndTime'] = {
+        $ne: null
+    };
+    search['$and'].push(obj);
+    if (req.query.DeviceId != null && req.query.DeviceId != '' && req.query.DeviceId != undefined) {
+
+        var obj = new Object();
+        obj['DeviceId'] = {
+            $eq: req.query.DeviceId
+        };
+        search['$and'].push(obj);
+    }
+    if (req.query.UserId != null && req.query.UserId != '' && req.query.UserId != undefined) {
+        var obj = new Object();
+        obj['UserId'] = {
+            $eq: req.query.UserId
+        };
+        search['$and'].push(obj);
+    }
+
+    JourneyRoute.findAll({ where: search, order: 'StartTime desc' }).then(function(response) {
         res.json(response)
     })
 })
 
-
 router.get('/GetDeviceLastJourney', function(req, res) {
-    JourneyRoute.findOne({ where: { DeviceId: req.query.DeviceId, EndTime: { $eq: null } }, order: 'StartTime desc' }).then(function(response) {
+    var search = {};
+
+    search['$and'] = [];
+    var obj = new Object();
+    obj['EndTime'] = {
+        $eq: null
+    };
+    search['$and'].push(obj);
+    if (req.query.DeviceId != null && req.query.DeviceId != '' && req.query.DeviceId != undefined) {
+        var obj = new Object();
+        obj['DeviceId'] = {
+            $eq: req.query.DeviceId
+        };
+        search['$and'].push(obj);
+    }
+    if (req.query.UserId != null && req.query.UserId != '' && req.query.UserId != undefined) {
+        var obj = new Object();
+        obj['UserId'] = {
+            $eq: req.query.UserId
+        };
+        search['$and'].push(obj);
+    }
+
+    JourneyRoute.findOne({ where: search, order: 'StartTime desc' }).then(function(response) {
         if (response) {
             res.json({ success: true, data: response })
         } else {
@@ -51,7 +143,28 @@ router.post('/StartJourney', jsonParser, function(req, res) {
             }
         }).then(function(UserExist) {
             if (UserExist != null) {
-                JourneyRoute.findOne({ where: { DeviceId: objJourney.DeviceId, EndTime: { $eq: null } }, order: 'StartTime desc' }).then(function(JourneyRouteExist) {
+                var search = {};
+                if (objJourney.DeviceId != null && objJourney.DeviceId != '' && objJourney.DeviceId != undefined) {
+                    search['$and'] = [];
+                    var obj = new Object();
+                    obj['DeviceId'] = {
+                        $eq: objJourney.DeviceId
+                    };
+                    search['$and'].push(obj);
+                }
+                if (objJourney.UserId != null && objJourney.UserId != '' && objJourney.UserId != undefined) {
+                    var obj = new Object();
+                    obj['UserId'] = {
+                        $eq: objJourney.UserId
+                    };
+                    search['$and'].push(obj);
+                }
+                var obj = new Object();
+                obj['EndTime'] = {
+                    $eq: null
+                };
+                search['$and'].push(obj);
+                JourneyRoute.findOne({ where: search, order: 'StartTime desc' }).then(function(JourneyRouteExist) {
                     if (JourneyRouteExist) {
                         JourneyRouteExist.updateAttributes({
                             EndTime: new Date(),
@@ -60,7 +173,7 @@ router.post('/StartJourney', jsonParser, function(req, res) {
                             JourneyName: objJourney.JourneyName,
                         }).then(function(response) {
                             if (response) {
-                                funAuditLog.CreateAuditLog('update Journey', UserExist.username, 'Stop Journey / DeviceID: ('+ JourneyRouteExist.DeviceId +')');
+                                funAuditLog.CreateAuditLog('update Journey', UserExist.username, 'Stop Journey / DeviceID: (' + JourneyRouteExist.DeviceId + ')');
                                 res.json({ success: true, message: 'Journey stop successfully..' });
                             } else {
                                 res.json({ success: false, message: 'Journey can not stop. Try again later.' });
@@ -73,7 +186,7 @@ router.post('/StartJourney', jsonParser, function(req, res) {
 
                         JourneyRoute.create(objJourney).then(function(response) {
                             if (response) {
-                                funAuditLog.CreateAuditLog('Create Journey', UserExist.username, 'Start Journey / DeviceID: ('+ response.DeviceId +')');
+                                funAuditLog.CreateAuditLog('Create Journey', UserExist.username, 'Start Journey / DeviceID: (' + response.DeviceId + ')');
                                 res.json({ success: true, message: 'Journey started successfully..' });
                             } else {
                                 res.json({ success: false, message: 'Journey can not start. Try again later.' });
@@ -125,7 +238,7 @@ router.get('/deleteJourneyById', function(req, res) {
                             // }).then(function(JouryGpsDataDeleted) {
                             JourneyRouteExist.updateAttributes({ IsDelete: 1 }).then(function(response) {
                                 if (response) {
-                                    funAuditLog.CreateAuditLog('Delete journey route', UserExist.username, 'Delete journey route/ DeviceId ('+ JourneyRouteExist.DeviceId +')');
+                                    funAuditLog.CreateAuditLog('Delete journey route', UserExist.username, 'Delete journey route/ DeviceId (' + JourneyRouteExist.DeviceId + ')');
                                     res.json({
                                         success: true,
                                         message: "journey deleted successfully...",

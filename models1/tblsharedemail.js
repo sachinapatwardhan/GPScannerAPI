@@ -24,6 +24,11 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING,
       allowNull: true
     },
+    JourneyFlag: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+      defaultValue: '0'
+    },
     CreatedDate: {
       type: DataTypes.DATE,
       allowNull: true

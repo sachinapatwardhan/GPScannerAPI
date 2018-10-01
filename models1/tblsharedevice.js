@@ -50,6 +50,11 @@ module.exports = function(sequelize, DataTypes) {
     IdSharedGroup: {
       type: DataTypes.INTEGER(11),
       allowNull: true
+    },
+    JourneyFlag: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+      defaultValue: '0'
     }
   }, {
     tableName: 'tblsharedevice'
