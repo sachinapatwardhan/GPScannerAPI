@@ -605,4 +605,7 @@ app.use('/import', require('./controllers/import.js'));
 app.use('/philireport', require('./controllers/philireport.js'));
 app.use('/Report_MyPinHere', require('./controllers/Report_MyPinHere.js'));
 app.use('/assignagentretailer', require('./controllers/assignagentretailer.js'));
+app.use('/renewaccount', require('./RenewControllers/account.js'));
+app.use('/renewdevice', require('./RenewControllers/renewdevice'));
+app.use('/devicerenewprice', require('./controllers/devicerenewprice'));
 // MAARK Install App End
