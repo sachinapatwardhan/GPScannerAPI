@@ -7,7 +7,7 @@ var LicenceManager = models.tbllicencemanager;
 var Vehicle = models.tblvehicle;
 var User = models.tbluserinformation;
 
-router.get('/GetRenewDeviceInfo', jsonParser, function(req, res) {
+router.get('/GetRenewDeviceInfo', jsonParser, function (req, res) {
 
     var objSearch = req.query.Search;
     var search = '';
@@ -29,7 +29,7 @@ router.get('/GetRenewDeviceInfo', jsonParser, function(req, res) {
         " INNER JOIN tbluserinformation as tu ON tv.iduser = tu.id " +
         " LEFT JOIN (select * from tbldevicerenewprice where IdUser=" + req.query.idUser + " ) as tdp ON tdp.Type = tgd.Type " +
         " where tl.IsDeleted = 0 AND ta.Id = " + req.query.idApp + " " + search + " order by tl.ExpiryDate asc";
-    connection.query(query, function(err, response) {
+    connection.query(query, function (err, response) {
         var lstAllVehicle = [];
 
         function getData(i) {
@@ -58,7 +58,7 @@ router.get('/GetRenewDeviceInfo', jsonParser, function(req, res) {
                 } else {
                     obj.Price = 0;
                 }
-                client.get(response[i].DeviceId, function(err, strgpsdata) {
+                client.get(response[i].DeviceId, function (err, strgpsdata) {
                     if (!err) {
                         if (strgpsdata != null & strgpsdata != '' && strgpsdata != undefined) {
                             var objgps = JSON.parse(strgpsdata);
@@ -84,7 +84,7 @@ router.get('/GetRenewDeviceInfo', jsonParser, function(req, res) {
 
 })
 
-router.post('/SaveOrderServiceRenew', jsonParser, function(req, res) {
+router.post('/SaveOrderServiceRenew', jsonParser, function (req, res) {
     objOrderservice = req.body;
     objHeader = req.headers;
     var OrderTotal = objOrderservice.OrderTotal;
@@ -99,163 +99,163 @@ router.post('/SaveOrderServiceRenew', jsonParser, function(req, res) {
     if (token) {
         var decoded = jwt.decode(token, TokenKey);
         User.findOne({
+            where: {
+                username: decoded.username,
+                password: decoded.password
+            }
+        }).then(function (UserExist) {
+
+            if (!UserExist) {
+                err.message = 'Token';
+                throw err;
+            }
+
+            for (var i = 0; i < lstProduct.length; i++) {
+                if (DeviceId == '') {
+                    DeviceId = lstProduct[i].DeviceId;
+                } else {
+                    DeviceId = DeviceId + "," + lstProduct[i].DeviceId;
+                }
+            }
+            var objOrder = new Object();
+            objOrder.CustomerId = objOrderservice.idUser;
+            objOrder.CreatedOnUtc = new Date();
+            objOrder.MerchantId = 0;
+            objOrder.PurchaseOrderNumber = OrderNumber;
+            objOrder.CustomerCurrencyCode = "MYR / Rs";
+            objOrder.OrderTotal = OrderTotal;
+            objOrder.OrderNotes = DeviceId;
+            objOrder.SettlementCur = "MYR / Rs";
+            objOrder.OrderStatusId = 2;
+            objOrder.SubscriptionTransactionId = objOrderservice.idApp;
+            objOrder.ShippingStatusId = 0;
+            objOrder.PaymentMethodSystemName = "CASH";
+            objOrder.CustomerTaxDisplayTypeId = 0;
+            objOrder.OrderSubtotalInclTax = OrderTotal;
+            objOrder.OrderSubtotalExclTax = OrderTotal;
+            objOrder.OrderSubTotalDiscountInclTax = 0;
+            objOrder.OrderSubTotalDiscountExclTax = 0;
+            objOrder.OrderShippingInclTax = 0;
+            objOrder.OrderShippingExclTax = 0;
+            objOrder.TaxRates = 0;
+            objOrder.OrderTax = 0;
+            objOrder.OrderDiscount = 0;
+            objOrder.RefundedAmount = 0;
+            objOrder.RewardPointsWereAdded = 0;
+            objOrder.CustomerLanguageId = 0;
+            objOrder.AffiliateId = 0;
+            objOrder.AllowStoringCreditCardNumber = 0;
+            objOrder.CreatedBy = decoded.username;
+            objOrder.PaymentMethodAdditionalFeeInclTax = 0;
+            objOrder.PaymentMethodAdditionalFeeExclTax = 0;
+            objOrder.ProcessingCharges = 0;
+            objOrder.PaymentStatusId = null;
+            objOrder.Deleted = false;
+            objOrder.ShippAddress1 = lstProduct[0].CountryName;
+            objOrder.OrderStatus = 2;
+            objOrder.AuthorizationTransactionResult = 'Success';
+            objOrder.Terms = Remark;
+            objOrder.ModifiedDate = new Date();
+            objOrder.Courier = decoded.username;
+
+            return OrderService.create(objOrder);
+        }).then(function (resOrder) {
+            if (!resOrder) {
+                err.message = 'Order could not created. Try again later.';
+                throw err;
+            }
+            var lstOrderServiceItem = [];
+            for (i = 0; i < lstProduct.length; i++) {
+                var objOrderDetail = new Object();
+                var RefNumber = "T" + GetRandomWord() + Date.parse(PurchaseOrderNumber);
+                objOrderDetail.OrderId = resOrder.id;
+                objOrderDetail.ProductId = lstProduct[i].ProductId;
+                objOrderDetail.ProductName = lstProduct[i].DeviceId;
+                objOrderDetail.Quantity = 1;
+                objOrderDetail.UnitPriceInclTax = lstProduct[i].Price;
+                objOrderDetail.UnitPriceExclTax = lstProduct[i].Price;
+                objOrderDetail.idOrderStatus = 2;
+                objOrderDetail.PriceInclTax = lstProduct[i].Price;
+                objOrderDetail.PriceExclTax = lstProduct[i].Price;
+                objOrderDetail.UOM = lstProduct[i].UOM;
+                objOrderDetail.sku = lstProduct[i].LicenceType;
+                objOrderDetail.Attribute = lstProduct[i].LicenceNo;
+                objOrderDetail.AttributeValue = lstProduct[i].LicenceRenewalType;
+                objOrderDetail.AttributeDescription = lstProduct[i].VehicleName;
+                objOrderDetail.AttributesXml = lstProduct[i].ExpiryDate;
+                objOrderDetail.ItemWeight = lstProduct[i].NextExpireDate;
+                objOrderDetail.CaptureTransactionResult = lstProduct[i].RefNumber;
+                lstOrderServiceItem.push(objOrderDetail);
+                lstLicenceId.push(lstProduct[i].Id);
+                lstDeviceId.push(lstProduct[i].DeviceId);
+            }
+            return OrderServiceDetail.bulkCreate(lstOrderServiceItem);
+
+        }).then(function (resOrderServiceItem) {
+            return [LicenceManager.findAll({
                 where: {
-                    username: decoded.username,
-                    password: decoded.password
+                    Id: {
+                        $in: lstLicenceId
+                    },
+                    IsDeleted: false
                 }
-            }).then(function(UserExist) {
-
-                if (!UserExist) {
-                    err.message = 'Token';
-                    throw err;
+            }), Vehicle.findAll({
+                where: {
+                    deviceid: {
+                        $in: lstDeviceId
+                    },
+                    IsDelete: false
                 }
+            })];
+        }).spread(function (lstLicenceList, lstVehicleList) {
+            var TotalRecords = lstLicenceList.length;
 
-                for (var i = 0; i < lstProduct.length; i++) {
-                    if (DeviceId == '') {
-                        DeviceId = lstProduct[i].DeviceId;
-                    } else {
-                        DeviceId = DeviceId + "," + lstProduct[i].DeviceId;
+            function UpdateLicenceVehicle(j) {
+                if (j < TotalRecords) {
+                    var UpdateDeviceId = lstLicenceList[j].DeviceId;
+                    var AddMonth = 0;
+                    if (lstLicenceList[j].LicenceRenewalType == 'Monthly') {
+                        AddMonth = 1;
+                    } else if (lstLicenceList[j].LicenceRenewalType == 'Quarterly') {
+                        AddMonth = 3;
+                    } else if (lstLicenceList[j].LicenceRenewalType == 'Yearly') {
+                        AddMonth = 12;
                     }
-                }
-                var objOrder = new Object();
-                objOrder.CustomerId = objOrderservice.idUser;
-                objOrder.CreatedOnUtc = new Date();
-                objOrder.MerchantId = 0;
-                objOrder.PurchaseOrderNumber = OrderNumber;
-                objOrder.CustomerCurrencyCode = "MYR / Rs";
-                objOrder.OrderTotal = OrderTotal;
-                objOrder.OrderNotes = DeviceId;
-                objOrder.SettlementCur = "MYR / Rs";
-                objOrder.OrderStatusId = 2;
-                objOrder.SubscriptionTransactionId = objOrderservice.idApp;
-                objOrder.ShippingStatusId = 0;
-                objOrder.PaymentMethodSystemName = "CASH";
-                objOrder.CustomerTaxDisplayTypeId = 0;
-                objOrder.OrderSubtotalInclTax = OrderTotal;
-                objOrder.OrderSubtotalExclTax = OrderTotal;
-                objOrder.OrderSubTotalDiscountInclTax = 0;
-                objOrder.OrderSubTotalDiscountExclTax = 0;
-                objOrder.OrderShippingInclTax = 0;
-                objOrder.OrderShippingExclTax = 0;
-                objOrder.TaxRates = 0;
-                objOrder.OrderTax = 0;
-                objOrder.OrderDiscount = 0;
-                objOrder.RefundedAmount = 0;
-                objOrder.RewardPointsWereAdded = 0;
-                objOrder.CustomerLanguageId = 0;
-                objOrder.AffiliateId = 0;
-                objOrder.AllowStoringCreditCardNumber = 0;
-                objOrder.CreatedBy = decoded.username;
-                objOrder.PaymentMethodAdditionalFeeInclTax = 0;
-                objOrder.PaymentMethodAdditionalFeeExclTax = 0;
-                objOrder.ProcessingCharges = 0;
-                objOrder.PaymentStatusId = null;
-                objOrder.Deleted = false;
-                objOrder.ShippAddress1 = lstProduct[0].CountryName;
-                objOrder.OrderStatus = 2;
-                objOrder.AuthorizationTransactionResult = 'Success';
-                objOrder.Terms = Remark;
-                objOrder.ModifiedDate = new Date();
-                objOrder.Courier = decoded.username;
 
-                return OrderService.create(objOrder);
-            }).then(function(resOrder) {
-                if (!resOrder) {
-                    err.message = 'Order could not created. Try again later.';
-                    throw err;
-                }
-                var lstOrderServiceItem = [];
-                for (i = 0; i < lstProduct.length; i++) {
-                    var objOrderDetail = new Object();
-                    var RefNumber = "T" + GetRandomWord() + Date.parse(PurchaseOrderNumber);
-                    objOrderDetail.OrderId = resOrder.id;
-                    objOrderDetail.ProductId = lstProduct[i].ProductId;
-                    objOrderDetail.ProductName = lstProduct[i].DeviceId;
-                    objOrderDetail.Quantity = 1;
-                    objOrderDetail.UnitPriceInclTax = lstProduct[i].Price;
-                    objOrderDetail.UnitPriceExclTax = lstProduct[i].Price;
-                    objOrderDetail.idOrderStatus = 2;
-                    objOrderDetail.PriceInclTax = lstProduct[i].Price;
-                    objOrderDetail.PriceExclTax = lstProduct[i].Price;
-                    objOrderDetail.UOM = lstProduct[i].UOM;
-                    objOrderDetail.sku = lstProduct[i].LicenceType;
-                    objOrderDetail.Attribute = lstProduct[i].LicenceNo;
-                    objOrderDetail.AttributeValue = lstProduct[i].LicenceRenewalType;
-                    objOrderDetail.AttributeDescription = lstProduct[i].VehicleName;
-                    objOrderDetail.AttributesXml = lstProduct[i].ExpiryDate;
-                    objOrderDetail.ItemWeight = lstProduct[i].NextExpireDate;
-                    objOrderDetail.CaptureTransactionResult = lstProduct[i].RefNumber;
-                    lstOrderServiceItem.push(objOrderDetail);
-                    lstLicenceId.push(lstProduct[i].Id);
-                    lstDeviceId.push(lstProduct[i].DeviceId);
-                }
-                return OrderServiceDetail.bulkCreate(lstOrderServiceItem);
+                    var oldexpdate = lstLicenceList[j].ExpiryDate;
+                    var date = new Date(lstLicenceList[j].ExpiryDate);
+                    var updatedDate = convertdateformat(date.setMonth(date.getMonth() + AddMonth), 3);
 
-            }).then(function(resOrderServiceItem) {
-                return [LicenceManager.findAll({
-                    where: {
-                        Id: {
-                            $in: lstLicenceId
-                        },
-                        IsDeleted: false
+                    var timeDiff = (new Date(oldexpdate)).getTime() - (new Date()).getTime();
+                    var diffDays = Math.round(timeDiff / (1000 * 3600 * 24));
+                    days = diffDays;
+                    if (days < 0) {
+                        date = new Date();
+                        updatedDate = convertdateformat(date.setMonth(date.getMonth() + AddMonth), 3);
                     }
-                }), Vehicle.findAll({
-                    where: {
-                        deviceid: {
-                            $in: lstDeviceId
-                        },
-                        IsDelete: false
-                    }
-                })];
-            }).spread(function(lstLicenceList, lstVehicleList) {
-                var TotalRecords = lstLicenceList.length;
+                    lstLicenceList[j].updateAttributes({ ExpiryDate: updatedDate }).then((resUpdateExpiryLicence) => {
 
-                function UpdateLicenceVehicle(j) {
-                    if (j < TotalRecords) {
-                        var UpdateDeviceId = lstLicenceList[j].DeviceId;
-                        var AddMonth = 0;
-                        if (lstLicenceList[j].LicenceRenewalType == 'Monthly') {
-                            AddMonth = 1;
-                        } else if (lstLicenceList[j].LicenceRenewalType == 'Quarterly') {
-                            AddMonth = 3;
-                        } else if (lstLicenceList[j].LicenceRenewalType == 'Yearly') {
-                            AddMonth = 12;
-                        }
-
-                        var oldexpdate = lstLicenceList[j].ExpiryDate;
-                        var date = new Date(lstLicenceList[j].ExpiryDate);
-                        var updatedDate = convertdateformat(date.setMonth(date.getMonth() + AddMonth), 3);
-
-                        var timeDiff = (new Date(oldexpdate)).getTime() - (new Date()).getTime();
-                        var diffDays = Math.round(timeDiff / (1000 * 3600 * 24));
-                        days = diffDays;
-                        if (days < 0) {
-                            date = new Date();
-                            updatedDate = convertdateformat(date.setMonth(date.getMonth() + AddMonth), 3);
-                        }
-                        lstLicenceList[j].updateAttributes({ ExpiryDate: updatedDate }).then((resUpdateExpiryLicence) => {
-
-                            var objVehicle = u.findWhere(lstVehicleList, { deviceid: UpdateDeviceId });
-                            if (objVehicle != undefined) {
-                                objVehicle.updateAttributes({ renewaldate: updatedDate }).then((resVehicleUpdate) => {
-                                    // Commonfunction.UpdateVehicleRedis(objVehicle.deviceid, 'Vehicle');
-                                    UpdateLicenceVehicle(j + 1);
-                                });
-                            } else {
+                        var objVehicle = u.findWhere(lstVehicleList, { deviceid: UpdateDeviceId });
+                        if (objVehicle != undefined) {
+                            objVehicle.updateAttributes({ renewaldate: updatedDate }).then((resVehicleUpdate) => {
+                                // Commonfunction.UpdateVehicleRedis(objVehicle.deviceid, 'Vehicle');
                                 UpdateLicenceVehicle(j + 1);
-                            }
-                        })
+                            });
+                        } else {
+                            UpdateLicenceVehicle(j + 1);
+                        }
+                    })
 
-                    } else {
-                        res.json({
-                            success: true,
-                            message: 'Device renewed successfully.',
-                        });
-                    }
+                } else {
+                    res.json({
+                        success: true,
+                        message: 'Device renewed successfully.',
+                    });
                 }
-                UpdateLicenceVehicle(0);
-            })
-            .catch(function(err) {
+            }
+            UpdateLicenceVehicle(0);
+        })
+            .catch(function (err) {
                 if (err.message === 'Token') {
                     res.json(InvalidToken);
                 } else {
