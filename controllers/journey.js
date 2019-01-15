@@ -1,6 +1,7 @@
 var router = express.Router();
 var User = models.tbluserinformation;
 var JourneyRoute = models.tbljourneyroute;
+var Vehicle = models.tblvehicle;
 // var JourneyGPSData = models.tbljourneygpsdata;
 var momentz = require('moment-timezone');
 
@@ -89,7 +90,26 @@ router.get('/GetDeviceJourney', function(req, res) {
         search['$and'].push(obj);
     }
 
-    JourneyRoute.findAll({ where: search, order: 'StartTime desc' }).then(function(response) {
+    if (req.query.StartDate != null && req.query.StartDate != '' && req.query.StartDate != undefined) {
+        var obj = new Object();
+        obj['StartTime'] = {
+            $gte: req.query.StartDate
+        };
+        search['$and'].push(obj);
+    }
+
+    if (req.query.EndDate != null && req.query.EndDate != '' && req.query.EndDate != undefined) {
+        var obj = new Object();
+        obj['StartTime'] = {
+            $lte: req.query.EndDate
+        };
+        search['$and'].push(obj);
+    }
+    JourneyRoute.belongsTo(Vehicle, {
+        foreignKey: 'DeviceId',
+        targetKey: 'deviceid',
+    });
+    JourneyRoute.findAll({ where: search, order: 'StartTime desc', include: [{ model: Vehicle, attributes: ['Name'] }] }).then(function(response) {
         res.json(response)
     })
 })
@@ -126,6 +146,7 @@ router.get('/GetDeviceLastJourney', function(req, res) {
         }
     })
 })
+
 
 
 
