@@ -39,6 +39,10 @@ module.exports = function(sequelize, DataTypes) {
     simSerial: {
       type: DataTypes.STRING(45),
       allowNull: true
+    },
+    idDistributor: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true
     }
   }, {
     tableName: 'tbldeviceagentretailer'
