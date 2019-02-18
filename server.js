@@ -404,10 +404,16 @@ http.listen(process.env.APIPort, function () {
 });
 
 io.sockets.on('connection', function (socket) {
-    // console.log('connection...');
+    console.log('connection...');
     socket.on('emit_from_client', function (data) {
         // console.log('socket.io server received : ' + data);
         io.sockets.emit('emit_from_server', data);
+    });
+
+    socket.on('SimDetail', function (data) {
+        console.log("Sim Response = " + data);
+        io.sockets.emit('emit_from_client', data);
+        io.sockets.emit('SimDetailResponse', data);
     });
 
     //GPS Data
@@ -608,4 +614,6 @@ app.use('/assignagentretailer', require('./controllers/assignagentretailer.js'))
 app.use('/renewaccount', require('./RenewControllers/account.js'));
 app.use('/renewdevice', require('./RenewControllers/renewdevice'));
 app.use('/devicerenewprice', require('./controllers/devicerenewprice'));
+app.use('/assigndistributor', require('./controllers/assigndistributor.js'));
+app.use('/distributor', require('./controllers/distributor.js'));
 // MAARK Install App End

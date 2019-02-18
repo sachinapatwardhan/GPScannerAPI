@@ -7,11 +7,11 @@ var AppInfo = models.tblappinfo;
 var TelCo = models.tbltelco;
 //End of Tables
 
-router.get('/GetAllSIMInfo', function(req, res) {
+router.get('/GetAllSIMInfo', function (req, res) {
 
     // var query = "SELECT ts.id,ts.SerialNum,ts.PhoneNum,ts.idApp,CONVERT_TZ(ts.CreatedDate,'+00:00','" + CurrentOffset + "') as CreatedDate, tt.Name as TelName,tt.id as idTelCo from tblsimdetails as ts LEFT JOIN tbltelco as tt ON ts.idTelCo = tt.id  ORDER BY CreatedDate DESC";
     var query = "SELECT ts.id,ts.SerialNum,ts.PhoneNum,ts.idApp,tai.AppName,CONVERT_TZ(ts.CreatedDate,'+00:00','" + CurrentOffset + "') as CreatedDate, tt.Name as TelName,tt.id as idTelCo from tblsimdetails as ts LEFT JOIN tbltelco as tt ON ts.idTelCo = tt.id LEFT JOIN tblappinfo tai on ts.idApp = tai.Id  ORDER BY CreatedDate DESC";
-    connection.query(query, function(err, response) {
+    connection.query(query, function (err, response) {
         if (response != undefined) {
             res.json(response);
         } else {
@@ -31,7 +31,7 @@ router.get('/GetAllSIMInfo', function(req, res) {
 });
 
 
-router.get('/GetAllSIMInfoNew', function(req, res) {
+router.get('/GetAllSIMInfoNew', function (req, res) {
     var objParam = req.query;
     var objColumns = objParam.columns;
     var objOrder = objParam.order;
@@ -56,9 +56,9 @@ router.get('/GetAllSIMInfoNew', function(req, res) {
         " from tblsimdetails as ts " +
         " LEFT JOIN tbltelco as tt ON ts.idTelCo = tt.id " +
         " LEFT JOIN tblappinfo tai on ts.idApp = tai.Id  " + search;
-    connection.query(query, function(err, response) {
+    connection.query(query, function (err, response) {
         if (response != undefined) {
-            connection.query(countquery, function(err, lstCount, fields) {
+            connection.query(countquery, function (err, lstCount, fields) {
                 var response1 = new Object();
                 response1.draw = objParam.draw;
                 response1.recordsTotal = lstCount[0].TotalRecord;
@@ -78,7 +78,7 @@ router.get('/GetAllSIMInfoNew', function(req, res) {
     })
 })
 
-router.post('/SaveSIMInfo', jsonParser, function(req, res) {
+router.post('/SaveSIMInfo', jsonParser, function (req, res) {
     objSIMInfo = req.body;
     objHeader = req.headers;
     var token = getToken(objHeader);
@@ -89,7 +89,7 @@ router.post('/SaveSIMInfo', jsonParser, function(req, res) {
                 username: decoded.username,
                 password: decoded.password
             }
-        }).then(function(UserExist) {
+        }).then(function (UserExist) {
             if (UserExist != null) {
                 if (objSIMInfo.Id == 0) {
                     objSIMInfo.CreatedDate = new Date();
@@ -111,7 +111,7 @@ router.post('/SaveSIMInfo', jsonParser, function(req, res) {
                     //     }
                     // })
 
-                    SIM.findOrCreate({ where: { SerialNum: objSIMInfo.SerialNum }, defaults: objSIMInfo }).then(function(response) {
+                    SIM.findOrCreate({ where: { SerialNum: objSIMInfo.SerialNum }, defaults: objSIMInfo }).then(function (response) {
                         if ((response[1])) {
                             funAuditLog.CreateAuditLog('Save SIM', UserExist.username, 'Cerate New SIM Data');
                             res.json({ success: true, message: "SIM Info created successfully...", data: response });
@@ -134,11 +134,11 @@ router.post('/SaveSIMInfo', jsonParser, function(req, res) {
                     //         });
                     //     }
                     // })
-                    SIM.findOne({ where: { SerialNum: objSIMInfo.SerialNum }, defaults: objSIMInfo }).then(function(objSimsExist) {
+                    SIM.findOne({ where: { SerialNum: objSIMInfo.SerialNum }, defaults: objSIMInfo }).then(function (objSimsExist) {
                         if (objSimsExist != null && objSIMInfo.Id != objSimsExist.id) {
                             res.json({ success: false, message: "SIM Info is already Exist...", data: objSimsExist });
                         } else {
-                            SIM.update(objSIMInfo, { where: { id: objSIMInfo.Id } }).then(function(response) {
+                            SIM.update(objSIMInfo, { where: { id: objSIMInfo.Id } }).then(function (response) {
                                 if (response[0]) {
                                     funAuditLog.CreateAuditLog('Update SIM', UserExist.username, 'Update SIM Data');
                                     res.json({ success: true, message: "SIM Info updated successfully...", data: response });
@@ -158,7 +158,7 @@ router.post('/SaveSIMInfo', jsonParser, function(req, res) {
     }
 })
 
-router.get('/DeleteSIMInfo', function(req, res) {
+router.get('/DeleteSIMInfo', function (req, res) {
     objHeader = req.headers;
     var token = getToken(objHeader);
     var obj = {};
@@ -174,7 +174,7 @@ router.get('/DeleteSIMInfo', function(req, res) {
                 username: decoded.username,
                 password: decoded.password
             }
-        }).then(function(UserExist) {
+        }).then(function (UserExist) {
             if (UserExist != null) {
                 if (req.query.Id != '' && req.query.Id != null) {
 
@@ -182,7 +182,7 @@ router.get('/DeleteSIMInfo', function(req, res) {
                         where: {
                             id: req.query.Id
                         }
-                    }).then(function(response) {
+                    }).then(function (response) {
                         if (response) {
                             funAuditLog.CreateAuditLog('DeleteSIM', UserExist.username, 'Delete SIM');
                             res.json({
@@ -210,7 +210,7 @@ router.get('/DeleteSIMInfo', function(req, res) {
 
 });
 
-router.get('/DownloadTemplate', function(req, res) {
+router.get('/DownloadTemplate', function (req, res) {
     var conf = {};
     conf.name = "Sheet1";
     conf.cols = [{
@@ -234,7 +234,7 @@ router.get('/DownloadTemplate', function(req, res) {
     res.end(result, 'binary');
 })
 
-router.post('/uploadExcelDevice', function(req, res) {
+router.post('/uploadExcelDevice', function (req, res) {
     var form = new formidable.IncomingForm();
     var lst = [];
     var FileName = [];
@@ -248,12 +248,12 @@ router.post('/uploadExcelDevice', function(req, res) {
     //var FileName = __dirname + '/../MediaUploads/FileUpload/DeviceList.xlsx';
     form.uploadDir = __dirname + '/../MediaUploads/FileUpload';
 
-    form.parse(req, function(err, fields, files) {
+    form.parse(req, function (err, fields, files) {
         idTelCo = fields.idTelCo;
         idApp = fields.idApp;
     });
 
-    form.on('fileBegin', function(name, file) {
+    form.on('fileBegin', function (name, file) {
         // console.log("***********************fileBegin")
         file.path = form.uploadDir + "/" + file.name;
         // console.log(file.path);
@@ -261,7 +261,7 @@ router.post('/uploadExcelDevice', function(req, res) {
         //FileName.push(file.path);
     });
 
-    form.on('end', function() {
+    form.on('end', function () {
         // console.log(FileName)
         if (FileName.length > 0) {
             var workbook = XLSX.readFile(FileName, { type: 'binary' });
@@ -293,7 +293,7 @@ router.post('/uploadExcelDevice', function(req, res) {
                                 SIM.findOrCreate({
                                     where: { SerialNum: obj.SerialNum },
                                     defaults: obj
-                                }).then(function(response) {
+                                }).then(function (response) {
                                     if ((response[1])) {
                                         // funAuditLog.CreateAuditLog('Upload SIM Data', UserExist.username, 'Cerate New SIM Data');
                                         addSIm(i + 1);
@@ -347,27 +347,27 @@ router.post('/uploadExcelDevice', function(req, res) {
     });
 });
 
-router.get('/Export', function(req, res) {
+router.get('/Export', function (req, res) {
     var conf = {};
     conf.cols = [{
-            caption: 'SerialNumber',
-            type: 'string'
-        },
-        {
-            caption: 'PhoneNumber',
-            type: 'string'
-        }, {
-            caption: 'Telephone Company',
-            type: 'string'
-        },
-        {
-            caption: 'CreatedDate',
-            type: 'string'
-        },
-        {
-            caption: 'App Name',
-            type: 'string'
-        }
+        caption: 'SerialNumber',
+        type: 'string'
+    },
+    {
+        caption: 'PhoneNumber',
+        type: 'string'
+    }, {
+        caption: 'Telephone Company',
+        type: 'string'
+    },
+    {
+        caption: 'CreatedDate',
+        type: 'string'
+    },
+    {
+        caption: 'App Name',
+        type: 'string'
+    }
 
     ];
     // SIM.findAll({
@@ -376,8 +376,8 @@ router.get('/Export', function(req, res) {
     //     ]
     // }).then(function(response) {
     var query = "  SELECT ts.id,ts.SerialNum,ts.PhoneNum,ts.idApp,tai.AppName,CONVERT_TZ(ts.CreatedDate,'+00:00','" + CurrentOffset + "') as CreatedDate, tt.Name as TelName,tt.id as idTelCo from tblsimdetails as ts LEFT JOIN tbltelco as tt ON ts.idTelCo = tt.id LEFT JOIN tblappinfo tai on ts.idApp = tai.Id  ORDER BY CreatedDate DESC"
-        // var query = "SELECT ts.id,ts.SerialNum,ts.PhoneNum,CONVERT_TZ(ts.CreatedDate,'+00:00','" + req.query.CurrentOffset + "') as CreatedDate, tt.Name as TelName from tblsimdetails as ts LEFT JOIN tbltelco as tt ON ts.idTelCo = tt.id ORDER BY CreatedDate DESC";
-    connection.query(query, function(err, response) {
+    // var query = "SELECT ts.id,ts.SerialNum,ts.PhoneNum,CONVERT_TZ(ts.CreatedDate,'+00:00','" + req.query.CurrentOffset + "') as CreatedDate, tt.Name as TelName from tblsimdetails as ts LEFT JOIN tbltelco as tt ON ts.idTelCo = tt.id ORDER BY CreatedDate DESC";
+    connection.query(query, function (err, response) {
         conf.rows = [];
         if (response.length > 0) {
             function setdata(i) {
@@ -457,5 +457,42 @@ function convertdateformat(date1, flg) {
         return ("0000" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("00" + firstdayDay.toString()).slice(-2);
     }
 }
+
+var SocketClientModule = require('socket.io-client');
+router.get('/CheckSimDetail', function (req, res) {
+    req.setTimeout(3600000);
+    var objdata = req.query;
+    var socClient = new SocketClientModule(process.env.MaarkNotifyUrl);
+    var Data = JSON.stringify(objdata);
+    var Sendflag = false;
+    console.log("Command Send", Data)
+    io.sockets.emit('emit_from_server', Data);
+    io.sockets.emit('SimDetailRequest', Data);
+    setTimeout(function () {
+        if (Sendflag == false) {
+            console.log("Socket Timeout")
+            res.json({ success: false, message: 'Socket not connected. Try after 5 minute.' });
+            socClient.disconnect();
+        };
+    }, 60000)
+    socClient.on('SimDetailResponse', function (data) {
+        var line = data.toString();
+        try {
+            var objResData = JSON.parse(line);
+            console.log(line);
+            if (objResData.simcardnumber == objdata.SerialNum) {
+                Sendflag = true;
+                // if (objResData.status == 'ACTIVE') {
+                res.json({ success: true, data: objResData });
+                //} else {
+                //res.json({ success: false, message: 'Sim Status is InActive.', data: objResData });
+                //}
+                socClient.disconnect(); // kill client after server's response
+            }
+        } catch (ex) {
+
+        }
+    });
+});
 
 module.exports = router

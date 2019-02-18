@@ -13,7 +13,7 @@ var GpsDeleteCash = models.tblgpsdeletecash;
 var Commonfunction = require('./common.js');
 //End of Tables
 
-router.get('/GetAllUser', function(req, res) {
+router.get('/GetAllUser', function (req, res) {
     var search = {};
     User.hasMany(UserInRole, {
         foreignKey: {
@@ -44,14 +44,79 @@ router.get('/GetAllUser', function(req, res) {
         }],
         where: search,
         order: 'createddate'
-    }).then(function(response) {
+    }).then(function (response) {
         res.json(response);
-    }).catch(function(error) {
+    }).catch(function (error) {
         res.json(error);
     })
 })
 
-router.get('/GetAllUserNew', function(req, res) {
+router.get('/GetAllDynamicUserNewTest', function (req, res) {
+
+    var objParam = req.query;
+    var objSearch = objParam.search;
+    var Orderby = "";
+    if (objParam.SortField != undefined && objParam.SortField != '' && objParam.SortDirection != '') {
+        Orderby = objParam.SortField + ' ' + objParam.SortDirection;
+    } else {
+        Orderby = 'id desc';
+    }
+    // var Orderby = objColumns[parseInt(objOrder[0].column)].data + ' ' + objOrder[0].dir;
+    var search = '';
+
+    if (objSearch != null && objSearch != '') {
+        search = ' Where (tbluserinformation.username like "%' + objSearch + '%" or ';
+        search = search + 'tbluserinformation.email  like "%' + objSearch + '%" or ';
+        search = search + 'tbluserinformation.phone  like "%' + objSearch + '%" or ';
+        search = search + 'tbluserinformation.country  like "%' + objSearch + '%" or ';
+        search = search + 'tbluserinformation.AppVersion  like "%' + objSearch + '%" or ';
+        search = search + 'tbluserinformation.Platform  like "%' + objSearch + '%" or ';
+        search = search + 'tblappinfo.AppName  like "%' + objSearch + '%" or ';
+        search = search + 'tblrole.RoleName  like "%' + objSearch + '%" or ';
+        search = search + 'tbluserinformation.IsMobileVerify like "%' + objSearch + '%") ';
+    }
+    if (objParam.appId != null && objParam.appId != '' && objParam.appId != undefined) {
+        if (search == '') {
+            search = " where tbluserinformation.idApp=" + objParam.appId;
+        } else {
+            search = " and tbluserinformation.idApp=" + objParam.appId;
+        }
+    }
+    var query = "select tblappinfo.AppName,GROUP_CONCAT(tblrole.RoleName) as Role ,tbluserinformation.*,CONVERT_TZ(tbluserinformation.LastLogin,'+00:00','" + CurrentOffset + "') as LastLoginDate from tbluserinformation " +
+        "left join tbluserinrole on tbluserinformation.id = tbluserinrole.userId " +
+        "left join tblrole on tbluserinrole.roleId  = tblrole.id " +
+        "left join tblappinfo on tblappinfo.id = tbluserinformation.idApp " + search +
+        "group by tbluserinformation.id " +
+        " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
+    // console.log(query)
+    var countquery = "select tbluserinformation.id from tbluserinformation " +
+        "left join tbluserinrole on tbluserinformation.id = tbluserinrole.userId " +
+        "left join tblrole on tbluserinrole.roleId  = tblrole.id " +
+        "left join tblappinfo on tblappinfo.id = tbluserinformation.idApp " + search +
+        "group by tbluserinformation.id ";
+    connection.query(query, function (err, response) {
+        if (response != undefined) {
+            connection.query(countquery, function (err, lstCount, fields) {
+                // console.log("************", lstCount.length)
+                var response1 = new Object();
+                response1.recordsTotal = lstCount.length;
+                response1.recordsFiltered = lstCount.length;
+                response1.data = response;
+                res.json(response1);
+            });
+        } else {
+            console.log(err);
+            var response1 = new Object();
+            response1.recordsTotal = 0;
+            response1.recordsFiltered = 0;
+            response1.data = [];
+            res.json(response1);
+        }
+    })
+
+})
+
+router.get('/GetAllUserNew', function (req, res) {
     User.hasMany(UserInRole, {
         foreignKey: {
             name: 'userId',
@@ -77,14 +142,14 @@ router.get('/GetAllUserNew', function(req, res) {
         }],
         order: 'createddate',
 
-    }).then(function(response) {
+    }).then(function (response) {
         res.json(response);
-    }).catch(function(error) {
+    }).catch(function (error) {
         res.json(error);
     })
 })
 
-router.get('/GetAllUserBySalesRole', function(req, res) {
+router.get('/GetAllUserBySalesRole', function (req, res) {
     User.hasMany(UserInRole, {
         foreignKey: {
             name: 'userId',
@@ -108,20 +173,20 @@ router.get('/GetAllUserBySalesRole', function(req, res) {
             }]
         }],
         order: 'createddate'
-    }).then(function(response) {
+    }).then(function (response) {
         res.json(response);
-    }).catch(function(error) {
+    }).catch(function (error) {
         res.json(error);
     })
 })
 
-router.get('/GetFirstUserSequelize', function(req, res) {
-    User.findOne().then(function(response) {
+router.get('/GetFirstUserSequelize', function (req, res) {
+    User.findOne().then(function (response) {
         var obj = new Object();
         obj.status = true;
         obj.data = response;
         res.json(obj);
-    }).catch(function(error) {
+    }).catch(function (error) {
         var obj = new Object();
         obj.status = false;
         obj.data = error;
@@ -129,7 +194,7 @@ router.get('/GetFirstUserSequelize', function(req, res) {
     })
 })
 
-router.get('/GetAllDynamicUser', function(req, res) {
+router.get('/GetAllDynamicUser', function (req, res) {
 
     var objParam = req.query;
     var objColumns = objParam.columns;
@@ -189,20 +254,20 @@ router.get('/GetAllDynamicUser', function(req, res) {
                 Role
             ]
         }]
-    }).then(function(response) {
+    }).then(function (response) {
         var response1 = new Object();
         response1.draw = objParam.draw;
         response1.recordsTotal = response.count;
         response1.recordsFiltered = response.count;
         response1.data = response.rows;
         res.json(response1);
-    }).catch(function(error) {
+    }).catch(function (error) {
         res.json(error);
     })
 })
 
 
-router.get('/GetAllDynamicUserNew', function(req, res) {
+router.get('/GetAllDynamicUserNew', function (req, res) {
 
     var objParam = req.query;
     var objColumns = objParam.columns;
@@ -242,9 +307,9 @@ router.get('/GetAllDynamicUserNew', function(req, res) {
         "left join tblrole on tbluserinrole.roleId  = tblrole.id " +
         "left join tblappinfo on tblappinfo.id = tbluserinformation.idApp " + search +
         "group by tbluserinformation.id ";
-    connection.query(query, function(err, response) {
+    connection.query(query, function (err, response) {
         if (response != undefined) {
-            connection.query(countquery, function(err, lstCount, fields) {
+            connection.query(countquery, function (err, lstCount, fields) {
                 // console.log("************", lstCount.length)
                 var response1 = new Object();
                 response1.draw = objParam.draw;
@@ -266,7 +331,7 @@ router.get('/GetAllDynamicUserNew', function(req, res) {
 
 })
 
-router.get('/GetAllDynamicUserOld', function(req, res) {
+router.get('/GetAllDynamicUserOld', function (req, res) {
 
     var objParam = req.query;
     var objColumns = objParam.columns;
@@ -311,10 +376,10 @@ router.get('/GetAllDynamicUserOld', function(req, res) {
         " Left join tbluserinrole on tbluserinformation.id = tbluserinrole.userId" +
         " Left join tblrole on tbluserinrole.roleId = tblrole.id " +
         " left join tblappinfo on tbluserinformation.idApp = tblappinfo.id " + search;
-    connection.query(query, function(err, response) {
+    connection.query(query, function (err, response) {
 
         if (response != undefined) {
-            connection.query(Countqry, function(err, lstCount, fields) {
+            connection.query(Countqry, function (err, lstCount, fields) {
                 var response1 = new Object();
                 response1.draw = objParam.draw;
                 response1.recordsTotal = lstCount[0].TotalRecord;
@@ -333,7 +398,7 @@ router.get('/GetAllDynamicUserOld', function(req, res) {
     })
 })
 
-router.get('/GetAllDynamicCustomer', function(req, res) {
+router.get('/GetAllDynamicCustomer', function (req, res) {
     var objParam = req.query;
     var objColumns = objParam.columns;
     var objOrder = objParam.order;
@@ -439,14 +504,14 @@ router.get('/GetAllDynamicCustomer', function(req, res) {
                             }
                         },
                     }],
-                }).then(function(response) {
+                }).then(function (response) {
                     var response1 = new Object();
                     response1.draw = objParam.draw;
                     response1.recordsTotal = response.count;
                     response1.recordsFiltered = response.count;
                     response1.data = response.rows;
                     res.json(response1);
-                }).catch(function(error) {
+                }).catch(function (error) {
                     res.json(error);
                 })
             }
@@ -455,7 +520,7 @@ router.get('/GetAllDynamicCustomer', function(req, res) {
     }
 })
 
-router.get('/GetAllDynamicUserbyCountry', function(req, res) {
+router.get('/GetAllDynamicUserbyCountry', function (req, res) {
 
     var objParam = req.query;
     var objColumns = objParam.columns;
@@ -586,14 +651,14 @@ router.get('/GetAllDynamicUserbyCountry', function(req, res) {
                             Role
                         ]
                     }]
-                }).then(function(response) {
+                }).then(function (response) {
                     var response1 = new Object();
                     response1.draw = objParam.draw;
                     response1.recordsTotal = response.count;
                     response1.recordsFiltered = response.count;
                     response1.data = response.rows;
                     res.json(response1);
-                }).catch(function(error) {
+                }).catch(function (error) {
                     res.json(error);
                 })
             }
@@ -602,7 +667,7 @@ router.get('/GetAllDynamicUserbyCountry', function(req, res) {
     }
 })
 
-router.get('/GetUserByName', function(req, res) {
+router.get('/GetUserByName', function (req, res) {
 
     User.hasMany(UserInRole, {
         foreignKey: {
@@ -633,14 +698,14 @@ router.get('/GetUserByName', function(req, res) {
         }],
         order: 'username',
         limit: 10
-    }).then(function(response) {
+    }).then(function (response) {
         res.json(response);
-    }).catch(function(error) {
+    }).catch(function (error) {
         res.json(error);
     })
 })
 
-router.get('/GetUserByEmail', function(req, res) {
+router.get('/GetUserByEmail', function (req, res) {
 
     User.hasMany(UserInRole, {
         foreignKey: {
@@ -671,22 +736,22 @@ router.get('/GetUserByEmail', function(req, res) {
         }],
         order: 'email',
         limit: 10
-    }).then(function(response) {
+    }).then(function (response) {
         res.json(response);
-    }).catch(function(error) {
+    }).catch(function (error) {
         res.json(error);
     })
 })
 
-router.get('/GetUserById', function(req, res) {
+router.get('/GetUserById', function (req, res) {
     User.findOne({
         where: {
             id: req.query.idUser
         }
-    }).then(function(response) {
+    }).then(function (response) {
         if (response != null) {
             if (req.query.OTP) {
-                response.updateAttributes({ OTP: req.query.OTP }).then(function(resUpdate) {
+                response.updateAttributes({ OTP: req.query.OTP }).then(function (resUpdate) {
                     response.OTP = req.query.OTP;
                     res.json({
                         success: true,
@@ -714,7 +779,7 @@ router.get('/GetUserById', function(req, res) {
 
 
 var https = require('https');
-router.get('/GetSupportUserById', function(req, res) {
+router.get('/GetSupportUserById', function (req, res) {
     //set Parameter
     req.query['permission'] = "Modified";
 
@@ -722,7 +787,7 @@ router.get('/GetSupportUserById', function(req, res) {
     obj.headers = req.headers;
     obj.query = req.query;
 
-    funAccessPermission.CheckUserAccessPermission(obj, function(responseAccessPermission) {
+    funAccessPermission.CheckUserAccessPermission(obj, function (responseAccessPermission) {
         var AccessPermission = responseAccessPermission.success;
         if (AccessPermission) {
 
@@ -731,10 +796,10 @@ router.get('/GetSupportUserById', function(req, res) {
                 where: {
                     id: req.query.idUser
                 }
-            }).then(function(response) {
+            }).then(function (response) {
                 if (response != null) {
                     if (req.query.OTP) {
-                        response.updateAttributes({ OTP: req.query.OTP }).then(function(resUpdate) {
+                        response.updateAttributes({ OTP: req.query.OTP }).then(function (resUpdate) {
                             response.OTP = req.query.OTP;
                             var data = JSON.stringify({
                                 api_key: 'a692ce5b',
@@ -762,12 +827,12 @@ router.get('/GetSupportUserById', function(req, res) {
                             req1.end();
 
                             var responseData = '';
-                            req1.on('response', function(res1) {
-                                res1.on('data', function(chunk) {
+                            req1.on('response', function (res1) {
+                                res1.on('data', function (chunk) {
                                     responseData += chunk;
                                 });
 
-                                res1.on('end', function() {
+                                res1.on('end', function () {
                                     res.json({
                                         success: true,
                                         message: "Record found...",
@@ -798,13 +863,13 @@ router.get('/GetSupportUserById', function(req, res) {
     });
 })
 
-router.get('/SendOTPById', function(req, res) {
+router.get('/SendOTPById', function (req, res) {
 
     User.findOne({
         where: {
             id: req.query.idUser
         }
-    }).then(function(response) {
+    }).then(function (response) {
         if (response != null) {
 
             // response.updateAttributes({ OTP: req.query.OTP }).then(function(resUpdate) {
@@ -842,12 +907,12 @@ router.get('/SendOTPById', function(req, res) {
             req1.end();
 
             var responseData = '';
-            req1.on('response', function(res1) {
-                res1.on('data', function(chunk) {
+            req1.on('response', function (res1) {
+                res1.on('data', function (chunk) {
                     responseData += chunk;
                 });
 
-                res1.on('end', function() {
+                res1.on('end', function () {
                     res.json({
                         success: true,
                         message: "Record found...",
@@ -867,17 +932,17 @@ router.get('/SendOTPById', function(req, res) {
     })
 })
 
-router.get('/GetUserByOTP', function(req, res) {
+router.get('/GetUserByOTP', function (req, res) {
 
     User.findOne({
         where: {
             id: req.query.idUser,
             OTP: req.query.OTP,
         }
-    }).then(function(response) {
+    }).then(function (response) {
         if (response != null) {
 
-            response.updateAttributes({ IsMobileVerify: true }).then(function(resUpdate) {
+            response.updateAttributes({ IsMobileVerify: true }).then(function (resUpdate) {
 
                 UserInRole.belongsTo(Role, {
                     foreignKey: {
@@ -893,7 +958,7 @@ router.get('/GetUserByOTP', function(req, res) {
                         model: Role,
                         attributes: ['id', 'RoleName']
                     }]
-                }).then(function(resUserInRole) {
+                }).then(function (resUserInRole) {
                     var lstRole = [];
                     for (var i = 0; i < resUserInRole.length; i++) {
                         var objRole = resUserInRole[i].tblrole.RoleName;
@@ -928,7 +993,7 @@ router.get('/GetUserByOTP', function(req, res) {
     })
 })
 
-router.get('/GetUserProfile', function(req, res) {
+router.get('/GetUserProfile', function (req, res) {
     User.hasMany(UserInRole, {
         foreignKey: {
             name: 'userId',
@@ -951,7 +1016,7 @@ router.get('/GetUserProfile', function(req, res) {
             model: UserInRole,
             include: [Role]
         }]
-    }).then(function(response) {
+    }).then(function (response) {
         if (response != null) {
             res.json({
                 success: true,
@@ -968,7 +1033,7 @@ router.get('/GetUserProfile', function(req, res) {
     })
 })
 
-router.get('/GetUserProfileNew', function(req, res) {
+router.get('/GetUserProfileNew', function (req, res) {
     User.hasMany(UserInRole, {
         foreignKey: {
             name: 'userId',
@@ -991,7 +1056,7 @@ router.get('/GetUserProfileNew', function(req, res) {
             model: UserInRole,
             include: [Role]
         }]
-    }).then(function(response) {
+    }).then(function (response) {
         if (response != null) {
             res.json({
                 success: true,
@@ -1008,7 +1073,7 @@ router.get('/GetUserProfileNew', function(req, res) {
     })
 })
 
-router.post('/SaveUser', jsonParser, function(req, res) {
+router.post('/SaveUser', jsonParser, function (req, res) {
     objUser = req.body;
     objHeader = req.headers;
     //  console.log(objUser);
@@ -1023,7 +1088,7 @@ router.post('/SaveUser', jsonParser, function(req, res) {
                 username: decoded.username,
                 password: decoded.password
             }
-        }).then(function(UserExist) {
+        }).then(function (UserExist) {
             if (UserExist != null) {
                 //  console.log("UserExist")
                 if (objUser.id != 0) {
@@ -1035,7 +1100,7 @@ router.post('/SaveUser', jsonParser, function(req, res) {
                     obj.headers = req.headers;
                     obj.query = req.query;
 
-                    funAccessPermission.CheckUserAccessPermission(obj, function(responseAccessPermission) {
+                    funAccessPermission.CheckUserAccessPermission(obj, function (responseAccessPermission) {
                         var AccessPermission = responseAccessPermission.success;
                         if (AccessPermission) {
                             User.findOne({
@@ -1043,7 +1108,7 @@ router.post('/SaveUser', jsonParser, function(req, res) {
                                     username: objUser.username
                                 },
                                 defaults: objUser
-                            }).then(function(objUserExist) {
+                            }).then(function (objUserExist) {
                                 if (objUserExist != null && objUser.id != objUserExist.id) {
                                     res.json({
                                         success: false,
@@ -1061,7 +1126,7 @@ router.post('/SaveUser', jsonParser, function(req, res) {
                                                 }]
 
                                             }
-                                        }).then(function(chkEmailExist) {
+                                        }).then(function (chkEmailExist) {
                                             if (chkEmailExist != null) {
                                                 if (objUser.phone == chkEmailExist.phone) {
                                                     res.json({
@@ -1079,12 +1144,12 @@ router.post('/SaveUser', jsonParser, function(req, res) {
                                                     where: {
                                                         id: objUser.id
                                                     }
-                                                }).then(function(responseUser) {
+                                                }).then(function (responseUser) {
                                                     UserInRole.destroy({
                                                         where: {
                                                             userId: objUser.id
                                                         }
-                                                    }).then(function(response) {
+                                                    }).then(function (response) {
                                                         if (objUser.roleId.length > 0) {
                                                             function uploader(i) {
                                                                 if (i < objUser.roleId.length) {
@@ -1093,7 +1158,7 @@ router.post('/SaveUser', jsonParser, function(req, res) {
                                                                         roleId: objUser.roleId[i].id
                                                                     }
 
-                                                                    UserInRole.create(objUserInRole).then(function(response) {
+                                                                    UserInRole.create(objUserInRole).then(function (response) {
                                                                         if (objUser.roleId.length == (i + 1)) {
                                                                             updateUserRedisValue(objUser.id);
                                                                             funAuditLog.CreateAuditLog('SaveUser', UserExist.username, 'Update User');
@@ -1131,7 +1196,7 @@ router.post('/SaveUser', jsonParser, function(req, res) {
                                                 }]
 
                                             }
-                                        }).then(function(chkEmailExist) {
+                                        }).then(function (chkEmailExist) {
                                             if (chkEmailExist != null) {
                                                 // if (objUser.phone == chkEmailExist.phone) {
                                                 //     res.json({
@@ -1149,12 +1214,12 @@ router.post('/SaveUser', jsonParser, function(req, res) {
                                                     where: {
                                                         id: objUser.id
                                                     }
-                                                }).then(function(responseUser) {
+                                                }).then(function (responseUser) {
                                                     UserInRole.destroy({
                                                         where: {
                                                             userId: objUser.id
                                                         }
-                                                    }).then(function(response) {
+                                                    }).then(function (response) {
                                                         if (objUser.roleId.length > 0) {
                                                             function uploader(i) {
                                                                 if (i < objUser.roleId.length) {
@@ -1162,7 +1227,7 @@ router.post('/SaveUser', jsonParser, function(req, res) {
                                                                         userId: objUser.id,
                                                                         roleId: objUser.roleId[i].id
                                                                     }
-                                                                    UserInRole.create(objUserInRole).then(function(response) {
+                                                                    UserInRole.create(objUserInRole).then(function (response) {
                                                                         if (objUser.roleId.length == (i + 1)) {
                                                                             funAuditLog.CreateAuditLog('SaveUser', UserExist.username, 'Update User');
                                                                             updateUserRedisValue(objUser.id);
@@ -1207,7 +1272,7 @@ router.post('/SaveUser', jsonParser, function(req, res) {
                     obj.headers = req.headers;
                     obj.query = req.query;
 
-                    funAccessPermission.CheckUserAccessPermission(obj, function(responseAccessPermission) {
+                    funAccessPermission.CheckUserAccessPermission(obj, function (responseAccessPermission) {
                         var AccessPermission = responseAccessPermission.success;
                         if (AccessPermission) {
 
@@ -1216,7 +1281,7 @@ router.post('/SaveUser', jsonParser, function(req, res) {
                                     username: objUser.username
                                 },
                                 defaults: objUser
-                            }).then(function(objUserExist) {
+                            }).then(function (objUserExist) {
                                 if (objUserExist != null && objUser.id != objUserExist.id) {
                                     res.json({
                                         success: false,
@@ -1234,7 +1299,7 @@ router.post('/SaveUser', jsonParser, function(req, res) {
                                                 // email: objUserReg.email
                                                 $or: [{ email: objUser.email }, { phone: objUser.phone }]
                                             }
-                                        }).then(function(chkEmailExist) {
+                                        }).then(function (chkEmailExist) {
                                             if (chkEmailExist != null) {
                                                 if (objUser.phone == chkEmailExist.phone) {
                                                     res.json({
@@ -1258,13 +1323,13 @@ router.post('/SaveUser', jsonParser, function(req, res) {
                                                         password: EncryptUserpassword
                                                     },
                                                     defaults: objUser
-                                                }).then(function(responseObjUser) {
+                                                }).then(function (responseObjUser) {
                                                     //
                                                     UserInRole.destroy({
                                                         where: {
                                                             userId: responseObjUser[0].id
                                                         }
-                                                    }).then(function(response) {
+                                                    }).then(function (response) {
                                                         if (objUser.roleId.length > 0) {
                                                             function uploader(i) {
                                                                 if (i < objUser.roleId.length) {
@@ -1272,7 +1337,7 @@ router.post('/SaveUser', jsonParser, function(req, res) {
                                                                         userId: responseObjUser[0].id,
                                                                         roleId: objUser.roleId[i].id
                                                                     }
-                                                                    UserInRole.create(objUserInRole).then(function(response) {
+                                                                    UserInRole.create(objUserInRole).then(function (response) {
                                                                         if (objUser.roleId.length == (i + 1)) {
                                                                             funAuditLog.CreateAuditLog('SaveUser', UserExist.username, 'Create User');
                                                                             updateUserRedisValue(responseObjUser[0].id)
@@ -1307,7 +1372,7 @@ router.post('/SaveUser', jsonParser, function(req, res) {
                                                 // email: objUserReg.email
                                                 $or: [{ email: objUser.email }]
                                             }
-                                        }).then(function(chkEmailExist) {
+                                        }).then(function (chkEmailExist) {
                                             if (chkEmailExist != null) {
                                                 // if (objUser.phone == chkEmailExist.phone) {
                                                 //     res.json({
@@ -1331,13 +1396,13 @@ router.post('/SaveUser', jsonParser, function(req, res) {
                                                         password: EncryptUserpassword
                                                     },
                                                     defaults: objUser
-                                                }).then(function(responseObjUser) {
+                                                }).then(function (responseObjUser) {
                                                     //
                                                     UserInRole.destroy({
                                                         where: {
                                                             userId: responseObjUser[0].id
                                                         }
-                                                    }).then(function(response) {
+                                                    }).then(function (response) {
                                                         if (objUser.roleId.length > 0) {
                                                             function uploader(i) {
                                                                 if (i < objUser.roleId.length) {
@@ -1345,7 +1410,7 @@ router.post('/SaveUser', jsonParser, function(req, res) {
                                                                         userId: responseObjUser[0].id,
                                                                         roleId: objUser.roleId[i].id
                                                                     }
-                                                                    UserInRole.create(objUserInRole).then(function(response) {
+                                                                    UserInRole.create(objUserInRole).then(function (response) {
                                                                         if (objUser.roleId.length == (i + 1)) {
                                                                             funAuditLog.CreateAuditLog('SaveUser', UserExist.username, 'Create User');
                                                                             updateUserRedisValue(responseObjUser[0].id)
@@ -1390,7 +1455,7 @@ router.post('/SaveUser', jsonParser, function(req, res) {
     }
 })
 
-router.post('/SaveUserNew', jsonParser, function(req, res) {
+router.post('/SaveUserNew', jsonParser, function (req, res) {
     objUser = req.body;
     objHeader = req.headers;
     //Set Parameter for User Permission
@@ -1404,7 +1469,7 @@ router.post('/SaveUserNew', jsonParser, function(req, res) {
                 username: decoded.username,
                 password: decoded.password
             }
-        }).then(function(UserExist) {
+        }).then(function (UserExist) {
             if (UserExist != null) {
                 if (objUser.id != 0) {
                     //set Parameter
@@ -1414,7 +1479,7 @@ router.post('/SaveUserNew', jsonParser, function(req, res) {
                     obj.headers = req.headers;
                     obj.query = req.query;
 
-                    funAccessPermission.CheckUserAccessPermission(obj, function(responseAccessPermission) {
+                    funAccessPermission.CheckUserAccessPermission(obj, function (responseAccessPermission) {
                         var AccessPermission = responseAccessPermission.success;
                         if (AccessPermission) {
                             User.findOne({
@@ -1425,7 +1490,7 @@ router.post('/SaveUserNew', jsonParser, function(req, res) {
                                         idApp: objUser.idApp,
                                     }]
                                 }
-                            }).then(function(objUserExist) {
+                            }).then(function (objUserExist) {
                                 if (objUserExist != null) {
                                     if (objUserExist.phone == objUser.phone) {
                                         res.json({
@@ -1450,12 +1515,12 @@ router.post('/SaveUserNew', jsonParser, function(req, res) {
                                         where: {
                                             id: objUser.id
                                         }
-                                    }).then(function(responseUser) {
+                                    }).then(function (responseUser) {
                                         UserInRole.destroy({
                                             where: {
                                                 userId: objUser.id
                                             }
-                                        }).then(function(response) {
+                                        }).then(function (response) {
                                             if (objUser.roleId.length > 0) {
                                                 function uploader(i) {
                                                     if (i < objUser.roleId.length) {
@@ -1464,7 +1529,7 @@ router.post('/SaveUserNew', jsonParser, function(req, res) {
                                                             roleId: objUser.roleId[i].id
                                                         }
 
-                                                        UserInRole.create(objUserInRole).then(function(response) {
+                                                        UserInRole.create(objUserInRole).then(function (response) {
                                                             if (objUser.roleId.length == (i + 1)) {
                                                                 funAuditLog.CreateAuditLog('SaveUser', UserExist.username, 'Update User');
                                                                 updateUserRedisValue(objUser.id);
@@ -1503,7 +1568,7 @@ router.post('/SaveUserNew', jsonParser, function(req, res) {
                     obj.headers = req.headers;
                     obj.query = req.query;
 
-                    funAccessPermission.CheckUserAccessPermission(obj, function(responseAccessPermission) {
+                    funAccessPermission.CheckUserAccessPermission(obj, function (responseAccessPermission) {
                         var AccessPermission = responseAccessPermission.success;
                         if (AccessPermission) {
                             User.findOne({
@@ -1513,7 +1578,7 @@ router.post('/SaveUserNew', jsonParser, function(req, res) {
                                         idApp: objUser.idApp,
                                     }]
                                 },
-                            }).then(function(objUserExist) {
+                            }).then(function (objUserExist) {
                                 if (objUserExist != null) {
                                     if (objUserExist.phone == objUser.phone) {
                                         res.json({
@@ -1543,13 +1608,13 @@ router.post('/SaveUserNew', jsonParser, function(req, res) {
                                             password: EncryptUserpassword
                                         },
                                         defaults: objUser
-                                    }).then(function(responseObjUser) {
+                                    }).then(function (responseObjUser) {
                                         //
                                         UserInRole.destroy({
                                             where: {
                                                 userId: responseObjUser[0].id
                                             }
-                                        }).then(function(response) {
+                                        }).then(function (response) {
                                             if (objUser.roleId.length > 0) {
                                                 function uploader(i) {
                                                     if (i < objUser.roleId.length) {
@@ -1557,7 +1622,7 @@ router.post('/SaveUserNew', jsonParser, function(req, res) {
                                                             userId: responseObjUser[0].id,
                                                             roleId: objUser.roleId[i].id
                                                         }
-                                                        UserInRole.create(objUserInRole).then(function(response) {
+                                                        UserInRole.create(objUserInRole).then(function (response) {
                                                             if (objUser.roleId.length == (i + 1)) {
                                                                 funAuditLog.CreateAuditLog('SaveUser', UserExist.username, 'Create User');
                                                                 updateUserRedisValue(responseObjUser[0].id)
@@ -1599,7 +1664,7 @@ router.post('/SaveUserNew', jsonParser, function(req, res) {
     }
 })
 
-router.post('/SaveCustomer', jsonParser, function(req, res) {
+router.post('/SaveCustomer', jsonParser, function (req, res) {
     objUser = req.body;
     objHeader = req.headers;
     //Set Parameter for User Permission
@@ -1613,7 +1678,7 @@ router.post('/SaveCustomer', jsonParser, function(req, res) {
                 username: decoded.username,
                 password: decoded.password
             }
-        }).then(function(UserExist) {
+        }).then(function (UserExist) {
             if (UserExist != null) {
                 if (objUser.id != 0) {
                     //set Parameter
@@ -1623,7 +1688,7 @@ router.post('/SaveCustomer', jsonParser, function(req, res) {
                     obj.headers = req.headers;
                     obj.query = req.query;
 
-                    funAccessPermission.CheckUserAccessPermission(obj, function(responseAccessPermission) {
+                    funAccessPermission.CheckUserAccessPermission(obj, function (responseAccessPermission) {
                         var AccessPermission = responseAccessPermission.success;
                         if (AccessPermission) {
                             User.findOne({
@@ -1634,7 +1699,7 @@ router.post('/SaveCustomer', jsonParser, function(req, res) {
                                         idApp: objUser.idApp,
                                     }]
                                 }
-                            }).then(function(objUserExist) {
+                            }).then(function (objUserExist) {
                                 if (objUserExist != null && objUserExist.id != objUser.id) {
                                     if (objUserExist.phone == objUser.phone) {
                                         res.json({
@@ -1668,12 +1733,12 @@ router.post('/SaveCustomer', jsonParser, function(req, res) {
                                         where: {
                                             id: objUser.id
                                         }
-                                    }).then(function(responseUser) {
+                                    }).then(function (responseUser) {
                                         UserInRole.destroy({
                                             where: {
                                                 userId: objUser.id
                                             }
-                                        }).then(function(response) {
+                                        }).then(function (response) {
                                             if (objUser.roleId.length > 0) {
                                                 function uploader(i) {
                                                     if (i < objUser.roleId.length) {
@@ -1681,7 +1746,7 @@ router.post('/SaveCustomer', jsonParser, function(req, res) {
                                                             userId: objUser.id,
                                                             roleId: objUser.roleId[i].id
                                                         }
-                                                        UserInRole.create(objUserInRole).then(function(response) {
+                                                        UserInRole.create(objUserInRole).then(function (response) {
                                                             if (objUser.roleId.length == (i + 1)) {
                                                                 funAuditLog.CreateAuditLog('SaveCustomer', UserExist.username, 'Update Customer');
                                                                 updateUserRedisValue(objUser.id)
@@ -1720,7 +1785,7 @@ router.post('/SaveCustomer', jsonParser, function(req, res) {
                     obj.headers = req.headers;
                     obj.query = req.query;
 
-                    funAccessPermission.CheckUserAccessPermission(obj, function(responseAccessPermission) {
+                    funAccessPermission.CheckUserAccessPermission(obj, function (responseAccessPermission) {
                         var AccessPermission = responseAccessPermission.success;
                         if (AccessPermission) {
                             User.findOne({
@@ -1730,7 +1795,7 @@ router.post('/SaveCustomer', jsonParser, function(req, res) {
                                         idApp: objUser.idApp,
                                     }]
                                 },
-                            }).then(function(objUserExist) {
+                            }).then(function (objUserExist) {
                                 if (objUserExist != null) {
                                     if (objUserExist.phone == objUser.phone) {
                                         res.json({
@@ -1760,13 +1825,13 @@ router.post('/SaveCustomer', jsonParser, function(req, res) {
                                             password: EncryptUserpassword
                                         },
                                         defaults: objUser
-                                    }).then(function(responseObjUser) {
+                                    }).then(function (responseObjUser) {
                                         //
                                         UserInRole.destroy({
                                             where: {
                                                 userId: responseObjUser[0].id
                                             }
-                                        }).then(function(response) {
+                                        }).then(function (response) {
                                             if (objUser.roleId.length > 0) {
                                                 function uploader(i) {
                                                     if (i < objUser.roleId.length) {
@@ -1774,7 +1839,7 @@ router.post('/SaveCustomer', jsonParser, function(req, res) {
                                                             userId: responseObjUser[0].id,
                                                             roleId: objUser.roleId[i].id
                                                         }
-                                                        UserInRole.create(objUserInRole).then(function(response) {
+                                                        UserInRole.create(objUserInRole).then(function (response) {
                                                             if (objUser.roleId.length == (i + 1)) {
                                                                 funAuditLog.CreateAuditLog('SaveCustomer', UserExist.username, 'Create Customer');
                                                                 updateUserRedisValue(responseObjUser[0].id);
@@ -1816,7 +1881,7 @@ router.post('/SaveCustomer', jsonParser, function(req, res) {
     }
 })
 
-router.post('/SaveMobileUser', jsonParser, function(req, res) {
+router.post('/SaveMobileUser', jsonParser, function (req, res) {
     objUser = req.body;
     objHeader = req.headers;
 
@@ -1828,7 +1893,7 @@ router.post('/SaveMobileUser', jsonParser, function(req, res) {
                 username: decoded.username,
                 password: decoded.password
             }
-        }).then(function(UserExist) {
+        }).then(function (UserExist) {
             if (UserExist != null) {
                 if (objUser.id != 0) {
                     User.findOne({
@@ -1837,7 +1902,7 @@ router.post('/SaveMobileUser', jsonParser, function(req, res) {
                             username: objUser.username
                         },
                         defaults: objUser
-                    }).then(function(objUserExist) {
+                    }).then(function (objUserExist) {
                         if (objUserExist != null && objUser.id != objUserExist.id) {
                             res.json({
                                 success: false,
@@ -1849,7 +1914,7 @@ router.post('/SaveMobileUser', jsonParser, function(req, res) {
                                 where: {
                                     id: objUser.id
                                 }
-                            }).then(function(responseUser) {
+                            }).then(function (responseUser) {
                                 funAuditLog.CreateAuditLog('SaveMobileUser', UserExist.username, 'Update User');
                                 res.json({
                                     success: true,
@@ -1876,7 +1941,7 @@ router.post('/SaveMobileUser', jsonParser, function(req, res) {
     }
 })
 
-router.post('/SaveSupportUser', jsonParser, function(req, res) {
+router.post('/SaveSupportUser', jsonParser, function (req, res) {
     objUser = req.body;
     objHeader = req.headers;
 
@@ -1891,7 +1956,7 @@ router.post('/SaveSupportUser', jsonParser, function(req, res) {
                 username: decoded.username,
                 password: decoded.password
             }
-        }).then(function(UserExist) {
+        }).then(function (UserExist) {
             if (UserExist != null) {
                 if (objUser.id != 0) {
 
@@ -1902,7 +1967,7 @@ router.post('/SaveSupportUser', jsonParser, function(req, res) {
                     obj.headers = req.headers;
                     obj.query = req.query;
 
-                    funAccessPermission.CheckUserAccessPermission(obj, function(responseAccessPermission) {
+                    funAccessPermission.CheckUserAccessPermission(obj, function (responseAccessPermission) {
                         var AccessPermission = responseAccessPermission.success;
                         if (AccessPermission) {
 
@@ -1911,7 +1976,7 @@ router.post('/SaveSupportUser', jsonParser, function(req, res) {
                                     username: objUser.username
                                 },
                                 defaults: objUser
-                            }).then(function(objUserExist) {
+                            }).then(function (objUserExist) {
                                 if (objUserExist != null && objUser.id != objUserExist.id) {
                                     res.json({
                                         success: false,
@@ -1926,7 +1991,7 @@ router.post('/SaveSupportUser', jsonParser, function(req, res) {
                                                 id: { $ne: objUser.id }
                                             }]
                                         }
-                                    }).then(function(chkEmailExist) {
+                                    }).then(function (chkEmailExist) {
                                         if (chkEmailExist != null) {
                                             if (objUser.phone == chkEmailExist.phone) {
                                                 res.json({
@@ -1944,7 +2009,7 @@ router.post('/SaveSupportUser', jsonParser, function(req, res) {
                                                 where: {
                                                     id: objUser.id
                                                 }
-                                            }).then(function(responseUser) {
+                                            }).then(function (responseUser) {
                                                 funAuditLog.CreateAuditLog('SaveSupportUser', UserExist.username, 'Create Support User');
                                                 res.json({
                                                     success: true,
@@ -1976,7 +2041,7 @@ router.post('/SaveSupportUser', jsonParser, function(req, res) {
     }
 })
 
-router.post('/SaveUserInRole', jsonParser, function(req, res) {
+router.post('/SaveUserInRole', jsonParser, function (req, res) {
     objUser = req.body;
     objHeader = req.headers;
 
@@ -1988,7 +2053,7 @@ router.post('/SaveUserInRole', jsonParser, function(req, res) {
                 username: decoded.username,
                 password: decoded.password
             }
-        }).then(function(UserExist) {
+        }).then(function (UserExist) {
             if (UserExist != null) {
 
                 UserInRole.findOrCreate({
@@ -1996,7 +2061,7 @@ router.post('/SaveUserInRole', jsonParser, function(req, res) {
                         userId: objUser.userId
                     },
                     defaults: objUser
-                }).then(function(response) {
+                }).then(function (response) {
                     if ((response[1])) {
                         funAuditLog.CreateAuditLog('SaveUserInRole', UserExist.username, 'Create User In Role');
                         res.json({
@@ -2009,7 +2074,7 @@ router.post('/SaveUserInRole', jsonParser, function(req, res) {
                             where: {
                                 userId: objUser.userId
                             }
-                        }).then(function(response) {
+                        }).then(function (response) {
                             if (response[0]) {
                                 funAuditLog.CreateAuditLog('SaveUserInRole', UserExist.username, 'Create User In Role');
                                 res.json({
@@ -2030,7 +2095,7 @@ router.post('/SaveUserInRole', jsonParser, function(req, res) {
     }
 })
 
-router.post('/UpdateMobileUserOwnerSpeed', jsonParser, function(req, res) {
+router.post('/UpdateMobileUserOwnerSpeed', jsonParser, function (req, res) {
     objUser = req.body;
     objHeader = req.headers;
     var token = getToken(objHeader);
@@ -2042,7 +2107,7 @@ router.post('/UpdateMobileUserOwnerSpeed', jsonParser, function(req, res) {
                 username: decoded.username,
                 password: decoded.password
             }
-        }).then(function(UserExist) {
+        }).then(function (UserExist) {
             if (UserExist != null) {
                 if (objUser.id != 0) {
                     User.findOne({
@@ -2050,7 +2115,7 @@ router.post('/UpdateMobileUserOwnerSpeed', jsonParser, function(req, res) {
                             username: objUser.username
                         },
                         defaults: objUser
-                    }).then(function(objUserExist) {
+                    }).then(function (objUserExist) {
 
                         //Umang -- Start
                         if (objUserExist != null) {
@@ -2098,7 +2163,7 @@ router.post('/UpdateMobileUserOwnerSpeed', jsonParser, function(req, res) {
 
                             Bike.findAll({
                                 where: search,
-                            }).then(function(UserRes) {
+                            }).then(function (UserRes) {
                                 if (UserRes.length > 0) {
                                     var client = new net.Socket();
                                     var SecurityFlag = '0';
@@ -2114,9 +2179,9 @@ router.post('/UpdateMobileUserOwnerSpeed', jsonParser, function(req, res) {
                                                 var DeviceId = UserRes[i].deviceid;
                                                 var Data = "(" + DeviceId + "DP12H" + MaxSpeed + "L000)";
 
-                                                client.connect(SocketPort, SocketIPAddress, function() {
+                                                client.connect(SocketPort, SocketIPAddress, function () {
                                                     client.write(Data);
-                                                    client.setTimeout(180000, function() {
+                                                    client.setTimeout(180000, function () {
                                                         if (Sendflag == false) {
                                                             Sendflag = true;
                                                             // res.json({ success: false, message: 'Network searching, please try again' });
@@ -2127,7 +2192,7 @@ router.post('/UpdateMobileUserOwnerSpeed', jsonParser, function(req, res) {
                                                     });
                                                 });
 
-                                                client.on('data', function(data) {
+                                                client.on('data', function (data) {
                                                     var line = data.toString();
                                                     //console.log(line);
                                                     if (Sendflag == false) {
@@ -2157,7 +2222,7 @@ router.post('/UpdateMobileUserOwnerSpeed', jsonParser, function(req, res) {
                                                     }
                                                 });
 
-                                                client.on('close', function() {
+                                                client.on('close', function () {
                                                     //  console.log('Connection closed');
                                                 });
                                             }
@@ -2247,8 +2312,8 @@ router.post('/UpdateMobileUserOwnerSpeed', jsonParser, function(req, res) {
                             //Umang -- End
 
 
-                            objUserExist.updateAttributes({ MaxSpeed: objUser.MaxSpeed }).then(function(responseUser) {
-                                connection.query("update tblbike set MaxSpeed = '" + objUser.MaxSpeed + "' where iduser = '" + objUserExist.id + "' and IsDeleted=false and DeviceType!='M2';", function(err, rows, fields) {
+                            objUserExist.updateAttributes({ MaxSpeed: objUser.MaxSpeed }).then(function (responseUser) {
+                                connection.query("update tblbike set MaxSpeed = '" + objUser.MaxSpeed + "' where iduser = '" + objUserExist.id + "' and IsDeleted=false and DeviceType!='M2';", function (err, rows, fields) {
                                     funAuditLog.CreateAuditLog('UpdateMobileUserOwnerSpeed', UserExist.username, 'Update Maximum Speed');
                                     res.json({
                                         success: true,
@@ -2275,7 +2340,7 @@ router.post('/UpdateMobileUserOwnerSpeed', jsonParser, function(req, res) {
     }
 })
 
-router.post('/UpdateBikeDeviceMaxSpeed', jsonParser, function(req, res) {
+router.post('/UpdateBikeDeviceMaxSpeed', jsonParser, function (req, res) {
     objUser = req.body;
     objHeader = req.headers;
     var token = getToken(objHeader);
@@ -2287,7 +2352,7 @@ router.post('/UpdateBikeDeviceMaxSpeed', jsonParser, function(req, res) {
                 username: decoded.username,
                 password: decoded.password
             }
-        }).then(function(UserExist) {
+        }).then(function (UserExist) {
             if (UserExist != null) {
                 if (objUser.id != 0) {
                     Bike.findOne({
@@ -2300,7 +2365,7 @@ router.post('/UpdateBikeDeviceMaxSpeed', jsonParser, function(req, res) {
                             },
                         },
                         defaults: objUser
-                    }).then(function(objUserExist) {
+                    }).then(function (objUserExist) {
                         if (objUserExist != null) {
 
                             if (objUserExist.MaxSpeed == null) {
@@ -2322,9 +2387,9 @@ router.post('/UpdateBikeDeviceMaxSpeed', jsonParser, function(req, res) {
                                 var DeviceId = objUserExist.deviceid;
                                 var Data = "(" + DeviceId + "DP12H" + MaxSpeed + "L000)";
 
-                                client.connect(SocketPort, SocketIPAddress, function() {
+                                client.connect(SocketPort, SocketIPAddress, function () {
                                     client.write(Data);
-                                    client.setTimeout(120000, function() {
+                                    client.setTimeout(120000, function () {
                                         if (Sendflag == false) {
                                             Sendflag = true;
                                             client.destroy();
@@ -2338,7 +2403,7 @@ router.post('/UpdateBikeDeviceMaxSpeed', jsonParser, function(req, res) {
                                     });
                                 });
 
-                                client.on('data', function(data) {
+                                client.on('data', function (data) {
                                     var line = data.toString();
                                     if (Sendflag == false) {
                                         if (line.indexOf('BP12') > 0) {
@@ -2352,7 +2417,7 @@ router.post('/UpdateBikeDeviceMaxSpeed', jsonParser, function(req, res) {
                                             client.destroy();
                                             timerHander = 0;
 
-                                            objUserExist.updateAttributes({ MaxSpeed: objUser.MaxSpeed }).then(function(responseUser) {
+                                            objUserExist.updateAttributes({ MaxSpeed: objUser.MaxSpeed }).then(function (responseUser) {
                                                 funAuditLog.CreateAuditLog('UpdateBikeDeviceMaxSpeed', UserExist.username, deviceID + 'Update Maximum Speed');
                                                 res.json({
                                                     success: true,
@@ -2375,7 +2440,7 @@ router.post('/UpdateBikeDeviceMaxSpeed', jsonParser, function(req, res) {
                                     }
                                 });
 
-                                client.on('close', function() {
+                                client.on('close', function () {
                                     //  console.log('Connection closed');
                                 });
                             } else {
@@ -2529,7 +2594,7 @@ router.post('/UpdateBikeDeviceMaxSpeed', jsonParser, function(req, res) {
 //     }
 // })
 
-router.post('/UpdateMobileUserOwner', jsonParser, function(req, res) {
+router.post('/UpdateMobileUserOwner', jsonParser, function (req, res) {
     objUser = req.body;
     objHeader = req.headers;
     var token = getToken(objHeader);
@@ -2541,9 +2606,9 @@ router.post('/UpdateMobileUserOwner', jsonParser, function(req, res) {
                 username: decoded.username,
                 password: decoded.password,
             }
-        }).then(function(UserExist) {
+        }).then(function (UserExist) {
             if (UserExist != null) {
-                UserExist.updateAttributes({ ProfileName: objUser.ProfileName, email: objUser.email, phone: objUser.phone }).then(function(responseUser) {
+                UserExist.updateAttributes({ ProfileName: objUser.ProfileName, email: objUser.email, phone: objUser.phone }).then(function (responseUser) {
                     funAuditLog.CreateAuditLog('UpdateMobileUserOwner', UserExist.username, 'Update User');
                     res.json({
                         success: true,
@@ -2561,7 +2626,7 @@ router.post('/UpdateMobileUserOwner', jsonParser, function(req, res) {
     }
 })
 
-router.post('/UpdateMobileUserOwnerNew', jsonParser, function(req, res) {
+router.post('/UpdateMobileUserOwnerNew', jsonParser, function (req, res) {
     objUser = req.body;
     objHeader = req.headers;
 
@@ -2575,9 +2640,9 @@ router.post('/UpdateMobileUserOwnerNew', jsonParser, function(req, res) {
                 password: decoded.password,
                 idApp: objUser.idApp,
             }
-        }).then(function(UserExist) {
+        }).then(function (UserExist) {
             if (UserExist != null) {
-                UserExist.updateAttributes({ ProfileName: objUser.ProfileName, email: objUser.email, phone: objUser.phone }).then(function(responseUser) {
+                UserExist.updateAttributes({ ProfileName: objUser.ProfileName, email: objUser.email, phone: objUser.phone }).then(function (responseUser) {
                     funAuditLog.CreateAuditLog('UpdateMobileUserOwner', UserExist.username, 'Update User');
                     res.json({
                         success: true,
@@ -2595,7 +2660,7 @@ router.post('/UpdateMobileUserOwnerNew', jsonParser, function(req, res) {
     }
 })
 
-router.post('/UpdateMobileUser', jsonParser, function(req, res) {
+router.post('/UpdateMobileUser', jsonParser, function (req, res) {
     objUser = req.body;
     objHeader = req.headers;
 
@@ -2607,7 +2672,7 @@ router.post('/UpdateMobileUser', jsonParser, function(req, res) {
                 username: decoded.username,
                 password: decoded.password
             }
-        }).then(function(UserExist) {
+        }).then(function (UserExist) {
             if (UserExist != null) {
                 if (objUser.id != 0) {
                     User.findOne({
@@ -2615,9 +2680,9 @@ router.post('/UpdateMobileUser', jsonParser, function(req, res) {
                             username: objUser.username
                         },
                         defaults: objUser
-                    }).then(function(objUserExist) {
+                    }).then(function (objUserExist) {
                         if (objUserExist != null) {
-                            objUserExist.updateAttributes({ ShopName: objUser.ShopName, PersonInCharge: objUser.PersonInCharge, phone: objUser.phone, IsSecurity: objUser.IsSecurity }).then(function(responseUser) {
+                            objUserExist.updateAttributes({ ShopName: objUser.ShopName, PersonInCharge: objUser.PersonInCharge, phone: objUser.phone, IsSecurity: objUser.IsSecurity }).then(function (responseUser) {
                                 funAuditLog.CreateAuditLog('UpdateMobileUser', UserExist.username, 'Update User');
                                 res.json({
                                     success: true,
@@ -2644,7 +2709,7 @@ router.post('/UpdateMobileUser', jsonParser, function(req, res) {
     }
 })
 
-router.get('/DeleteUser', function(req, res) {
+router.get('/DeleteUser', function (req, res) {
     objHeader = req.headers;
 
     var token = getToken(objHeader);
@@ -2655,13 +2720,13 @@ router.get('/DeleteUser', function(req, res) {
                 username: decoded.username,
                 password: decoded.password
             }
-        }).then(function(UserExist) {
+        }).then(function (UserExist) {
             if (UserExist != null) {
                 User.destroy({
                     where: {
                         id: req.query.idUser
                     }
-                }).then(function(response) {
+                }).then(function (response) {
                     if (response) {
                         funAuditLog.CreateAuditLog('DeleteUser', UserExist.username, 'Delete User');
                         res.json({
@@ -2742,7 +2807,7 @@ function GetUserNameFromDate() {
 }
 
 
-router.post('/uploadImage', function(req, res) {
+router.post('/uploadImage', function (req, res) {
     var form = new formidable.IncomingForm();
 
     form.uploadDir = __dirname + '/../MediaUploads/UserUpload';
@@ -2753,14 +2818,14 @@ router.post('/uploadImage', function(req, res) {
 
 
     //file upload path
-    form.parse(req, function(err, fields, files) {
+    form.parse(req, function (err, fields, files) {
 
         // console.log(err)
         // console.log(fields)
         //console.log(files)
         //you can get fields here
     });
-    form.on('fileBegin', function(name, file) {
+    form.on('fileBegin', function (name, file) {
         var ext = file.name.substring(file.name.indexOf('.'), file.name.length);
         var NewName = GetUserNameFromDate();
         if (ext.indexOf('?') > -1) {
@@ -2773,14 +2838,14 @@ router.post('/uploadImage', function(req, res) {
 
         //modify file path
     });
-    form.on('end', function() {
+    form.on('end', function () {
         var i = 0;
 
         function uploader(i) {
             if (i < FileName.length) {
                 var UserId = parseInt(lstUser[i]);
 
-                User.findOne({ where: { id: UserId } }).then(function(response) {
+                User.findOne({ where: { id: UserId } }).then(function (response) {
                     if (response != null) {
                         //  if (req.query.UserType == 'Owner') {
                         //      if (response.OwnerImage != '' && response.OwnerImage != null) {
@@ -2801,20 +2866,20 @@ router.post('/uploadImage', function(req, res) {
                         //  } else {
                         if (response.image != '' && response.image != null) {
                             var oldFile = __dirname + '/../MediaUploads/UserUpload/' + response.image;
-                            fs.exists(oldFile, function(exists) {
+                            fs.exists(oldFile, function (exists) {
                                 if (exists) {
                                     fs.unlink(oldFile);
                                 }
                             });
                         };
-                        response.updateAttributes({ image: FileName[i] }).then(function(resUpdate) {
-                                if ((i + 1) == FileName.length) {
-                                    res.json({ success: true, message: "Images Uploaded Successfully...", data: FileName[i] });
-                                } else {
-                                    uploader(i + 1);
-                                };
-                            })
-                            //  }
+                        response.updateAttributes({ image: FileName[i] }).then(function (resUpdate) {
+                            if ((i + 1) == FileName.length) {
+                                res.json({ success: true, message: "Images Uploaded Successfully...", data: FileName[i] });
+                            } else {
+                                uploader(i + 1);
+                            };
+                        })
+                        //  }
                     }
                 })
             }
@@ -2828,7 +2893,7 @@ router.post('/uploadImage', function(req, res) {
     });
 });
 
-router.get('/GetAllDynamicOwnerCustomerold', function(req, res) {
+router.get('/GetAllDynamicOwnerCustomerold', function (req, res) {
     var objParam = req.query;
     var objColumns = objParam.columns;
     var objOrder = objParam.order;
@@ -2923,14 +2988,14 @@ router.get('/GetAllDynamicOwnerCustomerold', function(req, res) {
                     //          }
                     //      }],
                     //  }],
-                }).then(function(response) {
+                }).then(function (response) {
                     var response1 = new Object();
                     response1.draw = objParam.draw;
                     response1.recordsTotal = response.count;
                     response1.recordsFiltered = response.count;
                     response1.data = response.rows;
                     res.json(response1);
-                }).catch(function(error) {
+                }).catch(function (error) {
                     //  console.log(error);
                     res.json(error);
                 })
@@ -2940,7 +3005,7 @@ router.get('/GetAllDynamicOwnerCustomerold', function(req, res) {
     }
 })
 
-router.get('/GetAllDynamicOwnerCustomer', function(req, res) {
+router.get('/GetAllDynamicOwnerCustomer', function (req, res) {
     var objParam = req.query;
     var objColumns = objParam.columns;
     var objOrderBy = objParam.order;
@@ -3009,7 +3074,7 @@ router.get('/GetAllDynamicOwnerCustomer', function(req, res) {
     query += " SELECT FOUND_ROWS() as TotalRecord ";
     // var Countqry = "SELECT count(tbluserinformation.id) as TotalRecord " +
     //     "from tbluserinformation left join tblappinfo on tbluserinformation.idApp = tblappinfo.id " + JoinQuery + search;
-    connectionUserData.query(query, function(err, response) {
+    connectionUserData.query(query, function (err, response) {
         if (response != undefined) {
             // connection.query(Countqry, function(err, lstCount, fields) {
             var response1 = new Object();
@@ -3032,30 +3097,30 @@ router.get('/GetAllDynamicOwnerCustomer', function(req, res) {
 
 })
 
-router.get('/ExportOwnerCustomer', function(req, res) {
+router.get('/ExportOwnerCustomer', function (req, res) {
     //for excel
     var conf = {};
     conf.name = "Sheet1";
     conf.cols = [{
-            caption: 'Email',
-            type: 'string'
-        }, {
-            caption: 'Phone',
-            type: 'string'
-        }, {
-            caption: 'Country',
-            type: 'string'
-        },
-        {
-            caption: 'Total Device',
-            type: 'string'
-        }, {
-            caption: 'App Name',
-            type: 'string'
-        }, {
-            caption: 'Last Login Date',
-            type: 'string'
-        },
+        caption: 'Email',
+        type: 'string'
+    }, {
+        caption: 'Phone',
+        type: 'string'
+    }, {
+        caption: 'Country',
+        type: 'string'
+    },
+    {
+        caption: 'Total Device',
+        type: 'string'
+    }, {
+        caption: 'App Name',
+        type: 'string'
+    }, {
+        caption: 'Last Login Date',
+        type: 'string'
+    },
     ];
 
     var objParam = req.query;
@@ -3076,7 +3141,7 @@ router.get('/ExportOwnerCustomer', function(req, res) {
         "from tbluserinformation left join tblappinfo on tbluserinformation.idApp = tblappinfo.id " + search +
         " order by CreatedDate desc";
 
-    connectionUserData.query(query, function(err, response) {
+    connectionUserData.query(query, function (err, response) {
         if (response != undefined) {
             conf.rows = [];
 
@@ -3127,7 +3192,7 @@ router.get('/ExportOwnerCustomer', function(req, res) {
     })
 })
 
-router.get('/GetAllDynamicShopperCustomer', function(req, res) {
+router.get('/GetAllDynamicShopperCustomer', function (req, res) {
 
     var objParam = req.query;
     var objColumns = objParam.columns;
@@ -3215,14 +3280,14 @@ router.get('/GetAllDynamicShopperCustomer', function(req, res) {
                             }
                         },
                     }],
-                }).then(function(response) {
+                }).then(function (response) {
                     var response1 = new Object();
                     response1.draw = objParam.draw;
                     response1.recordsTotal = response.count;
                     response1.recordsFiltered = response.count;
                     response1.data = response.rows;
                     res.json(response1);
-                }).catch(function(error) {
+                }).catch(function (error) {
                     //  console.log(error);
                     res.json(error);
                 })
@@ -3233,7 +3298,7 @@ router.get('/GetAllDynamicShopperCustomer', function(req, res) {
 })
 
 
-router.get('/DeleteCustomer_old', function(req, res) {
+router.get('/DeleteCustomer_old', function (req, res) {
     objHeader = req.headers;
     var token = getToken(objHeader);
     var obj = {};
@@ -3249,19 +3314,19 @@ router.get('/DeleteCustomer_old', function(req, res) {
                 username: decoded.username,
                 password: decoded.password
             }
-        }).then(function(UserExist) {
+        }).then(function (UserExist) {
             if (UserExist != null) {
                 if (req.query.id != '' && req.query.id != null) {
-                    Vehicle.findOne({ where: { iduser: req.query.id } }).then(function(vehicleExits) {
+                    Vehicle.findOne({ where: { iduser: req.query.id } }).then(function (vehicleExits) {
                         if (vehicleExits) {
                             res.json({
                                 success: false,
                                 message: "This Customer have Vehicle. so you can not delete this customer.",
                             });
                         } else {
-                            SharedDevice.destroy({ where: { idSharedUser: req.query.id } }).then(function(SharedDevicedeleted) {
-                                UserInRole.destroy({ where: { userId: req.query.id } }).then(function(roledeleted) {
-                                    User.destroy({ where: { id: req.query.id } }).then(function(response) {
+                            SharedDevice.destroy({ where: { idSharedUser: req.query.id } }).then(function (SharedDevicedeleted) {
+                                UserInRole.destroy({ where: { userId: req.query.id } }).then(function (roledeleted) {
+                                    User.destroy({ where: { id: req.query.id } }).then(function (response) {
                                         if (response) {
                                             funAuditLog.CreateAuditLog('Delete Customer', UserExist.username, 'Delete Customer');
                                             res.json({
@@ -3298,7 +3363,7 @@ router.get('/DeleteCustomer_old', function(req, res) {
 });
 
 
-router.post('/UpdateCustomer', jsonParser, function(req, res) {
+router.post('/UpdateCustomer', jsonParser, function (req, res) {
     objCustomer = req.body;
     objHeader = req.headers;
     var token = getToken(objHeader);
@@ -3313,11 +3378,11 @@ router.post('/UpdateCustomer', jsonParser, function(req, res) {
                 username: decoded.username,
                 password: decoded.password
             }
-        }).then(function(UserExist) {
+        }).then(function (UserExist) {
             if (UserExist != null) {
-                User.findOne({ where: { id: objCustomer.id } }).then(function(userObject) {
+                User.findOne({ where: { id: objCustomer.id } }).then(function (userObject) {
                     if (userObject) {
-                        User.findOne({ where: { email: objCustomer.email, idApp: objCustomer.idApp } }).then(function(userduplicate) {
+                        User.findOne({ where: { email: objCustomer.email, idApp: objCustomer.idApp } }).then(function (userduplicate) {
                             if (userduplicate && userduplicate.id != objCustomer.id) {
                                 res.json({
                                     success: false,
@@ -3326,7 +3391,7 @@ router.post('/UpdateCustomer', jsonParser, function(req, res) {
                             } else {
                                 objCustomer.modifiedby = UserExist.username;
                                 objCustomer.modifieddate = new Date();
-                                userObject.update(objCustomer).then(function(response) {
+                                userObject.update(objCustomer).then(function (response) {
                                     if (response) {
                                         funAuditLog.CreateAuditLog('Update Customer', UserExist.username, 'Update Customer');
                                         res.json({
@@ -3364,7 +3429,7 @@ router.post('/UpdateCustomer', jsonParser, function(req, res) {
 
 
 function updateUserRedisValue(id) {
-    Vehicle.findAll({ where: { iduser: id } }).then(function(response) {
+    Vehicle.findAll({ where: { iduser: id } }).then(function (response) {
         if (response) {
             for (var i = 0; i < response.length; i++) {
                 Commonfunction.UpdateVehicleRedis(response[i].deviceid, 'User')
@@ -3374,7 +3439,7 @@ function updateUserRedisValue(id) {
 }
 
 //DeleteCustomer
-router.get('/DeleteCustomer', function(req, res) {
+router.get('/DeleteCustomer', function (req, res) {
     objHeader = req.headers;
     var token = getToken(objHeader);
     var obj = {};
@@ -3395,7 +3460,7 @@ router.get('/DeleteCustomer', function(req, res) {
                 RequestType: obj.RequestType,
             },
             defaults: obj
-        }).then(function(CashCreate) {
+        }).then(function (CashCreate) {
             if (CashCreate[1]) {
                 funAuditLog.CreateAuditLog('Delete Account', decoded.username, 'Save GpsDeleteCash data Userid: (' + obj.idUser + ')');
                 res.json({

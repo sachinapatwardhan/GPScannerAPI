@@ -3,7 +3,7 @@ var router = express.Router();
 //Gps Tracker
 // --------------------------------------Get All Gps Device From Distributor-----------------------------------
 
-router.get('/GetAllGPSDeviceForDistributor', function(req, res) {
+router.get('/GetAllGPSDeviceForDistributor', function (req, res) {
     var objParam = req.query;
 
     var objColumns = objParam.columns;
@@ -76,9 +76,9 @@ router.get('/GetAllGPSDeviceForDistributor', function(req, res) {
         " Left Join tblcountrymgmt on tblcountrymgmt.id = tblgpsdevice.CountryId" +
         " Left Join tbltelco on tblsimdetails.idTelCo = tbltelco.id " + search;
     // " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
-    connection.query(query, function(err, response) {
+    connection.query(query, function (err, response) {
         if (response != undefined) {
-            connection.query(Countqry, function(err, lstCount, fields) {
+            connection.query(Countqry, function (err, lstCount, fields) {
                 console.log(err)
                 var response1 = new Object();
                 response1.draw = objParam.draw;
@@ -101,7 +101,7 @@ router.get('/GetAllGPSDeviceForDistributor', function(req, res) {
 })
 
 // --------------------------------------Export Gps Device From Distributor-----------------------------------
-router.get('/ExportTrackerForDistributor', function(req, res) {
+router.get('/ExportTrackerForDistributor', function (req, res) {
     var objParam = req.query;
     var conf = {};
     conf.name = "Sheet1";
@@ -239,7 +239,7 @@ router.get('/ExportTrackerForDistributor', function(req, res) {
         " Left Join tbltelco on tblsimdetails.idTelCo = tbltelco.id " + search +
         " order by " + Orderby;
 
-    connection.query(query, function(err, response) {
+    connection.query(query, function (err, response) {
         if (response != undefined) {
             conf.rows = [];
             // conf1.rows = [];
@@ -358,7 +358,7 @@ router.get('/ExportTrackerForDistributor', function(req, res) {
 
 
 //-------------------------------------Distributor Customer--------------------------------------------------
-router.get('/GetAllDynamicOwnerCustomerForDistributor', function(req, res) {
+router.get('/GetAllDynamicOwnerCustomerForDistributor', function (req, res) {
     var objParam = req.query;
     var objColumns = objParam.columns;
     var objOrderBy = objParam.order;
@@ -429,7 +429,7 @@ router.get('/GetAllDynamicOwnerCustomerForDistributor', function(req, res) {
     query += " SELECT FOUND_ROWS() as TotalRecord ";
     // var Countqry = "SELECT count(tbluserinformation.id) as TotalRecord " +
     //     "from tbluserinformation left join tblappinfo on tbluserinformation.idApp = tblappinfo.id " + JoinQuery + search;
-    connectionUserData.query(query, function(err, response) {
+    connectionUserData.query(query, function (err, response) {
         if (response != undefined) {
             // connection.query(Countqry, function(err, lstCount, fields) {
             var response1 = new Object();
@@ -453,7 +453,7 @@ router.get('/GetAllDynamicOwnerCustomerForDistributor', function(req, res) {
 })
 
 //----------------------------------------Distributor Vehicles--------------------------------------------------
-router.get('/GetAllDynamicVehicleForDistibutor', function(req, res) {
+router.get('/GetAllDynamicVehicleForDistibutor', function (req, res) {
     var objParam = req.query;
     var objColumns = objParam.columns;
     var objOrderBy = objParam.order;
@@ -533,9 +533,9 @@ router.get('/GetAllDynamicVehicleForDistibutor', function(req, res) {
         " left join tblgpsdevice as gpsdevice on gpsdevice.DeviceId =vehicle.deviceid " +
         " LEFT JOIN tbluserinformation AS user ON vehicle.iduser = user.id " + search;
 
-    connection.query(qry, function(err, response) {
+    connection.query(qry, function (err, response) {
         if (response != undefined) {
-            connection.query(Countqry, function(err, lstCount, fields) {
+            connection.query(Countqry, function (err, lstCount, fields) {
                 var response1 = new Object();
                 response1.draw = objParam.draw;
                 response1.recordsTotal = lstCount[0].TotalRecord;
@@ -554,7 +554,7 @@ router.get('/GetAllDynamicVehicleForDistibutor', function(req, res) {
     })
 });
 
-router.get('/GetAllVehicleByUserForDistibutor', function(req, res) {
+router.get('/GetAllVehicleByUserForDistibutor', function (req, res) {
     if (req.query.iduser != null || req.query.iduser != undefined) {
         var search = "";
         if (search != "") {
@@ -577,7 +577,7 @@ router.get('/GetAllVehicleByUserForDistibutor', function(req, res) {
         }
 
         var query = "SELECT tv.*, CONVERT_TZ(tgd.ExpiryDate,'+00:00','" + CurrentOffset + "') as ExpiryDate FROM tblvehicle as tv INNER JOIN tbldeviceagentretailer as dar ON dar.deviceId = tv.deviceid LEFT JOIN tblgpsdevice as tgd ON tgd.DeviceId = tv.deviceid " + search;
-        connection.query(query, function(err, response) {
+        connection.query(query, function (err, response) {
             if (response != undefined) {
                 res.json(response);
             } else {
@@ -590,4 +590,197 @@ router.get('/GetAllVehicleByUserForDistibutor', function(req, res) {
     }
 
 })
+
+//----------------------------------------Distributor Renew-----------------------------------------------
+router.get('/GetAllRenewData', function (req, res) {
+    var objParam = req.query;
+    var objColumns = objParam.columns;
+    var objOrder = objParam.order;
+    var objSearch = objParam.search;
+    var Orderby = objColumns[parseInt(objOrder[0].column)].data + ' ' + objOrder[0].dir;
+    var search = '';
+
+    if (objSearch != null && objSearch != '') {
+        search += ' and (tl.DeviceId like "%' + objSearch + '%" or ';
+        search = search + 'tl.ExpiryDate like "%' + objSearch + '%" or ';
+        search = search + 'tu.email like "%' + objSearch + '%" or ';
+        search = search + 'tu.phone like "%' + objSearch + '%" or ';
+        search = search + 'ta.AppName like "%' + objSearch + '%" or ';
+        search = search + 'tl.LicenceType like "%' + objSearch + '%" or ';
+        search = search + 'tl.LicenceRenewalType like "%' + objSearch + '%" or ';
+        search = search + 'tv.Name like "%' + objSearch + '%") ';
+    };
+
+    if (objParam.UserId != null && objParam.UserId != '' && objParam.UserId != undefined) {
+        search += ' and dar.idDistributor = ' + objParam.UserId;
+    }
+
+    if (req.query.StartDate != '' && req.query.EndDate != '') {
+        if (search == '') {
+            search += " AND tl.ExpiryDate between  '" + convertdateformat(req.query.StartDate, 3) + "' AND '" + convertdateformat(req.query.EndDate, 3) + "'";
+        } else {
+            search += search + " AND   tl.ExpiryDate between  '" + convertdateformat(req.query.StartDate, 3) + "' AND '" + convertdateformat(req.query.EndDate, 3) + "'";
+        }
+    } else if (req.query.StartDate != null && req.query.StartDate != '' && req.query.StartDate != undefined) {
+        if (search == '') {
+            search += " AND  tl.ExpiryDate >= '" + convertdateformat(req.query.StartDate, 3) + "'";
+        } else {
+            search += " AND tl.ExpiryDate >= '" + convertdateformat(req.query.StartDate, 3) + "'";
+        }
+    } else if (req.query.EndDate != null && req.query.EndDate != '' && req.query.EndDate != undefined) {
+        if (search == '') {
+            search += " AND tl.ExpiryDate <= '" + convertdateformat(req.query.EndDate, 3) + "'";
+        } else {
+            search += " AND tl.ExpiryDate <= '" + convertdateformat(req.query.EndDate, 3) + "'";
+        }
+    }
+
+    if (req.query.idApp != null && req.query.idApp != undefined && req.query.idApp != '') {
+        search += " and ta.Id=" + req.query.idApp + " ";
+    }
+
+    var query = "SELECT tl.Id, tu.email,CONVERT_TZ(tu.LastLogin,'+00:00','" + CurrentOffset + "') as LastLoginDate ,tl.DeviceId,tv.iduser,tu.phone,tv.Name as VehicleName,ta.Id as idApp,ta.AppName,tl.LicenceRenewalType,tl.LicenceType,ta.LicenceRenewalType as appLicenceRenewalType,ta.LicenceType as appLicenceType, " +
+        "CONVERT_TZ(tl.ExpiryDate,'+00:00','" + CurrentOffset + "') as ExpiryDate " +
+        " from tbllicencemanager as tl " +
+        " INNER JOIN tbldeviceagentretailer AS dar ON  dar.deviceId = tl.DeviceId" +
+        " LEFT JOIN tblappinfo as ta ON ta.Id= tl.idApp" +
+        " INNER JOIN (Select * from tblvehicle where IsDelete=0) tv on tv.deviceid =tl.DeviceId " +
+        " INNER JOIN tbluserinformation as tu ON tv.iduser = tu.id " +
+        " where tl.IsDeleted=0  " + search +
+        " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
+    var countquery = "SELECT count(*) as TotalRecord " +
+        " from tbllicencemanager as tl " +
+        " INNER JOIN tbldeviceagentretailer AS dar ON  dar.deviceId = tl.DeviceId" +
+        " LEFT JOIN tblappinfo as ta ON ta.Id= tl.idApp" +
+        " INNER JOIN (Select * from tblvehicle where IsDelete=0)  tv on tv.deviceid =tl.DeviceId " +
+        " INNER JOIN tbluserinformation as tu ON tv.iduser = tu.id " +
+        " where tl.IsDeleted=0 " + search;
+    connection.query(query, function (err, response) {
+        if (response != undefined) {
+            connection.query(countquery, function (err, lstCount, fields) {
+                var lstAllVehicle = [];
+                function getData(i) {
+                    if (i < response.length) {
+                        var obj = new Object();
+                        obj.Id = response[i].Id;
+                        obj.email = response[i].email;
+                        obj.LastLoginDate = response[i].LastLoginDate;
+                        obj.DeviceId = response[i].DeviceId;
+                        obj.iduser = response[i].iduser;
+                        obj.phone = response[i].phone;
+                        obj.VehicleName = response[i].VehicleName;
+                        obj.idApp = response[i].idApp;
+                        obj.AppName = response[i].AppName;
+                        obj.LicenceRenewalType = response[i].LicenceRenewalType;
+                        obj.LicenceType = response[i].LicenceType;
+                        obj.appLicenceRenewalType = response[i].appLicenceRenewalType;
+                        obj.appLicenceType = response[i].appLicenceType;
+                        obj.ExpiryDate = response[i].ExpiryDate;
+
+                        client.get(response[i].DeviceId, function (err, strgpsdata) {
+                            if (!err) {
+                                if (strgpsdata != null & strgpsdata != '' && strgpsdata != undefined) {
+                                    var objgps = JSON.parse(strgpsdata);
+                                    obj.GpsDate = objgps.Date;
+                                } else {
+                                    obj.GpsDate = null;
+                                }
+                            } else {
+                                obj.GpsDate = null;
+                            }
+                            lstAllVehicle.push(obj);
+                            getData(i + 1);
+                        });
+                    }
+                    else {
+                        var response1 = new Object();
+                        response1.draw = objParam.draw;
+                        response1.recordsTotal = lstCount[0].TotalRecord;
+                        response1.recordsFiltered = lstCount[0].TotalRecord;
+                        response1.data = lstAllVehicle;
+                        res.json(response1);
+                    }
+                }
+                getData(0);
+            });
+        } else {
+            console.log(err);
+            var response1 = new Object();
+            response1.draw = objParam.draw;
+            response1.recordsTotal = 0;
+            response1.recordsFiltered = 0;
+            response1.data = [];
+            res.json(response1);
+        }
+    })
+})
+
+router.get('/GetAllVehicleExpirebyUser', jsonParser, function (req, res) {
+
+    var query = "SELECT tv.id,tv.Name,tv.deviceid,tv.renewaldate,tl.LicenceRenewalType,tl.LicenceType,tl.id as LicenceId,tl.LicenceNo " +
+        "FROM tblvehicle tv " +
+        "INNER JOIN tbldeviceagentretailer AS dar ON  dar.deviceId = tv.deviceid " +
+        "left join tbllicencemanager tl on tv.deviceid=tl.DeviceId and tl.IsDeleted=false " +
+        "where tv.iduser=" + req.query.idUser + " and dar.idDistributor=" + req.query.idDistributor + " and tv.IsDelete=false;";
+    connection.query(query, function (err, rows, fields) {
+        if (!err) {
+            var lstAllVehicle = [];
+            function getData(i) {
+                if (i < rows.length) {
+                    var obj = new Object();
+                    obj.id = rows[i].id;
+                    obj.Name = rows[i].Name;
+                    obj.deviceid = rows[i].deviceid;
+                    obj.renewaldate = rows[i].renewaldate;
+                    obj.LicenceRenewalType = rows[i].LicenceRenewalType;
+                    obj.LicenceType = rows[i].LicenceType;
+                    obj.LicenceId = rows[i].LicenceId;
+                    obj.LicenceNo = rows[i].LicenceNo;
+
+                    client.get(rows[i].deviceid, function (err, strgpsdata) {
+                        if (!err) {
+                            if (strgpsdata != null & strgpsdata != '' && strgpsdata != undefined) {
+                                var objgps = JSON.parse(strgpsdata);
+                                obj.GpsDate = objgps.Date;
+                            } else {
+                                obj.GpsDate = null;
+                            }
+                        } else {
+                            obj.GpsDate = null;
+                        }
+                        lstAllVehicle.push(obj);
+                        getData(i + 1);
+                    });
+                }
+                else {
+                    res.json(lstAllVehicle);
+                }
+            }
+            getData(0);
+        } else {
+            res.json([]);
+        }
+    })
+})
+
+function convertdateformat(date1, flg) {
+    var date = new Date(date1);
+    var firstdayMonth = date.getMonth() + 1;
+    var firstdayDay = date.getDate();
+    var firstdayYear = date.getFullYear();
+    var firstdayHours = date.getHours();
+    var firstdayMinutes = date.getMinutes();
+    var firstdaySeconds = date.getSeconds();
+
+    if (flg == 1) {
+        return ("0000" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("00" + firstdayDay.toString()).slice(-2) + " " + "23:59:59";
+
+    } else if (flg == 2) {
+        return ("0000" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("00" + firstdayDay.toString()).slice(-2) + " " + "00:00:00";
+    } else if (flg == 3) {
+        return ("0000" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("00" + firstdayDay.toString()).slice(-2) + " " + ("00" + firstdayHours.toString()).slice(-2) + ':' + ("00" + firstdayMinutes.toString()).slice(-2) + ':' + ("00" + firstdaySeconds.toString()).slice(-2);
+    } else {
+        return ("0000" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("00" + firstdayDay.toString()).slice(-2);
+    }
+}
 module.exports = router
