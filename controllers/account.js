@@ -13,7 +13,7 @@ var SharedEmailTbl = models.tblsharedemail;
 var ShareDevice = models.tblsharedevice;
 var Vehicle = models.tblvehicle;
 var Commonfunction = require('./common.js');
-
+var DistributorSubUser = models.tbldistributorsubuser;
 //End of Tables
 
 router.get('/login', jsonParser, function(req, res) {
@@ -235,52 +235,123 @@ router.get('/loginNew', jsonParser, function(req, res) {
                     model: UserInRole,
                     include: [{
                         model: Role,
+                        where: { RoleName: 'Distributor Sub User' }
                     }]
                 }],
             }).then(function(resUser) {
                 // res.json(resUser);
                 if (resUser != null) {
-                    var lstRole = [];
-                    var lstRolewiseCountryList = [];
-                    for (var i = 0; i < resUser.tbluserinroles.length; i++) {
-                        var objRole = resUser.tbluserinroles[i].tblrole.RoleName;
-                        lstRole.push(objRole);
+                    DistributorSubUser.findOne({
+                        where: {
+                            idSubUser: resUser.id
+                        }
+                    }).then(function(resSubUser) {
+                        if (resSubUser != null) {
+                            var lstRole = [];
+                            var lstRolewiseCountryList = [];
+                            for (var i = 0; i < resUser.tbluserinroles.length; i++) {
+                                var objRole = resUser.tbluserinroles[i].tblrole.RoleName;
+                                lstRole.push(objRole);
 
-                        var objCountry = resUser.tbluserinroles[i].tblrole.Country;
-                        lstRolewiseCountryList.push(objCountry);
-                    }
-                    var user = {
-                        username: resUser.username,
-                        password: resUser.password,
-                        Role: lstRole
-                    }
-                    if (lstRole.length == 1 && lstRole == 'User') {
-                        res.json({
-                            success: false,
-                            message: "Invalid Username or Password..."
-                        });
-                    } else {
-                        var token = jwt.encode(user, "bugz");
-                        res.json({
-                            success: true,
-                            token: 'JWT ' + token,
-                            UserId: resUser.id,
-                            UserImage: resUser.image,
-                            UserCountry: resUser.country,
-                            UserRoles: lstRole,
-                            RolewiseCountryList: lstRolewiseCountryList,
-                            appId: resUser.idApp,
-                            UserName: resUser.username,
-                            message: "Login Successfully..."
-                        });
-                    }
+                                var objCountry = resUser.tbluserinroles[i].tblrole.Country;
+                                lstRolewiseCountryList.push(objCountry);
+                            }
+                            var user = {
+                                username: resUser.username,
+                                password: resUser.password,
+                                Role: lstRole
+                            }
+                            if (lstRole.length == 1 && lstRole == 'User') {
+                                res.json({
+                                    success: false,
+                                    message: "Invalid Username or Password..."
+                                });
+                            } else {
+                                var token = jwt.encode(user, "bugz");
+                                res.json({
+                                    success: true,
+                                    token: 'JWT ' + token,
+                                    UserId: resUser.id,
+                                    DistributorId: resSubUser.idUser,
+                                    UserImage: resUser.image,
+                                    UserCountry: resUser.country,
+                                    UserRoles: lstRole,
+                                    RolewiseCountryList: lstRolewiseCountryList,
+                                    appId: resUser.idApp,
+                                    UserName: resUser.username,
+                                    message: "Login Successfully..."
+                                });
+                            }
+                        } else {
+                            res.json({
+                                success: false,
+                                message: "Invalid Username or Password..."
+                            });
+                        }
+                    })
 
                 } else {
-                    res.json({
-                        success: false,
-                        message: "Invalid Username or Password..."
-                    });
+                    User.findOne({
+                        where: {
+                            $or: {
+                                username: req.query.username,
+                                email: req.query.username,
+                            },
+                            password: Encryptpassword,
+                            idApp: req.query.appId,
+                        },
+                        include: [{
+                            model: UserInRole,
+                            include: [{
+                                model: Role,
+                            }]
+                        }],
+                    }).then(function(resUser) {
+                        if (resUser) {
+                            var lstRole = [];
+                            var lstRolewiseCountryList = [];
+                            for (var i = 0; i < resUser.tbluserinroles.length; i++) {
+                                var objRole = resUser.tbluserinroles[i].tblrole.RoleName;
+                                lstRole.push(objRole);
+
+                                var objCountry = resUser.tbluserinroles[i].tblrole.Country;
+                                lstRolewiseCountryList.push(objCountry);
+                            }
+                            var user = {
+                                username: resUser.username,
+                                password: resUser.password,
+                                Role: lstRole
+                            }
+                            if (lstRole.length == 1 && lstRole == 'User') {
+                                res.json({
+                                    success: false,
+                                    message: "Invalid Username or Password..."
+                                });
+                            } else {
+                                var token = jwt.encode(user, "bugz");
+                                res.json({
+                                    success: true,
+                                    token: 'JWT ' + token,
+                                    UserId: resUser.id,
+                                    UserImage: resUser.image,
+                                    UserCountry: resUser.country,
+                                    UserRoles: lstRole,
+                                    RolewiseCountryList: lstRolewiseCountryList,
+                                    appId: resUser.idApp,
+                                    UserName: resUser.username,
+                                    message: "Login Successfully..."
+                                });
+                            }
+
+                        } else {
+                            res.json({
+                                success: false,
+                                message: "Invalid Username or Password..."
+                            });
+                        }
+                    })
                 }
+
             })
         }
     })

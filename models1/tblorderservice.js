@@ -13,7 +13,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     CustomerPO: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(50),
       allowNull: true
     },
     BillingAddressId: {
@@ -21,11 +21,11 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     ShippFirstName: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(50),
       allowNull: true
     },
     ShippLastName: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(50),
       allowNull: true
     },
     ShippAddress1: {
@@ -45,15 +45,15 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     ShippidCity: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(255),
       allowNull: true
     },
     ShippPostCode: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(10),
       allowNull: true
     },
     ShippCompanyName: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(255),
       allowNull: true
     },
     OrderNotes: {
@@ -69,7 +69,7 @@ module.exports = function(sequelize, DataTypes) {
       }
     },
     ImageUrl: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(255),
       allowNull: true
     },
     ShippingStatusId: {
@@ -81,11 +81,11 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     PaymentMethodSystemName: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(250),
       allowNull: true
     },
     CustomerCurrencyCode: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(50),
       allowNull: true
     },
     CurrencyRate: {
@@ -97,7 +97,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     VatNumber: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(50),
       allowNull: true
     },
     OrderSubtotalInclTax: {
@@ -157,7 +157,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     CheckoutAttributeDescription: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(500),
       allowNull: true
     },
     CheckoutAttributesXml: {
@@ -173,7 +173,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     CustomerIp: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(50),
       allowNull: true
     },
     AllowStoringCreditCardNumber: {
@@ -181,19 +181,19 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     CardType: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(50),
       allowNull: true
     },
     CardName: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(50),
       allowNull: true
     },
     CardNumber: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(50),
       allowNull: true
     },
     MaskedCreditCardNumber: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(50),
       allowNull: true
     },
     CardCvv2: {
@@ -213,11 +213,11 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     AuthorizationTransactionCode: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(50),
       allowNull: true
     },
     AuthorizationTransactionResult: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(50),
       allowNull: true
     },
     CaptureTransactionId: {
@@ -225,7 +225,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     CaptureTransactionResult: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(50),
       allowNull: true
     },
     SubscriptionTransactionId: {
@@ -233,7 +233,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     PurchaseOrderNumber: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(50),
       allowNull: true
     },
     PaidDateUtc: {
@@ -241,19 +241,19 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     ShippingMethod: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(50),
       allowNull: true
     },
     ShippingRateComputationMethodSystemName: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(50),
       allowNull: true
     },
     Courier: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(255),
       allowNull: true
     },
     TrackingNumber: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(50),
       allowNull: true
     },
     CustomValuesXml: {
@@ -269,7 +269,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     CreatedBy: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(255),
       allowNull: true
     },
     CreatedOnUtc: {
@@ -289,23 +289,23 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     P1: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(50),
       allowNull: true
     },
     P2: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(50),
       allowNull: true
     },
     P3: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(50),
       allowNull: true
     },
     P4: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(50),
       allowNull: true
     },
     SettlementCur: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(45),
       allowNull: true
     },
     ProcessingCharges: {
@@ -313,7 +313,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     ExpiryDurationType: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(250),
       allowNull: true
     },
     ExpiryDurationValue: {
@@ -322,6 +322,10 @@ module.exports = function(sequelize, DataTypes) {
     },
     ExpiryDate: {
       type: DataTypes.DATE,
+      allowNull: true
+    },
+    Remark: {
+      type: DataTypes.TEXT,
       allowNull: true
     }
   }, {
