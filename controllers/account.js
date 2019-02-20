@@ -16,7 +16,7 @@ var Commonfunction = require('./common.js');
 var DistributorSubUser = models.tbldistributorsubuser;
 //End of Tables
 
-router.get('/login', jsonParser, function(req, res) {
+router.get('/login', jsonParser, function (req, res) {
     var Encryptpassword = jwt.encode(req.query.password, "bugz");
 
     var search = {};
@@ -56,7 +56,7 @@ router.get('/login', jsonParser, function(req, res) {
         //     password: Encryptpassword
         // }
         where: search
-    }).then(function(response) {
+    }).then(function (response) {
         if (response != null) {
             UserInRole.belongsTo(Role, {
                 foreignKey: {
@@ -72,7 +72,7 @@ router.get('/login', jsonParser, function(req, res) {
                     model: Role,
                     attributes: ['id', 'RoleName', 'Country']
                 }]
-            }).then(function(resUserInRole) {
+            }).then(function (resUserInRole) {
                 var rol = false;
                 var lstRole = [];
                 var lstRolewiseCountryList = [];
@@ -129,7 +129,7 @@ router.get('/login', jsonParser, function(req, res) {
 
                         User.findOne({
                             where: search
-                        }).then(function(response1) {
+                        }).then(function (response1) {
 
                             if (response1 != null) {
                                 res.json({
@@ -164,7 +164,7 @@ router.get('/login', jsonParser, function(req, res) {
     })
 })
 
-router.get('/loginNew', jsonParser, function(req, res) {
+router.get('/loginNew', jsonParser, function (req, res) {
     var Encryptpassword = jwt.encode(req.query.password, "bugz");
     User.hasMany(UserInRole, {
         foreignKey: {
@@ -193,7 +193,7 @@ router.get('/loginNew', jsonParser, function(req, res) {
                 where: { RoleName: 'Super Admin' }
             }]
         }],
-    }).then(function(response) {
+    }).then(function (response) {
         if (response != null) {
             var lstRole = [];
             var lstRolewiseCountryList = [];
@@ -219,6 +219,7 @@ router.get('/loginNew', jsonParser, function(req, res) {
                 RolewiseCountryList: lstRolewiseCountryList,
                 appId: response.idApp,
                 UserName: response.username,
+                Amount: response.Amount,
                 message: "Login Successfully..."
             });
         } else {
@@ -238,14 +239,14 @@ router.get('/loginNew', jsonParser, function(req, res) {
                         where: { RoleName: 'Distributor Sub User' }
                     }]
                 }],
-            }).then(function(resUser) {
+            }).then(function (resUser) {
                 // res.json(resUser);
                 if (resUser != null) {
                     DistributorSubUser.findOne({
                         where: {
                             idSubUser: resUser.id
                         }
-                    }).then(function(resSubUser) {
+                    }).then(function (resSubUser) {
                         if (resSubUser != null) {
                             var lstRole = [];
                             var lstRolewiseCountryList = [];
@@ -279,6 +280,7 @@ router.get('/loginNew', jsonParser, function(req, res) {
                                     RolewiseCountryList: lstRolewiseCountryList,
                                     appId: resUser.idApp,
                                     UserName: resUser.username,
+                                    Amount: response.Amount,
                                     message: "Login Successfully..."
                                 });
                             }
@@ -306,7 +308,7 @@ router.get('/loginNew', jsonParser, function(req, res) {
                                 model: Role,
                             }]
                         }],
-                    }).then(function(resUser) {
+                    }).then(function (resUser) {
                         if (resUser) {
                             var lstRole = [];
                             var lstRolewiseCountryList = [];
@@ -339,6 +341,7 @@ router.get('/loginNew', jsonParser, function(req, res) {
                                     RolewiseCountryList: lstRolewiseCountryList,
                                     appId: resUser.idApp,
                                     UserName: resUser.username,
+                                    Amount: response.Amount,
                                     message: "Login Successfully..."
                                 });
                             }
@@ -357,7 +360,7 @@ router.get('/loginNew', jsonParser, function(req, res) {
     })
 })
 
-router.get('/Mobilelogin', jsonParser, function(req, res) {
+router.get('/Mobilelogin', jsonParser, function (req, res) {
     var Encryptpassword = jwt.encode(req.query.password, "bugz");
     var search = {};
     search['$and'] = [];
@@ -388,7 +391,7 @@ router.get('/Mobilelogin', jsonParser, function(req, res) {
         //     // Type: req.query.type
         // }
         where: search
-    }).then(function(response) {
+    }).then(function (response) {
         if (response != null) {
             if (response.Type == req.query.type || response.Type == 'Both' || req.query.type == null || req.query.type == undefined) {
                 //if (response.IsMobileVerify == true) {
@@ -399,40 +402,40 @@ router.get('/Mobilelogin', jsonParser, function(req, res) {
                     }
                 });
                 UserInRole.findAll({
-                        where: {
-                            userId: response.id
-                        },
-                        include: [{
-                            model: Role,
-                            attributes: ['id', 'RoleName']
-                        }]
-                    }).then(function(resUserInRole) {
-                        var lstRole = [];
-                        for (var i = 0; i < resUserInRole.length; i++) {
-                            var objRole = resUserInRole[i].tblrole.RoleName;
-                            lstRole.push(objRole);
-                        }
+                    where: {
+                        userId: response.id
+                    },
+                    include: [{
+                        model: Role,
+                        attributes: ['id', 'RoleName']
+                    }]
+                }).then(function (resUserInRole) {
+                    var lstRole = [];
+                    for (var i = 0; i < resUserInRole.length; i++) {
+                        var objRole = resUserInRole[i].tblrole.RoleName;
+                        lstRole.push(objRole);
+                    }
 
-                        var user = {
-                            username: req.query.username,
-                            password: Encryptpassword,
-                            Role: lstRole
-                        }
-                        var token = jwt.encode(user, "bugz");
-                        res.json({
-                            success: true,
-                            token: 'JWT ' + token,
-                            UserId: response.id,
-                            message: "Login Successfully..."
-                        });
-                    })
-                    // } else {
-                    //     res.json({
-                    //         success: false,
-                    //         UserId: response.id,
-                    //         message: "OTP"
-                    //     });
-                    // };
+                    var user = {
+                        username: req.query.username,
+                        password: Encryptpassword,
+                        Role: lstRole
+                    }
+                    var token = jwt.encode(user, "bugz");
+                    res.json({
+                        success: true,
+                        token: 'JWT ' + token,
+                        UserId: response.id,
+                        message: "Login Successfully..."
+                    });
+                })
+                // } else {
+                //     res.json({
+                //         success: false,
+                //         UserId: response.id,
+                //         message: "OTP"
+                //     });
+                // };
             } else {
                 res.json({
                     success: false,
@@ -466,7 +469,7 @@ router.get('/Mobilelogin', jsonParser, function(req, res) {
     })
 })
 
-router.get('/MobileOwnerlogin', jsonParser, function(req, res) {
+router.get('/MobileOwnerlogin', jsonParser, function (req, res) {
     var Encryptpassword = jwt.encode(req.query.password, "bugz");
     var search = {};
     search['$or'] = [];
@@ -493,7 +496,7 @@ router.get('/MobileOwnerlogin', jsonParser, function(req, res) {
 
     User.findOne({
         where: search
-    }).then(function(response) {
+    }).then(function (response) {
         if (response != null) {
             if (response.Type == req.query.type || response.Type == 'Both' || req.query.type == null || req.query.type == undefined) {
                 if (response.IsMobileVerify == true) {
@@ -511,7 +514,7 @@ router.get('/MobileOwnerlogin', jsonParser, function(req, res) {
                             model: Role,
                             attributes: ['id', 'RoleName']
                         }]
-                    }).then(function(resUserInRole) {
+                    }).then(function (resUserInRole) {
                         var lstRole = [];
                         for (var i = 0; i < resUserInRole.length; i++) {
                             var objRole = resUserInRole[i].tblrole.RoleName;
@@ -555,18 +558,18 @@ router.get('/MobileOwnerlogin', jsonParser, function(req, res) {
     })
 })
 
-router.get('/OwnerMobilelogout', jsonParser, function(req, res) {
+router.get('/OwnerMobilelogout', jsonParser, function (req, res) {
     PushNotification.findOne({
         where: {
             udid: req.query.udid,
             UserType: 'Owner',
         }
-    }).then(function(response) {
+    }).then(function (response) {
         if (response != null) {
             var objPushnotification = response;
             var idUser = response.iduser;
 
-            objPushnotification.updateAttributes({ iduser: 0 }).then(function(resUpdate) {
+            objPushnotification.updateAttributes({ iduser: 0 }).then(function (resUpdate) {
                 updatePushNotificationRedisValue(idUser);
                 res.json({
                     success: true,
@@ -582,18 +585,18 @@ router.get('/OwnerMobilelogout', jsonParser, function(req, res) {
         }
     })
 })
-router.get('/Mobilelogout', jsonParser, function(req, res) {
+router.get('/Mobilelogout', jsonParser, function (req, res) {
     if (req.query.UserType != null && req.query.UserType != undefined && req.query.UserType != '') {
         PushNotification.findOne({
             where: {
                 udid: req.query.udid,
                 UserType: req.query.UserType,
             }
-        }).then(function(response) {
+        }).then(function (response) {
             if (response != null) {
                 var objPushnotification = response;
                 var iduser = response.iduser;
-                objPushnotification.updateAttributes({ iduser: 0, MessageCount: 0 }).then(function(resUpdate) {
+                objPushnotification.updateAttributes({ iduser: 0, MessageCount: 0 }).then(function (resUpdate) {
                     updatePushNotificationRedisValue(iduser);
                     res.json({
                         success: true,
@@ -613,11 +616,11 @@ router.get('/Mobilelogout', jsonParser, function(req, res) {
             where: {
                 udid: req.query.udid
             }
-        }).then(function(response) {
+        }).then(function (response) {
             if (response != null) {
                 var objPushnotification = response;
                 var iduser = response.iduser;
-                objPushnotification.updateAttributes({ iduser: 0, MessageCount: 0 }).then(function(resUpdate) {
+                objPushnotification.updateAttributes({ iduser: 0, MessageCount: 0 }).then(function (resUpdate) {
                     updatePushNotificationRedisValue(iduser);
                     res.json({
                         success: true,
@@ -635,7 +638,7 @@ router.get('/Mobilelogout', jsonParser, function(req, res) {
     }
 })
 
-router.post('/register', jsonParser, function(req, res) {
+router.post('/register', jsonParser, function (req, res) {
     objUserReg = req.body
 
     if (objUserReg.Type == undefined || objUserReg.Type == null || objUserReg.Type == '') {
@@ -656,7 +659,7 @@ router.post('/register', jsonParser, function(req, res) {
             where: {
                 username: objUserReg.username
             }
-        }).then(function(chkUserExist) {
+        }).then(function (chkUserExist) {
             if (chkUserExist != null && (chkUserExist.Type == objUserReg.Type || chkUserExist.Type == 'Both')) {
                 res.json({
                     success: false,
@@ -669,7 +672,7 @@ router.post('/register', jsonParser, function(req, res) {
                         // $or: [{ email: objUserReg.email }, { phone: objUserReg.phone }]
                         $or: [{ email: objUserReg.email }]
                     }
-                }).then(function(chkEmailExist) {
+                }).then(function (chkEmailExist) {
                     if (chkEmailExist != null && (chkEmailExist.Type == objUserReg.Type || chkEmailExist.Type == 'Both')) {
                         // if (objUserReg.phone == chkEmailExist.phone) {
                         //     res.json({
@@ -685,7 +688,7 @@ router.post('/register', jsonParser, function(req, res) {
                     } else {
                         if (chkEmailExist != null && objUserReg.Type == 'Owner') {
                             objUserReg.Type = 'Both';
-                            chkEmailExist.updateAttributes({ Type: 'Both', password: objUserReg.password, MaxSpeed: objUserReg.MaxSpeed }).then(function(resUser) {
+                            chkEmailExist.updateAttributes({ Type: 'Both', password: objUserReg.password, MaxSpeed: objUserReg.MaxSpeed }).then(function (resUser) {
                                 updateUserRedisValue(chkEmailExist.id);
                                 funAuditLog.CreateAuditLog('register', chkEmailExist.username, 'Create New User in Both');
                                 res.json({
@@ -695,7 +698,7 @@ router.post('/register', jsonParser, function(req, res) {
                             })
                         } else if (chkEmailExist != null && objUserReg.Type == 'Shop') {
                             objUserReg.Type = 'Both';
-                            chkEmailExist.updateAttributes({ Type: 'Both', password: objUserReg.password }).then(function(resUser) {
+                            chkEmailExist.updateAttributes({ Type: 'Both', password: objUserReg.password }).then(function (resUser) {
                                 updateUserRedisValue(chkEmailExist.id);
                                 funAuditLog.CreateAuditLog('register', chkEmailExist.username, 'Create New User in Both');
                                 res.json({
@@ -704,19 +707,19 @@ router.post('/register', jsonParser, function(req, res) {
                                 });
                             })
                         } else {
-                            User.create(objUserReg).then(function(resUserReg) {
+                            User.create(objUserReg).then(function (resUserReg) {
                                 Role.findOne({
                                     where: {
                                         RoleName: "User"
                                     }
-                                }).then(function(objRole) {
+                                }).then(function (objRole) {
                                     if (objRole != null) {
 
                                         var objUserInRole = {
                                             userId: resUserReg.id,
                                             roleId: objRole.id,
                                         }
-                                        UserInRole.create(objUserInRole).then(function(resUserInRole) {
+                                        UserInRole.create(objUserInRole).then(function (resUserInRole) {
                                             updateUserRedisValue(resUserReg.id);
                                             funAuditLog.CreateAuditLog('register', resUserReg.username, 'Create New User');
                                             res.json({
@@ -729,13 +732,13 @@ router.post('/register', jsonParser, function(req, res) {
                                             RoleName: "User",
                                             Description: null
                                         }
-                                        Role.create(objRole).then(function(resRole) {
+                                        Role.create(objRole).then(function (resRole) {
 
                                             var objUserInRole = {
                                                 userId: resUserReg.id,
                                                 roleId: resRole.id,
                                             }
-                                            UserInRole.create(objUserInRole).then(function(resUserInRole) {
+                                            UserInRole.create(objUserInRole).then(function (resUserInRole) {
                                                 updateUserRedisValue(resUserReg.id);
                                                 funAuditLog.CreateAuditLog('register', resUserReg.username, 'Create New User');
                                                 res.json({
@@ -746,7 +749,7 @@ router.post('/register', jsonParser, function(req, res) {
                                         })
                                     }
                                 })
-                            }).catch(function(error) {
+                            }).catch(function (error) {
                                 res.json({
                                     success: false,
                                     message: error.Error[0].message + "..."
@@ -760,20 +763,20 @@ router.post('/register', jsonParser, function(req, res) {
     }
 });
 
-router.get('/ResendOTP', function(req, res) {
+router.get('/ResendOTP', function (req, res) {
     User.findOne({
         where: {
             id: req.query.idUser
         }
-    }).then(function(objUser) {
+    }).then(function (objUser) {
         if (objUser != null) {
-            objUser.updateAttributes({ OTP: req.query.OTP }).then(function(resUpdate) {
+            objUser.updateAttributes({ OTP: req.query.OTP }).then(function (resUpdate) {
                 //Send OTP
                 updateUserRedisValue(objUser.id)
                 var objOTP = new Object();
                 objOTP.To = objUser.phone;
                 objOTP.body = 'Your Verification Code for logging into GPSINA is ' + req.query.OTP + '. Kindly do not share it with anyone else.';
-                global.sendSMS(objOTP, function(responseOTP) {
+                global.sendSMS(objOTP, function (responseOTP) {
                     if (responseOTP.Status == true) {
                         res.json({
                             success: true,
@@ -797,7 +800,7 @@ router.get('/ResendOTP', function(req, res) {
     });
 });
 
-router.post('/CheckUserExist', jsonParser, function(req, res) {
+router.post('/CheckUserExist', jsonParser, function (req, res) {
     objUserReg = req.body
     if (objUserReg.Type == undefined || objUserReg.Type == null || objUserReg.Type == '') {
         objUserReg.Type = 'Shop';
@@ -815,7 +818,7 @@ router.post('/CheckUserExist', jsonParser, function(req, res) {
                 // $or: [{ email: objUserReg.email }, { username: objUserReg.username }, { phone: objUserReg.phone }]
                 $or: [{ email: objUserReg.email }, { username: objUserReg.username }]
             }
-        }).then(function(chkEmailExist) {
+        }).then(function (chkEmailExist) {
             if (chkEmailExist != null) {
                 // if (objUserReg.phone == chkEmailExist.phone) {
                 //     res.json({
@@ -853,7 +856,7 @@ router.post('/CheckUserExist', jsonParser, function(req, res) {
 });
 
 var https = require('https');
-router.post('/CheckWebUserExistWithOTPsend', jsonParser, function(req, res) {
+router.post('/CheckWebUserExistWithOTPsend', jsonParser, function (req, res) {
     objUserReg = req.body
     if (!validator.isEmail(objUserReg.email)) {
         res.json({
@@ -867,7 +870,7 @@ router.post('/CheckWebUserExistWithOTPsend', jsonParser, function(req, res) {
                 // email: objUserReg.email
                 $or: [{ email: objUserReg.email }, { username: objUserReg.username }, { phone: objUserReg.phone }]
             }
-        }).then(function(chkEmailExist) {
+        }).then(function (chkEmailExist) {
             if (chkEmailExist != null) {
                 if (objUserReg.phone == chkEmailExist.phone) {
                     res.json({
@@ -913,12 +916,12 @@ router.post('/CheckWebUserExistWithOTPsend', jsonParser, function(req, res) {
                 req1.end();
 
                 var responseData = '';
-                req1.on('response', function(res1) {
-                    res1.on('data', function(chunk) {
+                req1.on('response', function (res1) {
+                    res1.on('data', function (chunk) {
                         responseData += chunk;
                     });
 
-                    res1.on('end', function() {
+                    res1.on('end', function () {
                         res.json({
                             success: true,
                             message: "Record found...",
@@ -937,7 +940,7 @@ router.post('/CheckWebUserExistWithOTPsend', jsonParser, function(req, res) {
     }
 });
 
-router.get('/passwordVerification', jsonParser, function(req, res) {
+router.get('/passwordVerification', jsonParser, function (req, res) {
     objHeader = req.headers;
     var token = getToken(objHeader);
     if (token) {
@@ -947,7 +950,7 @@ router.get('/passwordVerification', jsonParser, function(req, res) {
                 username: decoded.username,
                 password: decoded.password
             }
-        }).then(function(UserExist) {
+        }).then(function (UserExist) {
             if (UserExist != null) {
                 var password = jwt.decode(UserExist.password, "bugz");
                 if (password == req.query.password) {
@@ -973,7 +976,7 @@ router.get('/passwordVerification', jsonParser, function(req, res) {
 })
 
 
-router.post('/changepasswordNew', jsonParser, function(req, res) {
+router.post('/changepasswordNew', jsonParser, function (req, res) {
 
     objUser = req.body;
 
@@ -998,21 +1001,21 @@ router.post('/changepasswordNew', jsonParser, function(req, res) {
             where: {
                 id: objUser.UserId
             }
-        }).then(function(chkUserExist) {
+        }).then(function (chkUserExist) {
             if (chkUserExist != null) {
                 // if (EncryptOldpassword == chkUserExist.password) {
                 if (chkUserExist.email != 'demo@maark.my' && chkUserExist.email != 'demo@gmail.com') {
                     chkUserExist.updateAttributes({
                         password: EncryptNewpassword
-                    }).then(function(response) {
+                    }).then(function (response) {
                         updateUserRedisValue(chkUserExist.id)
                         funAuditLog.CreateAuditLog('changepassword', chkUserExist.username, 'Change User Password-ID: (' + chkUserExist.id + ')');
-                        SystemEmail.findOne({ where: { IdApp: chkUserExist.idApp } }).then(function(objSystemEmail) {
+                        SystemEmail.findOne({ where: { IdApp: chkUserExist.idApp } }).then(function (objSystemEmail) {
                             EmailTemplate.findOne({
                                 where: {
                                     Type: "Change Password",
                                 }
-                            }).then(function(objEmailTemplate) {
+                            }).then(function (objEmailTemplate) {
                                 if (objEmailTemplate != null) {
                                     var Name = chkUserExist.username;
                                     var Password = objUser.password;
@@ -1021,7 +1024,7 @@ router.post('/changepasswordNew', jsonParser, function(req, res) {
                                         where: {
                                             Name: 'NotificationEmailTo'
                                         }
-                                    }).then(function(objSetting) {
+                                    }).then(function (objSetting) {
 
                                         var body = objEmailTemplate.EmailBody.replace(/{UserName}/g, Name).replace("{Password}", Password).replace(/{AppName}/g, objUser.AppName).replace("{Email}", chkUserExist.email);
                                         var mail = {
@@ -1032,7 +1035,7 @@ router.post('/changepasswordNew', jsonParser, function(req, res) {
                                             subject: objUser.AppName + " " + objEmailTemplate.EmailSubject,
                                             html: body
                                         };
-                                        SetsmtpConfig(objSystemEmail, mail, function(EmailSettingCreated) {
+                                        SetsmtpConfig(objSystemEmail, mail, function (EmailSettingCreated) {
                                             // console.log(EmailSettingCreated)
                                         })
 
@@ -1065,7 +1068,7 @@ router.post('/changepasswordNew', jsonParser, function(req, res) {
                         //     success: true,
                         //     message: "Password changed successfully..."
                         // });
-                    }).catch(function(error) {
+                    }).catch(function (error) {
                         res.json({
                             success: false,
                             message: error.errors[0].message + "..."
@@ -1101,7 +1104,7 @@ router.post('/changepasswordNew', jsonParser, function(req, res) {
 
 });
 
-router.post('/changepassword', jsonParser, function(req, res) {
+router.post('/changepassword', jsonParser, function (req, res) {
     objUser = req.body;
 
     //Set Parameter for User Permission
@@ -1124,7 +1127,7 @@ router.post('/changepassword', jsonParser, function(req, res) {
             where: {
                 id: objUser.UserId
             }
-        }).then(function(chkUserExist) {
+        }).then(function (chkUserExist) {
             if (chkUserExist != null) {
 
                 //set Parameter
@@ -1143,14 +1146,14 @@ router.post('/changepassword', jsonParser, function(req, res) {
                 if (EncryptOldpassword == chkUserExist.password) {
                     chkUserExist.updateAttributes({
                         password: EncryptNewpassword
-                    }).then(function(response) {
+                    }).then(function (response) {
                         updateUserRedisValue(chkUserExist.id)
                         funAuditLog.CreateAuditLog('changepassword', chkUserExist.username, 'Change User Password - ID: (' + chkUserExist.id + ')');
                         res.json({
                             success: true,
                             message: "Password changed successfully..."
                         });
-                    }).catch(function(error) {
+                    }).catch(function (error) {
                         res.json({
                             success: false,
                             message: error.errors[0].message + "..."
@@ -1176,7 +1179,7 @@ router.post('/changepassword', jsonParser, function(req, res) {
     }
 });
 
-router.post('/changeUserPassword', jsonParser, function(req, res) {
+router.post('/changeUserPassword', jsonParser, function (req, res) {
     objUser = req.body;
 
     //Set Parameter for User Permission
@@ -1194,7 +1197,7 @@ router.post('/changeUserPassword', jsonParser, function(req, res) {
             where: {
                 username: objUser.username
             }
-        }).then(function(chkUserExist) {
+        }).then(function (chkUserExist) {
             if (chkUserExist != null) {
 
                 //set Parameter
@@ -1216,14 +1219,14 @@ router.post('/changeUserPassword', jsonParser, function(req, res) {
                     var search = { password: EncryptNewpassword };
                 }
                 if (EncryptOldpassword == Password) {
-                    chkUserExist.updateAttributes(search).then(function(response) {
+                    chkUserExist.updateAttributes(search).then(function (response) {
                         updateUserRedisValue(chkUserExist.id)
                         funAuditLog.CreateAuditLog('changepassword', chkUserExist.username, 'Change User Password- ID: (' + chkUserExist.id + ')');
                         res.json({
                             success: true,
                             message: "Password changed successfully..."
                         });
-                    }).catch(function(error) {
+                    }).catch(function (error) {
                         res.json({
                             success: false,
                             message: error.errors[0].message + "..."
@@ -1249,28 +1252,28 @@ router.post('/changeUserPassword', jsonParser, function(req, res) {
     }
 });
 
-router.get('/forgotpassword', function(req, res) {
+router.get('/forgotpassword', function (req, res) {
     User.findOne({
         where: {
             // email: req.query.email,
             // idApp: req.query.idApp
             id: req.query.id,
         }
-    }).then(function(objUser) {
+    }).then(function (objUser) {
         if (objUser != null) {
-            SystemEmail.findOne({ where: { IdApp: objUser.idApp } }).then(function(objSystemEmail) {
+            SystemEmail.findOne({ where: { IdApp: objUser.idApp } }).then(function (objSystemEmail) {
                 var NewPassword = customPassword();
                 console.log(NewPassword);
                 var EncryptNewpassword = jwt.encode(NewPassword, "bugz");
                 var search = { password: EncryptNewpassword };
-                objUser.updateAttributes(search).then(function(response) {
+                objUser.updateAttributes(search).then(function (response) {
                     updateUserRedisValue(objUser.id)
                     if (response != null) {
                         EmailTemplate.findOne({
                             where: {
                                 Type: "Forgot Password Email",
                             }
-                        }).then(function(objEmailTemplate) {
+                        }).then(function (objEmailTemplate) {
                             if (objEmailTemplate != null) {
                                 var Name = objUser.username;
                                 var Password = NewPassword;
@@ -1278,7 +1281,7 @@ router.get('/forgotpassword', function(req, res) {
                                     where: {
                                         Name: 'NotificationEmailTo'
                                     }
-                                }).then(function(objSetting) {
+                                }).then(function (objSetting) {
                                     var body = objEmailTemplate.EmailBody.replace(/{UserName}/g, Name).replace("{Password}", Password).replace("{AppName}", req.query.AppName);
                                     var mail = {
                                         from: objSystemEmail.DefaultEmailFrom,
@@ -1288,7 +1291,7 @@ router.get('/forgotpassword', function(req, res) {
                                         subject: req.query.AppName + " " + objEmailTemplate.EmailSubject,
                                         html: body
                                     };
-                                    SetsmtpConfig(objSystemEmail, mail, function(EmailSettingCreated) {
+                                    SetsmtpConfig(objSystemEmail, mail, function (EmailSettingCreated) {
                                         // console.log(EmailSettingCreated)
                                     })
 
@@ -1318,7 +1321,7 @@ router.get('/forgotpassword', function(req, res) {
                             message: "This system Email not found..."
                         });
                     }
-                }).catch(function(error) {
+                }).catch(function (error) {
                     res.json({
                         success: false,
                         message: error.errors[0].message + "..."
@@ -1334,7 +1337,7 @@ router.get('/forgotpassword', function(req, res) {
     })
 });
 
-router.get('/forgotpasswordNew', function(req, res) {
+router.get('/forgotpasswordNew', function (req, res) {
     if (req.query.email != 'demo@maark.my' && req.query.email != 'demo@gmail.com') {
         var flgChangePass = false;
         User.hasMany(UserInRole, {
@@ -1360,21 +1363,21 @@ router.get('/forgotpasswordNew', function(req, res) {
                     where: { RoleName: 'Super Admin' }
                 }]
             }],
-        }).then(function(response) {
+        }).then(function (response) {
 
             if (response != null) {
-                SystemEmail.findOne({ where: { IdApp: req.query.idApp } }).then(function(objSystemEmail) {
+                SystemEmail.findOne({ where: { IdApp: req.query.idApp } }).then(function (objSystemEmail) {
                     var NewPassword = customPassword();
                     // console.log(NewPassword);
                     var EncryptNewpassword = jwt.encode(NewPassword, "bugz");
-                    response.updateAttributes({ password: EncryptNewpassword }).then(function(response) {
+                    response.updateAttributes({ password: EncryptNewpassword }).then(function (response) {
                         if (response != null) {
                             updateUserRedisValue(response.id);
                             EmailTemplate.findOne({
                                 where: {
                                     Type: "Forgot Password Email",
                                 }
-                            }).then(function(objEmailTemplate) {
+                            }).then(function (objEmailTemplate) {
                                 if (objEmailTemplate != null) {
                                     var Name = response.username;
                                     var Password = NewPassword;
@@ -1382,7 +1385,7 @@ router.get('/forgotpasswordNew', function(req, res) {
                                         where: {
                                             Name: 'NotificationEmailTo'
                                         }
-                                    }).then(function(objSetting) {
+                                    }).then(function (objSetting) {
                                         var body = objEmailTemplate.EmailBody.replace(/{UserName}/g, Name).replace("{Password}", Password).replace(/{AppName}/g, req.query.AppName).replace("{Email}", response.email);
                                         var mail = {
                                             from: objSystemEmail.DefaultEmailFrom,
@@ -1392,7 +1395,7 @@ router.get('/forgotpasswordNew', function(req, res) {
                                             subject: req.query.AppName + " " + objEmailTemplate.EmailSubject,
                                             html: body
                                         };
-                                        SetsmtpConfig(objSystemEmail, mail, function(EmailSettingCreated) {
+                                        SetsmtpConfig(objSystemEmail, mail, function (EmailSettingCreated) {
                                             // transporter.sendMail(mail, function(error, response) {
                                             // if (error) {
                                             //     res.json(error);
@@ -1422,7 +1425,7 @@ router.get('/forgotpasswordNew', function(req, res) {
                                 message: "This system Email not found..."
                             });
                         }
-                    }).catch(function(error) {
+                    }).catch(function (error) {
                         res.json({
                             success: false,
                             message: error.errors[0].message + "..."
@@ -1440,7 +1443,7 @@ router.get('/forgotpasswordNew', function(req, res) {
                             attributes: ['id', 'RoleName'],
                         }]
                     }],
-                }).then(function(response1) {
+                }).then(function (response1) {
 
 
                     if (response1) {
@@ -1457,18 +1460,18 @@ router.get('/forgotpasswordNew', function(req, res) {
                                 message: "This system Email not found..."
                             });
                         } else {
-                            SystemEmail.findOne({ where: { IdApp: req.query.idApp } }).then(function(objSystemEmail) {
+                            SystemEmail.findOne({ where: { IdApp: req.query.idApp } }).then(function (objSystemEmail) {
 
                                 var NewPassword = customPassword();
                                 var EncryptNewpassword = jwt.encode(NewPassword, "bugz");
-                                response1.updateAttributes({ password: EncryptNewpassword }).then(function(response) {
+                                response1.updateAttributes({ password: EncryptNewpassword }).then(function (response) {
                                     if (response != null) {
                                         updateUserRedisValue(response1.id);
                                         EmailTemplate.findOne({
                                             where: {
                                                 Type: "Forgot Password Email",
                                             }
-                                        }).then(function(objEmailTemplate) {
+                                        }).then(function (objEmailTemplate) {
                                             if (objEmailTemplate != null) {
                                                 var Name = response1.username;
                                                 var Password = NewPassword;
@@ -1476,7 +1479,7 @@ router.get('/forgotpasswordNew', function(req, res) {
                                                     where: {
                                                         Name: 'NotificationEmailTo'
                                                     }
-                                                }).then(function(objSetting) {
+                                                }).then(function (objSetting) {
                                                     var body = objEmailTemplate.EmailBody.replace(/{UserName}/g, Name).replace("{Password}", Password).replace(/{AppName}/g, req.query.AppName).replace("{Email}", response1.email);
                                                     var mail = {
                                                         from: objSystemEmail.DefaultEmailFrom,
@@ -1486,7 +1489,7 @@ router.get('/forgotpasswordNew', function(req, res) {
                                                         subject: req.query.AppName + " " + objEmailTemplate.EmailSubject,
                                                         html: body
                                                     };
-                                                    SetsmtpConfig(objSystemEmail, mail, function(EmailSettingCreated) {
+                                                    SetsmtpConfig(objSystemEmail, mail, function (EmailSettingCreated) {
                                                         // transporter.sendMail(mail, function(error, response) {
                                                         //     console.log(error)
                                                         //     if (error) {
@@ -1522,7 +1525,7 @@ router.get('/forgotpasswordNew', function(req, res) {
                                             message: "This system Email not found..."
                                         });
                                     }
-                                }).catch(function(error) {
+                                }).catch(function (error) {
                                     res.json({
                                         success: false,
                                         message: error.errors[0].message + "..."
@@ -1550,17 +1553,17 @@ router.get('/forgotpasswordNew', function(req, res) {
     }
 });
 
-router.get('/forgotpasswordfromOwnerCustomer', function(req, res) {
+router.get('/forgotpasswordfromOwnerCustomer', function (req, res) {
     User.findOne({
         where: {
             // email: req.query.email,
             // idApp: req.query.idApp
             id: req.query.id,
         }
-    }).then(function(objUser) {
+    }).then(function (objUser) {
         if (objUser != null) {
 
-            SystemEmail.findOne({ where: { IdApp: objUser.idApp } }).then(function(objSystemEmail) {
+            SystemEmail.findOne({ where: { IdApp: objUser.idApp } }).then(function (objSystemEmail) {
 
                 var NewPassword = customPassword();
                 var EncryptNewpassword = jwt.encode(NewPassword, "bugz");
@@ -1570,14 +1573,14 @@ router.get('/forgotpasswordfromOwnerCustomer', function(req, res) {
                 flgIsUpdate = true;
 
                 if (flgIsUpdate) {
-                    objUser.updateAttributes(search).then(function(response) {
+                    objUser.updateAttributes(search).then(function (response) {
                         if (response != null) {
                             updateUserRedisValue(objUser.id);
                             EmailTemplate.findOne({
                                 where: {
                                     Type: "Forgot Password Email",
                                 }
-                            }).then(function(objEmailTemplate) {
+                            }).then(function (objEmailTemplate) {
                                 if (objEmailTemplate != null) {
                                     var Name = objUser.username;
                                     var Password = NewPassword;
@@ -1586,7 +1589,7 @@ router.get('/forgotpasswordfromOwnerCustomer', function(req, res) {
                                         where: {
                                             Name: 'NotificationEmailTo'
                                         }
-                                    }).then(function(objSetting) {
+                                    }).then(function (objSetting) {
 
                                         var body = objEmailTemplate.EmailBody.replace(/{UserName}/g, Name).replace("{Password}", Password).replace("{AppName}", req.query.AppName);
                                         var mail = {
@@ -1597,13 +1600,13 @@ router.get('/forgotpasswordfromOwnerCustomer', function(req, res) {
                                             subject: req.query.AppName + " " + objEmailTemplate.EmailSubject,
                                             html: body
                                         };
-                                        SetsmtpConfig(objSystemEmail, mail, function(EmailSettingCreated) {
-                                                // console.log(EmailSettingCreated)
-                                            })
-                                            // transporter.sendMail(mail, function(error, response) {
-                                            //     if (error) {
-                                            //         res.json(error);
-                                            //     } else {
+                                        SetsmtpConfig(objSystemEmail, mail, function (EmailSettingCreated) {
+                                            // console.log(EmailSettingCreated)
+                                        })
+                                        // transporter.sendMail(mail, function(error, response) {
+                                        //     if (error) {
+                                        //         res.json(error);
+                                        //     } else {
                                         funAuditLog.CreateAuditLog('forgotpassword', objUser.username, 'forgot User Password - ID: (' + objUser.id + ')');
                                         res.json({
                                             success: true,
@@ -1626,7 +1629,7 @@ router.get('/forgotpasswordfromOwnerCustomer', function(req, res) {
                                 message: "This system Email not found..."
                             });
                         }
-                    }).catch(function(error) {
+                    }).catch(function (error) {
                         res.json({
                             success: false,
                             message: error.errors[0].message + "..."
@@ -1648,7 +1651,7 @@ router.get('/forgotpasswordfromOwnerCustomer', function(req, res) {
     })
 });
 
-router.get('/forgotpasswordfromOwnerCustomerNew', jsonParser, function(req, res) {
+router.get('/forgotpasswordfromOwnerCustomerNew', jsonParser, function (req, res) {
     objHeader = req.headers;
     var token = getToken(objHeader);
     if (token) {
@@ -1658,7 +1661,7 @@ router.get('/forgotpasswordfromOwnerCustomerNew', jsonParser, function(req, res)
                 username: decoded.username,
                 password: decoded.password
             }
-        }).then(function(UserExist) {
+        }).then(function (UserExist) {
             if (UserExist != null) {
                 var password = jwt.decode(UserExist.password, "bugz");
                 if (password == req.query.password) {
@@ -1668,10 +1671,10 @@ router.get('/forgotpasswordfromOwnerCustomerNew', jsonParser, function(req, res)
                             // idApp: req.query.idApp
                             id: req.query.id,
                         }
-                    }).then(function(objUser) {
+                    }).then(function (objUser) {
                         if (objUser != null) {
                             if (objUser.email != 'demo@maark.my' && objUser.email != 'demo@gmail.com') {
-                                SystemEmail.findOne({ where: { IdApp: objUser.idApp } }).then(function(objSystemEmail) {
+                                SystemEmail.findOne({ where: { IdApp: objUser.idApp } }).then(function (objSystemEmail) {
 
                                     var NewPassword = customPassword();
                                     var EncryptNewpassword = jwt.encode(NewPassword, "bugz");
@@ -1681,14 +1684,14 @@ router.get('/forgotpasswordfromOwnerCustomerNew', jsonParser, function(req, res)
                                     flgIsUpdate = true;
 
                                     if (flgIsUpdate) {
-                                        objUser.updateAttributes(search).then(function(response) {
+                                        objUser.updateAttributes(search).then(function (response) {
                                             if (response != null) {
                                                 updateUserRedisValue(objUser.id);
                                                 EmailTemplate.findOne({
                                                     where: {
                                                         Type: "Forgot Password Email",
                                                     }
-                                                }).then(function(objEmailTemplate) {
+                                                }).then(function (objEmailTemplate) {
                                                     if (objEmailTemplate != null) {
                                                         var Name = objUser.username;
                                                         var Password = NewPassword;
@@ -1697,7 +1700,7 @@ router.get('/forgotpasswordfromOwnerCustomerNew', jsonParser, function(req, res)
                                                             where: {
                                                                 Name: 'NotificationEmailTo'
                                                             }
-                                                        }).then(function(objSetting) {
+                                                        }).then(function (objSetting) {
 
                                                             var body = objEmailTemplate.EmailBody.replace(/{UserName}/g, Name).replace("{Password}", Password).replace(/{AppName}/g, req.query.AppName).replace("{Email}", objUser.email);
                                                             var mail = {
@@ -1708,7 +1711,7 @@ router.get('/forgotpasswordfromOwnerCustomerNew', jsonParser, function(req, res)
                                                                 subject: req.query.AppName + " " + objEmailTemplate.EmailSubject,
                                                                 html: body
                                                             };
-                                                            SetsmtpConfig(objSystemEmail, mail, function(EmailSettingCreated) {
+                                                            SetsmtpConfig(objSystemEmail, mail, function (EmailSettingCreated) {
                                                                 // console.log(EmailSettingCreated
                                                             })
 
@@ -1740,7 +1743,7 @@ router.get('/forgotpasswordfromOwnerCustomerNew', jsonParser, function(req, res)
                                                     message: "This system Email not found..."
                                                 });
                                             }
-                                        }).catch(function(error) {
+                                        }).catch(function (error) {
                                             res.json({
                                                 success: false,
                                                 message: error.errors[0].message + "..."
@@ -1785,7 +1788,7 @@ router.get('/forgotpasswordfromOwnerCustomerNew', jsonParser, function(req, res)
 
 //Start Mobile App
 
-router.get('/MobileAppLogin', jsonParser, function(req, res) {
+router.get('/MobileAppLogin', jsonParser, function (req, res) {
     var Encryptpassword = jwt.encode(req.query.password, "bugz");
     User.findOne({
         where: {
@@ -1796,7 +1799,7 @@ router.get('/MobileAppLogin', jsonParser, function(req, res) {
             },
             password: Encryptpassword,
         }
-    }).then(function(response) {
+    }).then(function (response) {
         if (response != null) {
             UserInRole.belongsTo(Role, {
                 foreignKey: {
@@ -1812,7 +1815,7 @@ router.get('/MobileAppLogin', jsonParser, function(req, res) {
                     model: Role,
                     attributes: ['id', 'RoleName']
                 }]
-            }).then(function(resUserInRole) {
+            }).then(function (resUserInRole) {
                 var lstRole = [];
                 for (var i = 0; i < resUserInRole.length; i++) {
                     var objRole = resUserInRole[i].tblrole.RoleName;
@@ -1843,7 +1846,7 @@ router.get('/MobileAppLogin', jsonParser, function(req, res) {
     })
 })
 
-router.post('/CheckMobileUserExist', jsonParser, function(req, res) {
+router.post('/CheckMobileUserExist', jsonParser, function (req, res) {
     objUserReg = req.body
     if (!validator.isEmail(objUserReg.email)) {
         res.json({
@@ -1855,7 +1858,7 @@ router.post('/CheckMobileUserExist', jsonParser, function(req, res) {
             where: {
                 $or: [{ email: objUserReg.email }, { username: objUserReg.username }],
             }
-        }).then(function(chkEmailExist) {
+        }).then(function (chkEmailExist) {
             if (chkEmailExist != null) {
                 res.json({
                     success: false,
@@ -1871,21 +1874,21 @@ router.post('/CheckMobileUserExist', jsonParser, function(req, res) {
     }
 });
 
-router.post('/MobileRegister', jsonParser, function(req, res) {
+router.post('/MobileRegister', jsonParser, function (req, res) {
     objUserReg = req.body
     objUserReg.password = jwt.encode(objUserReg.password, "bugz");
-    User.create(objUserReg).then(function(resUserReg) {
+    User.create(objUserReg).then(function (resUserReg) {
         Role.findOne({
             where: {
                 RoleName: "User"
             }
-        }).then(function(objRole) {
+        }).then(function (objRole) {
             if (objRole != null) {
                 var objUserInRole = {
                     userId: resUserReg.id,
                     roleId: objRole.id,
                 }
-                UserInRole.create(objUserInRole).then(function(resUserInRole) {
+                UserInRole.create(objUserInRole).then(function (resUserInRole) {
                     updateUserRedisValue(resUserReg.id)
                     funAuditLog.CreateAuditLog('register', resUserReg.username, 'Create New User - ID: (' + resUserReg.id + ')');
 
@@ -1907,13 +1910,13 @@ router.post('/MobileRegister', jsonParser, function(req, res) {
                     RoleName: "User",
                     Description: null
                 }
-                Role.create(objRole).then(function(resRole) {
+                Role.create(objRole).then(function (resRole) {
 
                     var objUserInRole = {
                         userId: resUserReg.id,
                         roleId: resRole.id,
                     }
-                    UserInRole.create(objUserInRole).then(function(resUserInRole) {
+                    UserInRole.create(objUserInRole).then(function (resUserInRole) {
                         updateUserRedisValue(resUserReg.id);
                         funAuditLog.CreateAuditLog('register', resUserReg.username, 'Create New User - ID: (' + resUserReg.id + ')');
 
@@ -1939,7 +1942,7 @@ router.post('/MobileRegister', jsonParser, function(req, res) {
                 })
             }
         })
-    }).catch(function(error) {
+    }).catch(function (error) {
         res.json({
             success: false,
             message: "User Registration Failed..."
@@ -1947,22 +1950,22 @@ router.post('/MobileRegister', jsonParser, function(req, res) {
     })
 });
 
-router.get('/MobileForgotPassword', function(req, res) {
-    User.findOne({ where: { email: req.query.email } }).then(function(objUser) {
+router.get('/MobileForgotPassword', function (req, res) {
+    User.findOne({ where: { email: req.query.email } }).then(function (objUser) {
         if (objUser != null) {
-            SystemEmail.findOne().then(function(objSystemEmail) {
+            SystemEmail.findOne().then(function (objSystemEmail) {
                 var NewPassword = customPassword();
                 console.log(NewPassword);
                 var EncryptNewpassword = jwt.encode(NewPassword, "bugz");
                 var search = { password: EncryptNewpassword };
-                objUser.updateAttributes(search).then(function(response) {
+                objUser.updateAttributes(search).then(function (response) {
                     if (response != null) {
                         updateUserRedisValue(objUser.id);
                         EmailTemplate.findOne({
                             where: {
                                 Type: "Forgot Password Email",
                             }
-                        }).then(function(objEmailTemplate) {
+                        }).then(function (objEmailTemplate) {
                             if (objEmailTemplate != null) {
                                 var Name = objUser.username;
                                 var Password = NewPassword;
@@ -1974,7 +1977,7 @@ router.get('/MobileForgotPassword', function(req, res) {
                                     subject: objEmailTemplate.EmailSubject,
                                     html: body
                                 };
-                                transporter.sendMail(mail, function(error, response) {
+                                transporter.sendMail(mail, function (error, response) {
                                     if (error) {
                                         res.json({
                                             success: false,
@@ -2003,7 +2006,7 @@ router.get('/MobileForgotPassword', function(req, res) {
                             message: "This system Email not found..."
                         });
                     }
-                }).catch(function(error) {
+                }).catch(function (error) {
                     res.json({
                         success: false,
                         message: error.errors[0].message + "..."
@@ -2020,7 +2023,7 @@ router.get('/MobileForgotPassword', function(req, res) {
     })
 });
 
-router.post('/changeMobileUserPassword', jsonParser, function(req, res) {
+router.post('/changeMobileUserPassword', jsonParser, function (req, res) {
     objUser = req.body;
     var EncryptOldpassword = jwt.encode(objUser.password, "bugz");
     var EncryptNewpassword = jwt.encode(objUser.NewPassword, "bugz");
@@ -2035,19 +2038,19 @@ router.post('/changeMobileUserPassword', jsonParser, function(req, res) {
             where: {
                 username: objUser.username
             }
-        }).then(function(chkUserExist) {
+        }).then(function (chkUserExist) {
             if (chkUserExist != null) {
                 var Password = chkUserExist.password;
                 var search = { password: EncryptNewpassword };
                 if (EncryptOldpassword == Password) {
-                    chkUserExist.updateAttributes(search).then(function(response) {
+                    chkUserExist.updateAttributes(search).then(function (response) {
                         updateUserRedisValue(chkUserExist.id);
                         funAuditLog.CreateAuditLog('changepassword', chkUserExist.username, 'Change User Password - ID: (' + chkUserExist.id + ')');
                         res.json({
                             success: true,
                             message: "Password changed successfully..."
                         });
-                    }).catch(function(error) {
+                    }).catch(function (error) {
                         res.json({
                             success: false,
                             message: error.errors[0].message + "..."
@@ -2069,18 +2072,18 @@ router.post('/changeMobileUserPassword', jsonParser, function(req, res) {
     }
 });
 
-router.get('/MobileApplogout', jsonParser, function(req, res) {
+router.get('/MobileApplogout', jsonParser, function (req, res) {
     if (req.query.UserType != null && req.query.UserType != undefined && req.query.UserType != '') {
         PushNotification.findOne({
             where: {
                 udid: req.query.udid,
                 UserType: req.query.UserType,
             }
-        }).then(function(response) {
+        }).then(function (response) {
             if (response != null) {
                 var objPushnotification = response;
                 var iduser = response.iduser;
-                objPushnotification.updateAttributes({ iduser: 0 }).then(function(resUpdate) {
+                objPushnotification.updateAttributes({ iduser: 0 }).then(function (resUpdate) {
                     updatePushNotificationRedisValue(iduser);
                     res.json({
                         success: true,
@@ -2099,11 +2102,11 @@ router.get('/MobileApplogout', jsonParser, function(req, res) {
             where: {
                 udid: req.query.udid,
             }
-        }).then(function(response) {
+        }).then(function (response) {
             if (response != null) {
                 var objPushnotification = response;
                 var iduser = response.iduser;
-                objPushnotification.updateAttributes({ iduser: 0 }).then(function(resUpdate) {
+                objPushnotification.updateAttributes({ iduser: 0 }).then(function (resUpdate) {
                     updatePushNotificationRedisValue(iduser);
                     res.json({
                         success: true,
@@ -2119,11 +2122,11 @@ router.get('/MobileApplogout', jsonParser, function(req, res) {
         })
     }
 })
-router.get('/SetLastLogin', jsonParser, function(req, res) {
-    User.findOne({ where: { id: req.query.useId } }).then(function(userExits) {
+router.get('/SetLastLogin', jsonParser, function (req, res) {
+    User.findOne({ where: { id: req.query.useId } }).then(function (userExits) {
         if (userExits) {
             var LastLogin = new Date();
-            userExits.updateAttributes({ LastLogin: LastLogin }).then(function(userupdate) {
+            userExits.updateAttributes({ LastLogin: LastLogin }).then(function (userupdate) {
                 updateUserRedisValue(userExits.id);
                 res.json(userupdate)
 
@@ -2141,7 +2144,7 @@ router.get('/SetLastLogin', jsonParser, function(req, res) {
 
 //New Mobile App wise
 
-router.get('/MobileAppLoginNew', jsonParser, function(req, res) {
+router.get('/MobileAppLoginNew', jsonParser, function (req, res) {
     var Encryptpassword = jwt.encode(req.query.password, "bugz");
     User.findOne({
         where: {
@@ -2153,7 +2156,7 @@ router.get('/MobileAppLoginNew', jsonParser, function(req, res) {
             password: Encryptpassword,
             idApp: req.query.idApp,
         }
-    }).then(function(response) {
+    }).then(function (response) {
         if (response != null) {
             UserInRole.belongsTo(Role, {
                 foreignKey: {
@@ -2163,11 +2166,11 @@ router.get('/MobileAppLoginNew', jsonParser, function(req, res) {
             });
             var LastLogin = new Date();
             if (req.query.AppVersion != null && req.query.AppVersion != undefined && req.query.AppVersion != '0.0.0') {
-                response.updateAttributes({ LastLogin: LastLogin, AppVersion: req.query.AppVersion, Platform: req.query.Platform }).then(function(UpdateLastLogin) {
+                response.updateAttributes({ LastLogin: LastLogin, AppVersion: req.query.AppVersion, Platform: req.query.Platform }).then(function (UpdateLastLogin) {
                     updateUserRedisValue(response.id);
                 })
             } else {
-                response.updateAttributes({ LastLogin: LastLogin }).then(function(UpdateLastLogin) {
+                response.updateAttributes({ LastLogin: LastLogin }).then(function (UpdateLastLogin) {
                     updateUserRedisValue(response.id);
                 })
             }
@@ -2179,7 +2182,7 @@ router.get('/MobileAppLoginNew', jsonParser, function(req, res) {
                     model: Role,
                     attributes: ['id', 'RoleName']
                 }]
-            }).then(function(resUserInRole) {
+            }).then(function (resUserInRole) {
                 var lstRole = [];
                 for (var i = 0; i < resUserInRole.length; i++) {
                     var objRole = resUserInRole[i].tblrole.RoleName;
@@ -2213,7 +2216,7 @@ router.get('/MobileAppLoginNew', jsonParser, function(req, res) {
     })
 })
 
-router.post('/CheckMobileUserExistNew', jsonParser, function(req, res) {
+router.post('/CheckMobileUserExistNew', jsonParser, function (req, res) {
     objUserReg = req.body
     if (!validator.isEmail(objUserReg.email)) {
         res.json({
@@ -2226,7 +2229,7 @@ router.post('/CheckMobileUserExistNew', jsonParser, function(req, res) {
                 $or: [{ email: objUserReg.email }, { username: objUserReg.username }],
                 idApp: objUserReg.idApp,
             }
-        }).then(function(chkEmailExist) {
+        }).then(function (chkEmailExist) {
             if (chkEmailExist != null) {
                 res.json({
                     success: false,
@@ -2242,21 +2245,21 @@ router.post('/CheckMobileUserExistNew', jsonParser, function(req, res) {
     }
 });
 
-router.post('/MobileRegisterNew', jsonParser, function(req, res) {
+router.post('/MobileRegisterNew', jsonParser, function (req, res) {
     objUserReg = req.body
     objUserReg.password = jwt.encode(objUserReg.password, "bugz");
-    User.create(objUserReg).then(function(resUserReg) {
+    User.create(objUserReg).then(function (resUserReg) {
         Role.findOne({
             where: {
                 RoleName: "User"
             }
-        }).then(function(objRole) {
+        }).then(function (objRole) {
             if (objRole != null) {
                 var objUserInRole = {
                     userId: resUserReg.id,
                     roleId: objRole.id,
                 }
-                UserInRole.create(objUserInRole).then(function(resUserInRole) {
+                UserInRole.create(objUserInRole).then(function (resUserInRole) {
                     funAuditLog.CreateAuditLog('register', resUserReg.username, 'Create New User - ID: (' + resUserReg.id + ')');
 
                     //Send OTP
@@ -2267,7 +2270,7 @@ router.post('/MobileRegisterNew', jsonParser, function(req, res) {
                     //     console.log(responseOTP)
                     // });
                     var objshare = { email: resUserReg.email, id: resUserReg.id, username: resUserReg.username };
-                    AddNewShareDevice(objshare, function(response1) {
+                    AddNewShareDevice(objshare, function (response1) {
                         updateUserRedisValue(resUserReg.id)
                         res.json({
                             success: true,
@@ -2282,13 +2285,13 @@ router.post('/MobileRegisterNew', jsonParser, function(req, res) {
                     RoleName: "User",
                     Description: null
                 }
-                Role.create(objRole).then(function(resRole) {
+                Role.create(objRole).then(function (resRole) {
 
                     var objUserInRole = {
                         userId: resUserReg.id,
                         roleId: resRole.id,
                     }
-                    UserInRole.create(objUserInRole).then(function(resUserInRole) {
+                    UserInRole.create(objUserInRole).then(function (resUserInRole) {
                         funAuditLog.CreateAuditLog('register', resUserReg.username, 'Create New User - ID: (' + resUserReg.id + ')');
 
                         //Send OTP
@@ -2299,7 +2302,7 @@ router.post('/MobileRegisterNew', jsonParser, function(req, res) {
                         //     console.log(responseOTP)
                         // });
                         var objshare = { email: resUserReg.email, id: resUserReg.id, username: resUserReg.username };
-                        AddNewShareDevice(objshare, function(response1) {
+                        AddNewShareDevice(objshare, function (response1) {
                             updateUserRedisValue(resUserReg.id)
                             res.json({
                                 success: true,
@@ -2318,7 +2321,7 @@ router.post('/MobileRegisterNew', jsonParser, function(req, res) {
                 })
             }
         })
-    }).catch(function(error) {
+    }).catch(function (error) {
         res.json({
             success: false,
             message: "User Registration Failed..."
@@ -2332,13 +2335,13 @@ function AddNewShareDevice(objparam, callback) {
             SharedEmail: objparam.email,
             Status: 'Pending'
         }
-    }).then(function(SharedEmailExit) {
+    }).then(function (SharedEmailExit) {
         if (SharedEmailExit.length > 0) {
             function uploader(i) {
                 if (SharedEmailExit.length > i) {
-                    Vehicle.findOne({ where: { deviceid: SharedEmailExit[i].DeviceId } }).then(function(vehicleExit) {
+                    Vehicle.findOne({ where: { deviceid: SharedEmailExit[i].DeviceId } }).then(function (vehicleExit) {
                         if (vehicleExit) {
-                            User.findOne({ where: { id: SharedEmailExit[i].idUser } }).then(function(userExit) {
+                            User.findOne({ where: { id: SharedEmailExit[i].idUser } }).then(function (userExit) {
                                 if (userExit) {
                                     var obj = new Object();
                                     obj.DeviceId = SharedEmailExit[i].DeviceId;
@@ -2352,10 +2355,10 @@ function AddNewShareDevice(objparam, callback) {
                                     obj.CreatedDate = new Date();
                                     obj.CreatedBy = userExit.username;
 
-                                    ShareDevice.create(obj).then(function(ShareDeviceCreated) {
+                                    ShareDevice.create(obj).then(function (ShareDeviceCreated) {
 
                                         if (ShareDeviceCreated) {
-                                            SharedEmailExit[i].updateAttributes({ Status: 'Complete', ModifiedDate: new Date(), ModifiedBy: objparam.username }).then(function(SharedEmailupdate) {
+                                            SharedEmailExit[i].updateAttributes({ Status: 'Complete', ModifiedDate: new Date(), ModifiedBy: objparam.username }).then(function (SharedEmailupdate) {
                                                 updateUserRedisValue(vehicleExit.iduser);
                                                 funAuditLog.CreateAuditLog('update SharedEmailExit', objparam.username, 'Update SharedEmailExit  UserID: (' + SharedEmailExit.idUser + ') -> SharedID: (' + SharedEmailExit.Id + ') ');
                                                 uploader(i + 1);
@@ -2402,22 +2405,22 @@ function AddNewShareDevice(objparam, callback) {
     })
 }
 
-router.get('/MobileForgotPasswordNew', function(req, res) {
+router.get('/MobileForgotPasswordNew', function (req, res) {
     if (req.query.email != 'demo@maark.my' && req.query.email != 'demo@gmail.com') {
-        User.findOne({ where: { email: req.query.email, idApp: req.query.idApp, } }).then(function(objUser) {
+        User.findOne({ where: { email: req.query.email, idApp: req.query.idApp, } }).then(function (objUser) {
             if (objUser != null) {
-                SystemEmail.findOne({ where: { IdApp: objUser.idApp } }).then(function(objSystemEmail) {
+                SystemEmail.findOne({ where: { IdApp: objUser.idApp } }).then(function (objSystemEmail) {
                     var NewPassword = customPassword();
                     var EncryptNewpassword = jwt.encode(NewPassword, "bugz");
                     var search = { password: EncryptNewpassword };
-                    objUser.updateAttributes(search).then(function(response) {
+                    objUser.updateAttributes(search).then(function (response) {
                         updateUserRedisValue(objUser.id);
                         if (response != null) {
                             EmailTemplate.findOne({
                                 where: {
                                     Type: "Forgot Password Email",
                                 }
-                            }).then(function(objEmailTemplate) {
+                            }).then(function (objEmailTemplate) {
                                 if (objEmailTemplate != null) {
                                     var Name = objUser.username;
                                     var Password = NewPassword;
@@ -2425,7 +2428,7 @@ router.get('/MobileForgotPasswordNew', function(req, res) {
                                         where: {
                                             Name: 'NotificationEmailTo'
                                         }
-                                    }).then(function(objSetting) {
+                                    }).then(function (objSetting) {
                                         var body = objEmailTemplate.EmailBody.replace(/{UserName}/g, Name).replace("{Password}", Password).replace(/{AppName}/g, req.query.AppName).replace("{Email}", objUser.email);
                                         var mail = {
                                             from: objSystemEmail.DefaultEmailFrom,
@@ -2435,7 +2438,7 @@ router.get('/MobileForgotPasswordNew', function(req, res) {
                                             subject: req.query.AppName + " " + objEmailTemplate.EmailSubject,
                                             html: body
                                         };
-                                        SetsmtpConfig(objSystemEmail, mail, function(EmailSettingCreated) {
+                                        SetsmtpConfig(objSystemEmail, mail, function (EmailSettingCreated) {
                                             // console.log(EmailSettingCreated)
                                         })
 
@@ -2469,7 +2472,7 @@ router.get('/MobileForgotPasswordNew', function(req, res) {
                                 message: "This system Email not found..."
                             });
                         }
-                    }).catch(function(error) {
+                    }).catch(function (error) {
                         res.json({
                             success: false,
                             message: error.errors[0].message + "..."
@@ -2493,7 +2496,7 @@ router.get('/MobileForgotPasswordNew', function(req, res) {
     }
 });
 
-router.post('/changeMobileUserPasswordNew', jsonParser, function(req, res) {
+router.post('/changeMobileUserPasswordNew', jsonParser, function (req, res) {
     objUser = req.body;
     var EncryptOldpassword = jwt.encode(objUser.password, "bugz");
     var EncryptNewpassword = jwt.encode(objUser.NewPassword, "bugz");
@@ -2508,19 +2511,19 @@ router.post('/changeMobileUserPasswordNew', jsonParser, function(req, res) {
             where: {
                 id: objUser.UserId,
             }
-        }).then(function(chkUserExist) {
+        }).then(function (chkUserExist) {
             if (chkUserExist != null) {
                 var Password = chkUserExist.password;
                 var search = { password: EncryptNewpassword };
                 if (EncryptOldpassword == Password) {
-                    chkUserExist.updateAttributes(search).then(function(response) {
+                    chkUserExist.updateAttributes(search).then(function (response) {
                         updateUserRedisValue(chkUserExist.id);
                         funAuditLog.CreateAuditLog('changepassword', chkUserExist.username, 'Change User Password - ID: (' + chkUserExist.id + ')  ');
                         res.json({
                             success: true,
                             message: "Password changed successfully..."
                         });
-                    }).catch(function(error) {
+                    }).catch(function (error) {
                         res.json({
                             success: false,
                             message: error.errors[0].message + "..."
@@ -2542,18 +2545,18 @@ router.post('/changeMobileUserPasswordNew', jsonParser, function(req, res) {
     }
 });
 
-router.get('/MobileApplogoutNew', jsonParser, function(req, res) {
+router.get('/MobileApplogoutNew', jsonParser, function (req, res) {
     if (req.query.UserType != null && req.query.UserType != undefined && req.query.UserType != '') {
         PushNotification.findOne({
             where: {
                 udid: req.query.udid,
                 UserType: req.query.UserType,
             }
-        }).then(function(response) {
+        }).then(function (response) {
             if (response != null) {
                 var objPushnotification = response;
                 var iduser = iduser;
-                objPushnotification.updateAttributes({ iduser: 0 }).then(function(resUpdate) {
+                objPushnotification.updateAttributes({ iduser: 0 }).then(function (resUpdate) {
                     updatePushNotificationRedisValue(iduser);
                     res.json({
                         success: true,
@@ -2572,11 +2575,11 @@ router.get('/MobileApplogoutNew', jsonParser, function(req, res) {
             where: {
                 udid: req.query.udid,
             }
-        }).then(function(response) {
+        }).then(function (response) {
             if (response != null) {
                 var objPushnotification = response;
                 var iduser = iduser;
-                objPushnotification.updateAttributes({ iduser: 0 }).then(function(resUpdate) {
+                objPushnotification.updateAttributes({ iduser: 0 }).then(function (resUpdate) {
                     updatePushNotificationRedisValue(iduser);
                     res.json({
                         success: true,
@@ -2593,7 +2596,7 @@ router.get('/MobileApplogoutNew', jsonParser, function(req, res) {
     }
 })
 
-router.get('/MobileAppLoginScannerApp', jsonParser, function(req, res) {
+router.get('/MobileAppLoginScannerApp', jsonParser, function (req, res) {
     var Encryptpassword = jwt.encode(req.query.password, "bugz");
     User.hasMany(UserInRole, {
         foreignKey: {
@@ -2627,7 +2630,7 @@ router.get('/MobileAppLoginScannerApp', jsonParser, function(req, res) {
                 }
             }]
         }],
-    }).then(function(response) {
+    }).then(function (response) {
         if (response != null) {
             var lstRole = [];
             for (var i = 0; i < response.tbluserinroles.length; i++) {
@@ -2658,7 +2661,7 @@ router.get('/MobileAppLoginScannerApp', jsonParser, function(req, res) {
     })
 })
 
-router.get('/CheckUserPassword', jsonParser, function(req, res) {
+router.get('/CheckUserPassword', jsonParser, function (req, res) {
     var Encryptpassword = jwt.encode(req.query.password, "bugz");
     User.findOne({
         where: {
@@ -2666,7 +2669,7 @@ router.get('/CheckUserPassword', jsonParser, function(req, res) {
             password: Encryptpassword,
             idApp: req.query.idApp,
         }
-    }).then(function(response) {
+    }).then(function (response) {
         if (response != null) {
             res.json({
                 success: true,
@@ -2686,7 +2689,7 @@ function updatePushNotificationRedisValue(id) {
         " FROM tblvehicle tv " +
         " LEFT JOIN tblsharedevice tsd ON tv.id=tsd.idVehicle " +
         " where  (tv.iduser=" + id + " or tsd.iduser=" + id + ")  and tv.IsDelete = 0";
-    connection.query(query, function(err, response, filed) {
+    connection.query(query, function (err, response, filed) {
         if (response) {
             for (var i = 0; i < response.length; i++) {
                 Commonfunction.UpdateVehicleRedis(response[i].deviceid, 'PushNotification')
@@ -2696,7 +2699,7 @@ function updatePushNotificationRedisValue(id) {
 }
 
 function updateUserRedisValue(id) {
-    Vehicle.findAll({ where: { iduser: id } }).then(function(response) {
+    Vehicle.findAll({ where: { iduser: id } }).then(function (response) {
         if (response) {
             for (var i = 0; i < response.length; i++) {
                 Commonfunction.UpdateVehicleRedis(response[i].deviceid, 'User')

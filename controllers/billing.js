@@ -1175,7 +1175,7 @@ router.post('/SaveOrderServiceRenew', jsonParser, function (req, res) {
             }
 
             for (var i = 0; i < lstProduct.length; i++) {
-                // OrderTotal = OrderTotal + lstProduct[i].RenewPrice;
+                OrderTotal = OrderTotal + lstProduct[i].RenewPrice;
                 if (DeviceId == '') {
                     DeviceId = lstProduct[i].deviceid;
                 } else {
