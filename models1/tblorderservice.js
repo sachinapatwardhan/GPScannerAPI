@@ -1,6 +1,6 @@
 /* jshint indent: 2 */
 
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
   return sequelize.define('tblorderservice', {
     id: {
       type: DataTypes.INTEGER(11),
@@ -13,7 +13,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     CustomerPO: {
-      type: DataTypes.STRING(50),
+      type: DataTypes.STRING,
       allowNull: true
     },
     BillingAddressId: {
@@ -21,11 +21,11 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     ShippFirstName: {
-      type: DataTypes.STRING(50),
+      type: DataTypes.STRING,
       allowNull: true
     },
     ShippLastName: {
-      type: DataTypes.STRING(50),
+      type: DataTypes.STRING,
       allowNull: true
     },
     ShippAddress1: {
@@ -45,15 +45,15 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     ShippidCity: {
-      type: DataTypes.STRING(255),
+      type: DataTypes.STRING,
       allowNull: true
     },
     ShippPostCode: {
-      type: DataTypes.STRING(10),
+      type: DataTypes.STRING,
       allowNull: true
     },
     ShippCompanyName: {
-      type: DataTypes.STRING(255),
+      type: DataTypes.STRING,
       allowNull: true
     },
     OrderNotes: {
@@ -69,7 +69,7 @@ module.exports = function(sequelize, DataTypes) {
       }
     },
     ImageUrl: {
-      type: DataTypes.STRING(255),
+      type: DataTypes.STRING,
       allowNull: true
     },
     ShippingStatusId: {
@@ -81,11 +81,11 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     PaymentMethodSystemName: {
-      type: DataTypes.STRING(250),
+      type: DataTypes.STRING,
       allowNull: true
     },
     CustomerCurrencyCode: {
-      type: DataTypes.STRING(50),
+      type: DataTypes.STRING,
       allowNull: true
     },
     CurrencyRate: {
@@ -97,7 +97,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     VatNumber: {
-      type: DataTypes.STRING(50),
+      type: DataTypes.STRING,
       allowNull: true
     },
     OrderSubtotalInclTax: {
@@ -157,7 +157,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     CheckoutAttributeDescription: {
-      type: DataTypes.STRING(500),
+      type: DataTypes.STRING,
       allowNull: true
     },
     CheckoutAttributesXml: {
@@ -173,7 +173,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     CustomerIp: {
-      type: DataTypes.STRING(50),
+      type: DataTypes.STRING,
       allowNull: true
     },
     AllowStoringCreditCardNumber: {
@@ -181,19 +181,19 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     CardType: {
-      type: DataTypes.STRING(50),
+      type: DataTypes.STRING,
       allowNull: true
     },
     CardName: {
-      type: DataTypes.STRING(50),
+      type: DataTypes.STRING,
       allowNull: true
     },
     CardNumber: {
-      type: DataTypes.STRING(50),
+      type: DataTypes.STRING,
       allowNull: true
     },
     MaskedCreditCardNumber: {
-      type: DataTypes.STRING(50),
+      type: DataTypes.STRING,
       allowNull: true
     },
     CardCvv2: {
@@ -213,11 +213,11 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     AuthorizationTransactionCode: {
-      type: DataTypes.STRING(50),
+      type: DataTypes.STRING,
       allowNull: true
     },
     AuthorizationTransactionResult: {
-      type: DataTypes.STRING(50),
+      type: DataTypes.STRING,
       allowNull: true
     },
     CaptureTransactionId: {
@@ -225,7 +225,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     CaptureTransactionResult: {
-      type: DataTypes.STRING(50),
+      type: DataTypes.STRING,
       allowNull: true
     },
     SubscriptionTransactionId: {
@@ -233,7 +233,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     PurchaseOrderNumber: {
-      type: DataTypes.STRING(50),
+      type: DataTypes.STRING,
       allowNull: true
     },
     PaidDateUtc: {
@@ -241,19 +241,19 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     ShippingMethod: {
-      type: DataTypes.STRING(50),
+      type: DataTypes.STRING,
       allowNull: true
     },
     ShippingRateComputationMethodSystemName: {
-      type: DataTypes.STRING(50),
+      type: DataTypes.STRING,
       allowNull: true
     },
     Courier: {
-      type: DataTypes.STRING(255),
+      type: DataTypes.STRING,
       allowNull: true
     },
     TrackingNumber: {
-      type: DataTypes.STRING(50),
+      type: DataTypes.STRING,
       allowNull: true
     },
     CustomValuesXml: {
@@ -269,7 +269,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     CreatedBy: {
-      type: DataTypes.STRING(255),
+      type: DataTypes.STRING,
       allowNull: true
     },
     CreatedOnUtc: {
@@ -289,23 +289,23 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     P1: {
-      type: DataTypes.STRING(50),
+      type: DataTypes.STRING,
       allowNull: true
     },
     P2: {
-      type: DataTypes.STRING(50),
+      type: DataTypes.STRING,
       allowNull: true
     },
     P3: {
-      type: DataTypes.STRING(50),
+      type: DataTypes.STRING,
       allowNull: true
     },
     P4: {
-      type: DataTypes.STRING(50),
+      type: DataTypes.STRING,
       allowNull: true
     },
     SettlementCur: {
-      type: DataTypes.STRING(45),
+      type: DataTypes.STRING,
       allowNull: true
     },
     ProcessingCharges: {
@@ -313,7 +313,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     ExpiryDurationType: {
-      type: DataTypes.STRING(250),
+      type: DataTypes.STRING,
       allowNull: true
     },
     ExpiryDurationValue: {
@@ -329,6 +329,6 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     }
   }, {
-    tableName: 'tblorderservice'
-  });
+      tableName: 'tblorderservice'
+    });
 };
