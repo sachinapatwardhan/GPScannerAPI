@@ -280,7 +280,7 @@ router.get('/loginNew', jsonParser, function (req, res) {
                                     RolewiseCountryList: lstRolewiseCountryList,
                                     appId: resUser.idApp,
                                     UserName: resUser.username,
-                                    Amount: response.Amount,
+                                    Amount: resUser.Amount,
                                     message: "Login Successfully..."
                                 });
                             }
@@ -341,7 +341,7 @@ router.get('/loginNew', jsonParser, function (req, res) {
                                     RolewiseCountryList: lstRolewiseCountryList,
                                     appId: resUser.idApp,
                                     UserName: resUser.username,
-                                    Amount: response.Amount,
+                                    Amount: resUser.Amount,
                                     message: "Login Successfully..."
                                 });
                             }
