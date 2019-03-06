@@ -1,4 +1,4 @@
-(function() {
+(function () {
     'use strict';
 
     var express = require('express');
@@ -19,7 +19,7 @@
     var AppInfo = models.tblappinfo;
     var GPSDevice = models.tblgpsdevice;
     //   ==========================================LOGIN============================================
-    router.get('/MobileAppLoginNew', jsonParser, function(req, res) {
+    router.get('/MobileAppLoginNew', jsonParser, function (req, res) {
         User.hasMany(UserInRole, {
             foreignKey: {
                 name: 'userId',
@@ -49,7 +49,7 @@
                     where: { RoleName: 'Sales Agent' }
                 }]
             }],
-        }).then(function(response) {
+        }).then(function (response) {
             if (response != null) {
                 var user = {
                     username: response.username,
@@ -75,82 +75,100 @@
         })
     })
 
-    router.get('/GetSIMByIMEI', function(req, res) {
-        AppInfo.findOne({
-                where: {
-                    id: req.query.idApp
-                }
-            }).then(function(resAppInfo) {
-                if (resAppInfo) {
-                    GPSDevice.findOne({ where: { IMEI: req.query.IMEI, AppName: resAppInfo.AppName } }).then(function(response1) {
-                        if (response1 != null) {
-                            if (response1.idSim != null && response1.idSim != '') {
-                                SIM.findOne({
-                                    where: {
-                                        id: parseInt(response1.idSim)
-                                    }
-                                }).then(function(resSIM) {
-                                    if (resSIM) {
-                                        res.json({ success: true, message: 'Success.', data: resSIM });
-                                    } else {
-                                        res.json({ success: true, message: 'Success.', data: null });
-                                    }
-                                })
-                            } else {
-                                res.json({ success: true, message: 'Success.', data: null });
-                            }
+    router.get('/GetSIMByIMEI', function (req, res) {
+        // AppInfo.findOne({
+        //         where: {
+        //             id: req.query.idApp
+        //         }
+        //     }).then(function(resAppInfo) {
+        //         if (resAppInfo) {
+        GPSDevice.findOne({ where: { IMEI: req.query.IMEI } }).then(function (response1) {
+            if (response1 != null) {
+                if (response1.idSim != null && response1.idSim != '') {
+                    SIM.findOne({
+                        where: {
+                            id: parseInt(response1.idSim)
+                        }
+                    }).then(function (resSIM) {
+                        if (resSIM) {
+                            res.json({ success: true, message: 'Success.', data: resSIM });
                         } else {
-                            res.json({ success: false, message: 'Tacker Invalid..', data: null });
+                            res.json({ success: true, message: 'Success.', data: null });
                         }
                     })
                 } else {
-                    res.json({ success: false, message: 'Tacker Invalid..', data: null });
+                    res.json({ success: true, message: 'Success.', data: null });
                 }
-            })
-            .catch(function(err) {
-                res.json({ success: false, message: err, data: null });
-            })
+            } else {
+                res.json({ success: true, message: 'Success.', data: null });
+            }
+        })
+        //     } else {
+        //         res.json({ success: false, message: 'Tacker Invalid..', data: null });
+        //     }
+        // })
+        // .catch(function(err) {
+        //     res.json({ success: false, message: err, data: null });
+        // })
     })
 
-    router.post('/UpdateDeviceBySalesAgent', jsonParser, function(req, res) {
+    router.post('/UpdateDeviceBySalesAgent', jsonParser, function (req, res) {
         var objHeader = req.headers;
         var objGpsDevice = req.body;
 
         var token = getToken(objHeader);
         if (token) {
             var decoded = jwt.decode(token, TokenKey);
-            User.findOne({ where: { username: decoded.username, password: decoded.password } }).then(function(UserExist) {
+            User.findOne({ where: { username: decoded.username, password: decoded.password } }).then(function (UserExist) {
                 if (UserExist != null) {
                     AppInfo.findOne({
                         where: {
                             id: objGpsDevice.idApp
                         }
-                    }).then(function(resAppInfo) {
+                    }).then(function (resAppInfo) {
                         if (resAppInfo) {
                             GPSDevice.findOne({
                                 where: {
-                                    IMEI: objGpsDevice.IMEI,
-                                    AppName: resAppInfo.AppName
+                                    IMEI: objGpsDevice.IMEI
+                                    // AppName: resAppInfo.AppName
                                 }
-                            }).then(function(ObjExist) {
+                            }).then(function (ObjExist) {
                                 if (ObjExist) {
-                                    ManageSimFun(objGpsDevice.SIM, objGpsDevice.idApp, function(objSIMData) {
+                                    ManageSimFun(objGpsDevice.SIM, objGpsDevice.idApp, function (objSIMData) {
                                         ObjExist.updateAttributes({
                                             idSim: objSIMData.id,
                                             SimNum: objSIMData.SerialNum,
-                                            idSalesAgent: objGpsDevice.UserId
-                                        }).then(function(response) {
+                                            idSalesAgent: objGpsDevice.UserId,
+                                            AppName: resAppInfo.AppName
+                                        }).then(function (response) {
                                             if (response) {
-                                                funAuditLog.CreateAuditLog('Tracker Update', UserExist.username, 'tracker Update by sales agent / IMEI: (' + ObjExist.IMEI + ')');
-                                                res.json({ success: true, message: "Tracker Update successfully", data: response });
+                                                funAuditLog.CreateAuditLog('Tracker Update', UserExist.username, 'tracker Update by sales agent : (' + decoded.username + ') / IMEI: (' + ObjExist.IMEI + ')');
+                                                res.json({ success: true, message: "Tracker Update successfully.", data: response });
                                             } else {
-                                                res.json({ success: false, message: "Tacker Not Updated", data: null })
+                                                res.json({ success: false, message: "Tacker Not Updated.", data: null })
                                             }
                                         })
-
                                     })
                                 } else {
-                                    res.json({ success: false, message: "Tacker Invalid.." })
+                                    //res.json({ success: false, message: "Tacker Invalid.." })
+                                    ManageSimFun(objGpsDevice.SIM, objGpsDevice.idApp, function (objSIMData) {
+                                        objGpsDevice.CreatedDate = new Date();
+                                        objGpsDevice.CreatedBy = decoded.username;
+                                        objGpsDevice.idSim = objSIMData.id;
+                                        objGpsDevice.SimNum = objSIMData.SerialNum;
+                                        objGpsDevice.idSalesAgent = objGpsDevice.UserId;
+                                        objGpsDevice.AppName = resAppInfo.AppName;
+                                        objGpsDevice.Type = 'MT05';
+                                        objGpsDevice.DeviceId = objGpsDevice.IMEI.trim().slice(1);
+                                        GPSDevice.findOrCreate({ where: { IMEI: objGpsDevice.IMEI }, defaults: objGpsDevice }).then(function (response) {
+                                            if (response) {
+                                                funAuditLog.CreateAuditLog('Tracker Create', UserExist.username, 'tracker created by sales agent : (' + decoded.username + ') / IMEI: (' + objGpsDevice.IMEI + ')');
+                                                res.json({ success: true, message: "Tracker Activated successfully.", data: response });
+                                            } else {
+                                                res.json({ success: false, message: "Tacker Not Activated. Try again later.", data: null })
+                                            }
+                                        });
+                                    })
                                 }
                             })
                         } else {
@@ -166,27 +184,24 @@
         }
     })
 
-
-
     function ManageSimFun(SIMSerialNumber, idApp, ReturnData) {
         SIM.findOne({
             where: {
                 SerialNum: SIMSerialNumber,
             }
-        }).then(function(resSimFound) {
+        }).then(function (resSimFound) {
             if (resSimFound) {
                 return ReturnData(resSimFound);
             } else {
-                SIM.create({ SerialNum: SIMSerialNumber, CreatedDate: new Date(), idApp: idApp }).then(function(createSIM) {
+                SIM.create({ SerialNum: SIMSerialNumber, CreatedDate: new Date(), idApp: idApp }).then(function (createSIM) {
                     return ReturnData(createSIM);
                 })
             }
         })
     }
 
-
     // -------------------------------------Renew Management------------------------------------------
-    router.get('/GetAllRenewDataForSalesAgent', function(req, res) {
+    router.get('/GetAllRenewDataForSalesAgent', function (req, res) {
         var objParam = req.query;
         var offset = (parseInt(objParam.page) * 10);
         var objSearch = objParam.search;
@@ -244,9 +259,9 @@
             " INNER JOIN tbluserinformation as tu ON tv.iduser = tu.id " +
             " where tl.IsDeleted=0 " + search;
 
-        connection.query(query, function(err, response) {
+        connection.query(query, function (err, response) {
             if (response != undefined) {
-                connection.query(countquery, function(err, lstCount, fields) {
+                connection.query(countquery, function (err, lstCount, fields) {
                     var lstAllVehicle = [];
 
                     function getData(i) {
@@ -267,7 +282,7 @@
                             obj.appLicenceType = response[i].appLicenceType;
                             obj.ExpiryDate = response[i].ExpiryDate;
 
-                            client.get(response[i].DeviceId, function(err, strgpsdata) {
+                            client.get(response[i].DeviceId, function (err, strgpsdata) {
                                 if (!err) {
                                     if (strgpsdata != null & strgpsdata != '' && strgpsdata != undefined) {
                                         var objgps = JSON.parse(strgpsdata);
@@ -292,7 +307,6 @@
             }
         })
     })
-
 
     function convertdateformat(date1, flg) {
         var date = new Date(date1);
