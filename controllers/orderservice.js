@@ -14,13 +14,14 @@ var GPSDevice = models.tblgpsdevice;
 var WalletTransaction = models.tblwallettransaction;
 var Vehicle = models.tblvehicle;
 var Commonfunction = require('./common.js');
+var momentz = require('moment-timezone');
 
 //
 // CreateOrderServiceGlobal("India", 1, "0000000000000", "IMMM", function(redds) {
 //     console.log(redds)
 // })
 
-router.get('/GetAllDeviceId', function(req, res) {
+router.get('/GetAllDeviceId', function (req, res) {
     var search = "";
     if (req.query.idApp != null && req.query.idApp != undefined && req.query.idApp != '') {
         search = " and tblappinfo.id = " + req.query.idApp;
@@ -30,18 +31,18 @@ router.get('/GetAllDeviceId', function(req, res) {
         " inner join tblgpsdevice on tblgpsdevice.DeviceId = tblvehicle.deviceid " +
         " inner join tblappinfo on tblappinfo.AppName = tblgpsdevice.AppName " +
         " where tblvehicle.IsDelete=0 and tblvehicle.deviceid!='' " + search;
-    connection.query(query, function(err, response) {
+    connection.query(query, function (err, response) {
         res.json(response)
     })
 })
 
-router.get('/GetAllCustomer', function(req, res) {
+router.get('/GetAllCustomer', function (req, res) {
     var search = "";
     if (req.query.idApp != null && req.query.idApp != undefined && req.query.idApp != '') {
         search = " where tbluserinformation.idApp = " + req.query.idApp;
     }
     var query = "select tbluserinformation.email,tbluserinformation.id from tbluserinformation inner join tblvehicle on tbluserinformation.id = tblvehicle.iduser and tblvehicle.IsDelete=0 and tblvehicle.deviceid!='' " + search + "  group by tbluserinformation.id";
-    connection.query(query, function(err, response) {
+    connection.query(query, function (err, response) {
         res.json(response)
     })
 })
@@ -79,7 +80,7 @@ function AddDate(oldDate, offset, offsetType) {
 
 //======================================================================
 
-router.get('/GetAllOrderService', function(req, res) {
+router.get('/GetAllOrderService', function (req, res) {
     var objParam = req.query;
     var objColumns = objParam.columns;
     var objOrder = objParam.order;
@@ -289,7 +290,7 @@ router.get('/GetAllOrderService', function(req, res) {
             required: true,
             attributes: ['id', 'AppName'],
         }]
-    }).then(function(response) {
+    }).then(function (response) {
         var response1 = new Object();
         response1.draw = objParam.draw;
         response1.LastPage = response.count;
@@ -297,7 +298,7 @@ router.get('/GetAllOrderService', function(req, res) {
         response1.recordsFiltered = response.count;
         response1.data = response.rows;
         res.json(response1);
-    }).catch(function(error) {
+    }).catch(function (error) {
         res.json({
             success: false,
             response: error
@@ -306,7 +307,7 @@ router.get('/GetAllOrderService', function(req, res) {
 
 })
 
-router.get('/GetAllOrderServiceNew', function(req, res) {
+router.get('/GetAllOrderServiceNew', function (req, res) {
     var objParam = req.query;
     var objColumns = objParam.columns;
     var objOrder = objParam.order;
@@ -482,14 +483,14 @@ router.get('/GetAllOrderServiceNew', function(req, res) {
         search['$and'].push(obj);
     }
     if (objParam.Country != '' && objParam.Country != null && objParam.Country != undefined && objParam.Country != 0) {
-        if (search['$and'] == undefined) {
-            search['$and'] = [];
+        if (search1['$and'] == undefined) {
+            search1['$and'] = [];
         }
         var obj = new Object();
-        obj['ShippAddress1'] = {
+        obj['country'] = {
             $eq: objParam.Country
         };
-        search['$and'].push(obj);
+        search1['$and'].push(obj);
     }
     if (objParam.DeviceId != '' && objParam.DeviceId != undefined && objParam.DeviceId != '' && objParam.DeviceId != 'All') {
         if (search['$and'] == undefined) {
@@ -520,10 +521,10 @@ router.get('/GetAllOrderServiceNew', function(req, res) {
             model: OrderServiceStatus,
             attributes: ['id', 'OrderStatus'],
             required: true
-                // }, {
-                //     model: OrderServiceDetail,
-                //     attributes: ['id', 'ProductName', 'Quantity', 'UnitPriceInclTax'],
-                //     required: true
+            // }, {
+            //     model: OrderServiceDetail,
+            //     attributes: ['id', 'ProductName', 'Quantity', 'UnitPriceInclTax'],
+            //     required: true
         }, {
             model: User,
             attributes: ['id', 'email', 'username', 'country', 'ProfileName', 'idApp'],
@@ -535,7 +536,7 @@ router.get('/GetAllOrderServiceNew', function(req, res) {
             attributes: ['AppName'],
         }],
         order: Orderby
-    }).then(function(response) {
+    }).then(function (response) {
         var response1 = new Object();
         response1.draw = objParam.draw;
         response1.LastPage = response.count;
@@ -543,7 +544,7 @@ router.get('/GetAllOrderServiceNew', function(req, res) {
         response1.recordsFiltered = response.count;
         response1.data = response.rows;
         res.json(response1);
-    }).catch(function(error) {
+    }).catch(function (error) {
         console.log(error)
         res.json({
             success: false,
@@ -553,16 +554,16 @@ router.get('/GetAllOrderServiceNew', function(req, res) {
 
 })
 
-router.get('/GetOrderServiceStatus', function(req, res) {
-    OrderServiceStatus.findAll().then(function(resStatus) {
+router.get('/GetOrderServiceStatus', function (req, res) {
+    OrderServiceStatus.findAll().then(function (resStatus) {
         res.json(resStatus);
     });
 })
 
-router.post('/CreateOrderService', jsonParser, function(req, res) {
+router.post('/CreateOrderService', jsonParser, function (req, res) {
     var objOrderReq = req.body;
     //Country,UserId,DeviceId,UserName
-    GetCharges(objOrderReq.Country, objOrderReq.ProductTypeId, false, function(resOrderTotal) {
+    GetCharges(objOrderReq.Country, objOrderReq.ProductTypeId, false, function (resOrderTotal) {
         var OrderTotal = resOrderTotal.TotalAmount;
         var ProductId = resOrderTotal.ProductId;
 
@@ -605,7 +606,7 @@ router.post('/CreateOrderService', jsonParser, function(req, res) {
         objOrder.PaymentStatusId = null;
         objOrder.Deleted = false;
         objOrder.ShippAddress1 = objOrderReq.Country;
-        OrderService.create(objOrder).then(function(response) {
+        OrderService.create(objOrder).then(function (response) {
             var objOrderDetail = new Object();
             objOrderDetail.OrderId = response.id;
             objOrderDetail.ProductId = ProductId;
@@ -616,13 +617,13 @@ router.post('/CreateOrderService', jsonParser, function(req, res) {
             objOrderDetail.idOrderStatus = 1;
             objOrderDetail.PriceInclTax = OrderTotal;
             objOrderDetail.PriceExclTax = OrderTotal;
-            OrderServiceDetail.create(objOrderDetail).then(function(responseOrderDetail) {
+            OrderServiceDetail.create(objOrderDetail).then(function (responseOrderDetail) {
                 // console.log("############", responseOrderDetail)
-                Vehicle.findOne({ where: { deviceid: responseOrderDetail.OrderNotes } }).then(function(vehicleExits) {
+                Vehicle.findOne({ where: { deviceid: responseOrderDetail.OrderNotes } }).then(function (vehicleExits) {
                     if (vehicleExits) {
                         vehicleExits.updateAttributes({
                             renewaldate: responseOrderDetail.ExpiryDate,
-                        }).then(function(response1) {
+                        }).then(function (response1) {
                             //Update Vehicle Data For in Redis Server
                             Commonfunction.UpdateVehicleRedis(responseOrderDetail.OrderNotes, 'Vehicle');
                             res.json({
@@ -639,7 +640,7 @@ router.post('/CreateOrderService', jsonParser, function(req, res) {
     });
 });
 
-router.get('/RenewOrderService', function(req, res) {
+router.get('/RenewOrderService', function (req, res) {
     var objOrderReq = req.query;
 
     OrderService.hasOne(OrderServiceDetail, {
@@ -658,7 +659,7 @@ router.get('/RenewOrderService', function(req, res) {
             attributes: ['id', 'ProductId', 'ProductName', 'Quantity', 'UnitPriceInclTax'],
             required: true
         }]
-    }).then(function(objOrderExists) {
+    }).then(function (objOrderExists) {
 
         if (objOrderExists != null) {
             // var OrderTotal = resOrderTotal.TotalAmount;
@@ -705,7 +706,7 @@ router.get('/RenewOrderService', function(req, res) {
             objOrder.ShippAddress1 = objOrderExists.ShippAddress1;
             objOrder.Deleted = false;
 
-            OrderService.create(objOrder).then(function(response) {
+            OrderService.create(objOrder).then(function (response) {
                 var objOrderDetail = new Object();
                 objOrderDetail.OrderId = response.id;
                 objOrderDetail.ProductId = objOrderExists.tblorderserviceitem.ProductId;
@@ -716,16 +717,16 @@ router.get('/RenewOrderService', function(req, res) {
                 objOrderDetail.idOrderStatus = 1;
                 objOrderDetail.PriceInclTax = objOrderExists.OrderTotal;
                 objOrderDetail.PriceExclTax = objOrderExists.OrderTotal;
-                OrderServiceDetail.create(objOrderDetail).then(function(responseOrderDetail) {
+                OrderServiceDetail.create(objOrderDetail).then(function (responseOrderDetail) {
                     objOrderExists.updateAttributes({
                         Deleted: true,
                         OrderStatusId: 3
-                    }).then(function(resUpdateOrder) {
-                        Vehicle.findOne({ where: { deviceid: objOrderExists.OrderNotes } }).then(function(vehicleExits) {
+                    }).then(function (resUpdateOrder) {
+                        Vehicle.findOne({ where: { deviceid: objOrderExists.OrderNotes } }).then(function (vehicleExits) {
                             if (vehicleExits) {
                                 vehicleExits.updateAttributes({
                                     renewaldate: objOrder.ExpiryDate,
-                                }).then(function(response) {
+                                }).then(function (response) {
                                     Commonfunction.UpdateVehicleRedis(objOrderExists.OrderNotes, 'Vehicle');
                                     res.json({
                                         success: true,
@@ -750,32 +751,32 @@ router.get('/RenewOrderService', function(req, res) {
     });
 });
 
-router.get('/UpdateDevice', function(req, res) {
+router.get('/UpdateDevice', function (req, res) {
     var OrderTotal = req.query.OrderTotal;
     OrderService.findOne({
         where: {
             id: req.query.id
         }
-    }).then(function(resOrderFind) {
+    }).then(function (resOrderFind) {
         if (resOrderFind != null) {
             resOrderFind.updateAttributes({
                 OrderNotes: req.query.DeviceId,
                 OrderTotal: OrderTotal,
                 OrderSubtotalInclTax: OrderTotal,
                 OrderSubtotalExclTax: OrderTotal,
-            }).then(function(resUpdate) {
+            }).then(function (resUpdate) {
                 OrderServiceDetail.findOne({
                     where: {
                         OrderId: req.query.id
                     }
-                }).then(function(resDetailCheck) {
+                }).then(function (resDetailCheck) {
                     if (resDetailCheck != null) {
                         resDetailCheck.updateAttributes({
                             UnitPriceInclTax: OrderTotal,
                             UnitPriceExclTax: OrderTotal,
                             PriceInclTax: OrderTotal,
                             PriceExclTax: OrderTotal,
-                        }).then(function(resUpdateDtl) {
+                        }).then(function (resUpdateDtl) {
                             res.json({
                                 success: true,
                                 message: "Device Updated Successfully"
@@ -799,42 +800,42 @@ router.get('/UpdateDevice', function(req, res) {
     });
 })
 
-router.get('/UpdateOrderServiceDates', function(req, res) {
+router.get('/UpdateOrderServiceDates', function (req, res) {
     var CreatedOnUtc = req.query.CreatedOnUtc;
     OrderService.findOne({
         where: {
             id: req.query.id
         }
-    }).then(function(resOrderFind) {
+    }).then(function (resOrderFind) {
         if (resOrderFind != null) {
             var ExpiryDate = AddDate(new Date(CreatedOnUtc), 1, "Year");
             resOrderFind.updateAttributes({
                 CreatedOnUtc: new Date(CreatedOnUtc),
                 ExpiryDate: ExpiryDate,
-            }).then(function(resUpdate) {
-                Vehicle.findOne({ where: { deviceid: resOrderFind.OrderNotes } }).then(function(vehicleExits) {
-                        if (vehicleExits) {
-                            vehicleExits.updateAttributes({
-                                renewaldate: ExpiryDate,
-                            }).then(function(response) {
-                                Commonfunction.UpdateVehicleRedis(resOrderFind.OrderNotes, 'Vehicle');
-                                res.json({
-                                    success: true,
-                                    message: "Expiry Date Updated Successfully"
-                                });
-                            })
-                        } else {
+            }).then(function (resUpdate) {
+                Vehicle.findOne({ where: { deviceid: resOrderFind.OrderNotes } }).then(function (vehicleExits) {
+                    if (vehicleExits) {
+                        vehicleExits.updateAttributes({
+                            renewaldate: ExpiryDate,
+                        }).then(function (response) {
+                            Commonfunction.UpdateVehicleRedis(resOrderFind.OrderNotes, 'Vehicle');
                             res.json({
-                                success: false,
-                                message: "Expiry not Date Updated"
+                                success: true,
+                                message: "Expiry Date Updated Successfully"
                             });
-                        }
+                        })
+                    } else {
+                        res.json({
+                            success: false,
+                            message: "Expiry not Date Updated"
+                        });
+                    }
 
-                    })
-                    // res.json({
-                    //     success: true,
-                    //     message: "Expiry Date Updated Successfully"
-                    // });
+                })
+                // res.json({
+                //     success: true,
+                //     message: "Expiry Date Updated Successfully"
+                // });
             });
         } else {
             res.json({
@@ -845,25 +846,25 @@ router.get('/UpdateOrderServiceDates', function(req, res) {
     });
 })
 
-router.get('/ChangeStatus', function(req, res) {
+router.get('/ChangeStatus', function (req, res) {
     OrderService.findOne({
         where: {
             id: req.query.id
         }
-    }).then(function(resOrderFind) {
+    }).then(function (resOrderFind) {
         if (resOrderFind != null) {
             resOrderFind.updateAttributes({
                 OrderStatusId: req.query.status
-            }).then(function(resUpdate) {
+            }).then(function (resUpdate) {
                 OrderServiceDetail.findOne({
                     where: {
                         orderId: req.query.id,
                     }
-                }).then(function(resgetDTl) {
+                }).then(function (resgetDTl) {
                     if (resgetDTl != null) {
                         resgetDTl.updateAttributes({
                             idOrderStatus: req.query.status
-                        }).then(function(resUpdatedtl) {
+                        }).then(function (resUpdatedtl) {
                             res.json({
                                 success: true,
                                 message: "Order Service Approved Successfully"
@@ -886,7 +887,7 @@ router.get('/ChangeStatus', function(req, res) {
     });
 })
 
-router.get('/ExportOrderService', function(req, res) {
+router.get('/ExportOrderService', function (req, res) {
     var conf = {};
     conf.cols = [];
 
@@ -1083,7 +1084,7 @@ router.get('/ExportOrderService', function(req, res) {
             required: true,
             attributes: ['id', 'AppName'],
         }]
-    }).then(function(response) {
+    }).then(function (response) {
 
         var NewColumns = [{
             caption: 'No',
@@ -1163,7 +1164,7 @@ router.get('/ExportOrderService', function(req, res) {
     });
 })
 
-router.get('/ExportOrderServiceNew', function(req, res) {
+router.get('/ExportOrderServiceNew', function (req, res) {
     var conf = {};
     conf.cols = [];
 
@@ -1227,11 +1228,11 @@ router.get('/ExportOrderServiceNew', function(req, res) {
         var StartDate = convertdateUTCformat(objParam.StartDate);
         var EndDate = convertdateUTCformat(objParam.EndDate, 2);
 
-        var obj = new Object();
-        obj['ExpiryDate'] = {
-            $between: [StartDate, EndDate]
-        };
-        InnerSearch['$or'].push(obj);
+        // var obj = new Object();
+        // obj['ExpiryDate'] = {
+        //     $between: [StartDate, EndDate]
+        // };
+        // InnerSearch['$or'].push(obj);
 
         var obj1 = new Object();
         obj1['CreatedOnUtc'] = {
@@ -1253,11 +1254,11 @@ router.get('/ExportOrderServiceNew', function(req, res) {
         }
 
         var StartDate = convertdateUTCformat(objParam.StartDate);
-        var obj = new Object();
-        obj['ExpiryDate'] = {
-            $gte: StartDate
-        };
-        InnerSearch['$or'].push(obj);
+        // var obj = new Object();
+        // obj['ExpiryDate'] = {
+        //     $gte: StartDate
+        // };
+        // InnerSearch['$or'].push(obj);
 
         var obj1 = new Object();
         obj1['CreatedOnUtc'] = {
@@ -1280,11 +1281,11 @@ router.get('/ExportOrderServiceNew', function(req, res) {
 
         var EndDate = convertdateUTCformat(objParam.EndDate, 2);
 
-        var obj = new Object();
-        obj['ExpiryDate'] = {
-            $lte: EndDate
-        };
-        InnerSearch['$or'].push(obj);
+        // var obj = new Object();
+        // obj['ExpiryDate'] = {
+        //     $lte: EndDate
+        // };
+        // InnerSearch['$or'].push(obj);
 
         var obj1 = new Object();
         obj1['CreatedOnUtc'] = {
@@ -1331,14 +1332,14 @@ router.get('/ExportOrderServiceNew', function(req, res) {
 
 
     if (objParam.Country != '' && objParam.Country != null && objParam.Country != undefined && objParam.Country != 0) {
-        if (search['$and'] == undefined) {
-            search['$and'] = [];
+        if (search1['$and'] == undefined) {
+            search1['$and'] = [];
         }
         var obj = new Object();
-        obj['ShippAddress1'] = {
+        obj['country'] = {
             $eq: objParam.Country
         };
-        search['$and'].push(obj);
+        search1['$and'].push(obj);
     }
     if (objParam.DeviceId != '' && objParam.DeviceId != undefined && objParam.DeviceId != '' && objParam.DeviceId != 'All') {
         if (search['$and'] == undefined) {
@@ -1359,6 +1360,7 @@ router.get('/ExportOrderServiceNew', function(req, res) {
         };
         search1['$and'].push(obj);
     }
+
     OrderService.findAll({
         where: search,
         order: 'CreatedOnUtc desc',
@@ -1366,10 +1368,10 @@ router.get('/ExportOrderServiceNew', function(req, res) {
             model: OrderServiceStatus,
             attributes: ['id', 'OrderStatus'],
             required: true
-                // }, {
-                //     model: OrderServiceDetail,
-                //     attributes: ['id', 'ProductName', 'Quantity', 'UnitPriceInclTax'],
-                //     required: true
+            // }, {
+            //     model: OrderServiceDetail,
+            //     attributes: ['id', 'ProductName', 'Quantity', 'UnitPriceInclTax'],
+            //     required: true
         }, {
             model: User,
             attributes: ['id', 'email', 'username', 'country', 'ProfileName'],
@@ -1380,8 +1382,7 @@ router.get('/ExportOrderServiceNew', function(req, res) {
             required: true,
             attributes: ['id', 'AppName'],
         }]
-    }).then(function(response) {
-
+    }).then(function (response) {
         var NewColumns = [{
             caption: 'No',
             type: 'string'
@@ -1397,9 +1398,9 @@ router.get('/ExportOrderServiceNew', function(req, res) {
         }, {
             caption: 'Created Date',
             type: 'string'
-                // }, {
-                //     caption: 'Exipiry Date',
-                //     type: 'string'
+            // }, {
+            //     caption: 'Exipiry Date',
+            //     type: 'string'
         }, {
             caption: 'Order Total',
             type: 'number'
@@ -1412,7 +1413,20 @@ router.get('/ExportOrderServiceNew', function(req, res) {
         }, {
             caption: 'Status',
             type: 'string'
+        }, {
+            caption: 'Created By',
+            type: 'string'
+        }, {
+            caption: 'Renew Remark',
+            type: 'string'
         }];
+
+        if (objParam.IsAdmin == true || objParam.IsAdmin == 'true') {
+            NewColumns.push({
+                caption: 'Admin Remark',
+                type: 'string'
+            })
+        }
 
         conf.cols = (NewColumns);
         var row = [];
@@ -1426,7 +1440,8 @@ router.get('/ExportOrderServiceNew', function(req, res) {
             var OrderNo = ObjData.PurchaseOrderNumber;
             var Email = ObjData.tbluserinformation.email;
             if (ObjData.CreatedOnUtc != '' && ObjData.CreatedOnUtc != null && ObjData.CreatedOnUtc != undefined) {
-                var CreatedOnUtc = moment(moment.utc(ObjData.CreatedOnUtc).toDate()).format("DD/MM/YYYY hh:mm A");
+                // var CreatedOnUtc = moment(moment.utc(ObjData.CreatedOnUtc).toDate()).format("DD/MM/YYYY hh:mm A");
+                var CreatedOnUtc = momentz.utc(ObjData.CreatedOnUtc).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a')
             } else {
                 var CreatedOnUtc = '';
             }
@@ -1437,7 +1452,8 @@ router.get('/ExportOrderServiceNew', function(req, res) {
             // }
             var OrderTotal = ObjData.OrderTotal;
             var Device = ObjData.OrderNotes;
-            var Country = ObjData.ShippAddress1;
+            // var Country = ObjData.ShippAddress1;
+            var Country = ObjData.tbluserinformation.country;
             var Status = ObjData.tblorderservicestatus.OrderStatus;
             srow.push(No.toString());
             srow.push(OrderNo);
@@ -1449,6 +1465,11 @@ router.get('/ExportOrderServiceNew', function(req, res) {
             srow.push(Device);
             srow.push(Country);
             srow.push(Status);
+            srow.push(ObjData.CreatedBy);
+            srow.push(ObjData.Terms);
+            if (objParam.IsAdmin == true || objParam.IsAdmin == 'true') {
+                srow.push(ObjData.Remark);
+            }
             row.push(srow);
         };
         conf.rows = [];
@@ -1474,10 +1495,10 @@ function convertdateformatcutm(date1) {
 function GetCharges(Country, ProductTypeId, IsRenew, callback) {
     var TotalAmount = 0;
     try {
-        GetExpiryProductByName(ProductTypeId, function(resProductId) {
+        GetExpiryProductByName(ProductTypeId, function (resProductId) {
             TotalAmount = 0;
             if (resProductId > 0) {
-                GetProductAttributes(resProductId, Country, function(resAllAttributes) {
+                GetProductAttributes(resProductId, Country, function (resAllAttributes) {
                     for (var i = 0; i < resAllAttributes.length; i++) {
                         TotalAmount += resAllAttributes[i].PriceAdjustment;
                     }
@@ -1512,7 +1533,7 @@ function GetExpiryProductByName(ProductTypeId, callback) {
                 Deleted: false,
             },
             attributes: ['Id', 'Name'],
-        }).then(function(response) {
+        }).then(function (response) {
             if (response != null) {
                 return callback(response.Id);
             } else {
@@ -1556,7 +1577,7 @@ function GetProductAttributes(idProduct, Country, callback) {
                 attributes: ['Id', 'Name']
             }]
         }]
-    }).then(function(resAttributes) {
+    }).then(function (resAttributes) {
         var AllAttributeValue = [];
         for (var i = 0; i < resAttributes.length; i++) {
             var value = resAttributes[i];
@@ -1575,12 +1596,12 @@ function GetProductAttributes(idProduct, Country, callback) {
             }
         }
         return callback(AllAttributeValue);
-    }).catch(function(error) {
+    }).catch(function (error) {
         return callback([]);
     })
 }
 
-router.post('/SaveOrderService', jsonParser, function(req, res) {
+router.post('/SaveOrderService', jsonParser, function (req, res) {
     objOrderservice = req.body;
     objHeader = req.headers;
     var token = getToken(objHeader);
@@ -1591,13 +1612,13 @@ router.post('/SaveOrderService', jsonParser, function(req, res) {
                 username: decoded.username,
                 password: decoded.password
             }
-        }).then(function(UserExist) {
+        }).then(function (UserExist) {
             if (UserExist != null) {
-                User.findOne({ where: { email: objOrderservice.UserName, idApp: objOrderservice.idApp } }).then(function(Userfound) {
+                User.findOne({ where: { email: objOrderservice.UserName, idApp: objOrderservice.idApp } }).then(function (Userfound) {
                     if (Userfound) {
-                        GPSDevice.findOne({ where: { DeviceId: objOrderservice.DeviceId, AppName: objOrderservice.AppName } }).then(function(DeviceExist) {
+                        GPSDevice.findOne({ where: { DeviceId: objOrderservice.DeviceId, AppName: objOrderservice.AppName } }).then(function (DeviceExist) {
                             if (DeviceExist) {
-                                CreateOrderServiceGlobal(Userfound.country, Userfound.id, DeviceExist.DeviceId, Userfound.username, Userfound.idApp, function(orderresponse) {
+                                CreateOrderServiceGlobal(Userfound.country, Userfound.id, DeviceExist.DeviceId, Userfound.username, Userfound.idApp, function (orderresponse) {
                                     if (orderresponse.success == true) {
                                         var objVehicle = new Object();
                                         objVehicle.CreatedDate = new Date();
@@ -1612,7 +1633,7 @@ router.post('/SaveOrderService', jsonParser, function(req, res) {
                                             where: {
                                                 deviceid: objVehicle.deviceid,
                                             }
-                                        }).then(function(VehicleExist) {
+                                        }).then(function (VehicleExist) {
                                             if (VehicleExist) {
                                                 if (VehicleExist.IsDelete == true) {
                                                     objVehicle.IsDelete = false;
@@ -1621,25 +1642,25 @@ router.post('/SaveOrderService', jsonParser, function(req, res) {
                                                         where: {
                                                             id: VehicleExist.id
                                                         }
-                                                    }).then(function(vehicleCreated) {
+                                                    }).then(function (vehicleCreated) {
                                                         if (vehicleCreated) {
                                                             Commonfunction.UpdateVehicleRedis(objVehicle.deviceid, 'Vehicle');
                                                             funAuditLog.CreateAuditLog('Create Vehicle through Create Oder service', UserExist.username, 'Save Vehicle  through Create Oder service / DeviceID (' + VehicleExist.deviceid + ') ');
                                                         }
                                                     })
                                                 } else {
-                                                    VehicleExist.updateAttributes({ renewaldate: AddDate(objVehicle.CreatedDate, 1, "Year") }).then(function(vehicleupdated) {
+                                                    VehicleExist.updateAttributes({ renewaldate: AddDate(objVehicle.CreatedDate, 1, "Year") }).then(function (vehicleupdated) {
                                                         Commonfunction.UpdateVehicleRedis(objVehicle.deviceid, 'Vehicle');
                                                         funAuditLog.CreateAuditLog('update Vehicle Expiry date through Create Oder service', UserExist.username, 'update Vehicle Expiry date through Create Oder service / DeviceID (' + VehicleExist.deviceid + ')');
                                                     });
                                                 }
                                             } else {
-                                                Vehicle.create(objVehicle).then(function(vehicleCreated) {
+                                                Vehicle.create(objVehicle).then(function (vehicleCreated) {
                                                     if (vehicleCreated) {
                                                         if (DeviceExist.CountryId != 30 && objVehicle.DeviceType == 'MT05') {
                                                             var CurrentDate = GetCurrentDate();
                                                             var query = "INSERT INTO tbldeviceaccvalueset (DeviceId,CreatedDate ) VALUES ('" + objVehicle.deviceid + "', '" + CurrentDate + "');";
-                                                            connectionbikedata.query(query, function(err, rows, fields) {});
+                                                            connectionbikedata.query(query, function (err, rows, fields) { });
                                                         }
                                                         Commonfunction.UpdateVehicleRedis(objVehicle.deviceid);
                                                         funAuditLog.CreateAuditLog('Create Vehicle through Create Oder service', UserExist.username, 'Save Vehicle Type through Create Oder service / DeviceID (' + vehicleCreated.deviceid + ')');
@@ -1688,7 +1709,7 @@ var rule = new schedule.RecurrenceRule();
 rule.hour = 20;
 rule.minute = 0;
 rule.second = 0;
-var Isschedule = schedule.scheduleJob(rule, function() {
+var Isschedule = schedule.scheduleJob(rule, function () {
     console.log("Call Every Day '8 PM' O'clock")
     ExpireOrderService();
     ExpireWalletTransaction();
@@ -1702,7 +1723,7 @@ function ExpireOrderService() {
                     $lt: new Date()
                 }
             }
-        }).then(function(resOrderService) {
+        }).then(function (resOrderService) {
             if (resOrderService.length > 0) {
                 function Expire(i) {
                     if (i < resOrderService.length) {
@@ -1710,16 +1731,16 @@ function ExpireOrderService() {
                             var objOrderServc = resOrderService[i];
                             objOrderServc.updateAttributes({
                                 OrderStatusId: 5
-                            }).then(function(resUpdateOrderService) {
+                            }).then(function (resUpdateOrderService) {
                                 OrderServiceDetail.findOne({
                                     where: {
                                         OrderId: objOrderServc.id
                                     }
-                                }).then(function(resfindDetail) {
+                                }).then(function (resfindDetail) {
                                     if (resfindDetail != null) {
                                         resfindDetail.updateAttributes({
                                             idOrderStatus: 5
-                                        }).then(function(resupdateDetail) {
+                                        }).then(function (resupdateDetail) {
                                             Expire(i + 1);
                                         });
                                     } else {
@@ -1737,7 +1758,7 @@ function ExpireOrderService() {
                 Expire(0);
             }
         });
-    } catch (err) {}
+    } catch (err) { }
 }
 
 function ExpireWalletTransaction() {
@@ -1748,7 +1769,7 @@ function ExpireWalletTransaction() {
                     $lt: new Date()
                 }
             }
-        }).then(function(resWalletTransaction) {
+        }).then(function (resWalletTransaction) {
             if (resWalletTransaction.length > 0) {
                 function Expiretran(j) {
                     if (j < resWalletTransaction.length) {
@@ -1756,7 +1777,7 @@ function ExpireWalletTransaction() {
                             var objWalletTran = resWalletTransaction[j];
                             objWalletTran.updateAttributes({
                                 IsPaymentSuccess: 3
-                            }).then(function(resUpdateWallet) {
+                            }).then(function (resUpdateWallet) {
                                 Expiretran(j + 1);
                             });
                         } catch (errs) {
@@ -1769,7 +1790,7 @@ function ExpireWalletTransaction() {
                 Expiretran(0);
             }
         });
-    } catch (err) {}
+    } catch (err) { }
 }
 
 function GetCurrentDate() {
@@ -1787,16 +1808,16 @@ function GetCurrentDate() {
 }
 
 // =======================================Update Remark==================================================
-router.get('/UpdateRemarkById', function(req, res) {
+router.get('/UpdateRemarkById', function (req, res) {
     OrderService.findOne({
         where: {
             id: req.query.id
         }
-    }).then(function(resOrderFind) {
+    }).then(function (resOrderFind) {
         if (resOrderFind != null) {
             resOrderFind.updateAttributes({
                 Remark: req.query.Remark,
-            }).then(function(resUpdate) {
+            }).then(function (resUpdate) {
                 res.json({
                     success: true,
                     message: "Remark Updated Successfully"
