@@ -488,72 +488,98 @@ router.get('/GetVehicleCurrentLocationForSharedDevice', function (req, res) {
     }
 });
 
+// router.get('/GetAllGPSDate', function (req, res) {
+//     var AppTimeZone = req.query.TimeZone;
+//     if (AppTimeZone != null && AppTimeZone != undefined && AppTimeZone != '') {
+//         var todaydata = new Date();
+//         var todaydata4 = new Date();
+//         // todaydata = new Date(todaydata.setMonth(todaydata.getMonth() - 4));
+
+//         // var convertDate = convertdateformat(todaydata);
+//         var unixNewDate = todaydata.getTime() / 1000;
+
+//         todaydata4 = new Date(todaydata4.setMonth(todaydata4.getMonth() - 4));
+
+//         // var convertDate = convertdateformat(todaydata4);
+//         var unixTodaydata = todaydata4.getTime() / 1000;
+
+//         GPSData.findAll({
+//             attributes: ['Date'],
+//             where: {
+//                 DeviceId: req.query.DeviceId,
+//                 Date: { $lte: unixNewDate, $gte: unixTodaydata }
+//                 //Datetime: { $lte: new Date(), $gte: todaydata }
+
+//             },
+//             order: 'Date DESC'
+//         }).then(function (response) {
+
+//             var groups = u.groupBy(response, function (o) {
+
+//                 return momentz.utc(o.Date * 1000).tz(AppTimeZone).format('DD-MM-YYYY')
+//             });
+
+//             var lstGroupDate = u.map(groups, function (group, date) {
+//                 return {
+//                     Datetime: date,
+//                     Date: group[0].Date
+//                 }
+//             });
+
+//             res.json(lstGroupDate);
+
+//         })
+//     } else {
+//         var todaydata = new Date();
+
+//         // var convertDate = convertdateformat(todaydata);
+//         var unixNewDate = todaydata.getTime() / 1000;
+
+//         todaydata = new Date(todaydata.setMonth(todaydata.getMonth() - 4));
+
+//         // var convertDate = convertdateformat(todaydata);
+//         var unixTodaydata = todaydata.getTime() / 1000;
+
+
+//         GPSData.findAll({
+//             attributes: ['Datetime', 'Date'],
+//             where: {
+//                 DeviceId: req.query.DeviceId,
+//                 Date: { $lte: unixNewDate, $gte: unixTodaydata }
+//             },
+//             group: [models.sequelize.fn('date', models.sequelize.col('Datetime'))],
+//             order: 'Date DESC'
+//         }).then(function (response) {
+//             res.json(response);
+//         })
+//     }
+// });
+
+var GpsDate = models.tblgpsdate;
 router.get('/GetAllGPSDate', function (req, res) {
-    var AppTimeZone = req.query.TimeZone;
-    if (AppTimeZone != null && AppTimeZone != undefined && AppTimeZone != '') {
-        var todaydata = new Date();
-        var todaydata4 = new Date();
-        // todaydata = new Date(todaydata.setMonth(todaydata.getMonth() - 4));
-
-        // var convertDate = convertdateformat(todaydata);
-        var unixNewDate = todaydata.getTime() / 1000;
-
-        todaydata4 = new Date(todaydata4.setMonth(todaydata4.getMonth() - 4));
-
-        // var convertDate = convertdateformat(todaydata4);
-        var unixTodaydata = todaydata4.getTime() / 1000;
-
-        GPSData.findAll({
-            attributes: ['Date'],
-            where: {
-                DeviceId: req.query.DeviceId,
-                Date: { $lte: unixNewDate, $gte: unixTodaydata }
-                //Datetime: { $lte: new Date(), $gte: todaydata }
-
-            },
-            order: 'Date DESC'
-        }).then(function (response) {
-
-            var groups = u.groupBy(response, function (o) {
-
-                return momentz.utc(o.Date * 1000).tz(AppTimeZone).format('DD-MM-YYYY')
-            });
-
-            var lstGroupDate = u.map(groups, function (group, date) {
-                return {
-                    Datetime: date,
-                    Date: group[0].Date
-                }
-            });
-
-            res.json(lstGroupDate);
-
-        })
-    } else {
-        var todaydata = new Date();
-
-        // var convertDate = convertdateformat(todaydata);
-        var unixNewDate = todaydata.getTime() / 1000;
-
-        todaydata = new Date(todaydata.setMonth(todaydata.getMonth() - 4));
-
-        // var convertDate = convertdateformat(todaydata);
-        var unixTodaydata = todaydata.getTime() / 1000;
-
-
-        GPSData.findAll({
-            attributes: ['Datetime', 'Date'],
-            where: {
-                DeviceId: req.query.DeviceId,
-                Date: { $lte: unixNewDate, $gte: unixTodaydata }
-            },
-            group: [models.sequelize.fn('date', models.sequelize.col('Datetime'))],
-            order: 'Date DESC'
-        }).then(function (response) {
-            res.json(response);
-        })
-    }
-});
+    GpsDate.findAll({
+        attributes: [[models.sequelize.fn('UNIX_TIMESTAMP', models.sequelize.col('GPSDate')), 'Date']],
+        where: {
+            DeviceId: req.query.DeviceId
+        },
+        order: 'GPSDate DESC'
+    }).then(function (response) {
+        var TodayDate = new Date();
+        TodayDate.setHours(0);
+        TodayDate.setMinutes(0);
+        TodayDate.setSeconds(0);
+        var UnixTodayDate = Math.floor(TodayDate.getTime() / 1000);
+        var objToday = u.filter(response, function (item) {
+            if (item.dataValues.Date.toString() == UnixTodayDate.toString()) {
+                return item;
+            }
+        });
+        if (objToday.length == 0) {
+            response.unshift({ Date: UnixTodayDate });
+        }
+        res.json(response);
+    })
+})
 
 router.get('/GetAllGPSDateByDate', function (req, res) {
     var AppTimeZone = req.query.TimeZone;
@@ -1602,8 +1628,19 @@ router.get('/SaveVehicle', jsonParser, function (req, res) {
                                                                 if (response[0]) {
                                                                     Commonfunction.UpdateVehicleRedis(objVehicle.deviceid, 'Vehicle');
                                                                     funAuditLog.CreateAuditLog('Update Vehicle', UserExist.username, 'UpdateVehicle(IMEI:' + objVehicle.IMEI + ' , UserId : ' + objVehicle.iduser + ')');
-
-                                                                    changeSharedId(objVehicle.iduser, objVehicle.iduser, objVehicle.deviceid, function (shareuserupdate) {
+                                                                    if (objVehicleExist != null) {
+                                                                        changeSharedId(objVehicle.iduser, objVehicleExist.iduser, objVehicle.deviceid, function (shareuserupdate) {
+                                                                            if (objGpsDevice.AppName == 'Tracking') {
+                                                                                shareVehicleTosysreportUser(objVehicle.deviceid);
+                                                                            }
+                                                                            Commonfunction.UpdateVehicleRedis(objVehicle.deviceid, 'Vehicle');
+                                                                            res.json({
+                                                                                success: true,
+                                                                                message: "Vehicle updated successfully...",
+                                                                                data: objVehicle
+                                                                            });
+                                                                        })
+                                                                    } else {
                                                                         if (objGpsDevice.AppName == 'Tracking') {
                                                                             shareVehicleTosysreportUser(objVehicle.deviceid);
                                                                         }
@@ -1613,7 +1650,7 @@ router.get('/SaveVehicle', jsonParser, function (req, res) {
                                                                             message: "Vehicle updated successfully...",
                                                                             data: objVehicle
                                                                         });
-                                                                    })
+                                                                    }
 
                                                                 } else {
                                                                     res.json({
@@ -1797,7 +1834,19 @@ router.get('/SaveVehicle', jsonParser, function (req, res) {
                                                                 if (response[0]) {
 
                                                                     funAuditLog.CreateAuditLog('Update Vehicle', UserExist.username, 'UpdateVehicle(DeviceId:' + objVehicle.deviceid + ' , UserId : ' + objVehicle.iduser + ')');
-                                                                    changeSharedId(objVehicle.iduser, objVehicle.iduser, objVehicle.deviceid, function (shareuserupdate) {
+                                                                    if (objVehicleExist != null) {
+                                                                        changeSharedId(objVehicle.iduser, objVehicleExist.iduser, objVehicle.deviceid, function (shareuserupdate) {
+                                                                            if (objGpsDevice.AppName == 'Tracking') {
+                                                                                shareVehicleTosysreportUser(objVehicle.deviceid);
+                                                                            }
+                                                                            Commonfunction.UpdateVehicleRedis(objVehicle.deviceid, 'Vehicle');
+                                                                            res.json({
+                                                                                success: true,
+                                                                                message: "Vehicle updated successfully...",
+                                                                                data: objVehicle
+                                                                            });
+                                                                        })
+                                                                    } else {
                                                                         if (objGpsDevice.AppName == 'Tracking') {
                                                                             shareVehicleTosysreportUser(objVehicle.deviceid);
                                                                         }
@@ -1807,7 +1856,7 @@ router.get('/SaveVehicle', jsonParser, function (req, res) {
                                                                             message: "Vehicle updated successfully...",
                                                                             data: objVehicle
                                                                         });
-                                                                    })
+                                                                    }
 
                                                                 } else {
                                                                     res.json({

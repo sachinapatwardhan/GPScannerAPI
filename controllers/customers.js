@@ -259,7 +259,80 @@ router.get('/ReportExample', function (req, res) {
 
 })
 
+var GpsDate = models.tblgpsdate;
+function UpdateGpsDate() {
+    var currentDate = new Date();
+    currentDate.setHours(0);
+    currentDate.setMinutes(0);
+    currentDate.setSeconds(0);
+    var StartDate = Math.round(currentDate.getTime() / 1000);
+    currentDate.setHours(23);
+    currentDate.setMinutes(59);
+    currentDate.setSeconds(59);
+    var EndDate = Math.round(currentDate.getTime() / 1000);
+    console.log(StartDate, EndDate)
+    connection.query("SELECT DeviceId,DATE(from_unixtime(Date)) as GPSDate FROM tblgpsdata where Date >= '" + StartDate + "' and Date<='" + EndDate + "' group by DeviceId,DATE(from_unixtime(Date));", function (err, response, fields) {
+        if (!err && response.length > 0) {
+            function InsertDate(i) {
+                if (i < response.length) {
+                    var objData = {
+                        DeviceId: response[i].DeviceId,
+                        GPSDate: ConvertDatetimeToDate(response[i].GPSDate)
+                    }
+                    GpsDate.findOrCreate({ where: { GPSDate: new Date(objData.GPSDate), DeviceId: objData.DeviceId }, defaults: objData }).then(function (resData) {
+                        InsertDate(i + 1);
+                    });
+                } else {
+                    console.log("GPS Date Save Successfully.")
+                }
+            }
+            InsertDate(0);
+        }
+    });
+}
+// UpdateGpsDate();
 
+function UpdateAllGpsDate(callback) {
+    connection.query("SELECT DeviceId,DATE(from_unixtime(Date)) as GPSDate FROM tblgpsdata group by DeviceId,DATE(from_unixtime(Date));", function (err, response, fields) {
+        if (!err && response.length > 0) {
+            var lstGpsDate = [];
+            for (var i = 0; i < response.length; i++) {
+                lstGpsDate.push([response[i].DeviceId, ConvertDatetimeToDate(response[i].GPSDate)]);
+            }
+            connection.query("INSERT INTO tblgpsdate (DeviceId,GPSDate) VALUES ?", [lstGpsDate], function (err, FenceCreated, fields) {
+                console.log("GPS Date Inserted Successfully.");
+                callback({ success: true, message: "GPS Date Inserted Successfully." })
+            });
+        } else {
+            callback({ success: false, message: "No GPS Data found." })
+        }
+    });
+}
+
+// UpdateAllGpsDate();
+
+function ConvertDatetimeToDate(datedata) {
+    var d = new Date(datedata)
+    var Year = d.getFullYear();
+    var Month = d.getMonth() + 1;
+    var day = d.getDate();
+
+    return ("0000" + Year.toString()).slice(-4) + "-" + ("00" + Month.toString()).slice(-2) + "-" + ("00" + day.toString()).slice(-2)
+}
+
+router.get('/UpdateAllGPSDate', function (req, res) {
+    req.setTimeout(3600000);
+    UpdateAllGpsDate(function (resdata) {
+        res.json(resdata);
+    });
+});
+
+// UpdateAllGpsDate();
+// MYT 11:00PM call 
+var UpdateGPSDateSchedule = schedule.scheduleJob('0 23 * * *', function () {
+    // API for transfer date to tblgpsdate
+    UpdateGpsDate();
+})
 
 //Manage Permission to Access Methods
 global.funAccessPermission = new Object();
@@ -467,7 +540,7 @@ var DailyUserReport = schedule.scheduleJob('0 23 * * *', function () {
 
                 var mail = {
                     from: 'soham.patel@bugzstudio.com',
-                    to: 'soham.patel@bugzstudio.com,pmt@bugzstudio.com',
+                    to: 'pmt@bugzstudio.com',
                     //bcc: objSetting.Value,
                     subject: 'DailyUserReport__' + TodayDate,
                     attachments: [{
@@ -539,7 +612,7 @@ var MonthlyUserReport = schedule.scheduleJob('10 0 1 * *', function () {
 
                 var mail = {
                     from: 'soham.patel@bugzstudio.com',
-                    to: 'soham.patel@bugzstudio.com,pmt@bugzstudio.com',
+                    to: 'pmt@bugzstudio.com',
                     subject: 'MonthlyUserReport__' + Month + '_' + Year,
                     attachments: [{
                         filename: 'MonthlyUserReport__' + Month + '_' + Year + '.xlsx',
