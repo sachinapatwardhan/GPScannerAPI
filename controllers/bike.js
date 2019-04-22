@@ -564,10 +564,18 @@ router.get('/GetAllGPSDate', function (req, res) {
         },
         order: 'GPSDate DESC'
     }).then(function (response) {
-        var TodayDate = new Date();
-        TodayDate.setHours(0);
-        TodayDate.setMinutes(0);
-        TodayDate.setSeconds(0);
+        console.log(req.query.TimeZone)
+        if (req.query.TimeZone == 'Asia/Kolkata') {
+            var TodayDate = new Date();
+            TodayDate.setHours(5);
+            TodayDate.setMinutes(30);
+            TodayDate.setSeconds(0);
+        } else {
+            var TodayDate = new Date();
+            TodayDate.setHours(8);
+            TodayDate.setMinutes(0);
+            TodayDate.setSeconds(0);
+        }
         var UnixTodayDate = Math.floor(TodayDate.getTime() / 1000);
         var objToday = u.filter(response, function (item) {
             if (item.dataValues.Date.toString() == UnixTodayDate.toString()) {

@@ -299,14 +299,29 @@ function UpdateAllGpsDate(callback) {
             for (var i = 0; i < response.length; i++) {
                 lstGpsDate.push([response[i].DeviceId, ConvertDatetimeToDate(response[i].GPSDate)]);
             }
-            connection.query("INSERT INTO tblgpsdate (DeviceId,GPSDate) VALUES ?", [lstGpsDate], function (err, FenceCreated, fields) {
-                console.log("GPS Date Inserted Successfully.");
-                callback({ success: true, message: "GPS Date Inserted Successfully." })
-            });
+            var lstRecordsChuck = chuckdata(lstGpsDate, 10000);
+            function Inseronebyone(k) {
+                if (k < lstRecordsChuck.length) {
+                    connection.query("INSERT INTO tblgpsdate (DeviceId,GPSDate) VALUES ?", [lstRecordsChuck[k]], function (err, FenceCreated, fields) {
+                        console.log("GPS Date Inserted Successfully.", k, err);
+                        Inseronebyone(k + 1);
+                    });
+                } else {
+                    callback({ success: true, message: "GPS Date Inserted Successfully." })
+                }
+            }
+            Inseronebyone(0);
         } else {
             callback({ success: false, message: "No GPS Data found." })
         }
     });
+}
+function chuckdata(arr, size) {
+    var newArr = [];
+    for (var i = 0; i < arr.length; i += size) {
+        newArr.push(arr.slice(i, i + size));
+    }
+    return newArr;
 }
 
 // UpdateAllGpsDate();
