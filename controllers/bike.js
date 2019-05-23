@@ -794,7 +794,7 @@ global.checkLicence = checkLicence;
 // }
 
 function checkLicence(objVehicle, username, callback) {
-    var query = "select tblappinfo.* from tblappinfo inner join tblgpsdevice on tblappinfo.AppName=tblgpsdevice.AppName where tblgpsdevice.DeviceId='" + objVehicle.deviceid + "'";
+    var query = "select tblappinfo.*,tblgpsdevice.Company as DeviceCompany from tblappinfo inner join tblgpsdevice on tblappinfo.AppName=tblgpsdevice.AppName where tblgpsdevice.DeviceId='" + objVehicle.deviceid + "'";
     connectionbikedata.query(query, function (err, DeviceExist) {
         if (DeviceExist) {
             LicenceManager.findOne({ where: { DeviceId: objVehicle.deviceid, IsDeleted: 0, idApp: DeviceExist[0].Id } }).then(function (LicenceAssined) {
@@ -804,50 +804,95 @@ function checkLicence(objVehicle, username, callback) {
                         data: LicenceAssined
                     });
                 } else {
-
-                    LicenceManager.findOne({
-                        where: {
-                            DeviceId: { $eq: null },
-                            IsDeleted: 0,
-                            idApp: DeviceExist[0].Id,
-                            // LicenceRenewalType: DeviceExist[0].LicenceRenewalType,
-                            // LicenceType: DeviceExist[0].LicenceType,
-                        },
-                        order: 'Id asc',
-                    }).then(function (LicenceNoExist) {
-                        if (LicenceNoExist) {
-                            if (DeviceExist[0].LicenceRenewalType == 'Monthly') {
-                                AddMonth = 1;
-                            } else if (DeviceExist[0].LicenceRenewalType == 'Quarterly') {
-                                AddMonth = 3;
-                            } else if (DeviceExist[0].LicenceRenewalType == 'Yearly') {
-                                AddMonth = 12;
+                    if (DeviceExist[0].DeviceCompany == 'ITCD') {
+                        LicenceManager.findOne({
+                            where: {
+                                DeviceId: { $eq: null },
+                                IsDeleted: 0,
+                                idApp: DeviceExist[0].Id,
+                                LicenceRenewalType: 'Monthly',
+                                // LicenceType: DeviceExist[0].LicenceType,
+                            },
+                            order: 'Id asc',
+                        }).then(function (LicenceNoExist) {
+                            if (LicenceNoExist) {
+                                if (DeviceExist[0].LicenceRenewalType == 'Monthly') {
+                                    AddMonth = 1;
+                                } else if (DeviceExist[0].LicenceRenewalType == 'Quarterly') {
+                                    AddMonth = 3;
+                                } else if (DeviceExist[0].LicenceRenewalType == 'Yearly') {
+                                    AddMonth = 12;
+                                }
+                                var date = new Date();
+                                var updatedDate = convertdateformatLicenceExpiry(date.setMonth(date.getMonth() + AddMonth), 3)
+                                LicenceNoExist.updateAttributes({
+                                    // IdUser: objVehicle.iduser,
+                                    DeviceId: objVehicle.deviceid,
+                                    // ModifiedDate: new Date(),
+                                    CreatedDate: new Date(),
+                                    ExpiryDate: updatedDate,
+                                    // LicenceRenewalType: DeviceExist[0].LicenceRenewalType,
+                                    // LicenceType: DeviceExist[0].LicenceType,
+                                }).then(function (response) {
+                                    funAuditLogLicence.CreateAuditLogLicence('Assign Licence', LicenceNoExist.LicenceNo, response.DeviceId, response.ExpiryDate, null, username, 'Assign through create vehicle or activate device');
+                                    return callback({
+                                        success: true,
+                                        data: LicenceNoExist
+                                    });
+                                })
+                            } else {
+                                return callback({
+                                    success: false,
+                                    message: "No more Licence available to assign Device. Please contact administrator",
+                                    data: null,
+                                });
                             }
-                            var date = new Date();
-                            var updatedDate = convertdateformatLicenceExpiry(date.setMonth(date.getMonth() + AddMonth), 3)
-                            LicenceNoExist.updateAttributes({
-                                // IdUser: objVehicle.iduser,
-                                DeviceId: objVehicle.deviceid,
-                                // ModifiedDate: new Date(),
-                                CreatedDate: new Date(),
-                                ExpiryDate: updatedDate,
+                        })
+                    } else {
+                        LicenceManager.findOne({
+                            where: {
+                                DeviceId: { $eq: null },
+                                IsDeleted: 0,
+                                idApp: DeviceExist[0].Id,
                                 // LicenceRenewalType: DeviceExist[0].LicenceRenewalType,
                                 // LicenceType: DeviceExist[0].LicenceType,
-                            }).then(function (response) {
-                                funAuditLogLicence.CreateAuditLogLicence('Assign Licence', LicenceNoExist.LicenceNo, response.DeviceId, response.ExpiryDate, null, username, 'Assign through create vehicle or activate device');
+                            },
+                            order: 'Id asc',
+                        }).then(function (LicenceNoExist) {
+                            if (LicenceNoExist) {
+                                if (DeviceExist[0].LicenceRenewalType == 'Monthly') {
+                                    AddMonth = 1;
+                                } else if (DeviceExist[0].LicenceRenewalType == 'Quarterly') {
+                                    AddMonth = 3;
+                                } else if (DeviceExist[0].LicenceRenewalType == 'Yearly') {
+                                    AddMonth = 12;
+                                }
+                                var date = new Date();
+                                var updatedDate = convertdateformatLicenceExpiry(date.setMonth(date.getMonth() + AddMonth), 3)
+                                LicenceNoExist.updateAttributes({
+                                    // IdUser: objVehicle.iduser,
+                                    DeviceId: objVehicle.deviceid,
+                                    // ModifiedDate: new Date(),
+                                    CreatedDate: new Date(),
+                                    ExpiryDate: updatedDate,
+                                    // LicenceRenewalType: DeviceExist[0].LicenceRenewalType,
+                                    // LicenceType: DeviceExist[0].LicenceType,
+                                }).then(function (response) {
+                                    funAuditLogLicence.CreateAuditLogLicence('Assign Licence', LicenceNoExist.LicenceNo, response.DeviceId, response.ExpiryDate, null, username, 'Assign through create vehicle or activate device');
+                                    return callback({
+                                        success: true,
+                                        data: LicenceNoExist
+                                    });
+                                })
+                            } else {
                                 return callback({
-                                    success: true,
-                                    data: LicenceNoExist
+                                    success: false,
+                                    message: "No more Licence available to assign Device. Please contact administrator",
+                                    data: null,
                                 });
-                            })
-                        } else {
-                            return callback({
-                                success: false,
-                                message: "No more Licence available to assign Device. Please contact administrator",
-                                data: null,
-                            });
-                        }
-                    })
+                            }
+                        })
+                    }
                 }
             })
         } else {
