@@ -816,11 +816,11 @@ function checkLicence(objVehicle, username, callback) {
                             order: 'Id asc',
                         }).then(function (LicenceNoExist) {
                             if (LicenceNoExist) {
-                                if (DeviceExist[0].LicenceRenewalType == 'Monthly') {
+                                if (LicenceNoExist.LicenceRenewalType == 'Monthly') {
                                     AddMonth = 1;
-                                } else if (DeviceExist[0].LicenceRenewalType == 'Quarterly') {
+                                } else if (LicenceNoExist.LicenceRenewalType == 'Quarterly') {
                                     AddMonth = 3;
-                                } else if (DeviceExist[0].LicenceRenewalType == 'Yearly') {
+                                } else if (LicenceNoExist.LicenceRenewalType == 'Yearly') {
                                     AddMonth = 12;
                                 }
                                 var date = new Date();
