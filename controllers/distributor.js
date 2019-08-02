@@ -642,17 +642,17 @@ router.get('/GetAllRenewData', function (req, res) {
     var query = "SELECT tl.Id, tu.email,CONVERT_TZ(tu.LastLogin,'+00:00','" + CurrentOffset + "') as LastLoginDate ,tl.DeviceId,tv.iduser,tu.phone,tv.Name as VehicleName,ta.Id as idApp,ta.AppName,tl.LicenceRenewalType,tl.LicenceType,ta.LicenceRenewalType as appLicenceRenewalType,ta.LicenceType as appLicenceType, " +
         "CONVERT_TZ(tl.ExpiryDate,'+00:00','" + CurrentOffset + "') as ExpiryDate " +
         " from tbllicencemanager as tl " +
-        " INNER JOIN tbldeviceagentretailer AS dar ON  dar.deviceId = tl.DeviceId" +
-        " LEFT JOIN tblappinfo as ta ON ta.Id= tl.idApp" +
+        " INNER JOIN tblappinfo as ta ON ta.Id= tl.idApp" +
         " INNER JOIN (Select * from tblvehicle where IsDelete=0) tv on tv.deviceid =tl.DeviceId " +
+        " INNER JOIN tbldeviceagentretailer AS dar ON  dar.deviceId = tv.deviceid" +
         " INNER JOIN tbluserinformation as tu ON tv.iduser = tu.id " +
         " where tl.IsDeleted=0  " + search +
         " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
     var countquery = "SELECT count(*) as TotalRecord " +
         " from tbllicencemanager as tl " +
-        " INNER JOIN tbldeviceagentretailer AS dar ON  dar.deviceId = tl.DeviceId" +
-        " LEFT JOIN tblappinfo as ta ON ta.Id= tl.idApp" +
+        " INNER JOIN tblappinfo as ta ON ta.Id= tl.idApp" +
         " INNER JOIN (Select * from tblvehicle where IsDelete=0)  tv on tv.deviceid =tl.DeviceId " +
+        " INNER JOIN tbldeviceagentretailer AS dar ON  dar.deviceId = tv.deviceid" +
         " INNER JOIN tbluserinformation as tu ON tv.iduser = tu.id " +
         " where tl.IsDeleted=0 " + search;
     connection.query(query, function (err, response) {
@@ -715,6 +715,53 @@ router.get('/GetAllRenewData', function (req, res) {
     })
 })
 
+router.get('/GetAllVehicleExpirebyUser', jsonParser, function (req, res) {
+
+    var query = "SELECT tv.id,tv.Name,tv.deviceid,tv.renewaldate,tl.LicenceRenewalType,tl.LicenceType,tl.id as LicenceId,tl.LicenceNo " +
+        "FROM tblvehicle tv " +
+        "INNER JOIN tbldeviceagentretailer AS dar ON  dar.deviceId = tv.deviceid " +
+        "left join tbllicencemanager tl on tv.deviceid=tl.DeviceId and tl.IsDeleted=false " +
+        "where tv.iduser=" + req.query.idUser + " and dar.idDistributor=" + req.query.idDistributor + " and tv.IsDelete=false;";
+    connection.query(query, function (err, rows, fields) {
+        if (!err) {
+            var lstAllVehicle = [];
+            function getData(i) {
+                if (i < rows.length) {
+                    var obj = new Object();
+                    obj.id = rows[i].id;
+                    obj.Name = rows[i].Name;
+                    obj.deviceid = rows[i].deviceid;
+                    obj.renewaldate = rows[i].renewaldate;
+                    obj.LicenceRenewalType = rows[i].LicenceRenewalType;
+                    obj.LicenceType = rows[i].LicenceType;
+                    obj.LicenceId = rows[i].LicenceId;
+                    obj.LicenceNo = rows[i].LicenceNo;
+
+                    client.get(rows[i].deviceid, function (err, strgpsdata) {
+                        if (!err) {
+                            if (strgpsdata != null & strgpsdata != '' && strgpsdata != undefined) {
+                                var objgps = JSON.parse(strgpsdata);
+                                obj.GpsDate = objgps.Date;
+                            } else {
+                                obj.GpsDate = null;
+                            }
+                        } else {
+                            obj.GpsDate = null;
+                        }
+                        lstAllVehicle.push(obj);
+                        getData(i + 1);
+                    });
+                }
+                else {
+                    res.json(lstAllVehicle);
+                }
+            }
+            getData(0);
+        } else {
+            res.json([]);
+        }
+    })
+})
 router.get('/ExportRenewData', function (req, res) {
 
     var conf = {};
@@ -808,14 +855,14 @@ router.get('/ExportRenewData', function (req, res) {
     var query = "SELECT tl.Id, tu.email,CONVERT_TZ(tu.LastLogin,'+00:00','" + objParam.CurrentOffset + "') as LastLoginDate ,tl.DeviceId,tv.iduser,tu.phone,tv.Name as VehicleName,ta.Id as idApp,ta.AppName,tl.LicenceRenewalType,tl.LicenceType,ta.LicenceRenewalType as appLicenceRenewalType,ta.LicenceType as appLicenceType, " +
         "CONVERT_TZ(tl.ExpiryDate,'+00:00','" + objParam.CurrentOffset + "') as ExpiryDate " +
         " from tbllicencemanager as tl " +
-        " INNER JOIN tbldeviceagentretailer AS dar ON  dar.deviceId = tl.DeviceId" +
-        " LEFT JOIN tblappinfo as ta ON ta.Id= tl.idApp" +
+        " INNER JOIN tblappinfo as ta ON ta.Id= tl.idApp" +
         " INNER JOIN (Select * from tblvehicle where IsDelete=0) tv on tv.deviceid =tl.DeviceId " +
+        " INNER JOIN tbldeviceagentretailer AS dar ON  dar.deviceId = tv.deviceid" +
         " INNER JOIN tbluserinformation as tu ON tv.iduser = tu.id " +
         " where tl.IsDeleted=0  " + search +
         " order by " + Orderby + " ";
+
     connection.query(query, function (err, response, fields) {
-        console.log(err, response)
         if (!err) {
             if (objParam.IsSuperAdmin == "0") {
                 conf.cols.splice(7, 1);
@@ -914,54 +961,6 @@ router.get('/ExportRenewData', function (req, res) {
             res.end(result, 'binary');
         }
     });
-})
-
-router.get('/GetAllVehicleExpirebyUser', jsonParser, function (req, res) {
-
-    var query = "SELECT tv.id,tv.Name,tv.deviceid,tv.renewaldate,tl.LicenceRenewalType,tl.LicenceType,tl.id as LicenceId,tl.LicenceNo " +
-        "FROM tblvehicle tv " +
-        "INNER JOIN tbldeviceagentretailer AS dar ON  dar.deviceId = tv.deviceid " +
-        "left join tbllicencemanager tl on tv.deviceid=tl.DeviceId and tl.IsDeleted=false " +
-        "where tv.iduser=" + req.query.idUser + " and dar.idDistributor=" + req.query.idDistributor + " and tv.IsDelete=false;";
-    connection.query(query, function (err, rows, fields) {
-        if (!err) {
-            var lstAllVehicle = [];
-            function getData(i) {
-                if (i < rows.length) {
-                    var obj = new Object();
-                    obj.id = rows[i].id;
-                    obj.Name = rows[i].Name;
-                    obj.deviceid = rows[i].deviceid;
-                    obj.renewaldate = rows[i].renewaldate;
-                    obj.LicenceRenewalType = rows[i].LicenceRenewalType;
-                    obj.LicenceType = rows[i].LicenceType;
-                    obj.LicenceId = rows[i].LicenceId;
-                    obj.LicenceNo = rows[i].LicenceNo;
-
-                    client.get(rows[i].deviceid, function (err, strgpsdata) {
-                        if (!err) {
-                            if (strgpsdata != null & strgpsdata != '' && strgpsdata != undefined) {
-                                var objgps = JSON.parse(strgpsdata);
-                                obj.GpsDate = objgps.Date;
-                            } else {
-                                obj.GpsDate = null;
-                            }
-                        } else {
-                            obj.GpsDate = null;
-                        }
-                        lstAllVehicle.push(obj);
-                        getData(i + 1);
-                    });
-                }
-                else {
-                    res.json(lstAllVehicle);
-                }
-            }
-            getData(0);
-        } else {
-            res.json([]);
-        }
-    })
 })
 
 function convertdateformat(date1, flg) {
