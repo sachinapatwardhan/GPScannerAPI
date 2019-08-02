@@ -715,6 +715,207 @@ router.get('/GetAllRenewData', function (req, res) {
     })
 })
 
+router.get('/ExportRenewData', function (req, res) {
+
+    var conf = {};
+    conf.name = "Sheet1";
+    conf.cols = [{
+        caption: 'Device ID',
+        type: 'string'
+    },
+    {
+        caption: 'User Email',
+        type: 'string'
+    }, {
+        caption: 'Contact No',
+        type: 'string'
+    }, {
+        caption: 'Expiry Date',
+        type: 'string'
+    }, {
+        caption: 'Days Left',
+        type: 'string'
+    },
+    {
+        caption: 'Licence Type',
+        type: 'string'
+    },
+    {
+        caption: 'Renewal Type',
+        type: 'string'
+    },
+    {
+        caption: 'App Name',
+        type: 'string'
+    }, {
+        caption: 'Last Login Date',
+        type: 'string'
+    },
+    {
+        caption: 'Last GPS Date',
+        type: 'string'
+    },
+    ];
+
+    conf.rows = [];
+    var objParam = req.query;
+    objParam.CurrentOffset = decodeURIComponent(objParam.CurrentOffset);
+    var objColumns = JSON.parse(objParam.columns);
+    var objOrder = JSON.parse(objParam.order);
+    var objSearch = objParam.search;
+    var Orderby = objColumns[parseInt(objOrder[0].column)].data + ' ' + objOrder[0].dir;
+    var search = '';
+
+    if (objSearch != null && objSearch != '') {
+        search += ' and (tl.DeviceId like "%' + objSearch + '%" or ';
+        search = search + 'tl.ExpiryDate like "%' + objSearch + '%" or ';
+        search = search + 'tu.email like "%' + objSearch + '%" or ';
+        search = search + 'tu.phone like "%' + objSearch + '%" or ';
+        search = search + 'ta.AppName like "%' + objSearch + '%" or ';
+        search = search + 'tl.LicenceType like "%' + objSearch + '%" or ';
+        search = search + 'tl.LicenceRenewalType like "%' + objSearch + '%" or ';
+        search = search + 'tv.Name like "%' + objSearch + '%") ';
+    };
+
+    if (objParam.UserId != null && objParam.UserId != '' && objParam.UserId != undefined) {
+        search += ' and dar.idDistributor = ' + objParam.UserId;
+    }
+
+    if (req.query.StartDate != '' && req.query.EndDate != '') {
+        if (search == '') {
+            search += " AND tl.ExpiryDate between  '" + convertdateformat(req.query.StartDate, 3) + "' AND '" + convertdateformat(req.query.EndDate, 3) + "'";
+        } else {
+            search += search + " AND   tl.ExpiryDate between  '" + convertdateformat(req.query.StartDate, 3) + "' AND '" + convertdateformat(req.query.EndDate, 3) + "'";
+        }
+    } else if (req.query.StartDate != null && req.query.StartDate != '' && req.query.StartDate != undefined) {
+        if (search == '') {
+            search += " AND  tl.ExpiryDate >= '" + convertdateformat(req.query.StartDate, 3) + "'";
+        } else {
+            search += " AND tl.ExpiryDate >= '" + convertdateformat(req.query.StartDate, 3) + "'";
+        }
+    } else if (req.query.EndDate != null && req.query.EndDate != '' && req.query.EndDate != undefined) {
+        if (search == '') {
+            search += " AND tl.ExpiryDate <= '" + convertdateformat(req.query.EndDate, 3) + "'";
+        } else {
+            search += " AND tl.ExpiryDate <= '" + convertdateformat(req.query.EndDate, 3) + "'";
+        }
+    }
+
+    if (req.query.idApp != null && req.query.idApp != undefined && req.query.idApp != '') {
+        search += " and ta.Id=" + req.query.idApp + " ";
+    }
+
+    var query = "SELECT tl.Id, tu.email,CONVERT_TZ(tu.LastLogin,'+00:00','" + objParam.CurrentOffset + "') as LastLoginDate ,tl.DeviceId,tv.iduser,tu.phone,tv.Name as VehicleName,ta.Id as idApp,ta.AppName,tl.LicenceRenewalType,tl.LicenceType,ta.LicenceRenewalType as appLicenceRenewalType,ta.LicenceType as appLicenceType, " +
+        "CONVERT_TZ(tl.ExpiryDate,'+00:00','" + objParam.CurrentOffset + "') as ExpiryDate " +
+        " from tbllicencemanager as tl " +
+        " INNER JOIN tbldeviceagentretailer AS dar ON  dar.deviceId = tl.DeviceId" +
+        " LEFT JOIN tblappinfo as ta ON ta.Id= tl.idApp" +
+        " INNER JOIN (Select * from tblvehicle where IsDelete=0) tv on tv.deviceid =tl.DeviceId " +
+        " INNER JOIN tbluserinformation as tu ON tv.iduser = tu.id " +
+        " where tl.IsDeleted=0  " + search +
+        " order by " + Orderby + " ";
+    connection.query(query, function (err, response, fields) {
+        console.log(err, response)
+        if (!err) {
+            if (objParam.IsSuperAdmin == "0") {
+                conf.cols.splice(7, 1);
+            }
+            var lstAllVehicle = [];
+            function getData(i) {
+                if (i < response.length) {
+                    var obj = new Object();
+                    obj.Id = response[i].Id;
+                    obj.email = response[i].email;
+                    obj.LastLoginDate = response[i].LastLoginDate;
+                    obj.DeviceId = response[i].DeviceId;
+                    obj.iduser = response[i].iduser;
+                    obj.phone = response[i].phone;
+                    obj.VehicleName = response[i].VehicleName;
+                    obj.idApp = response[i].idApp;
+                    obj.AppName = response[i].AppName;
+                    obj.LicenceRenewalType = response[i].LicenceRenewalType;
+                    obj.LicenceType = response[i].LicenceType;
+                    obj.appLicenceRenewalType = response[i].appLicenceRenewalType;
+                    obj.appLicenceType = response[i].appLicenceType;
+                    obj.ExpiryDate = response[i].ExpiryDate;
+
+                    client.get(response[i].DeviceId, function (err, strgpsdata) {
+                        if (!err) {
+                            if (strgpsdata != null & strgpsdata != '' && strgpsdata != undefined) {
+                                var objgps = JSON.parse(strgpsdata);
+                                obj.GpsDate = objgps.Date;
+                            } else {
+                                obj.GpsDate = null;
+                            }
+                        } else {
+                            obj.GpsDate = null;
+                        }
+                        lstAllVehicle.push(obj);
+                        getData(i + 1);
+                    });
+                }
+                else {
+                    for (var i = 0; i < lstAllVehicle.length; i++) {
+                        var row = [];
+                        if (objParam.IsSuperAdmin == "1") {
+                            row.push(lstAllVehicle[i].DeviceId, lstAllVehicle[i].email, lstAllVehicle[i].phone, dateFormat1(lstAllVehicle[i].ExpiryDate), daysHtml(lstAllVehicle[i]), lstAllVehicle[i].LicenceType, lstAllVehicle[i].LicenceRenewalType, lstAllVehicle[i].AppName, dateFormat(lstAllVehicle[i].LastLoginDate), gpsdateFormat(lstAllVehicle[i].GpsDate));
+                        }
+                        else {
+                            row.push(lstAllVehicle[i].DeviceId, lstAllVehicle[i].email, lstAllVehicle[i].phone, dateFormat1(lstAllVehicle[i].ExpiryDate), daysHtml(lstAllVehicle[i]), lstAllVehicle[i].LicenceType, lstAllVehicle[i].LicenceRenewalType, dateFormat(lstAllVehicle[i].LastLoginDate), gpsdateFormat(lstAllVehicle[i].GpsDate));
+                        }
+                        conf.rows.push(row);
+                    }
+                    var result = nodeExcel.execute(conf);
+                    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+                    res.setHeader("Content-Disposition", "attachment; filename=DistributorRenew.xlsx");
+                    res.end(result, 'binary');
+                    function daysHtml(full) {
+                        var days = '';
+                        if (full.ExpiryDate != null && full.ExpiryDate != '') {
+                            var timeDiff = (new Date(full.ExpiryDate)).getTime() - (new Date()).getTime();
+                            var diffDays = Math.round(timeDiff / (1000 * 3600 * 24));
+                            days = diffDays + ' days';
+
+                        }
+                        return days;
+                    }
+
+                    function dateFormat1(date) {
+                        if (date != null) {
+                            return moment.utc(date).utcOffset(objParam.CurrentOffset).format('DD-MM-YYYY');
+
+                        } else {
+                            return 'N/A';
+                        }
+                    }
+                    function dateFormat(date) {
+                        if (date != null) {
+                            return moment.utc(date).utcOffset(objParam.CurrentOffset).format('DD-MM-YYYY hh:mm:ss a');
+                        } else {
+                            return 'N/A';
+                        }
+                    }
+
+                    function gpsdateFormat(date) {
+                        if (date != null) {
+                            return moment.utc(moment.utc(date * 1000).toDate()).utcOffset(objParam.CurrentOffset).format("DD-MM-YYYY hh:mm:ss A")
+                        } else {
+                            return 'N/A';
+                        }
+                    }
+                }
+            }
+            getData(0);
+        }
+        else {
+            var result = nodeExcel.execute(conf);
+            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            res.setHeader("Content-Disposition", "attachment; filename=DistributorRenew.xlsx");
+            res.end(result, 'binary');
+        }
+    });
+})
+
 router.get('/GetAllVehicleExpirebyUser', jsonParser, function (req, res) {
 
     var query = "SELECT tv.id,tv.Name,tv.deviceid,tv.renewaldate,tl.LicenceRenewalType,tl.LicenceType,tl.id as LicenceId,tl.LicenceNo " +
