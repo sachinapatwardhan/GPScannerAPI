@@ -18,17 +18,19 @@ var EmailTemplate = models.tblemailtemplate;
 var Setting = models.tblsetting;
 var momentz = require('moment-timezone');
 var CommonFunction = require('./common.js');
+var FCM = require('fcm-node');
+// var serverKey = process.env.PushNotificationgcmid; //put your server key here
 
 //End of Tables
 
-global.deg_to_lat_long = function(deg, Direction) {
+global.deg_to_lat_long = function (deg, Direction) {
 
     // var Direction = deg.substring(deg.length - 1, deg.length);
     // var Minute = deg.substring(deg.length - 7, deg.length)
     // var degree = deg.substring(0, deg.length - 7)
     var Minute = deg.substring(deg.indexOf('.') - 2, deg.length)
     var degree = deg.substring(0, deg.indexOf('.') - 2)
-        // console.log(Minute)
+    // console.log(Minute)
     var min = Minute.substring(0, Minute.indexOf('.'));
     var sec = parseFloat(Minute.substring(Minute.indexOf('.'), Minute.length)) * 60;
     // console.log("#######################")
@@ -52,7 +54,7 @@ global.deg_to_lat_long = function(deg, Direction) {
     return lat_long;
 }
 
-router.get('/TestDegree', function(req, res) {
+router.get('/TestDegree', function (req, res) {
     var A = global.deg_to_lat_long('5016.8633N')
     var B = global.deg_to_lat_long('00347.3997W')
     console.log(A)
@@ -89,32 +91,79 @@ function SendIOSPushNotification(DeviceId) {
         // if (i < response.length) {
         // deviceIds.push(response[i].PushNotificationId)
         deviceIds.push(DeviceId)
-            // SendNotification(i + 1);
-            // } else {
+        // SendNotification(i + 1);
+        // } else {
         console.log(deviceIds)
         if (deviceIds.length > 0) {
-            objPushNotificationSend.send(deviceIds, data, function(result) {
+            objPushNotificationSend.send(deviceIds, data, function (result) {
                 console.log(result);
             });
         };
         // }
     }
     SendNotification(0)
-        // }).catch(function(error) {
-        //     // console.log(error);
-        // })
+    // }).catch(function(error) {
+    //     // console.log(error);
+    // })
 
 }
 
-router.get('/SendIOSPush', function(req, res) {
+function SendFCMPushNotification(DeviceId) {
+    var message = {
+        to: DeviceId,
+        collapse_key: 'Maark',
+        notification: {
+            title: '9787 is out of Home Fence.',
+            body: '9787 is out of Home Fence.',
+            // body: '9787 is out of Home Fence. 9787 is out of Home Fence. 9787 is out of Home Fence. 9787 is out of Home Fence. 9787 is out of Home Fence. 9787 is out of Home Fence. 9787 is out of Home Fence. 9787 is out of Home Fence. 9787 is out of Home Fence.',
+            "sound": "default",
+            "click_action": "FCM_PLUGIN_ACTIVITY",
+            // "icon": "fcm_push_icon"
+        },
+        data: {
+            title: '9787 is out of Home Fence.',
+            message: '9787 is out of Home Fence.',
+            //message: '9787 is out of Home Fence. 9787 is out of Home Fence. 9787 is out of Home Fence. 9787 is out of Home Fence. 9787 is out of Home Fence. 9787 is out of Home Fence. 9787 is out of Home Fence. 9787 is out of Home Fence. 9787 is out of Home Fence.',
+            soundname: 'sound50',
+            msgcnt: "2",
+            otherfields: {
+                deviceid: '123456',
+                Id: 1,
+                VehicleName: '9787',
+                AlarmCode: '6',
+                Type: 'Alarm',
+                // Type: 'Notification',
+                // NotificationType: 'Road Tax Renewal'
+            }
+        }
+    };
+    var serverKey = process.env.PushNotificationgcmid;
+    var fcm = new FCM(serverKey);
+    fcm.send(message, function (err, response) {
+        if (err) {
+            console.log("Something has gone wrong!", err);
+        } else {
+            console.log("Successfully sent with response: ", response);
+        }
+    });
+
+}
+
+router.get('/SendFCMPush', function (req, res) {
+    var DeviceId = req.query.Token;
+    SendFCMPushNotification(DeviceId);
+    res.send("Done")
+})
+
+router.get('/SendIOSPush', function (req, res) {
     var DeviceId = req.query.Token;
     SendIOSPushNotification(DeviceId);
     res.send("Done")
 })
 
-router.get('/SendPushTest', function(req, res) {
+router.get('/SendPushTest', function (req, res) {
     var UserId = req.query.UserId;
-    connection.query("SELECT tu.id, tu.username, ta.AppName, ta.IOSCertificate, ta.IOSKey, ta.AndroidId, ta.AndroidSenderId FROM tbluserinformation as tu inner Join tblappinfo as ta ON ta.id = tu.idApp where tu.id=" + UserId, function(err, objAppInfo, fields) {
+    connection.query("SELECT tu.id, tu.username, ta.AppName, ta.IOSCertificate, ta.IOSKey, ta.AndroidId, ta.AndroidSenderId FROM tbluserinformation as tu inner Join tblappinfo as ta ON ta.id = tu.idApp where tu.id=" + UserId, function (err, objAppInfo, fields) {
         var PushNotificationdata = {
             title: 'Alert',
             message: '9787 is out of Home Fence.',
@@ -142,7 +191,19 @@ function clone(obj) {
     return copy;
 }
 
-global.SendPushNotification = function(data, UserId, objAppInfo) {
+function SendFCMPushOneByOne(message, serverKey, callback) {
+    var fcm = new FCM(serverKey);
+    fcm.send(message, function (err, response) {
+        if (err) {
+            console.log("Something has gone wrong!", err);
+        } else {
+            console.log("Successfully sent with response: ", response);
+        }
+        return callback(true);
+    });
+}
+
+global.SendPushNotification = function (data, UserId, objAppInfo) {
     // var deviceIds = [];
     var AlarmCode = '';
     if (data.otherfields.AlarmCode != null && data.otherfields.AlarmCode != undefined && data.otherfields.AlarmCode != '') {
@@ -150,9 +211,9 @@ global.SendPushNotification = function(data, UserId, objAppInfo) {
     } else {
         AlarmCode = data.otherfields.NotificationType;
     }
-    CheckNotificationOn(UserId, AlarmCode, function(alarmStatusUserId) {
+    CheckNotificationOn(UserId, AlarmCode, function (alarmStatusUserId) {
         if (alarmStatusUserId != '') {
-            connection.query("SELECT PushNotificationId,Platform,MessageCount,UserType,udid,iduser from tblpushnotification where iduser in (" + alarmStatusUserId + ") group by PushNotificationId, Platform", function(err, response, fields) {
+            connection.query("SELECT PushNotificationId,Platform,MessageCount,UserType,udid,iduser from tblpushnotification where iduser in (" + alarmStatusUserId + ") group by PushNotificationId, Platform", function (err, response, fields) {
                 if (!err && response.length > 0) {
                     // PushNotification.findAll({ where: { iduser: UserId } }).then(function(response) {
                     function SendNotification(i) {
@@ -166,8 +227,8 @@ global.SendPushNotification = function(data, UserId, objAppInfo) {
                                 //     if (lstSetting[0].Value == 1) {
                                 var deviceIds = [];
                                 deviceIds.push(response[i].PushNotificationId)
-                                    //SendNotification(i + 1);
-                                    // } else {
+                                //SendNotification(i + 1);
+                                // } else {
                                 console.log(deviceIds)
                                 var objData = clone(data);
 
@@ -186,29 +247,53 @@ global.SendPushNotification = function(data, UserId, objAppInfo) {
                                         PushNotificationSettings.apn.defaultData.sound = objData.soundname + '.caf';
                                     };
 
+                                    objData.priority = 'high';
+                                    var objPushNotificationSend = new PushNotifications(PushNotificationSettings);
+                                    if (deviceIds.length > 0) {
+
+                                        objPushNotificationSend.send(deviceIds, objData, function (result) {
+                                            // console.log(result);
+                                            connection.query("Update tblpushnotification set messagecount=" + messagecount + " where udid='" + response[i].udid + "' and UserType='" + response[i].UserType + "'", function (errupdate, updateresp, fields) {
+                                                console.log(errupdate)
+
+                                                SendNotification(i + 1);
+                                            });
+                                        });
+                                    } else {
+                                        SendNotification(i + 1);
+                                    };
+
                                 } else {
 
-                                    PushNotificationSettings.gcm.msgcnt = messagecount;
-                                    PushNotificationSettings.gcm.id = objAppInfo.AndroidId;
+                                    // PushNotificationSettings.gcm.msgcnt = messagecount;
+                                    // PushNotificationSettings.gcm.id = objAppInfo.AndroidId;
+
+                                    var objDataFCM = clone(data);
+                                    objDataFCM.msgcnt = messagecount;
+                                    console.log(objDataFCM)
+                                    var message = { //this may vary according to the message type (single recipient, multicast, topic, et cetera)
+                                        to: response[i].PushNotificationId,
+                                        collapse_key: objAppInfo.AppName,
+                                        notification: {
+                                            title: objDataFCM.title,
+                                            body: objDataFCM.message,
+                                            "sound": "default",
+                                            "click_action": "FCM_PLUGIN_ACTIVITY",
+                                            // "icon": "fcm_push_icon"
+                                        },
+                                        data: objDataFCM
+                                    };
+                                    SendFCMPushOneByOne(message, objAppInfo.AndroidId, function () {
+                                        connection.query("Update tblpushnotification set messagecount=" + messagecount + " where udid='" + response[i].udid + "' and UserType='" + response[i].UserType + "'", function (errupdate, updateresp, fields) {
+                                            console.log(errupdate)
+                                            SendNotification(i + 1);
+                                        });
+                                    });
 
                                 }
                                 // console.log(response[i].Platform + "_______________________________________________________")
                                 // console.log(objData)
-                                objData.priority = 'high';
-                                var objPushNotificationSend = new PushNotifications(PushNotificationSettings);
-                                if (deviceIds.length > 0) {
 
-                                    objPushNotificationSend.send(deviceIds, objData, function(result) {
-                                        // console.log(result);
-                                        connection.query("Update tblpushnotification set messagecount=" + messagecount + " where udid='" + response[i].udid + "' and UserType='" + response[i].UserType + "'", function(errupdate, updateresp, fields) {
-                                            console.log(errupdate)
-
-                                            SendNotification(i + 1);
-                                        });
-                                    });
-                                } else {
-                                    SendNotification(i + 1);
-                                };
                                 //     } else {
                                 //         SendNotification(i + 1);
                                 //     }
@@ -233,12 +318,12 @@ global.SendPushNotification = function(data, UserId, objAppInfo) {
     })
 }
 
-router.get('/SendPushTest1', function(req, res) {
+router.get('/SendPushTest1', function (req, res) {
     var UserId = req.query.UserId;
-    CheckNotificationOn('1,50316', 'Road Tax Renewal', function(alarmStatus) {})
-    connection.query("SELECT tu.id, tu.username, tu.Notification, ta.AppName, ta.IOSCertificate, ta.IOSKey, ta.AndroidId, ta.AndroidSenderId FROM tbluserinformation as tu inner Join tblappinfo as ta ON ta.id = tu.idApp where tu.id=" + UserId, function(err, objAppInfo, fields) {
+    CheckNotificationOn('1,50316', 'Road Tax Renewal', function (alarmStatus) { })
+    connection.query("SELECT tu.id, tu.username, tu.Notification, ta.AppName, ta.IOSCertificate, ta.IOSKey, ta.AndroidId, ta.AndroidSenderId FROM tbluserinformation as tu inner Join tblappinfo as ta ON ta.id = tu.idApp where tu.id=" + UserId, function (err, objAppInfo, fields) {
         if (objAppInfo[0].Notification == 1) {
-            var AlarmCode = 'Road Tax Renewal'
+            var AlarmCode = '6'
             var PushNotificationdata = {
                 title: 'Alert',
                 message: '9787 is out of Home Fence.',
@@ -254,6 +339,7 @@ router.get('/SendPushTest1', function(req, res) {
             };
             SendPushNotification(PushNotificationdata, '1,50316', objAppInfo[0]);
         }
+        res.send("Success")
     })
 })
 
@@ -263,7 +349,7 @@ function CheckNotificationOn(UserId, AlarmCode, callback) {
     var UserId = UserId;
     var FinalUserId = '';
     var qryUserNotitifcation = "Select id from tbluserinformation where id in (" + UserId + ") and Notification=true";
-    connection.query(qryUserNotitifcation, function(err, lstUserNotificationOn, fields) {
+    connection.query(qryUserNotitifcation, function (err, lstUserNotificationOn, fields) {
         var NewUserId = '';
         for (var i = 0; i < lstUserNotificationOn.length; i++) {
             if (NewUserId != '') {
@@ -274,7 +360,7 @@ function CheckNotificationOn(UserId, AlarmCode, callback) {
         }
         if (NewUserId != '') {
             var qry = "SELECT tnm.Notification, tnm.AlarmCode, tns.IsNotificationOn,tns.idUser FROM tblnotificationmgmt as tnm INNER JOIN tblnotificationsetting as tns ON tns.idNotification = tnm.id where tns.idUser in (" + NewUserId + ") and (Notification='" + AlarmCode + "' or AlarmCode = '" + AlarmCode + "')";
-            connection.query(qry, function(err, lstNotification, fields) {
+            connection.query(qry, function (err, lstNotification, fields) {
                 for (var i = 0; i < lstUserNotificationOn.length; i++) {
                     var IsNotificationAllow = u.findWhere(lstNotification, { idUser: lstUserNotificationOn[i].id });
                     if (IsNotificationAllow != undefined) {
@@ -310,9 +396,9 @@ function SendPWAPushNotification(data, UserId) {
     }
     try {
         if (UserId.length > 0 && data.title != undefined && data.title != null && data.title != '') {
-            CheckNotificationOn(UserId, AlarmCode, function(alarmStatusUserId) {
+            CheckNotificationOn(UserId, AlarmCode, function (alarmStatusUserId) {
                 if (alarmStatusUserId != '') {
-                    connection.query("SELECT * from tblpwa_notification_subscription where iduser in (" + alarmStatusUserId + ")", function(errors, lstPWASubscribers, fields) {
+                    connection.query("SELECT * from tblpwa_notification_subscription where iduser in (" + alarmStatusUserId + ")", function (errors, lstPWASubscribers, fields) {
                         if (!errors && lstPWASubscribers.length > 0) {
                             var title = data.title;
                             var message = data.message;
@@ -332,12 +418,12 @@ function SendPWAPushNotification(data, UserId) {
                                                 p256dh: p256dh
                                             }
                                         };
-                                        webpush.sendNotification(pushSubscription, JSON.stringify({ title: title, content: message })).then(function(resPWA) {
+                                        webpush.sendNotification(pushSubscription, JSON.stringify({ title: title, content: message })).then(function (resPWA) {
                                             SendOneByOne(p + 1);
                                             // console.log("========================================================")
                                             // console.log(resPWA)
                                             // console.log("========================================================")
-                                        }).catch(function(err) {
+                                        }).catch(function (err) {
                                             // console.log(err);
                                             SendOneByOne(p + 1);
                                         });
@@ -352,7 +438,7 @@ function SendPWAPushNotification(data, UserId) {
                 }
             })
         }
-    } catch (er) {}
+    } catch (er) { }
 }
 
 function GetCurrentDate() {
@@ -372,12 +458,12 @@ function GetCurrentDate() {
 }
 
 //Calculate CRC
-global.CalculateCRCbyHex = function(hex) {
+global.CalculateCRCbyHex = function (hex) {
     var bytedata = hex2byteCRC(hex);
     return ("0000" + decimalToHexString(crc.crc16x25(bytedata))).slice(-4);
 }
 
-router.get('/CalculateCRCOnline', function(req, res) {
+router.get('/CalculateCRCOnline', function (req, res) {
     res.send(CalculateCRCbyHex(req.query.data));
 });
 //Hex to Byte For CRC
@@ -389,7 +475,7 @@ function hex2byteCRC(hexx) {
     return lst;
 }
 
-global.hexToBinary = function(s) {
+global.hexToBinary = function (s) {
     var i, k, part, ret = '';
     // lookup table for easier conversion. '0' characters are padded for '1' to '7'
     var lookupTable = {
@@ -452,36 +538,36 @@ function hex2a(hexx) {
     return str;
 }
 
-router.get('/TestAPI', function(req, res) {
+router.get('/TestAPI', function (req, res) {
     console.log(req.query);
     res.send("Success");
 });
 
-router.get('/GetCenterByGPS', function(req, res) {
+router.get('/GetCenterByGPS', function (req, res) {
     console.log(req.query);
     console.log(CurrentOffset)
-    connection.query("SELECT Latitude as latitude,Longitude as longitude FROM tblgpsdata where DeviceId='" + req.query.DeviceId + "' and DATE_FORMAT(Datetime,'%H:%i:%s')>='20:30:00' and DATE_FORMAT(Datetime,'%H:%i:%s')<='22:30:00' and speed=0 and Direction=0  and Datetime>'2018-01-02';", function(err, lstData, fields) {
+    connection.query("SELECT Latitude as latitude,Longitude as longitude FROM tblgpsdata where DeviceId='" + req.query.DeviceId + "' and DATE_FORMAT(Datetime,'%H:%i:%s')>='20:30:00' and DATE_FORMAT(Datetime,'%H:%i:%s')<='22:30:00' and speed=0 and Direction=0  and Datetime>'2018-01-02';", function (err, lstData, fields) {
         var centerdata = geolib.getCenter(lstData);
         console.log(centerdata)
         res.send(centerdata);
     });
 });
 
-router.get('/RequestIMEINumberbyUDID', function(req, res) {
+router.get('/RequestIMEINumberbyUDID', function (req, res) {
     var UDID = req.query.UDID;
-    IMEINumberMapping.findOne({ where: { UDID: UDID } }).then(function(objUserIMEI) {
+    IMEINumberMapping.findOne({ where: { UDID: UDID } }).then(function (objUserIMEI) {
         if (objUserIMEI != null) {
             res.json({ IMEI: objUserIMEI.IMEI });
         } else {
-            IMEINumber.findOne({ where: { IsUse: false } }).then(function(objIMEI) {
+            IMEINumber.findOne({ where: { IsUse: false } }).then(function (objIMEI) {
                 var obj = new Object();
                 obj.UDID = UDID;
                 obj.IMEI = objIMEI.IMEI;
                 obj.Type = 'IOS';
                 obj.CreatedDate = new Date();
-                IMEINumberMapping.create(obj).then(function(resUserIMEI) {
-                    objIMEI.updateAttributes({ IsUse: true }).then(function(resIMEI) {
-                        GPSDevice.findOne({ where: { IMEI: objIMEI.IMEI } }).then(function(resDevice) {
+                IMEINumberMapping.create(obj).then(function (resUserIMEI) {
+                    objIMEI.updateAttributes({ IsUse: true }).then(function (resIMEI) {
+                        GPSDevice.findOne({ where: { IMEI: objIMEI.IMEI } }).then(function (resDevice) {
                             if (resDevice == null) {
                                 var objDevice = new Object();
                                 objDevice.IMEI = objIMEI.IMEI;
@@ -498,7 +584,7 @@ router.get('/RequestIMEINumberbyUDID', function(req, res) {
                                 expireDate.setMinutes(00);
                                 expireDate.setSeconds(00);
                                 objDevice.ExpiryDate = expireDate;
-                                GPSDevice.create(objDevice).then(function(resCreate) {
+                                GPSDevice.create(objDevice).then(function (resCreate) {
                                     res.json({ IMEI: objIMEI.IMEI });
                                 })
                             } else {
@@ -513,8 +599,8 @@ router.get('/RequestIMEINumberbyUDID', function(req, res) {
 
 });
 
-router.get('/RequestIMEINumberForAndroid', function(req, res) {
-    IMEINumberMapping.findOne({ where: { UDID: req.query.UDID } }).then(function(objUserIMEI) {
+router.get('/RequestIMEINumberForAndroid', function (req, res) {
+    IMEINumberMapping.findOne({ where: { UDID: req.query.UDID } }).then(function (objUserIMEI) {
         if (objUserIMEI != null) {
             res.json({ IMEI: objUserIMEI.IMEI });
         } else {
@@ -523,9 +609,9 @@ router.get('/RequestIMEINumberForAndroid', function(req, res) {
             obj.IMEI = req.query.IMEI;
             obj.Type = req.query.Type;
             obj.CreatedDate = new Date();
-            IMEINumberMapping.create(obj).then(function(resUserIMEI) {
+            IMEINumberMapping.create(obj).then(function (resUserIMEI) {
                 if (resUserIMEI != null) {
-                    GPSDevice.findOne({ where: { IMEI: resUserIMEI.IMEI } }).then(function(resDevice) {
+                    GPSDevice.findOne({ where: { IMEI: resUserIMEI.IMEI } }).then(function (resDevice) {
                         if (resDevice == null) {
                             var objDevice = new Object();
                             objDevice.IMEI = resUserIMEI.IMEI;
@@ -542,7 +628,7 @@ router.get('/RequestIMEINumberForAndroid', function(req, res) {
                             expireDate.setMinutes(00);
                             expireDate.setSeconds(00);
                             objDevice.ExpiryDate = expireDate;
-                            GPSDevice.create(objDevice).then(function(resCreate) {
+                            GPSDevice.create(objDevice).then(function (resCreate) {
                                 res.json({ IMEI: req.query.IMEI });
                             })
                         } else {
@@ -555,7 +641,7 @@ router.get('/RequestIMEINumberForAndroid', function(req, res) {
     })
 })
 
-router.get('/GenerateIMEI', function(req, res) {
+router.get('/GenerateIMEI', function (req, res) {
     req.setTimeout(3600000);
     // for (var i = 0; i < 10; i++) {
     // var NewPassword = customPassword();
@@ -566,12 +652,12 @@ router.get('/GenerateIMEI', function(req, res) {
     function InsertIMEI(i) {
         if (i < 10000) {
             var IMEINumber = customPassword();
-            connection.query("SELECT * from tblimeinumber where IMEI=" + IMEINumber + "", function(err, numberrow, fields) {
+            connection.query("SELECT * from tblimeinumber where IMEI=" + IMEINumber + "", function (err, numberrow, fields) {
                 if (!err) {
                     if (numberrow.length > 0) {
                         InsertIMEI(i + 1);
                     } else {
-                        connection.query("Insert INTO tblimeinumber (`IMEI`,`IsUse`) VALUES(" + IMEINumber + ",0)", function(err, Bikerows, fields) {
+                        connection.query("Insert INTO tblimeinumber (`IMEI`,`IsUse`) VALUES(" + IMEINumber + ",0)", function (err, Bikerows, fields) {
                             InsertIMEI(i + 1);
                         });
                     }
@@ -631,7 +717,7 @@ function customPassword() {
 //End of Private functions
 
 //5000 - Login
-router.get('/Command5000', function(req, res) {
+router.get('/Command5000', function (req, res) {
 
     var line = req.query.Code;
     console.log("Login = " + line);
@@ -641,7 +727,7 @@ router.get('/Command5000', function(req, res) {
     var CurrentDate = GetCurrentDate();
     var response = '40400012' + DeviceId + '400001';
     response = response + CalculateCRCbyHex(response) + '0D0A';
-    connection.query("SELECT * from tblgpsdevice where DeviceId=" + DeviceId, function(err, rows, fields) {
+    connection.query("SELECT * from tblgpsdevice where DeviceId=" + DeviceId, function (err, rows, fields) {
         if (!err) {
             //if (rows.length > 0) {
             //tblapisresponse Entry
@@ -665,7 +751,7 @@ router.get('/Command5000', function(req, res) {
 })
 
 //Command5001 - Heartbeat Command
-global.Command5001 = function(line, Callback) {
+global.Command5001 = function (line, Callback) {
     console.log("HandShak = " + line);
     try {
         //Server Reconnet If Disconneted
@@ -685,9 +771,9 @@ global.Command5001 = function(line, Callback) {
 
         //tblPetgps Entry
         var query = "INSERT INTO tblhandshake (DeviceId,Datetime ) VALUES ('" + DeviceId + "', '" + CurrentDate + "');";
-        connection.query(query, function(err, rows, fields) {
+        connection.query(query, function (err, rows, fields) {
 
-            connection.query("Update tblvehicle set HandshakDatetime='" + CurrentDate + "',IsOnline=true where deviceid=" + DeviceId, function(err, rows1, fields) {
+            connection.query("Update tblvehicle set HandshakDatetime='" + CurrentDate + "',IsOnline=true where deviceid=" + DeviceId, function (err, rows1, fields) {
                 var objConnection = {
                     DeviceId: DeviceId,
                     Status: true
@@ -703,9 +789,9 @@ global.Command5001 = function(line, Callback) {
 };
 
 //Command9955 - GPS Command
-global.Command9955 = function(objConnection, Callback) {
+global.Command9955 = function (objConnection, Callback) {
     var DeviceId = objConnection.DeviceId;
-    client.get(DeviceId + "ProjectIgnitionStatus", function(err, ProjectIgnitionStatus) {
+    client.get(DeviceId + "ProjectIgnitionStatus", function (err, ProjectIgnitionStatus) {
         if (!err) {
             if (ProjectIgnitionStatus == 'true') {
                 //Server Reconnet If Disconneted
@@ -758,7 +844,7 @@ global.Command9955 = function(objConnection, Callback) {
                 //Ignition Status
                 var IsEngineStatusGet = false;
                 var IsEngineStatusChange = false;
-                client.get(DeviceId + "EngineStatus1", function(err, strEngineStatus) {
+                client.get(DeviceId + "EngineStatus1", function (err, strEngineStatus) {
                     if (!err) {
                         if (strEngineStatus != null && strEngineStatus != undefined && strEngineStatus != '' && strEngineStatus != 'null' && strEngineStatus != 'undefined') {
                             IsEngineStatusGet = true;
@@ -774,7 +860,7 @@ global.Command9955 = function(objConnection, Callback) {
                             IsEngine: objConnection.IsEngine,
                             Date: objConnection.Date
                         }
-                        client.set(DeviceId + "EngineStatus1", JSON.stringify(objnewEngineStatus), function(err, replies) {});
+                        client.set(DeviceId + "EngineStatus1", JSON.stringify(objnewEngineStatus), function (err, replies) { });
 
                         // var NewDeviceId = DeviceId.substring(DeviceId.length - 7);
                         // var Ids = "3" + unixDateStemp.toString() + NewDeviceId;
@@ -807,12 +893,12 @@ global.Command9955 = function(objConnection, Callback) {
 
                         function UpdateIgnitionQuery() {
                             var query = "INSERT INTO tblalarm (Datetime, Date, Latitude,Longitude,GPSPositioning,Speed,Direction,Status,DeviceId,AlarmCode,CreatedDate ) VALUES ('" + objConnection.GPSDateTime + "', '" + objConnection.Date + "', '" + objConnection.Latitude + "', '" + objConnection.Longitude + "', '" + objConnection.Position + "', '" + objConnection.Speed + "', '" + objConnection.Direction + "', '" + objConnection.inputoutputSTatus + "', '" + DeviceId + "','" + AlarmCode + "','" + CurrentDate + "');";
-                            connection.query(query, function(err, rows, fields) {
+                            connection.query(query, function (err, rows, fields) {
 
-                                connection.query("SELECT id,Name,iduser,deviceid from tblvehicle where deviceid='" + DeviceId + "' and IsDelete=false", function(err, lstVehicle, fields) {
+                                connection.query("SELECT id,Name,iduser,deviceid from tblvehicle where deviceid='" + DeviceId + "' and IsDelete=false", function (err, lstVehicle, fields) {
                                     if (!err && lstVehicle.length > 0) {
                                         var objVehicle = lstVehicle[0];
-                                        connection.query("SELECT * from tblsharedevice where idVehicle=" + objVehicle.id + " and IsSharedUserNotification=true and IsNotification=true", function(err, lstShareUser, fields) {
+                                        connection.query("SELECT * from tblsharedevice where idVehicle=" + objVehicle.id + " and IsSharedUserNotification=true and IsNotification=true", function (err, lstShareUser, fields) {
                                             var lstAllUser = [objVehicle.iduser];
                                             var AllUser = objVehicle.iduser.toString();
                                             if (!err && lstShareUser.length > 0) {
@@ -821,7 +907,7 @@ global.Command9955 = function(objConnection, Callback) {
                                                     AllUser = AllUser + ',' + lstShareUser[i].idUser;
                                                 }
                                             }
-                                            connection.query("SELECT tu.id,tu.idApp, tu.username,tu.email,tu.Notification, ta.AppName, ta.IOSCertificate, ta.IOSKey, ta.AndroidId, ta.AndroidSenderId FROM tbluserinformation as tu inner Join tblappinfo as ta ON ta.id = tu.idApp where tu.id=" + objVehicle.iduser, function(err, objAppInfo, fields) {
+                                            connection.query("SELECT tu.id,tu.idApp, tu.username,tu.email,tu.Notification, ta.AppName, ta.IOSCertificate, ta.IOSKey, ta.AndroidId, ta.AndroidSenderId FROM tbluserinformation as tu inner Join tblappinfo as ta ON ta.id = tu.idApp where tu.id=" + objVehicle.iduser, function (err, objAppInfo, fields) {
 
                                                 for (var i = 0; i < lstAllUser.length; i++) {
                                                     var objConnection1 = {
@@ -858,7 +944,7 @@ global.Command9955 = function(objConnection, Callback) {
                                                     io.sockets.emit(lstAllUser[i] + 'DeviceNotificationCount', JSON.stringify(objPushnotificationCount));
                                                 }
 
-                                                client.get(DeviceId + "IgnitionStatus", function(err, UserIgnitionStatus) {
+                                                client.get(DeviceId + "IgnitionStatus", function (err, UserIgnitionStatus) {
                                                     if (!err) {
                                                         if (UserIgnitionStatus != null && UserIgnitionStatus != undefined && UserIgnitionStatus != '' && UserIgnitionStatus != 'null' && UserIgnitionStatus != 'undefined') {
                                                             if (UserIgnitionStatus == 'true') {
@@ -901,7 +987,7 @@ global.Command9955 = function(objConnection, Callback) {
                                                                     Name: objVehicle.Name
                                                                 }
 
-                                                                client.get(DeviceId + "EmailNotificationSend", function(err, UserEmailStatus) {
+                                                                client.get(DeviceId + "EmailNotificationSend", function (err, UserEmailStatus) {
                                                                     // console.log("Redis Error ============================================================", err, UserEmailStatus)
                                                                     if (!err) {
                                                                         if (UserEmailStatus != null && UserEmailStatus != undefined && UserEmailStatus != '' && UserEmailStatus != 'null' && UserEmailStatus != 'undefined') {
@@ -917,14 +1003,14 @@ global.Command9955 = function(objConnection, Callback) {
                                                                                     "<p>Sincerely,<br />" +
                                                                                     objAppInfo[0].AppName + " Support Team</p>";
 
-                                                                                SystemEmail.findOne({ where: { IdApp: objAppInfo[0].idApp } }).then(function(objSystemEmail) {
+                                                                                SystemEmail.findOne({ where: { IdApp: objAppInfo[0].idApp } }).then(function (objSystemEmail) {
                                                                                     var mail = {
                                                                                         from: objSystemEmail.DefaultEmailFrom,
                                                                                         to: Emails,
                                                                                         subject: objAppInfo[0].AppName + " " + objConnection1.title,
                                                                                         html: body
                                                                                     };
-                                                                                    SetsmtpConfig(objSystemEmail, mail, function(EmailSettingCreated) {
+                                                                                    SetsmtpConfig(objSystemEmail, mail, function (EmailSettingCreated) {
                                                                                         // console.log("################################# Email ###########################################")
                                                                                         // console.log(EmailSettingCreated)
                                                                                     })
@@ -958,7 +1044,7 @@ global.Command9955 = function(objConnection, Callback) {
                 var IsLastVehicleStatusMaintenance = false;
                 var LastVehicleStatusIdleunixtime = 0;
                 var LastVehicleStatus = 0;
-                client.get(DeviceId + "VehicleStatus1", function(err, strVehicleStatus) {
+                client.get(DeviceId + "VehicleStatus1", function (err, strVehicleStatus) {
                     if (!err) {
                         if (strVehicleStatus != null && strVehicleStatus != undefined && strVehicleStatus != '' && strVehicleStatus != 'null' && strVehicleStatus != 'undefined') {
                             IsVehicleStatusGet = true;
@@ -985,7 +1071,7 @@ global.Command9955 = function(objConnection, Callback) {
                                     IsLastVehicleStatusIdle: true,
                                     LastVehicleStatusIdleunixtime: objConnection.Date
                                 }
-                                client.set(DeviceId + "VehicleStatus1", JSON.stringify(objnewVehicleStatus), function(err, replies) {});
+                                client.set(DeviceId + "VehicleStatus1", JSON.stringify(objnewVehicleStatus), function (err, replies) { });
                                 VehicleStatus = LastVehicleStatus;
 
                                 if (ObjMyPinIdle[DeviceId] != null && ObjMyPinIdle[DeviceId] != undefined && ObjMyPinIdle[DeviceId] != '') {
@@ -998,7 +1084,7 @@ global.Command9955 = function(objConnection, Callback) {
 
                             } else {
                                 var minute = 0;
-                                client.get(DeviceId + "IdleMinute", function(err, repliesMinute) {
+                                client.get(DeviceId + "IdleMinute", function (err, repliesMinute) {
                                     if (repliesMinute != null && repliesMinute != undefined && repliesMinute != '' && repliesMinute != 'null' && repliesMinute != 'undefined') {
                                         minute = parseInt(repliesMinute);
                                     }
@@ -1011,7 +1097,7 @@ global.Command9955 = function(objConnection, Callback) {
                                             LastVehicleStatusIdleunixtime: 0
                                         }
 
-                                        client.set(DeviceId + "VehicleStatus1", JSON.stringify(objnewVehicleStatus), function(err, replies) {});
+                                        client.set(DeviceId + "VehicleStatus1", JSON.stringify(objnewVehicleStatus), function (err, replies) { });
 
                                         if (ObjMyPinIdle[DeviceId] != null && ObjMyPinIdle[DeviceId] != undefined && ObjMyPinIdle[DeviceId] != '') {
                                             if (ObjMyPinIdle[DeviceId].Alert == false) {
@@ -1028,11 +1114,11 @@ global.Command9955 = function(objConnection, Callback) {
                                         function UpdateIdleQuery() {
                                             var AlarmCode = 84;
                                             var query = "INSERT INTO tblalarm (Datetime, Date, Latitude,Longitude,GPSPositioning,Speed,Direction,Status,DeviceId,AlarmCode,CreatedDate,FenceName ) VALUES ('" + objConnection.GPSDateTime + "', '" + objConnection.Date + "', '" + objConnection.Latitude + "', '" + objConnection.Longitude + "', '" + objConnection.Position + "', '" + objConnection.Speed + "', '" + objConnection.Direction + "', '" + objConnection.inputoutputSTatus + "', '" + DeviceId + "','" + AlarmCode + "','" + CurrentDate + "', '" + minute + " minute');";
-                                            connection.query(query, function(err, rows, fields) {
-                                                connection.query("SELECT id,Name,iduser,deviceid from tblvehicle where deviceid='" + DeviceId + "' and IsDelete=false", function(err, lstVehicle, fields) {
+                                            connection.query(query, function (err, rows, fields) {
+                                                connection.query("SELECT id,Name,iduser,deviceid from tblvehicle where deviceid='" + DeviceId + "' and IsDelete=false", function (err, lstVehicle, fields) {
                                                     if (!err && lstVehicle.length > 0) {
                                                         var objVehicle = lstVehicle[0];
-                                                        connection.query("SELECT * from tblsharedevice where idVehicle=" + objVehicle.id + " and IsSharedUserNotification=true and IsNotification=true", function(err, lstShareUser, fields) {
+                                                        connection.query("SELECT * from tblsharedevice where idVehicle=" + objVehicle.id + " and IsSharedUserNotification=true and IsNotification=true", function (err, lstShareUser, fields) {
                                                             var lstAllUser = [objVehicle.iduser];
                                                             var AllUser = objVehicle.iduser.toString();
                                                             if (!err && lstShareUser.length > 0) {
@@ -1041,7 +1127,7 @@ global.Command9955 = function(objConnection, Callback) {
                                                                     AllUser = AllUser + ',' + lstShareUser[i].idUser;
                                                                 }
                                                             }
-                                                            connection.query("SELECT tu.id,tu.idApp, tu.username,tu.email,tu.Notification, ta.AppName, ta.IOSCertificate, ta.IOSKey, ta.AndroidId, ta.AndroidSenderId FROM tbluserinformation as tu inner Join tblappinfo as ta ON ta.id = tu.idApp where tu.id=" + objVehicle.iduser, function(err, objAppInfo, fields) {
+                                                            connection.query("SELECT tu.id,tu.idApp, tu.username,tu.email,tu.Notification, ta.AppName, ta.IOSCertificate, ta.IOSKey, ta.AndroidId, ta.AndroidSenderId FROM tbluserinformation as tu inner Join tblappinfo as ta ON ta.id = tu.idApp where tu.id=" + objVehicle.iduser, function (err, objAppInfo, fields) {
 
                                                                 for (var i = 0; i < lstAllUser.length; i++) {
                                                                     var objConnectionAlarm = {
@@ -1104,7 +1190,7 @@ global.Command9955 = function(objConnection, Callback) {
                                                                     Time: minute
                                                                 }
 
-                                                                client.get(DeviceId + "EmailNotificationSend", function(err, UserEmailStatus) {
+                                                                client.get(DeviceId + "EmailNotificationSend", function (err, UserEmailStatus) {
                                                                     // console.log("Redis Error ============================================================", err, UserEmailStatus)
                                                                     if (!err) {
                                                                         if (UserEmailStatus != null && UserEmailStatus != undefined && UserEmailStatus != '' && UserEmailStatus != 'null' && UserEmailStatus != 'undefined') {
@@ -1120,14 +1206,14 @@ global.Command9955 = function(objConnection, Callback) {
                                                                                     "<p>Sincerely,<br />" +
                                                                                     objAppInfo[0].AppName + " Support Team</p>";
 
-                                                                                SystemEmail.findOne({ where: { IdApp: objAppInfo[0].idApp } }).then(function(objSystemEmail) {
+                                                                                SystemEmail.findOne({ where: { IdApp: objAppInfo[0].idApp } }).then(function (objSystemEmail) {
                                                                                     var mail = {
                                                                                         from: objSystemEmail.DefaultEmailFrom,
                                                                                         to: Emails,
                                                                                         subject: objAppInfo[0].AppName + " " + objConnection1.title,
                                                                                         html: body
                                                                                     };
-                                                                                    SetsmtpConfig(objSystemEmail, mail, function(EmailSettingCreated) {
+                                                                                    SetsmtpConfig(objSystemEmail, mail, function (EmailSettingCreated) {
                                                                                         // console.log("################################# Email ###########################################")
                                                                                         // console.log(EmailSettingCreated)
                                                                                     })
@@ -1162,7 +1248,7 @@ global.Command9955 = function(objConnection, Callback) {
                                 LastVehicleStatusIdleunixtime: 0
                             }
 
-                            client.set(DeviceId + "VehicleStatus1", JSON.stringify(objnewVehicleStatus), function(err, replies) {});
+                            client.set(DeviceId + "VehicleStatus1", JSON.stringify(objnewVehicleStatus), function (err, replies) { });
                             if (ObjMyPinIdle[DeviceId] != null && ObjMyPinIdle[DeviceId] != undefined && ObjMyPinIdle[DeviceId] != '') {
                                 ObjMyPinIdle[DeviceId].Alert = false;
                             } else {
@@ -1182,7 +1268,7 @@ global.Command9955 = function(objConnection, Callback) {
 };
 
 //Command9999 - Alarm Command
-global.Command9999 = function(line, Callback) {
+global.Command9999 = function (line, Callback) {
     console.log("Alarm Data = " + line);
     try {
         //Server Reconnet If Disconneted
@@ -1251,13 +1337,13 @@ global.Command9999 = function(line, Callback) {
         // console.log(GPSDateTime)
         if (AlarmCode != '81') {
             var query = "INSERT INTO tblalarm (Datetime, Date, Latitude,Longitude,GPSPositioning,Speed,Direction,Status,DeviceId,AlarmCode,CreatedDate ) VALUES ('" + GPSDateTime + "', '" + unixDateStemp + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + inputoutputSTatus + "', '" + DeviceId + "','" + AlarmCode + "','" + CurrentDate + "');";
-            connection.query(query, function(err, rows, fields) {
+            connection.query(query, function (err, rows, fields) {
 
 
-                connection.query("SELECT id,Name,iduser,deviceid from tblvehicle where deviceid=" + DeviceId + " and IsDelete=false", function(err, lstVehicle, fields) {
+                connection.query("SELECT id,Name,iduser,deviceid from tblvehicle where deviceid=" + DeviceId + " and IsDelete=false", function (err, lstVehicle, fields) {
                     if (!err && lstVehicle.length > 0) {
                         var objVehicle = lstVehicle[0];
-                        connection.query("SELECT * from tblsharedevice where idVehicle=" + objVehicle.id + " and IsSharedUserNotification=true and IsNotification=true", function(err, lstShareUser, fields) {
+                        connection.query("SELECT * from tblsharedevice where idVehicle=" + objVehicle.id + " and IsSharedUserNotification=true and IsNotification=true", function (err, lstShareUser, fields) {
                             var lstAllUser = [objVehicle.iduser];
                             var AllUser = objVehicle.iduser.toString();
                             if (!err && lstShareUser.length > 0) {
@@ -1266,7 +1352,7 @@ global.Command9999 = function(line, Callback) {
                                     AllUser = AllUser + ',' + lstShareUser[i].idUser;
                                 }
                             }
-                            connection.query("SELECT tu.id,tu.idApp, tu.username,tu.email,tu.Notification, ta.AppName, ta.IOSCertificate, ta.IOSKey, ta.AndroidId, ta.AndroidSenderId FROM tbluserinformation as tu inner Join tblappinfo as ta ON ta.id = tu.idApp where tu.id=" + objVehicle.iduser, function(err, objAppInfo, fields) {
+                            connection.query("SELECT tu.id,tu.idApp, tu.username,tu.email,tu.Notification, ta.AppName, ta.IOSCertificate, ta.IOSKey, ta.AndroidId, ta.AndroidSenderId FROM tbluserinformation as tu inner Join tblappinfo as ta ON ta.id = tu.idApp where tu.id=" + objVehicle.iduser, function (err, objAppInfo, fields) {
 
                                 var Message = "";
                                 var soundname = "";
@@ -1376,41 +1462,41 @@ global.Command9999 = function(line, Callback) {
                                     Name: objVehicle.Name
                                 }
 
-                                client.get(DeviceId + "EmailNotificationSend", function(err, UserEmailStatus) {
-                                        // console.log("Redis Error ============================================================", err, UserEmailStatus)
-                                        if (!err) {
-                                            if (UserEmailStatus != null && UserEmailStatus != undefined && UserEmailStatus != '' && UserEmailStatus != 'null' && UserEmailStatus != 'undefined') {
-                                                if (UserEmailStatus == 'true') {
-                                                    notifyMe(objConnection1)
-                                                    var Emails = objAppInfo[0].email;
-                                                    var body = '<p>Dear Valued Customer,</p>' +
-                                                        "<p>It&#39;s an information E-mail.</p>" +
-                                                        "<p>" + objConnection1.Message + "</p>" +
-                                                        "<p>Click on the below link to view vehicle alert live location: <br />" +
-                                                        "<a href='http://maps.google.com/maps?q=" + Latitude + "," + Longitude + "' target='_blank'>http://maps.google.com/maps?q=" + Latitude + "," + Longitude + "</a></p>" +
-                                                        "<p>Thanks</p>" +
-                                                        "<p>Sincerely,<br />" +
-                                                        objAppInfo[0].AppName + " Support Team</p>";
+                                client.get(DeviceId + "EmailNotificationSend", function (err, UserEmailStatus) {
+                                    // console.log("Redis Error ============================================================", err, UserEmailStatus)
+                                    if (!err) {
+                                        if (UserEmailStatus != null && UserEmailStatus != undefined && UserEmailStatus != '' && UserEmailStatus != 'null' && UserEmailStatus != 'undefined') {
+                                            if (UserEmailStatus == 'true') {
+                                                notifyMe(objConnection1)
+                                                var Emails = objAppInfo[0].email;
+                                                var body = '<p>Dear Valued Customer,</p>' +
+                                                    "<p>It&#39;s an information E-mail.</p>" +
+                                                    "<p>" + objConnection1.Message + "</p>" +
+                                                    "<p>Click on the below link to view vehicle alert live location: <br />" +
+                                                    "<a href='http://maps.google.com/maps?q=" + Latitude + "," + Longitude + "' target='_blank'>http://maps.google.com/maps?q=" + Latitude + "," + Longitude + "</a></p>" +
+                                                    "<p>Thanks</p>" +
+                                                    "<p>Sincerely,<br />" +
+                                                    objAppInfo[0].AppName + " Support Team</p>";
 
-                                                    console.log(Emails)
-                                                    console.log(body)
-                                                    SystemEmail.findOne({ where: { IdApp: objAppInfo[0].idApp } }).then(function(objSystemEmail) {
-                                                        var mail = {
-                                                            from: objSystemEmail.DefaultEmailFrom,
-                                                            to: Emails,
-                                                            subject: objAppInfo[0].AppName + " " + objConnection1.title,
-                                                            html: body
-                                                        };
-                                                        SetsmtpConfig(objSystemEmail, mail, function(EmailSettingCreated) {
-                                                            // console.log("################################# Email ###########################################")
-                                                            // console.log(EmailSettingCreated)
-                                                        })
+                                                console.log(Emails)
+                                                console.log(body)
+                                                SystemEmail.findOne({ where: { IdApp: objAppInfo[0].idApp } }).then(function (objSystemEmail) {
+                                                    var mail = {
+                                                        from: objSystemEmail.DefaultEmailFrom,
+                                                        to: Emails,
+                                                        subject: objAppInfo[0].AppName + " " + objConnection1.title,
+                                                        html: body
+                                                    };
+                                                    SetsmtpConfig(objSystemEmail, mail, function (EmailSettingCreated) {
+                                                        // console.log("################################# Email ###########################################")
+                                                        // console.log(EmailSettingCreated)
                                                     })
-                                                }
+                                                })
                                             }
                                         }
-                                    })
-                                    // }
+                                    }
+                                })
+                                // }
 
                             });
                         })
@@ -1426,12 +1512,12 @@ global.Command9999 = function(line, Callback) {
 };
 
 // send email notification for Alarm
-global.SendEmailNotification = function(objConnection) {
-    client.get(objConnection.DeviceId + "EmailNotificationSend", function(err, UserEmailStatus) {
+global.SendEmailNotification = function (objConnection) {
+    client.get(objConnection.DeviceId + "EmailNotificationSend", function (err, UserEmailStatus) {
         if (!err) {
             if (UserEmailStatus != null && UserEmailStatus != undefined && UserEmailStatus != '' && UserEmailStatus != 'null' && UserEmailStatus != 'undefined') {
                 if (UserEmailStatus == 'true') {
-                    connection.query("SELECT tu.id,tu.idApp, tu.username,tu.email,tu.Notification, ta.AppName, ta.IOSCertificate, ta.IOSKey, ta.AndroidId, ta.AndroidSenderId FROM tbluserinformation as tu inner Join tblappinfo as ta ON ta.id = tu.idApp where tu.id=" + objConnection.UserId, function(err, objAppInfo, fields) {
+                    connection.query("SELECT tu.id,tu.idApp, tu.username,tu.email,tu.Notification, ta.AppName, ta.IOSCertificate, ta.IOSKey, ta.AndroidId, ta.AndroidSenderId FROM tbluserinformation as tu inner Join tblappinfo as ta ON ta.id = tu.idApp where tu.id=" + objConnection.UserId, function (err, objAppInfo, fields) {
                         notifyMe(objConnection)
                         var Emails = objAppInfo[0].email;
                         var body = '<p>Dear Valued Customer,</p>' +
@@ -1443,14 +1529,14 @@ global.SendEmailNotification = function(objConnection) {
                             "<p>Sincerely,<br />" +
                             objAppInfo[0].AppName + " Support Team</p>";
 
-                        SystemEmail.findOne({ where: { IdApp: objAppInfo[0].idApp } }).then(function(objSystemEmail) {
+                        SystemEmail.findOne({ where: { IdApp: objAppInfo[0].idApp } }).then(function (objSystemEmail) {
                             var mail = {
                                 from: objSystemEmail.DefaultEmailFrom,
                                 to: Emails,
                                 subject: objAppInfo[0].AppName + " " + objConnection.title,
                                 html: body
                             };
-                            SetsmtpConfig(objSystemEmail, mail, function(EmailSettingCreated) {
+                            SetsmtpConfig(objSystemEmail, mail, function (EmailSettingCreated) {
                                 // console.log("################################# Email ###########################################")
                                 // console.log(EmailSettingCreated)
                             })
@@ -1531,29 +1617,29 @@ function notifyMe(o) {
 }
 
 //Command9901 - CAN-BUS Command
-global.Command9901 = function(objCanbusData, Callback) {
+global.Command9901 = function (objCanbusData, Callback) {
     io.sockets.emit(objCanbusData.DeviceId + 'canbusdata', JSON.stringify(objCanbusData));
 };
 
 //Command9902 -  Driving Behavior Command
-global.Command9902 = function(objDrivingData, Callback) {
+global.Command9902 = function (objDrivingData, Callback) {
     io.sockets.emit(objDrivingData.DeviceId + 'drivingdata', JSON.stringify(objDrivingData));
 };
 
 
 //Send Speed Data
-router.get('/SendSpeedData', function(req, res) {
+router.get('/SendSpeedData', function (req, res) {
     req.setTimeout(3600000);
     var obj = new Object();
     obj.DeviceId = req.query.DeviceId;
     obj.Speed = req.query.Speed;
-    SendSpeedData(obj, function(data) {
+    SendSpeedData(obj, function (data) {
         res.json(data);
     })
 })
 
 //Send Speed Data
-global.SendSpeedData = function(objdata, Callback) {
+global.SendSpeedData = function (objdata, Callback) {
     var DeviceId = objdata.DeviceId;
     var Speed = ('00' + decimalToHexString(parseInt(objdata.Speed) / 10)).slice(-2);
     var Data = "40400012" + DeviceId + "4105" + Speed;
@@ -1562,19 +1648,19 @@ global.SendSpeedData = function(objdata, Callback) {
     var Sendflag = false;
     var ClintSocketPort = SocketPort;
     var ClintSocketIPAddress = SocketIPAddress;
-    client.get(DeviceId + "SocketConnection", function(err, resSocket) {
+    client.get(DeviceId + "SocketConnection", function (err, resSocket) {
         if (!err) {
             if (resSocket != null && resSocket != undefined && resSocket != '') {
                 try {
                     var objsocketconnection = JSON.parse(resSocket);
                     ClintSocketIPAddress = objsocketconnection.IP;
                     ClintSocketPort = objsocketconnection.Port;
-                } catch (ex) {}
+                } catch (ex) { }
             }
         }
-        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function() {
+        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function () {
             socketclient.write(Data, 'hex');
-            socketclient.setTimeout(10000, function() {
+            socketclient.setTimeout(10000, function () {
                 if (Sendflag == false) {
                     Sendflag = true;
                     socketclient.destroy();
@@ -1582,7 +1668,7 @@ global.SendSpeedData = function(objdata, Callback) {
                 };
             });
         });
-        socketclient.on('data', function(data) {
+        socketclient.on('data', function (data) {
             var line = data.toString();
             if (Sendflag == false) {
                 if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4105') {
@@ -1591,7 +1677,7 @@ global.SendSpeedData = function(objdata, Callback) {
                     Sendflag = true;
                     socketclient.destroy(); // kill socketclient after server's response
                     if (StatusCode == '01') {
-                        connection.query("Update tblvehicle set MaxSpeed=" + objdata.Speed + " where deviceid='" + DeviceId + "'", function(err, rows, fields) {
+                        connection.query("Update tblvehicle set MaxSpeed=" + objdata.Speed + " where deviceid='" + DeviceId + "'", function (err, rows, fields) {
                             //Update Max Speed in Redis
                             CommonFunction.UpdateVehicleRedis(DeviceId, 'Vehicle');
                             funAuditLog.CreateAuditLog('Speed Setting', null, 'Change vehicle (DeviceId:' + DeviceId + ') max speed (' + objdata.Speed + ') setting at (time:' + convertdateformat(new Date()) + ').');
@@ -1607,25 +1693,25 @@ global.SendSpeedData = function(objdata, Callback) {
                 }
             };
         });
-        socketclient.on('close', function() {
+        socketclient.on('close', function () {
             console.log('Connection closed');
         });
     });
 }
 
 //Send Movement Data
-router.get('/SendMovementData', function(req, res) {
+router.get('/SendMovementData', function (req, res) {
     req.setTimeout(3600000);
     var obj = new Object();
     obj.DeviceId = req.query.DeviceId;
     obj.Movement = req.query.Movement;
-    SendMovementData(obj, function(data) {
+    SendMovementData(obj, function (data) {
         res.json(data);
     })
 })
 
 //Send Movement Data
-global.SendMovementData = function(objdata, Callback) {
+global.SendMovementData = function (objdata, Callback) {
     var DeviceId = objdata.DeviceId;
     var Movement = ('00' + objdata.Movement).slice(-2);
     var Data = "40400012" + DeviceId + "4106" + Movement;
@@ -1634,19 +1720,19 @@ global.SendMovementData = function(objdata, Callback) {
     var Sendflag = false;
     var ClintSocketPort = SocketPort;
     var ClintSocketIPAddress = SocketIPAddress;
-    client.get(DeviceId + "SocketConnection", function(err, resSocket) {
+    client.get(DeviceId + "SocketConnection", function (err, resSocket) {
         if (!err) {
             if (resSocket != null && resSocket != undefined && resSocket != '') {
                 try {
                     var objsocketconnection = JSON.parse(resSocket);
                     ClintSocketIPAddress = objsocketconnection.IP;
                     ClintSocketPort = objsocketconnection.Port;
-                } catch (ex) {}
+                } catch (ex) { }
             }
         }
-        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function() {
+        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function () {
             socketclient.write(Data, 'hex');
-            socketclient.setTimeout(10000, function() {
+            socketclient.setTimeout(10000, function () {
                 if (Sendflag == false) {
                     Sendflag = true;
                     socketclient.destroy();
@@ -1654,7 +1740,7 @@ global.SendMovementData = function(objdata, Callback) {
                 };
             });
         });
-        socketclient.on('data', function(data) {
+        socketclient.on('data', function (data) {
             var line = data.toString();
             if (Sendflag == false) {
                 if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4106') {
@@ -1663,7 +1749,7 @@ global.SendMovementData = function(objdata, Callback) {
                     Sendflag = true;
                     socketclient.destroy(); // kill client after server's response
                     if (StatusCode == '01') {
-                        connection.query("Update tblvehicle set Movement=" + objdata.Movement + " where deviceid='" + DeviceId + "'", function(err, rows, fields) {
+                        connection.query("Update tblvehicle set Movement=" + objdata.Movement + " where deviceid='" + DeviceId + "'", function (err, rows, fields) {
                             funAuditLog.CreateAuditLog('Movement Setting', null, 'Change vehicle (DeviceId:' + DeviceId + ') Movement Setting at (time:' + convertdateformat(new Date()) + ').');
                             Callback({ success: true, message: 'Movement Settings Save Successfully.' });
                         });
@@ -1677,14 +1763,14 @@ global.SendMovementData = function(objdata, Callback) {
                 }
             };
         });
-        socketclient.on('close', function() {
+        socketclient.on('close', function () {
             console.log('Connection closed');
         });
     });
 }
 
 //Get Current Location
-router.get('/GetCurrentLocation', function(req, res) {
+router.get('/GetCurrentLocation', function (req, res) {
     req.setTimeout(3600000);
     var DeviceId = req.query.DeviceId;
     var Data = "40400011" + DeviceId + "4101";
@@ -1693,19 +1779,19 @@ router.get('/GetCurrentLocation', function(req, res) {
     var Sendflag = false;
     var ClintSocketPort = SocketPort;
     var ClintSocketIPAddress = SocketIPAddress;
-    client.get(DeviceId + "SocketConnection", function(err, resSocket) {
+    client.get(DeviceId + "SocketConnection", function (err, resSocket) {
         if (!err) {
             if (resSocket != null && resSocket != undefined && resSocket != '') {
                 try {
                     var objsocketconnection = JSON.parse(resSocket);
                     ClintSocketIPAddress = objsocketconnection.IP;
                     ClintSocketPort = objsocketconnection.Port;
-                } catch (ex) {}
+                } catch (ex) { }
             }
         }
-        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function() {
+        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function () {
             socketclient.write(Data, 'hex');
-            socketclient.setTimeout(10000, function() {
+            socketclient.setTimeout(10000, function () {
                 if (Sendflag == false) {
                     Sendflag = true;
                     socketclient.destroy();
@@ -1713,7 +1799,7 @@ router.get('/GetCurrentLocation', function(req, res) {
                 };
             });
         });
-        socketclient.on('data', function(data) {
+        socketclient.on('data', function (data) {
             var line = data.toString();
             if (Sendflag == false) {
                 if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '9955') {
@@ -1728,13 +1814,13 @@ router.get('/GetCurrentLocation', function(req, res) {
                 }
             };
         });
-        socketclient.on('close', function() {
+        socketclient.on('close', function () {
             console.log('Connection closed');
         });
     });
 })
 
-router.get('/SendCommandToDevice', function(req, res) {
+router.get('/SendCommandToDevice', function (req, res) {
     var lstDevice = req.query.objDevice;
     var objDevice = [];
     if (Array.isArray(lstDevice)) {
@@ -1748,42 +1834,42 @@ router.get('/SendCommandToDevice', function(req, res) {
             var objMaxSpeed = new Object();
             objMaxSpeed.DeviceId = objDevice[i];
             objMaxSpeed.Speed = req.query.MaxSpeed;
-            SendSpeedData(objMaxSpeed, function(data) {})
+            SendSpeedData(objMaxSpeed, function (data) { })
 
             var objSleepMode = new Object();
             objSleepMode.DeviceId = objDevice[i];
             objSleepMode.SleepMode = req.query.SleepMode;
-            SetSleepMode(objSleepMode, function(data) {})
+            SetSleepMode(objSleepMode, function (data) { })
 
             var objGPRSInterval = new Object();
             objGPRSInterval.DeviceId = objDevice[i];
             objGPRSInterval.TimeInterval = req.query.TimeInterval;
-            SetGPRSInterval(objGPRSInterval, function(data) {})
+            SetGPRSInterval(objGPRSInterval, function (data) { })
 
             var objArm = new Object();
             objArm.DeviceId = objDevice[i];
             objArm.Arm = req.query.Arm;
-            SetArmSettings(objArm, function(data) {})
+            SetArmSettings(objArm, function (data) { })
 
             var objOdoMeter = new Object();
             objOdoMeter.DeviceId = objDevice[i];
             objOdoMeter.odometer = req.query.odometer;
-            SetOdometerSetting(objOdoMeter, function(data) {})
+            SetOdometerSetting(objOdoMeter, function (data) { })
 
             var objHeartbeatInterval = new Object();
             objHeartbeatInterval.DeviceId = objDevice[i];
             objHeartbeatInterval.TimeInterval = req.query.HeartbeatInterval;
-            SetHeartBeatInterval(objHeartbeatInterval, function(data) {})
+            SetHeartBeatInterval(objHeartbeatInterval, function (data) { })
 
             var objGPRSStopInterval = new Object();
             objGPRSStopInterval.DeviceId = objDevice[i];
             objGPRSStopInterval.TimeInterval = req.query.GPRSStopInterval;
-            SetGPRSIntervalStopCar(objGPRSStopInterval, function(data) {})
+            SetGPRSIntervalStopCar(objGPRSStopInterval, function (data) { })
 
             var objACC = new Object();
             objACC.DeviceId = objDevice[i];
             objACC.TimeInterval = req.query.ACC;
-            SetACCSetting(objACC, function(data) { uploader(i + 1); })
+            SetACCSetting(objACC, function (data) { uploader(i + 1); })
 
         } else {
             res.json({ success: true, message: 'Default value send to device successfully.' });
@@ -1793,18 +1879,18 @@ router.get('/SendCommandToDevice', function(req, res) {
 })
 
 //Set GPRS Interval Settings
-router.get('/SetGPRSInterval', function(req, res) {
+router.get('/SetGPRSInterval', function (req, res) {
     req.setTimeout(3600000);
     var obj = new Object();
     obj.DeviceId = req.query.DeviceId;
     obj.TimeInterval = req.query.TimeInterval;
-    SetGPRSInterval(obj, function(data) {
+    SetGPRSInterval(obj, function (data) {
         res.json(data);
     })
 })
 
 //Set GPRS Interval Settings
-global.SetGPRSInterval = function(objdata, Callback) {
+global.SetGPRSInterval = function (objdata, Callback) {
     var DeviceId = objdata.DeviceId;
     var TimeInterval = ('0000' + decimalToHexString(parseInt(objdata.TimeInterval) / 10)).slice(-4);
     var Data = "40400013" + DeviceId + "4102" + TimeInterval;
@@ -1813,19 +1899,19 @@ global.SetGPRSInterval = function(objdata, Callback) {
     var Sendflag = false;
     var ClintSocketPort = SocketPort;
     var ClintSocketIPAddress = SocketIPAddress;
-    client.get(DeviceId + "SocketConnection", function(err, resSocket) {
+    client.get(DeviceId + "SocketConnection", function (err, resSocket) {
         if (!err) {
             if (resSocket != null && resSocket != undefined && resSocket != '') {
                 try {
                     var objsocketconnection = JSON.parse(resSocket);
                     ClintSocketIPAddress = objsocketconnection.IP;
                     ClintSocketPort = objsocketconnection.Port;
-                } catch (ex) {}
+                } catch (ex) { }
             }
         }
-        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function() {
+        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function () {
             socketclient.write(Data, 'hex');
-            socketclient.setTimeout(10000, function() {
+            socketclient.setTimeout(10000, function () {
                 if (Sendflag == false) {
                     Sendflag = true;
                     socketclient.destroy();
@@ -1833,7 +1919,7 @@ global.SetGPRSInterval = function(objdata, Callback) {
                 };
             });
         });
-        socketclient.on('data', function(data) {
+        socketclient.on('data', function (data) {
             var line = data.toString();
             if (Sendflag == false) {
                 if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4102') {
@@ -1842,7 +1928,7 @@ global.SetGPRSInterval = function(objdata, Callback) {
                     Sendflag = true;
                     socketclient.destroy(); // kill socketclient after server's response
                     if (StatusCode == '01') {
-                        connection.query("Update tblvehicle set GPRSInterval=" + objdata.TimeInterval + " where deviceid='" + DeviceId + "'", function(err, rows, fields) {
+                        connection.query("Update tblvehicle set GPRSInterval=" + objdata.TimeInterval + " where deviceid='" + DeviceId + "'", function (err, rows, fields) {
                             funAuditLog.CreateAuditLog('GPRS Interval Settings', null, 'Change vehicle (DeviceId:' + DeviceId + ') GPRS Interval Settings at (time:' + convertdateformat(new Date()) + ').');
                             Callback({ success: true, message: 'GPRS Interval Settings Save Successfully.' });
                         });
@@ -1856,14 +1942,14 @@ global.SetGPRSInterval = function(objdata, Callback) {
                 }
             };
         });
-        socketclient.on('close', function() {
+        socketclient.on('close', function () {
             console.log('Connection closed');
         });
     });
 }
 
 //Factory Restet
-router.get('/FectoryReset', function(req, res) {
+router.get('/FectoryReset', function (req, res) {
     req.setTimeout(3600000);
     var DeviceId = req.query.DeviceId;
     var Data = "40400011" + DeviceId + "4110";
@@ -1872,19 +1958,19 @@ router.get('/FectoryReset', function(req, res) {
     var Sendflag = false;
     var ClintSocketPort = SocketPort;
     var ClintSocketIPAddress = SocketIPAddress;
-    client.get(DeviceId + "SocketConnection", function(err, resSocket) {
+    client.get(DeviceId + "SocketConnection", function (err, resSocket) {
         if (!err) {
             if (resSocket != null && resSocket != undefined && resSocket != '') {
                 try {
                     var objsocketconnection = JSON.parse(resSocket);
                     ClintSocketIPAddress = objsocketconnection.IP;
                     ClintSocketPort = objsocketconnection.Port;
-                } catch (ex) {}
+                } catch (ex) { }
             }
         }
-        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function() {
+        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function () {
             socketclient.write(Data, 'hex');
-            socketclient.setTimeout(10000, function() {
+            socketclient.setTimeout(10000, function () {
                 if (Sendflag == false) {
                     Sendflag = true;
                     socketclient.destroy();
@@ -1892,7 +1978,7 @@ router.get('/FectoryReset', function(req, res) {
                 };
             });
         });
-        socketclient.on('data', function(data) {
+        socketclient.on('data', function (data) {
             var line = data.toString();
             if (Sendflag == false) {
                 if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4110') {
@@ -1912,14 +1998,14 @@ router.get('/FectoryReset', function(req, res) {
                 }
             };
         });
-        socketclient.on('close', function() {
+        socketclient.on('close', function () {
             console.log('Connection closed');
         });
     });
 })
 
 //Reboot Device
-router.get('/RebootDevice', function(req, res) {
+router.get('/RebootDevice', function (req, res) {
     req.setTimeout(3600000);
     var DeviceId = req.query.DeviceId;
     var Data = "40400011" + DeviceId + "4902";
@@ -1928,19 +2014,19 @@ router.get('/RebootDevice', function(req, res) {
     var Sendflag = false;
     var ClintSocketPort = SocketPort;
     var ClintSocketIPAddress = SocketIPAddress;
-    client.get(DeviceId + "SocketConnection", function(err, resSocket) {
+    client.get(DeviceId + "SocketConnection", function (err, resSocket) {
         if (!err) {
             if (resSocket != null && resSocket != undefined && resSocket != '') {
                 try {
                     var objsocketconnection = JSON.parse(resSocket);
                     ClintSocketIPAddress = objsocketconnection.IP;
                     ClintSocketPort = objsocketconnection.Port;
-                } catch (ex) {}
+                } catch (ex) { }
             }
         }
-        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function() {
+        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function () {
             socketclient.write(Data, 'hex');
-            socketclient.setTimeout(10000, function() {
+            socketclient.setTimeout(10000, function () {
                 if (Sendflag == false) {
                     Sendflag = true;
                     socketclient.destroy();
@@ -1948,7 +2034,7 @@ router.get('/RebootDevice', function(req, res) {
                 };
             });
         });
-        socketclient.on('data', function(data) {
+        socketclient.on('data', function (data) {
             var line = data.toString();
             if (Sendflag == false) {
                 if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4902') {
@@ -1968,25 +2054,25 @@ router.get('/RebootDevice', function(req, res) {
                 }
             };
         });
-        socketclient.on('close', function() {
+        socketclient.on('close', function () {
             console.log('Connection closed');
         });
     });
 })
 
 //Set Sleep Mode Settings
-router.get('/SetSleepMode', function(req, res) {
+router.get('/SetSleepMode', function (req, res) {
     req.setTimeout(3600000);
     var obj = new Object();
     obj.DeviceId = req.query.DeviceId;
     obj.SleepMode = req.query.SleepMode;
-    SetSleepMode(obj, function(data) {
+    SetSleepMode(obj, function (data) {
         res.json(data);
     })
 })
 
 //Set Sleep Mode
-global.SetSleepMode = function(objdata, Callback) {
+global.SetSleepMode = function (objdata, Callback) {
     var DeviceId = objdata.DeviceId;
     var SleepMode = ('00' + decimalToHexString(parseInt(objdata.SleepMode))).slice(-2);
     var Data = "40400012" + DeviceId + "4113" + SleepMode;
@@ -1995,19 +2081,19 @@ global.SetSleepMode = function(objdata, Callback) {
     var Sendflag = false;
     var ClintSocketPort = SocketPort;
     var ClintSocketIPAddress = SocketIPAddress;
-    client.get(DeviceId + "SocketConnection", function(err, resSocket) {
+    client.get(DeviceId + "SocketConnection", function (err, resSocket) {
         if (!err) {
             if (resSocket != null && resSocket != undefined && resSocket != '') {
                 try {
                     var objsocketconnection = JSON.parse(resSocket);
                     ClintSocketIPAddress = objsocketconnection.IP;
                     ClintSocketPort = objsocketconnection.Port;
-                } catch (ex) {}
+                } catch (ex) { }
             }
         }
-        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function() {
+        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function () {
             socketclient.write(Data, 'hex');
-            socketclient.setTimeout(10000, function() {
+            socketclient.setTimeout(10000, function () {
                 if (Sendflag == false) {
                     Sendflag = true;
                     socketclient.destroy();
@@ -2015,7 +2101,7 @@ global.SetSleepMode = function(objdata, Callback) {
                 };
             });
         });
-        socketclient.on('data', function(data) {
+        socketclient.on('data', function (data) {
             var line = data.toString();
             if (Sendflag == false) {
                 if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4113') {
@@ -2024,7 +2110,7 @@ global.SetSleepMode = function(objdata, Callback) {
                     Sendflag = true;
                     socketclient.destroy(); // kill socketclient after server's response
                     if (StatusCode == '01') {
-                        connection.query("Update tblvehicle set SleepMode=" + objdata.SleepMode + " where deviceid='" + DeviceId + "'", function(err, rows, fields) {
+                        connection.query("Update tblvehicle set SleepMode=" + objdata.SleepMode + " where deviceid='" + DeviceId + "'", function (err, rows, fields) {
                             funAuditLog.CreateAuditLog('Sleep Mode Setting', null, 'Change vehicle (DeviceId:' + DeviceId + ') Sleep Mode Setting at (time:' + convertdateformat(new Date()) + ').');
                             Callback({ success: true, message: 'Sleep Mode Save Successfully.' });
                         });
@@ -2038,14 +2124,14 @@ global.SetSleepMode = function(objdata, Callback) {
                 }
             };
         });
-        socketclient.on('close', function() {
+        socketclient.on('close', function () {
             console.log('Connection closed');
         });
     });
 }
 
 //Set Output Control Settings
-router.get('/SetOutputControl', function(req, res) {
+router.get('/SetOutputControl', function (req, res) {
     req.setTimeout(3600000);
     var updateQuery = "";
     var DeviceId = req.query.DeviceId;
@@ -2106,19 +2192,19 @@ router.get('/SetOutputControl', function(req, res) {
     var Sendflag = false;
     var ClintSocketPort = SocketPort;
     var ClintSocketIPAddress = SocketIPAddress;
-    client.get(DeviceId + "SocketConnection", function(err, resSocket) {
+    client.get(DeviceId + "SocketConnection", function (err, resSocket) {
         if (!err) {
             if (resSocket != null && resSocket != undefined && resSocket != '') {
                 try {
                     var objsocketconnection = JSON.parse(resSocket);
                     ClintSocketIPAddress = objsocketconnection.IP;
                     ClintSocketPort = objsocketconnection.Port;
-                } catch (ex) {}
+                } catch (ex) { }
             }
         }
-        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function() {
+        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function () {
             socketclient.write(Data, 'hex');
-            socketclient.setTimeout(10000, function() {
+            socketclient.setTimeout(10000, function () {
                 if (Sendflag == false) {
                     Sendflag = true;
                     socketclient.destroy();
@@ -2126,7 +2212,7 @@ router.get('/SetOutputControl', function(req, res) {
                 };
             });
         });
-        socketclient.on('data', function(data) {
+        socketclient.on('data', function (data) {
             var line = data.toString();
             if (Sendflag == false) {
                 if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4114') {
@@ -2135,9 +2221,9 @@ router.get('/SetOutputControl', function(req, res) {
                     Sendflag = true;
                     socketclient.destroy(); // kill socketclient after server's response
                     if (StatusCode == '01') {
-                        connection.query("Update tblvehicle set " + updateQuery + " where deviceid='" + DeviceId + "'", function(err, rows, fields) {
+                        connection.query("Update tblvehicle set " + updateQuery + " where deviceid='" + DeviceId + "'", function (err, rows, fields) {
                             if (updateQuery.indexOf("Relay=") >= 0) {
-                                client.set(DeviceId + "Relay", parseInt(ARelay), function(err, replies) {});
+                                client.set(DeviceId + "Relay", parseInt(ARelay), function (err, replies) { });
                             }
                             res.json({ success: true, message: 'Setting Save Successfully.' });
                         });
@@ -2151,28 +2237,28 @@ router.get('/SetOutputControl', function(req, res) {
                 }
             };
         });
-        socketclient.on('close', function() {
+        socketclient.on('close', function () {
             console.log('Connection closed');
         });
     });
 })
 
 //Set Arm Settings
-router.get('/SetArmSettings', function(req, res) {
+router.get('/SetArmSettings', function (req, res) {
     req.setTimeout(3600000);
     var DeviceId = req.query.DeviceId;
     if (req.query.Arm == '2' || req.query.Arm == 2) {
         var obj = new Object();
         obj.DeviceId = DeviceId;
         obj.Arm = req.query.Arm;
-        connection.query("Update tblvehicle set Arm=" + obj.Arm + " where deviceid='" + DeviceId + "'", function(err, rows, fields) {
+        connection.query("Update tblvehicle set Arm=" + obj.Arm + " where deviceid='" + DeviceId + "'", function (err, rows, fields) {
             //UpdateArm Mode in Redis
             CommonFunction.UpdateVehicleRedis(DeviceId, 'Vehicle');
             var Startdate = new Date();
             var convertDate = convertdateformatForUnix(Startdate);
             var unixStartdate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
             //----------------call redix server data--------------------------
-            client.get(DeviceId, function(err, response) {
+            client.get(DeviceId, function (err, response) {
                 if (!err && response != null && response != '' && response != undefined) {
                     response = JSON.parse(response);
                     if (response.IsEngine == 1) {
@@ -2180,7 +2266,7 @@ router.get('/SetArmSettings', function(req, res) {
                     } else {
                         obj.ArmStatus = 1;
                     }
-                    SetArmSettings(obj, function(data) {});
+                    SetArmSettings(obj, function (data) { });
                     funAuditLog.CreateAuditLog('Arm Setting', null, 'Change vehicle (DeviceId:' + DeviceId + ') Arm Setting at (time:' + convertdateformat(new Date()) + ').');
                     res.json({ success: true, message: 'Arm Settings Save Successfully.' });
                 } else {
@@ -2193,14 +2279,14 @@ router.get('/SetArmSettings', function(req, res) {
         obj.DeviceId = DeviceId;
         obj.Arm = req.query.Arm;
         obj.ArmStatus = req.query.Arm;
-        SetArmSettings(obj, function(data) {
+        SetArmSettings(obj, function (data) {
             res.json(data);
         })
     }
 })
 
 //Set Arm Settings
-global.SetArmSettings = function(objdata, Callback) {
+global.SetArmSettings = function (objdata, Callback) {
     var Arm = ('00' + decimalToHexString(parseInt(objdata.ArmStatus))).slice(-2);
     var DeviceId = objdata.DeviceId;
     var Data = "40400012" + DeviceId + "4116" + Arm;
@@ -2209,19 +2295,19 @@ global.SetArmSettings = function(objdata, Callback) {
     var Sendflag = false;
     var ClintSocketPort = SocketPort;
     var ClintSocketIPAddress = SocketIPAddress;
-    client.get(DeviceId + "SocketConnection", function(err, resSocket) {
+    client.get(DeviceId + "SocketConnection", function (err, resSocket) {
         if (!err) {
             if (resSocket != null && resSocket != undefined && resSocket != '') {
                 try {
                     var objsocketconnection = JSON.parse(resSocket);
                     ClintSocketIPAddress = objsocketconnection.IP;
                     ClintSocketPort = objsocketconnection.Port;
-                } catch (ex) {}
+                } catch (ex) { }
             }
         }
-        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function() {
+        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function () {
             socketclient.write(Data, 'hex');
-            socketclient.setTimeout(10000, function() {
+            socketclient.setTimeout(10000, function () {
                 if (Sendflag == false) {
                     Sendflag = true;
                     socketclient.destroy();
@@ -2229,7 +2315,7 @@ global.SetArmSettings = function(objdata, Callback) {
                 };
             });
         });
-        socketclient.on('data', function(data) {
+        socketclient.on('data', function (data) {
             var line = data.toString();
             if (Sendflag == false) {
                 if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4116') {
@@ -2238,7 +2324,7 @@ global.SetArmSettings = function(objdata, Callback) {
                     Sendflag = true;
                     socketclient.destroy(); // kill client after server's response
                     if (StatusCode == '01') {
-                        connection.query("Update tblvehicle set Arm=" + objdata.Arm + ", LastArmSetting=" + objdata.ArmStatus + " where deviceid='" + DeviceId + "'", function(err, rows, fields) {
+                        connection.query("Update tblvehicle set Arm=" + objdata.Arm + ", LastArmSetting=" + objdata.ArmStatus + " where deviceid='" + DeviceId + "'", function (err, rows, fields) {
                             //Update Arm Setting in Redis
                             CommonFunction.UpdateVehicleRedis(DeviceId, 'Vehicle');
                             funAuditLog.CreateAuditLog('Arm Setting', null, 'Change vehicle (DeviceId:' + DeviceId + ') Arm Setting at (time:' + convertdateformat(new Date()) + ').');
@@ -2254,25 +2340,25 @@ global.SetArmSettings = function(objdata, Callback) {
                 }
             };
         });
-        socketclient.on('close', function() {
+        socketclient.on('close', function () {
             console.log('Connection closed');
         });
     });
 }
 
 //Set GPRS Interval Settings When Car in Stop
-router.get('/SetGPRSIntervalStopCar', function(req, res) {
+router.get('/SetGPRSIntervalStopCar', function (req, res) {
     req.setTimeout(3600000);
     var obj = new Object();
     obj.DeviceId = req.query.DeviceId;
     obj.TimeInterval = req.query.TimeInterval;
-    SetGPRSIntervalStopCar(obj, function(data) {
+    SetGPRSIntervalStopCar(obj, function (data) {
         res.json(data);
     })
 })
 
 //Set GPRS Interval Settings When Car in Stop
-global.SetGPRSIntervalStopCar = function(objdata, Callback) {
+global.SetGPRSIntervalStopCar = function (objdata, Callback) {
     var DeviceId = objdata.DeviceId;
     var TimeInterval = ('0000' + decimalToHexString(parseInt(objdata.TimeInterval) / 10)).slice(-4);
     var Data = "40400013" + DeviceId + "4126" + TimeInterval;
@@ -2281,19 +2367,19 @@ global.SetGPRSIntervalStopCar = function(objdata, Callback) {
     var Sendflag = false;
     var ClintSocketPort = SocketPort;
     var ClintSocketIPAddress = SocketIPAddress;
-    client.get(DeviceId + "SocketConnection", function(err, resSocket) {
+    client.get(DeviceId + "SocketConnection", function (err, resSocket) {
         if (!err) {
             if (resSocket != null && resSocket != undefined && resSocket != '') {
                 try {
                     var objsocketconnection = JSON.parse(resSocket);
                     ClintSocketIPAddress = objsocketconnection.IP;
                     ClintSocketPort = objsocketconnection.Port;
-                } catch (ex) {}
+                } catch (ex) { }
             }
         }
-        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function() {
+        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function () {
             socketclient.write(Data, 'hex');
-            socketclient.setTimeout(10000, function() {
+            socketclient.setTimeout(10000, function () {
                 if (Sendflag == false) {
                     Sendflag = true;
                     socketclient.destroy();
@@ -2301,7 +2387,7 @@ global.SetGPRSIntervalStopCar = function(objdata, Callback) {
                 };
             });
         });
-        socketclient.on('data', function(data) {
+        socketclient.on('data', function (data) {
             var line = data.toString();
             if (Sendflag == false) {
                 if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4126') {
@@ -2310,7 +2396,7 @@ global.SetGPRSIntervalStopCar = function(objdata, Callback) {
                     Sendflag = true;
                     socketclient.destroy(); // kill socketclient after server's response
                     if (StatusCode == '01') {
-                        connection.query("Update tblvehicle set GPRSStopInterval=" + objdata.TimeInterval + " where deviceid='" + DeviceId + "'", function(err, rows, fields) {
+                        connection.query("Update tblvehicle set GPRSStopInterval=" + objdata.TimeInterval + " where deviceid='" + DeviceId + "'", function (err, rows, fields) {
                             funAuditLog.CreateAuditLog('GPRS Interval Setting', null, 'Change vehicle (DeviceId:' + DeviceId + ') GPRS Interval Setting at (time:' + convertdateformat(new Date()) + ').');
                             Callback({ success: true, message: 'GPRS Interval Settings for Stop Car Save Successfully.' });
                         });
@@ -2324,14 +2410,14 @@ global.SetGPRSIntervalStopCar = function(objdata, Callback) {
                 }
             };
         });
-        socketclient.on('close', function() {
+        socketclient.on('close', function () {
             console.log('Connection closed');
         });
     });
 }
 
 //Set TimeZone Settings
-router.get('/SetTimeZone', function(req, res) {
+router.get('/SetTimeZone', function (req, res) {
     req.setTimeout(3600000);
     var DeviceId = req.query.DeviceId;
     var TimeInterval = a2hex(req.query.TimeZone);
@@ -2346,19 +2432,19 @@ router.get('/SetTimeZone', function(req, res) {
     var Sendflag = false;
     var ClintSocketPort = SocketPort;
     var ClintSocketIPAddress = SocketIPAddress;
-    client.get(DeviceId + "SocketConnection", function(err, resSocket) {
+    client.get(DeviceId + "SocketConnection", function (err, resSocket) {
         if (!err) {
             if (resSocket != null && resSocket != undefined && resSocket != '') {
                 try {
                     var objsocketconnection = JSON.parse(resSocket);
                     ClintSocketIPAddress = objsocketconnection.IP;
                     ClintSocketPort = objsocketconnection.Port;
-                } catch (ex) {}
+                } catch (ex) { }
             }
         }
-        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function() {
+        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function () {
             socketclient.write(Data, 'hex');
-            socketclient.setTimeout(10000, function() {
+            socketclient.setTimeout(10000, function () {
                 if (Sendflag == false) {
                     Sendflag = true;
                     socketclient.destroy();
@@ -2366,7 +2452,7 @@ router.get('/SetTimeZone', function(req, res) {
                 };
             });
         });
-        socketclient.on('data', function(data) {
+        socketclient.on('data', function (data) {
             var line = data.toString();
             if (Sendflag == false) {
                 if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4132') {
@@ -2375,7 +2461,7 @@ router.get('/SetTimeZone', function(req, res) {
                     Sendflag = true;
                     socketclient.destroy(); // kill socketclient after server's response
                     if (StatusCode == '01') {
-                        connection.query("Update tblvehicle set TimeZone=" + req.query.TimeZone + " where deviceid='" + DeviceId + "'", function(err, rows, fields) {
+                        connection.query("Update tblvehicle set TimeZone=" + req.query.TimeZone + " where deviceid='" + DeviceId + "'", function (err, rows, fields) {
                             res.json({ success: true, message: 'TimeZone Save Successfully.' });
                         });
                     } else {
@@ -2388,25 +2474,25 @@ router.get('/SetTimeZone', function(req, res) {
                 }
             };
         });
-        socketclient.on('close', function() {
+        socketclient.on('close', function () {
             console.log('Connection closed');
         });
     });
 })
 
 //Set Initial ODOmeter Settings
-router.get('/SetOdometerSetting', function(req, res) {
+router.get('/SetOdometerSetting', function (req, res) {
     req.setTimeout(3600000);
     var obj = new Object();
     obj.DeviceId = req.query.DeviceId;
     obj.odometer = req.query.odometer;
-    SetOdometerSetting(obj, function(data) {
+    SetOdometerSetting(obj, function (data) {
         res.json(data);
     })
 })
 
 //Set Initial ODOmeter Settings
-global.SetOdometerSetting = function(objdata, Callback) {
+global.SetOdometerSetting = function (objdata, Callback) {
     var DeviceId = objdata.DeviceId;
     var odometer = a2hex(objdata.odometer);
     var datalength = 8;
@@ -2417,19 +2503,19 @@ global.SetOdometerSetting = function(objdata, Callback) {
     var Sendflag = false;
     var ClintSocketPort = SocketPort;
     var ClintSocketIPAddress = SocketIPAddress;
-    client.get(DeviceId + "SocketConnection", function(err, resSocket) {
+    client.get(DeviceId + "SocketConnection", function (err, resSocket) {
         if (!err) {
             if (resSocket != null && resSocket != undefined && resSocket != '') {
                 try {
                     var objsocketconnection = JSON.parse(resSocket);
                     ClintSocketIPAddress = objsocketconnection.IP;
                     ClintSocketPort = objsocketconnection.Port;
-                } catch (ex) {}
+                } catch (ex) { }
             }
         }
-        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function() {
+        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function () {
             socketclient.write(Data, 'hex');
-            socketclient.setTimeout(10000, function() {
+            socketclient.setTimeout(10000, function () {
                 if (Sendflag == false) {
                     Sendflag = true;
                     socketclient.destroy();
@@ -2437,7 +2523,7 @@ global.SetOdometerSetting = function(objdata, Callback) {
                 };
             });
         });
-        socketclient.on('data', function(data) {
+        socketclient.on('data', function (data) {
             var line = data.toString();
             if (Sendflag == false) {
                 if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4145') {
@@ -2446,7 +2532,7 @@ global.SetOdometerSetting = function(objdata, Callback) {
                     Sendflag = true;
                     socketclient.destroy(); // kill socketclient after server's response
                     if (StatusCode == '01') {
-                        connection.query("Update tblvehicle set OdoMeter=" + objdata.odometer + " where deviceid='" + DeviceId + "'", function(err, rows, fields) {
+                        connection.query("Update tblvehicle set OdoMeter=" + objdata.odometer + " where deviceid='" + DeviceId + "'", function (err, rows, fields) {
                             funAuditLog.CreateAuditLog('Odometer Setting', null, 'Change vehicle (DeviceId:' + DeviceId + ') Odometer Setting at (time:' + convertdateformat(new Date()) + ').');
                             Callback({ success: true, message: 'Odometer settings Save Successfully.' });
                         });
@@ -2460,25 +2546,25 @@ global.SetOdometerSetting = function(objdata, Callback) {
                 }
             };
         });
-        socketclient.on('close', function() {
+        socketclient.on('close', function () {
             console.log('Connection closed');
         });
     });
 }
 
 //Set Initial ACC Settings
-router.get('/SetACCSetting', function(req, res) {
+router.get('/SetACCSetting', function (req, res) {
     req.setTimeout(3600000);
     var obj = new Object();
     obj.DeviceId = req.query.DeviceId;
     obj.ACC = req.query.ACC;
-    SetACCSetting(obj, function(data) {
+    SetACCSetting(obj, function (data) {
         res.json(data);
     })
 })
 
 //Set Initial ACC Settings
-global.SetACCSetting = function(objdata, Callback) {
+global.SetACCSetting = function (objdata, Callback) {
     var DeviceId = objdata.DeviceId;
     var ACC = a2hex(objdata.ACC.toString());
     var commandlength = ('0000' + (17 + (ACC.length / 2)).toString()).slice(-4);
@@ -2488,19 +2574,19 @@ global.SetACCSetting = function(objdata, Callback) {
     var Sendflag = false;
     var ClintSocketPort = SocketPort;
     var ClintSocketIPAddress = SocketIPAddress;
-    client.get(DeviceId + "SocketConnection", function(err, resSocket) {
+    client.get(DeviceId + "SocketConnection", function (err, resSocket) {
         if (!err) {
             if (resSocket != null && resSocket != undefined && resSocket != '') {
                 try {
                     var objsocketconnection = JSON.parse(resSocket);
                     ClintSocketIPAddress = objsocketconnection.IP;
                     ClintSocketPort = objsocketconnection.Port;
-                } catch (ex) {}
+                } catch (ex) { }
             }
         }
-        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function() {
+        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function () {
             socketclient.write(Data, 'hex');
-            socketclient.setTimeout(10000, function() {
+            socketclient.setTimeout(10000, function () {
                 if (Sendflag == false) {
                     Sendflag = true;
                     socketclient.destroy();
@@ -2508,7 +2594,7 @@ global.SetACCSetting = function(objdata, Callback) {
                 };
             });
         });
-        socketclient.on('data', function(data) {
+        socketclient.on('data', function (data) {
             var line = data.toString();
             if (Sendflag == false) {
                 if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4148') {
@@ -2517,7 +2603,7 @@ global.SetACCSetting = function(objdata, Callback) {
                     Sendflag = true;
                     socketclient.destroy(); // kill socketclient after server's response
                     if (StatusCode == '01') {
-                        connection.query("Update tblvehicle set ACC=" + objdata.ACC + " where deviceid='" + DeviceId + "'", function(err, rows, fields) {
+                        connection.query("Update tblvehicle set ACC=" + objdata.ACC + " where deviceid='" + DeviceId + "'", function (err, rows, fields) {
                             funAuditLog.CreateAuditLog('ACC Setting', null, 'Change vehicle (DeviceId:' + DeviceId + ') ACC Setting at (time:' + convertdateformat(new Date()) + ').');
                             Callback({ success: true, message: 'ACC settings Save Successfully.' });
                         });
@@ -2531,25 +2617,25 @@ global.SetACCSetting = function(objdata, Callback) {
                 }
             };
         });
-        socketclient.on('close', function() {
+        socketclient.on('close', function () {
             console.log('Connection closed');
         });
     });
 }
 
 //Set HeartBeat Interval Settings
-router.get('/SetHeartBeatInterval', function(req, res) {
+router.get('/SetHeartBeatInterval', function (req, res) {
     req.setTimeout(3600000);
     var obj = new Object();
     obj.DeviceId = req.query.DeviceId;
     obj.TimeInterval = req.query.TimeInterval;
-    SetHeartBeatInterval(obj, function(data) {
+    SetHeartBeatInterval(obj, function (data) {
         res.json(data);
     })
 })
 
 //Set HeartBeat Interval Settings
-global.SetHeartBeatInterval = function(objdata, Callback) {
+global.SetHeartBeatInterval = function (objdata, Callback) {
     var packetLength = 17;
     var DeviceId = objdata.DeviceId;
     var TimeInterval = a2hex(objdata.TimeInterval);
@@ -2560,19 +2646,19 @@ global.SetHeartBeatInterval = function(objdata, Callback) {
     var Sendflag = false;
     var ClintSocketPort = SocketPort;
     var ClintSocketIPAddress = SocketIPAddress;
-    client.get(DeviceId + "SocketConnection", function(err, resSocket) {
+    client.get(DeviceId + "SocketConnection", function (err, resSocket) {
         if (!err) {
             if (resSocket != null && resSocket != undefined && resSocket != '') {
                 try {
                     var objsocketconnection = JSON.parse(resSocket);
                     ClintSocketIPAddress = objsocketconnection.IP;
                     ClintSocketPort = objsocketconnection.Port;
-                } catch (ex) {}
+                } catch (ex) { }
             }
         }
-        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function() {
+        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function () {
             socketclient.write(Data, 'hex');
-            socketclient.setTimeout(10000, function() {
+            socketclient.setTimeout(10000, function () {
                 if (Sendflag == false) {
                     Sendflag = true;
                     socketclient.destroy();
@@ -2580,7 +2666,7 @@ global.SetHeartBeatInterval = function(objdata, Callback) {
                 };
             });
         });
-        socketclient.on('data', function(data) {
+        socketclient.on('data', function (data) {
             var line = data.toString();
             if (Sendflag == false) {
                 if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '5119') {
@@ -2589,7 +2675,7 @@ global.SetHeartBeatInterval = function(objdata, Callback) {
                     Sendflag = true;
                     socketclient.destroy(); // kill socketclient after server's response
                     if (StatusCode == '01') {
-                        connection.query("Update tblvehicle set HeartbeatInterval=" + objdata.TimeInterval + " where deviceid='" + DeviceId + "'", function(err, rows, fields) {
+                        connection.query("Update tblvehicle set HeartbeatInterval=" + objdata.TimeInterval + " where deviceid='" + DeviceId + "'", function (err, rows, fields) {
                             funAuditLog.CreateAuditLog('HeartBeat Interval Setting', null, 'Change vehicle (DeviceId:' + DeviceId + ') HeartBeat Interval Setting at (time:' + convertdateformat(new Date()) + ').');
                             Callback({ success: true, message: 'HeartBeat Interval Settings Save Successfully.' });
                         });
@@ -2603,14 +2689,14 @@ global.SetHeartBeatInterval = function(objdata, Callback) {
                 }
             };
         });
-        socketclient.on('close', function() {
+        socketclient.on('close', function () {
             console.log('Connection closed');
         });
     });
 }
 
 //Clear data Logger
-router.get('/ClearDataLogger', function(req, res) {
+router.get('/ClearDataLogger', function (req, res) {
     req.setTimeout(3600000);
     var DeviceId = req.query.DeviceId;
     var Data = "40400011" + DeviceId + "5503";
@@ -2619,19 +2705,19 @@ router.get('/ClearDataLogger', function(req, res) {
     var Sendflag = false;
     var ClintSocketPort = SocketPort;
     var ClintSocketIPAddress = SocketIPAddress;
-    client.get(DeviceId + "SocketConnection", function(err, resSocket) {
+    client.get(DeviceId + "SocketConnection", function (err, resSocket) {
         if (!err) {
             if (resSocket != null && resSocket != undefined && resSocket != '') {
                 try {
                     var objsocketconnection = JSON.parse(resSocket);
                     ClintSocketIPAddress = objsocketconnection.IP;
                     ClintSocketPort = objsocketconnection.Port;
-                } catch (ex) {}
+                } catch (ex) { }
             }
         }
-        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function() {
+        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function () {
             socketclient.write(Data, 'hex');
-            socketclient.setTimeout(10000, function() {
+            socketclient.setTimeout(10000, function () {
                 if (Sendflag == false) {
                     Sendflag = true;
                     socketclient.destroy();
@@ -2639,7 +2725,7 @@ router.get('/ClearDataLogger', function(req, res) {
                 };
             });
         });
-        socketclient.on('data', function(data) {
+        socketclient.on('data', function (data) {
             var line = data.toString();
             if (Sendflag == false) {
                 if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '5503') {
@@ -2659,14 +2745,14 @@ router.get('/ClearDataLogger', function(req, res) {
                 }
             };
         });
-        socketclient.on('close', function() {
+        socketclient.on('close', function () {
             console.log('Connection closed');
         });
     });
 })
 
 //Clear data Logger
-router.get('/GetFirmWareVersion', function(req, res) {
+router.get('/GetFirmWareVersion', function (req, res) {
     req.setTimeout(3600000);
     var DeviceId = req.query.DeviceId;
     var Data = "40400011" + DeviceId + "9001";
@@ -2675,19 +2761,19 @@ router.get('/GetFirmWareVersion', function(req, res) {
     var Sendflag = false;
     var ClintSocketPort = SocketPort;
     var ClintSocketIPAddress = SocketIPAddress;
-    client.get(DeviceId + "SocketConnection", function(err, resSocket) {
+    client.get(DeviceId + "SocketConnection", function (err, resSocket) {
         if (!err) {
             if (resSocket != null && resSocket != undefined && resSocket != '') {
                 try {
                     var objsocketconnection = JSON.parse(resSocket);
                     ClintSocketIPAddress = objsocketconnection.IP;
                     ClintSocketPort = objsocketconnection.Port;
-                } catch (ex) {}
+                } catch (ex) { }
             }
         }
-        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function() {
+        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function () {
             socketclient.write(Data, 'hex');
-            socketclient.setTimeout(10000, function() {
+            socketclient.setTimeout(10000, function () {
                 if (Sendflag == false) {
                     Sendflag = true;
                     socketclient.destroy();
@@ -2695,7 +2781,7 @@ router.get('/GetFirmWareVersion', function(req, res) {
                 };
             });
         });
-        socketclient.on('data', function(data) {
+        socketclient.on('data', function (data) {
             var line = data.toString();
             if (Sendflag == false) {
                 if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '9001') {
@@ -2718,14 +2804,14 @@ router.get('/GetFirmWareVersion', function(req, res) {
                 }
             };
         });
-        socketclient.on('close', function() {
+        socketclient.on('close', function () {
             console.log('Connection closed');
         });
     });
 })
 
 //Read GPRS Time Interval
-router.get('/ReadGPRSTimeInterval', function(req, res) {
+router.get('/ReadGPRSTimeInterval', function (req, res) {
     req.setTimeout(3600000);
     var DeviceId = req.query.DeviceId;
     var Data = "40400011" + DeviceId + "9002";
@@ -2734,19 +2820,19 @@ router.get('/ReadGPRSTimeInterval', function(req, res) {
     var Sendflag = false;
     var ClintSocketPort = SocketPort;
     var ClintSocketIPAddress = SocketIPAddress;
-    client.get(DeviceId + "SocketConnection", function(err, resSocket) {
+    client.get(DeviceId + "SocketConnection", function (err, resSocket) {
         if (!err) {
             if (resSocket != null && resSocket != undefined && resSocket != '') {
                 try {
                     var objsocketconnection = JSON.parse(resSocket);
                     ClintSocketIPAddress = objsocketconnection.IP;
                     ClintSocketPort = objsocketconnection.Port;
-                } catch (ex) {}
+                } catch (ex) { }
             }
         }
-        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function() {
+        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function () {
             socketclient.write(Data, 'hex');
-            socketclient.setTimeout(10000, function() {
+            socketclient.setTimeout(10000, function () {
                 if (Sendflag == false) {
                     Sendflag = true;
                     socketclient.destroy();
@@ -2754,7 +2840,7 @@ router.get('/ReadGPRSTimeInterval', function(req, res) {
                 };
             });
         });
-        socketclient.on('data', function(data) {
+        socketclient.on('data', function (data) {
             var line = data.toString();
             if (Sendflag == false) {
                 if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '9002') {
@@ -2771,14 +2857,14 @@ router.get('/ReadGPRSTimeInterval', function(req, res) {
                 }
             };
         });
-        socketclient.on('close', function() {
+        socketclient.on('close', function () {
             console.log('Connection closed');
         });
     });
 })
 
 //Read Trouble Code
-router.get('/ReadTroubleCode', function(req, res) {
+router.get('/ReadTroubleCode', function (req, res) {
     req.setTimeout(3600000);
     var DeviceId = req.query.DeviceId;
     var Data = "40400011" + DeviceId + "9903";
@@ -2787,19 +2873,19 @@ router.get('/ReadTroubleCode', function(req, res) {
     var Sendflag = false;
     var ClintSocketPort = SocketPort;
     var ClintSocketIPAddress = SocketIPAddress;
-    client.get(DeviceId + "SocketConnection", function(err, resSocket) {
+    client.get(DeviceId + "SocketConnection", function (err, resSocket) {
         if (!err) {
             if (resSocket != null && resSocket != undefined && resSocket != '') {
                 try {
                     var objsocketconnection = JSON.parse(resSocket);
                     ClintSocketIPAddress = objsocketconnection.IP;
                     ClintSocketPort = objsocketconnection.Port;
-                } catch (ex) {}
+                } catch (ex) { }
             }
         }
-        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function() {
+        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function () {
             socketclient.write(Data, 'hex');
-            socketclient.setTimeout(10000, function() {
+            socketclient.setTimeout(10000, function () {
                 if (Sendflag == false) {
                     Sendflag = true;
                     socketclient.destroy();
@@ -2807,7 +2893,7 @@ router.get('/ReadTroubleCode', function(req, res) {
                 };
             });
         });
-        socketclient.on('data', function(data) {
+        socketclient.on('data', function (data) {
             var line = data.toString();
             if (Sendflag == false) {
                 if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '9903') {
@@ -2824,14 +2910,14 @@ router.get('/ReadTroubleCode', function(req, res) {
                 }
             };
         });
-        socketclient.on('close', function() {
+        socketclient.on('close', function () {
             console.log('Connection closed');
         });
     });
 })
 
 //Clear Trouble Code
-router.get('/ClearTroubleCode', function(req, res) {
+router.get('/ClearTroubleCode', function (req, res) {
     req.setTimeout(3600000);
     var DeviceId = req.query.DeviceId;
     var Data = "40400011" + DeviceId + "9904";
@@ -2840,19 +2926,19 @@ router.get('/ClearTroubleCode', function(req, res) {
     var Sendflag = false;
     var ClintSocketPort = SocketPort;
     var ClintSocketIPAddress = SocketIPAddress;
-    client.get(DeviceId + "SocketConnection", function(err, resSocket) {
+    client.get(DeviceId + "SocketConnection", function (err, resSocket) {
         if (!err) {
             if (resSocket != null && resSocket != undefined && resSocket != '') {
                 try {
                     var objsocketconnection = JSON.parse(resSocket);
                     ClintSocketIPAddress = objsocketconnection.IP;
                     ClintSocketPort = objsocketconnection.Port;
-                } catch (ex) {}
+                } catch (ex) { }
             }
         }
-        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function() {
+        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function () {
             socketclient.write(Data, 'hex');
-            socketclient.setTimeout(10000, function() {
+            socketclient.setTimeout(10000, function () {
                 if (Sendflag == false) {
                     Sendflag = true;
                     socketclient.destroy();
@@ -2860,7 +2946,7 @@ router.get('/ClearTroubleCode', function(req, res) {
                 };
             });
         });
-        socketclient.on('data', function(data) {
+        socketclient.on('data', function (data) {
             var line = data.toString();
             if (Sendflag == false) {
                 if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '9904') {
@@ -2880,14 +2966,14 @@ router.get('/ClearTroubleCode', function(req, res) {
                 }
             };
         });
-        socketclient.on('close', function() {
+        socketclient.on('close', function () {
             console.log('Connection closed');
         });
     });
 })
 
 //Read VIN Code
-router.get('/ReadVINCode', function(req, res) {
+router.get('/ReadVINCode', function (req, res) {
     req.setTimeout(3600000);
     var DeviceId = req.query.DeviceId;
     var Data = "40400011" + DeviceId + "9905";
@@ -2896,19 +2982,19 @@ router.get('/ReadVINCode', function(req, res) {
     var Sendflag = false;
     var ClintSocketPort = SocketPort;
     var ClintSocketIPAddress = SocketIPAddress;
-    client.get(DeviceId + "SocketConnection", function(err, resSocket) {
+    client.get(DeviceId + "SocketConnection", function (err, resSocket) {
         if (!err) {
             if (resSocket != null && resSocket != undefined && resSocket != '') {
                 try {
                     var objsocketconnection = JSON.parse(resSocket);
                     ClintSocketIPAddress = objsocketconnection.IP;
                     ClintSocketPort = objsocketconnection.Port;
-                } catch (ex) {}
+                } catch (ex) { }
             }
         }
-        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function() {
+        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function () {
             socketclient.write(Data, 'hex');
-            socketclient.setTimeout(10000, function() {
+            socketclient.setTimeout(10000, function () {
                 if (Sendflag == false) {
                     Sendflag = true;
                     socketclient.destroy();
@@ -2916,7 +3002,7 @@ router.get('/ReadVINCode', function(req, res) {
                 };
             });
         });
-        socketclient.on('data', function(data) {
+        socketclient.on('data', function (data) {
             var line = data.toString();
             if (Sendflag == false) {
                 if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '9905') {
@@ -2933,14 +3019,14 @@ router.get('/ReadVINCode', function(req, res) {
                 }
             };
         });
-        socketclient.on('close', function() {
+        socketclient.on('close', function () {
             console.log('Connection closed');
         });
     });
 })
 
 //Read RFID Tags
-router.get('/ReadRFIDTags', function(req, res) {
+router.get('/ReadRFIDTags', function (req, res) {
     req.setTimeout(3600000);
     var DeviceId = req.query.DeviceId;
     var Data = "40400011" + DeviceId + "4170";
@@ -2949,19 +3035,19 @@ router.get('/ReadRFIDTags', function(req, res) {
     var Sendflag = false;
     var ClintSocketPort = SocketPort;
     var ClintSocketIPAddress = SocketIPAddress;
-    client.get(DeviceId + "SocketConnection", function(err, resSocket) {
+    client.get(DeviceId + "SocketConnection", function (err, resSocket) {
         if (!err) {
             if (resSocket != null && resSocket != undefined && resSocket != '') {
                 try {
                     var objsocketconnection = JSON.parse(resSocket);
                     ClintSocketIPAddress = objsocketconnection.IP;
                     ClintSocketPort = objsocketconnection.Port;
-                } catch (ex) {}
+                } catch (ex) { }
             }
         }
-        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function() {
+        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function () {
             socketclient.write(Data, 'hex');
-            socketclient.setTimeout(10000, function() {
+            socketclient.setTimeout(10000, function () {
                 if (Sendflag == false) {
                     Sendflag = true;
                     socketclient.destroy();
@@ -2969,7 +3055,7 @@ router.get('/ReadRFIDTags', function(req, res) {
                 };
             });
         });
-        socketclient.on('data', function(data) {
+        socketclient.on('data', function (data) {
             var line = data.toString();
             if (Sendflag == false) {
                 if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4170') {
@@ -2986,14 +3072,14 @@ router.get('/ReadRFIDTags', function(req, res) {
                 }
             };
         });
-        socketclient.on('close', function() {
+        socketclient.on('close', function () {
             console.log('Connection closed');
         });
     });
 })
 
 //Minitor Voice
-router.get('/MonitorVoice', function(req, res) {
+router.get('/MonitorVoice', function (req, res) {
     req.setTimeout(3600000);
     var packetLength = 17;
     var DeviceId = req.query.DeviceId;
@@ -3006,19 +3092,19 @@ router.get('/MonitorVoice', function(req, res) {
     var Sendflag = false;
     var ClintSocketPort = SocketPort;
     var ClintSocketIPAddress = SocketIPAddress;
-    client.get(DeviceId + "SocketConnection", function(err, resSocket) {
+    client.get(DeviceId + "SocketConnection", function (err, resSocket) {
         if (!err) {
             if (resSocket != null && resSocket != undefined && resSocket != '') {
                 try {
                     var objsocketconnection = JSON.parse(resSocket);
                     ClintSocketIPAddress = objsocketconnection.IP;
                     ClintSocketPort = objsocketconnection.Port;
-                } catch (ex) {}
+                } catch (ex) { }
             }
         }
-        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function() {
+        socketclient.connect(ClintSocketPort, ClintSocketIPAddress, function () {
             socketclient.write(Data, 'hex');
-            socketclient.setTimeout(10000, function() {
+            socketclient.setTimeout(10000, function () {
                 if (Sendflag == false) {
                     Sendflag = true;
                     socketclient.destroy();
@@ -3026,7 +3112,7 @@ router.get('/MonitorVoice', function(req, res) {
                 };
             });
         });
-        socketclient.on('data', function(data) {
+        socketclient.on('data', function (data) {
             var line = data.toString();
             if (Sendflag == false) {
                 if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4130') {
@@ -3046,7 +3132,7 @@ router.get('/MonitorVoice', function(req, res) {
                 }
             };
         });
-        socketclient.on('close', function() {
+        socketclient.on('close', function () {
             console.log('Connection closed');
         });
     });
