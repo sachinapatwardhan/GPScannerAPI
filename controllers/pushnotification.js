@@ -397,7 +397,7 @@ router.post('/SendPushNotification', jsonParser, function (req, res) {
                                     data: objDataFCM
                                 };
                                 SendFCMPushOneByOne(message, function () {
-                                    SendAndroidNotification(a + 1);
+                                    SendNotification(i + 1);
                                 });
                             }
                             // console.log(response[i].Platform + "_______________________________________________________")

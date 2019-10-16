@@ -159,7 +159,7 @@
                                         objGpsDevice.idSalesAgent = objGpsDevice.UserId;
                                         objGpsDevice.AppName = resAppInfo.AppName;
                                         objGpsDevice.Type = 'MT05';
-                                        objGpsDevice.DeviceId = objGpsDevice.IMEI.trim().slice(1);
+                                        objGpsDevice.DeviceId = objGpsDevice.IMEI.toString().trim().slice(1);
                                         GPSDevice.findOrCreate({ where: { IMEI: objGpsDevice.IMEI }, defaults: objGpsDevice }).then(function (response) {
                                             if (response) {
                                                 funAuditLog.CreateAuditLog('Tracker Create', UserExist.username, 'tracker created by sales agent : (' + decoded.username + ') / IMEI: (' + objGpsDevice.IMEI + ')');
