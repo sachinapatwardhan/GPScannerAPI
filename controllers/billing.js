@@ -56,13 +56,20 @@ router.get('/GetAllRenewData', function (req, res) {
     if (req.query.idApp != null && req.query.idApp != undefined && req.query.idApp != '') {
         search += " and ta.Id=" + req.query.idApp + " ";
     }
-
+    if (objParam.idDistributor != null && objParam.idDistributor != '' && objParam.idDistributor != undefined) {
+        search += ' and dar.idDistributor = ' + objParam.idDistributor;
+    }
+    if (objParam.idCountry != null && objParam.idCountry != '' && objParam.idCountry != undefined) {
+        search += ' and tblgpsdevice.CountryId = ' + objParam.idCountry;
+    }
     var query = "SELECT tl.Id, tu.email,CONVERT_TZ(tu.LastLogin,'+00:00','" + CurrentOffset + "') as LastLoginDate ,tl.DeviceId,tv.iduser,tu.phone,tv.Name as VehicleName,ta.Id as idApp,ta.AppName,tl.LicenceRenewalType,tl.LicenceType,ta.LicenceRenewalType as appLicenceRenewalType,ta.LicenceType as appLicenceType, " +
         "CONVERT_TZ(tl.ExpiryDate,'+00:00','" + CurrentOffset + "') as ExpiryDate " +
         " from tbllicencemanager as tl " +
         " LEFT JOIN tblappinfo as ta ON ta.Id= tl.idApp" +
         " INNER JOIN (Select * from tblvehicle where IsDelete=0) tv on tv.deviceid =tl.DeviceId " +
         " INNER JOIN tbluserinformation as tu ON tv.iduser = tu.id " +
+        " LEFT JOIN tbldeviceagentretailer AS dar ON  dar.deviceId = tv.deviceid " +
+        " LEFT JOIN tblgpsdevice ON tblgpsdevice.DeviceId = tl.DeviceId " +
         " where tl.IsDeleted=0  " + search +
         " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
     var countquery = "SELECT count(*) as TotalRecord " +
@@ -70,8 +77,13 @@ router.get('/GetAllRenewData', function (req, res) {
         " LEFT JOIN tblappinfo as ta ON ta.Id= tl.idApp" +
         " INNER JOIN (Select * from tblvehicle where IsDelete=0)  tv on tv.deviceid =tl.DeviceId " +
         " INNER JOIN tbluserinformation as tu ON tv.iduser = tu.id " +
+        " LEFT JOIN tbldeviceagentretailer AS dar ON  dar.deviceId = tv.deviceid " +
+        " LEFT JOIN tblgpsdevice ON tblgpsdevice.DeviceId = tl.DeviceId " +
         " where tl.IsDeleted=0 " + search;
+
+    console.log(query)
     connection.query(query, function (err, response) {
+        console.log(err)
         if (response != undefined) {
             connection.query(countquery, function (err, lstCount, fields) {
                 var lstAllVehicle = [];
