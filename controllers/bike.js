@@ -463,10 +463,10 @@ router.get('/GetVehicleCurrentLocation', function (req, res) {
 });
 
 router.get('/GetVehicleCurrentLocationForSharedDevice', function (req, res) {
-    var Startdate = new Date();
+    // var Startdate = new Date();
 
-    var convertDate = convertdateformatForUnix(Startdate);
-    var unixStartdate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
+    // var convertDate = convertdateformatForUnix(Startdate);
+    // var unixStartdate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
     // var unixStartdate = Startdate.getTime() / 1000;
     try {
 
@@ -474,11 +474,45 @@ router.get('/GetVehicleCurrentLocationForSharedDevice', function (req, res) {
         url = url.split(',');
         var DeviceId = url[0];
         var ShareCode = url[1];
-        var query = "Select tv.Name, tv.IsOnline, tv.iduser, tv.IsShared, tgps.* FROM tblgpsdata as tgps LEFT JOIN tblvehicle as tv ON tgps.DeviceId = tv.deviceid where tgps.DeviceId = " + DeviceId + " AND tv.ShareCode ='" + ShareCode + "' AND tgps.Date <= '" + unixStartdate + "' ORDER BY Date DESC limit 1";
-        console.log("Select tv.Name, tv.IsOnline, tv.iduser, tv.IsShared, tgps.* FROM tblgpsdata as tgps LEFT JOIN tblvehicle as tv ON tgps.DeviceId = tv.deviceid where tgps.DeviceId = " + DeviceId + " AND tv.ShareCode ='" + ShareCode + "' AND tgps.Date <= '" + unixStartdate + "' ORDER BY Date DESC limit 1")
+        // var query = "Select tv.Name, tv.IsOnline, tv.iduser, tv.IsShared, tgps.* FROM tblgpsdata as tgps LEFT JOIN tblvehicle as tv ON tgps.DeviceId = tv.deviceid where tgps.DeviceId = " + DeviceId + " AND tv.ShareCode ='" + ShareCode + "' AND tgps.Date <= '" + unixStartdate + "' ORDER BY Date DESC limit 1";
+        //console.log("Select tv.Name, tv.IsOnline, tv.iduser, tv.IsShared, tgps.* FROM tblgpsdata as tgps LEFT JOIN tblvehicle as tv ON tgps.DeviceId = tv.deviceid where tgps.DeviceId = " + DeviceId + " AND tv.ShareCode ='" + ShareCode + "' AND tgps.Date <= '" + unixStartdate + "' ORDER BY Date DESC limit 1")
+        var query = "Select tv.Name, tv.IsOnline, tv.iduser, tv.IsShared From tblvehicle as tv where tv.deviceid = " + DeviceId + " AND tv.ShareCode ='" + ShareCode + "'"
         connectionbikedata.query(query, function (err, rows, fields) {
             if (!err) {
-                res.json({ success: true, data: rows[0] });
+                if (rows.length > 0) {
+                    var obj = new Object();
+                    obj.iduser = rows[0].iduser;
+                    obj.Name = rows[0].Name;
+                    obj.IsOnline = rows[0].IsOnline;
+                    obj.IsShared = rows[0].IsShared;
+                    obj.DeviceId = DeviceId;
+                    client.get(DeviceId, function (err, strgpsdata) {
+                        if (!err) {
+                            if (strgpsdata != null & strgpsdata != '' && strgpsdata != undefined) {
+                                var objgps = JSON.parse(strgpsdata);
+                                obj.IsEngine = objgps.IsEngine;
+                                obj.Latitude = objgps.Latitude;
+                                obj.Longitude = objgps.Longitude;
+                                obj.Datetime = objgps.Datetime;
+                                obj.Date = objgps.Date;
+                                obj.Speed = objgps.Speed;
+                                obj.Direction = objgps.Direction;
+                                obj.OdoMeter = objgps.OdoMeter;
+                                obj.AD1 = objgps.AD1;
+                                obj.AD2 = objgps.AD2;
+                                obj.IsWiringForAntiTamper = objgps.IsWiringForAntiTamper;
+                                res.json({ success: true, data: obj });
+                            } else {
+                                res.json({ success: false, data: [] });
+                            }
+                        } else {
+                            res.json({ success: false, data: [] });
+                        }
+                    });
+
+                } else {
+                    res.json({ success: false, data: [] });
+                }
             } else {
                 res.json({ success: false, data: [] });
             }

@@ -7,9 +7,13 @@ var User = models.tbluserinformation;
 var PWANotifications = models.tblpwa_notification_subscription;
 var Commonfunction = require('./common.js');
 var Vehicle = models.tblvehicle;
+
+var FCM = require('fcm-node');
+var serverKey = process.env.PushNotificationgcmid; //put your server key here
+var fcm = new FCM(serverKey);
 //End of Tables
 
-router.post('/Subscribe', jsonParser, function(req, res) {
+router.post('/Subscribe', jsonParser, function (req, res) {
     objPushNotification = req.body;
     console.log(objPushNotification)
     if (objPushNotification.AppVersion == undefined) {
@@ -20,7 +24,7 @@ router.post('/Subscribe', jsonParser, function(req, res) {
             udid: objPushNotification.udid,
             UserType: objPushNotification.UserType
         }
-    }).then(function(PushnotificationExist) {
+    }).then(function (PushnotificationExist) {
         if (PushnotificationExist != null) {
             if (objPushNotification.Country) {
 
@@ -30,19 +34,19 @@ router.post('/Subscribe', jsonParser, function(req, res) {
                     iduser: objPushNotification.iduser,
                     MessageCount: 0,
                     AppVersion: objPushNotification.AppVersion
-                }).then(function(resUpdate) {
+                }).then(function (resUpdate) {
 
                     if (objPushNotification.iduser != 0) {
                         updatePushNotificationRedisValue(objPushNotification.iduser);
-                        User.findOne({ where: { id: objPushNotification.iduser } }).then(function(userExits) {
+                        User.findOne({ where: { id: objPushNotification.iduser } }).then(function (userExits) {
                             if (userExits) {
                                 var LastLogin = new Date();
                                 if (objPushNotification.AppVersion != null && objPushNotification.AppVersion != undefined && objPushNotification.AppVersion != '0.0.0') {
-                                    userExits.updateAttributes({ LastLogin: LastLogin, AppVersion: objPushNotification.AppVersion, Platform: objPushNotification.Platform }).then(function(UpdateLastLogin) {
+                                    userExits.updateAttributes({ LastLogin: LastLogin, AppVersion: objPushNotification.AppVersion, Platform: objPushNotification.Platform }).then(function (UpdateLastLogin) {
                                         updateUserRedisValue(userExits.id);
                                     })
                                 } else {
-                                    userExits.updateAttributes({ LastLogin: LastLogin, Platform: objPushNotification.Platform }).then(function(UpdateLastLogin) {
+                                    userExits.updateAttributes({ LastLogin: LastLogin, Platform: objPushNotification.Platform }).then(function (UpdateLastLogin) {
                                         updateUserRedisValue(userExits.id);
                                     })
                                 }
@@ -64,18 +68,18 @@ router.post('/Subscribe', jsonParser, function(req, res) {
 
                 });
             } else {
-                PushnotificationExist.updateAttributes({ PushNotificationId: objPushNotification.PushNotificationId, iduser: objPushNotification.iduser, MessageCount: 0, AppVersion: objPushNotification.AppVersion }).then(function(resUpdate) {
+                PushnotificationExist.updateAttributes({ PushNotificationId: objPushNotification.PushNotificationId, iduser: objPushNotification.iduser, MessageCount: 0, AppVersion: objPushNotification.AppVersion }).then(function (resUpdate) {
                     if (objPushNotification.iduser != 0) {
                         updatePushNotificationRedisValue(objPushNotification.iduser);
-                        User.findOne({ where: { id: objPushNotification.iduser } }).then(function(userExits) {
+                        User.findOne({ where: { id: objPushNotification.iduser } }).then(function (userExits) {
                             if (userExits) {
                                 var LastLogin = new Date();
                                 if (objPushNotification.AppVersion != null && objPushNotification.AppVersion != undefined && objPushNotification.AppVersion != '0.0.0') {
-                                    userExits.updateAttributes({ LastLogin: LastLogin, AppVersion: objPushNotification.AppVersion, Platform: objPushNotification.Platform }).then(function(UpdateLastLogin) {
+                                    userExits.updateAttributes({ LastLogin: LastLogin, AppVersion: objPushNotification.AppVersion, Platform: objPushNotification.Platform }).then(function (UpdateLastLogin) {
                                         updateUserRedisValue(userExits.id);
                                     })
                                 } else {
-                                    userExits.updateAttributes({ LastLogin: LastLogin, Platform: objPushNotification.Platform }).then(function(UpdateLastLogin) {
+                                    userExits.updateAttributes({ LastLogin: LastLogin, Platform: objPushNotification.Platform }).then(function (UpdateLastLogin) {
                                         updateUserRedisValue(userExits.id);
                                     })
                                 }
@@ -98,18 +102,18 @@ router.post('/Subscribe', jsonParser, function(req, res) {
 
             }
         } else {
-            PushNotification.create(objPushNotification).then(function(response) {
+            PushNotification.create(objPushNotification).then(function (response) {
                 if (objPushNotification.iduser != 0) {
                     updatePushNotificationRedisValue(objPushNotification.iduser);
-                    User.findOne({ where: { id: objPushNotification.iduser } }).then(function(userExits) {
+                    User.findOne({ where: { id: objPushNotification.iduser } }).then(function (userExits) {
                         if (userExits) {
                             var LastLogin = new Date();
                             if (objPushNotification.AppVersion != null && objPushNotification.AppVersion != undefined && objPushNotification.AppVersion != '0.0.0') {
-                                userExits.updateAttributes({ LastLogin: LastLogin, AppVersion: objPushNotification.AppVersion, Platform: objPushNotification.Platform }).then(function(UpdateLastLogin) {
+                                userExits.updateAttributes({ LastLogin: LastLogin, AppVersion: objPushNotification.AppVersion, Platform: objPushNotification.Platform }).then(function (UpdateLastLogin) {
                                     updateUserRedisValue(userExits.id);
                                 })
                             } else {
-                                userExits.updateAttributes({ LastLogin: LastLogin, Platform: objPushNotification.Platform }).then(function(UpdateLastLogin) {
+                                userExits.updateAttributes({ LastLogin: LastLogin, Platform: objPushNotification.Platform }).then(function (UpdateLastLogin) {
                                     updateUserRedisValue(userExits.id);
                                 })
                             }
@@ -133,7 +137,7 @@ router.post('/Subscribe', jsonParser, function(req, res) {
     })
 })
 
-router.get('/CheckSubscribe', function(req, res) {
+router.get('/CheckSubscribe', function (req, res) {
     // objPushNotification = req.body;
 
     var search = {};
@@ -164,7 +168,7 @@ router.get('/CheckSubscribe', function(req, res) {
         //     UserType: req.query.UserType
         // }
         where: search
-    }).then(function(obj) {
+    }).then(function (obj) {
         if (obj != null) {
             res.json({
                 success: false,
@@ -182,7 +186,7 @@ router.get('/CheckSubscribe', function(req, res) {
     })
 })
 
-router.get('/UpdateUserIdByUdId', function(req, res) {
+router.get('/UpdateUserIdByUdId', function (req, res) {
     objHeader = req.headers;
     var token = getToken(objHeader);
     if (token) {
@@ -194,7 +198,7 @@ router.get('/UpdateUserIdByUdId', function(req, res) {
                 password: decoded.password
             }
             // where: search
-        }).then(function(UserExist) {
+        }).then(function (UserExist) {
             if (UserExist != null) {
                 if (req.query.UserType != null && req.query.UserType != undefined && req.query.UserType != '') {
                     PushNotification.findOne({
@@ -203,9 +207,9 @@ router.get('/UpdateUserIdByUdId', function(req, res) {
                             UserType: req.query.UserType,
                         }
                         // where: searchPushNotification
-                    }).then(function(response) {
+                    }).then(function (response) {
                         if (response) {
-                            response.updateAttributes({ iduser: req.query.UserId, Country: req.query.Country, MessageCount: 0 }).then(function(resUpdate) {
+                            response.updateAttributes({ iduser: req.query.UserId, Country: req.query.Country, MessageCount: 0 }).then(function (resUpdate) {
                                 updatePushNotificationRedisValue(req.query.UserId);
                                 res.json({
                                     success: true,
@@ -224,9 +228,9 @@ router.get('/UpdateUserIdByUdId', function(req, res) {
                             udid: req.query.udid,
                         }
                         // where: searchPushNotification
-                    }).then(function(response) {
+                    }).then(function (response) {
                         if (response) {
-                            response.updateAttributes({ iduser: req.query.UserId, Country: req.query.Country, MessageCount: 0 }).then(function(resUpdate) {
+                            response.updateAttributes({ iduser: req.query.UserId, Country: req.query.Country, MessageCount: 0 }).then(function (resUpdate) {
                                 updatePushNotificationRedisValue(req.query.UserId);
                                 res.json({
                                     success: true,
@@ -249,12 +253,12 @@ router.get('/UpdateUserIdByUdId', function(req, res) {
     }
 });
 
-router.get('/UpdatePushnotificationCounter', function(req, res) {
-    PushNotification.findOne({ where: { udid: req.query.udid, UserType: req.query.UserType } }).then(function(response) {
+router.get('/UpdatePushnotificationCounter', function (req, res) {
+    PushNotification.findOne({ where: { udid: req.query.udid, UserType: req.query.UserType } }).then(function (response) {
         if (response != null) {
             updatePushNotificationRedisValue(response.iduser);
         }
-        connection.query("Update tblpushnotification set messagecount=0 where udid='" + req.query.udid + "' and UserType='" + req.query.UserType + "'", function(errupdate, updateresp, fields) {
+        connection.query("Update tblpushnotification set messagecount=0 where udid='" + req.query.udid + "' and UserType='" + req.query.UserType + "'", function (errupdate, updateresp, fields) {
             res.json({
                 success: true,
                 message: "User Push notification data updated successfully...",
@@ -293,7 +297,19 @@ function GetCurrentDate() {
     return ("0000" + year.toString()).slice(-4) + "-" + ("00" + month.toString()).slice(-2) + "-" + ("00" + day.toString()).slice(-2) + " " + ("00" + hour.toString()).slice(-2) + ":" + ("00" + min.toString()).slice(-2) + ":" + ("00" + sec.toString()).slice(-2);
 }
 
-router.post('/SendPushNotification', jsonParser, function(req, res) {
+function SendFCMPushOneByOne(message, callback) {
+    fcm.send(message, function (err, response) {
+        if (err) {
+            console.log("Something has gone wrong!", err);
+        } else {
+            console.log("Successfully sent with response: ", response);
+        }
+        return callback(true);
+    });
+}
+
+
+router.post('/SendPushNotification', jsonParser, function (req, res) {
 
     objPushNotification = req.body;
     var data = {
@@ -313,18 +329,18 @@ router.post('/SendPushNotification', jsonParser, function(req, res) {
     obj.headers = req.headers;
     obj.query = req.query;
 
-    funAccessPermission.CheckUserAccessPermission(obj, function(responseAccessPermission) {
+    funAccessPermission.CheckUserAccessPermission(obj, function (responseAccessPermission) {
         var AccessPermission = responseAccessPermission.success;
         if (AccessPermission) {
 
-            PushNotification.findAll({ distinct: 'PushNotificationId' }).then(function(response) {
+            PushNotification.findAll({ distinct: 'PushNotificationId' }).then(function (response) {
                 // console.log(response)
 
-                var groups = u.groupBy(response, function(o) {
+                var groups = u.groupBy(response, function (o) {
                     return o.PushNotificationId;
                 });
 
-                var lstGroupData = u.map(groups, function(group, PushNotificationId) {
+                var lstGroupData = u.map(groups, function (group, PushNotificationId) {
                     return {
                         PushNotificationId: PushNotificationId,
                         Platform: group[0].Platform,
@@ -343,9 +359,9 @@ router.post('/SendPushNotification', jsonParser, function(req, res) {
                         if (i < lstGroupData.length) {
                             var deviceIds = [];
                             deviceIds.push(lstGroupData[i].PushNotificationId)
-                                //SendNotification(i + 1);
-                                // } else {
-                                // console.log(deviceIds)
+                            //SendNotification(i + 1);
+                            // } else {
+                            // console.log(deviceIds)
                             var objData = clone(data);
                             if (lstGroupData[i].Platform == 'ios') {
                                 objData.title = data.message;
@@ -355,19 +371,38 @@ router.post('/SendPushNotification', jsonParser, function(req, res) {
                                 } else {
                                     PushNotificationSettings.apn.defaultData.sound = 'default';
                                 };
-                            };
-                            // console.log(response[i].Platform + "_______________________________________________________")
-                            // console.log(objData)
-                            var objPushNotificationSend = new PushNotifications(PushNotificationSettings);
-                            if (deviceIds.length > 0) {
 
-                                objPushNotificationSend.send(deviceIds, objData, function(result) {
-                                    // console.log(result);
+                                var objPushNotificationSend = new PushNotifications(PushNotificationSettings);
+                                if (deviceIds.length > 0) {
+
+                                    objPushNotificationSend.send(deviceIds, objData, function (result) {
+                                        // console.log(result);
+                                        SendNotification(i + 1);
+                                    });
+                                } else {
+                                    SendNotification(i + 1);
+                                };
+                            } else {
+                                var objDataFCM = clone(data);
+                                var message = {
+                                    to: lstGroupData[i].PushNotificationId,
+                                    collapse_key: 'Maark',
+                                    notification: {
+                                        title: objDataFCM.title,
+                                        body: objDataFCM.message,
+                                        "sound": "default",
+                                        "click_action": "FCM_PLUGIN_ACTIVITY",
+                                        // "icon": "fcm_push_icon"
+                                    },
+                                    data: objDataFCM
+                                };
+                                SendFCMPushOneByOne(message, function () {
                                     SendNotification(i + 1);
                                 });
-                            } else {
-                                SendNotification(i + 1);
-                            };
+                            }
+                            // console.log(response[i].Platform + "_______________________________________________________")
+                            // console.log(objData)
+
                         } else {
                             var currentDatetime = GetCurrentDate();
 
@@ -381,7 +416,7 @@ router.post('/SendPushNotification', jsonParser, function(req, res) {
                             }
 
                             var query = "INSERT INTO tblfacebookpostdata (title,message,datetime,flag,Type,SendBy,Country) VALUES ('" + data.title + "','" + data.message + "','" + currentDatetime + "', 1,'Custom','" + UserName + "','" + objPushNotification.Country + "');";
-                            connection.query(query, function(err, rows, fields) {
+                            connection.query(query, function (err, rows, fields) {
                                 res.json({
                                     success: true,
                                     message: "Push Notification send Successfully.",
@@ -404,7 +439,7 @@ router.post('/SendPushNotification', jsonParser, function(req, res) {
 
 //=====PWA Push Notification===============================
 
-router.post('/PWAsubscribePushNotification', jsonParser, function(req, res) {
+router.post('/PWAsubscribePushNotification', jsonParser, function (req, res) {
     try {
         var objdata = req.body;
         if (objdata.newSub != null && objdata.newSub != undefined && objdata.newSub != '') {
@@ -415,7 +450,7 @@ router.post('/PWAsubscribePushNotification', jsonParser, function(req, res) {
                 objInsert.endpoint = objdata.newSub.endpoint;
                 objInsert.auth = objdata.newSub.keys.auth;
                 objInsert.p256dh = objdata.newSub.keys.p256dh;
-                PWANotifications.findOrCreate({ where: { iduser: objInsert.iduser, endpoint: objInsert.endpoint }, defaults: objInsert }).then(function(resCreate) {
+                PWANotifications.findOrCreate({ where: { iduser: objInsert.iduser, endpoint: objInsert.endpoint }, defaults: objInsert }).then(function (resCreate) {
                     updatePWANotificationRedisValue(objInsert.iduser);
                     res.json(true);
                 });
@@ -430,7 +465,7 @@ router.post('/PWAsubscribePushNotification', jsonParser, function(req, res) {
     }
 });
 
-router.post('/PWAUnsubscribePushNotification', jsonParser, function(req, res) {
+router.post('/PWAUnsubscribePushNotification', jsonParser, function (req, res) {
     try {
         var objdata = req.body;
         if (objdata.endpoint != null && objdata.endpoint != undefined && objdata.endpoint != '' && objdata.iduser != null && objdata.iduser != undefined && objdata.iduser != '') {
@@ -439,7 +474,7 @@ router.post('/PWAUnsubscribePushNotification', jsonParser, function(req, res) {
                     iduser: parseInt(objdata.iduser),
                     endpoint: objdata.endpoint,
                 }
-            }).then(function(resDelete) {
+            }).then(function (resDelete) {
                 updatePWANotificationRedisValue(parseInt(objdata.iduser));
                 res.json(true);
             });
@@ -452,7 +487,7 @@ router.post('/PWAUnsubscribePushNotification', jsonParser, function(req, res) {
 });
 
 
-router.get('/UpdateUserIdForPWA', function(req, res) {
+router.get('/UpdateUserIdForPWA', function (req, res) {
     try {
         var objdata = req.query;
         if (objdata.endpoint != null && objdata.endpoint != undefined && objdata.endpoint != '' && objdata.iduser != null && objdata.iduser != undefined && objdata.iduser != '') {
@@ -460,13 +495,13 @@ router.get('/UpdateUserIdForPWA', function(req, res) {
                 where: {
                     endpoint: objdata.endpoint,
                 }
-            }).then(function(resFind) {
+            }).then(function (resFind) {
                 if (resFind == null) {
                     res.json(false);
                 } else {
                     resFind.updateAttributes({
                         iduser: parseInt(objdata.iduser)
-                    }).then(function(resUpdate) {
+                    }).then(function (resUpdate) {
                         updatePWANotificationRedisValue(parseInt(objdata.iduser));
                         res.json(true);
                     })
@@ -486,7 +521,7 @@ function updatePushNotificationRedisValue(id) {
         " FROM tblvehicle tv " +
         " LEFT JOIN tblsharedevice tsd ON tv.id=tsd.idVehicle " +
         " where  (tv.iduser=" + id + " or tsd.iduser=" + id + ")  and tv.IsDelete = 0";
-    connection.query(query, function(err, response, filed) {
+    connection.query(query, function (err, response, filed) {
         // Vehicle.findAll({ where: { iduser: id } }).then(function(response) {
         if (response) {
             for (var i = 0; i < response.length; i++) {
@@ -498,7 +533,7 @@ function updatePushNotificationRedisValue(id) {
 
 
 function updateUserRedisValue(id) {
-    Vehicle.findAll({ where: { iduser: id } }).then(function(response) {
+    Vehicle.findAll({ where: { iduser: id } }).then(function (response) {
         if (response) {
             for (var i = 0; i < response.length; i++) {
                 Commonfunction.UpdateVehicleRedis(response[i].deviceid, 'User')
@@ -512,7 +547,7 @@ function updatePWANotificationRedisValue(id) {
         " FROM tblvehicle tv " +
         " LEFT JOIN tblsharedevice tsd ON tv.id=tsd.idVehicle " +
         " where  (tv.iduser=" + id + " or tsd.iduser=" + id + ")  and tv.IsDelete = 0";
-    connection.query(query, function(err, response, filed) {
+    connection.query(query, function (err, response, filed) {
         // Vehicle.findAll({ where: { iduser: id } }).then(function(response) {
         if (response) {
             for (var i = 0; i < response.length; i++) {
