@@ -762,6 +762,7 @@ router.get('/GetAllVehicleExpirebyUser', jsonParser, function (req, res) {
         }
     })
 })
+
 router.get('/ExportRenewData', function (req, res) {
 
     var conf = {};
@@ -897,6 +898,7 @@ router.get('/ExportRenewData', function (req, res) {
                         } else {
                             obj.GpsDate = null;
                         }
+
                         lstAllVehicle.push(obj);
                         getData(i + 1);
                     });
