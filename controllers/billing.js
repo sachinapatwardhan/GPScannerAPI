@@ -14,6 +14,53 @@ var WebCashconfig = require('./../config/webcash.json');
 
 //////////
 
+
+router.get('/GetAllSalesAgentRole', function (req, res) {
+    var objParam = req.query;
+    var search = '';
+    if (objParam.appId != null && objParam.appId != undefined && objParam.appId != '') {
+        if (search != "") {
+            search += ' and tbluserinformation.idApp = "' + objParam.appId + '"';
+        } else {
+            search += ' where tbluserinformation.idApp = "' + objParam.appId + '"';
+        }
+    }
+    if (objParam.country != null && objParam.country != undefined && objParam.country != '') {
+        if (search != "") {
+            search += ' and tbluserinformation.country = "' + objParam.country + '"';
+        } else {
+            search += ' where tbluserinformation.country = "' + objParam.country + '"';
+        }
+    }
+    if (search != "") {
+        search += " and tblrole.RoleName = 'Sales Agent'";
+    } else {
+        search += " where tblrole.RoleName = 'Sales Agent'";
+    }
+
+    var query = "select tbluserinformation.CreatedDate, tblappinfo.AppName,tbluserinformation.id,tbluserinformation.username,tbluserinformation.idApp,tbluserinformation.email,tbluserinformation.phone,tbluserinformation.country,tbluserinformation.OTP,tbluserinformation.IsMobileVerify,CONVERT_TZ(tbluserinformation.LastLogin,'+00:00','" + CurrentOffset + "') as LastLogin " +
+        "from tbluserinformation left join tblappinfo on tbluserinformation.idApp = tblappinfo.id " +
+        " inner join tbluserinrole on tbluserinrole.userId = tbluserinformation.Id " +
+        " inner join tblrole on tblrole.Id = tbluserinrole.roleId " + search + " ";
+
+
+    connection.query(query, function (err, response) {
+        if (response != undefined) {
+            var response1 = new Object();
+            response1.success = true
+            response1.data = response;
+            res.json(response1);
+        } else {
+            var response1 = new Object();
+            response1.success = true
+            response1.data = [];
+            res.json(response1);
+        }
+    })
+
+
+})
+
 router.get('/GetAllRenewData', function (req, res) {
     var objParam = req.query;
     var objColumns = objParam.columns;
@@ -62,6 +109,9 @@ router.get('/GetAllRenewData', function (req, res) {
     if (objParam.idCountry != null && objParam.idCountry != '' && objParam.idCountry != undefined) {
         search += ' and tblgpsdevice.CountryId = ' + objParam.idCountry;
     }
+    if (objParam.idSalesAgent != null && objParam.idSalesAgent != '' && objParam.idSalesAgent != undefined) {
+        search += ' and tblgpsdevice.idSalesAgent = ' + objParam.idSalesAgent;
+    }
     var query = "SELECT tl.Id, tu.email,CONVERT_TZ(tu.LastLogin,'+00:00','" + CurrentOffset + "') as LastLoginDate ,tl.DeviceId,tv.iduser,tu.phone,tv.Name as VehicleName,ta.Id as idApp,ta.AppName,tl.LicenceRenewalType,tl.LicenceType,ta.LicenceRenewalType as appLicenceRenewalType,ta.LicenceType as appLicenceType, " +
         "CONVERT_TZ(tl.ExpiryDate,'+00:00','" + CurrentOffset + "') as ExpiryDate " +
         " from tbllicencemanager as tl " +
@@ -81,9 +131,8 @@ router.get('/GetAllRenewData', function (req, res) {
         " LEFT JOIN tblgpsdevice ON tblgpsdevice.DeviceId = tl.DeviceId " +
         " where tl.IsDeleted=0 " + search;
 
-    console.log(query)
+
     connection.query(query, function (err, response) {
-        console.log(err)
         if (response != undefined) {
             connection.query(countquery, function (err, lstCount, fields) {
                 var lstAllVehicle = [];
@@ -227,7 +276,7 @@ router.get('/ExportAllRenewData', function (req, res) {
         }
     }
 
-    if (req.query.idApp != null && req.query.idApp != undefined && req.query.idApp != '') {
+    if (req.query.idApp != null && req.query.idApp != undefined && req.query.idApp != '' && req.query.idApp != 'undefined') {
         search += " and ta.Id=" + req.query.idApp + " ";
     }
     if (objParam.idDistributor != null && objParam.idDistributor != '' && objParam.idDistributor != undefined) {
@@ -235,6 +284,9 @@ router.get('/ExportAllRenewData', function (req, res) {
     }
     if (objParam.idCountry != null && objParam.idCountry != '' && objParam.idCountry != undefined) {
         search += ' and tblgpsdevice.CountryId = ' + objParam.idCountry;
+    }
+    if (objParam.idSalesAgent != null && objParam.idSalesAgent != '' && objParam.idSalesAgent != undefined) {
+        search += ' and tblgpsdevice.idSalesAgent = ' + objParam.idSalesAgent;
     }
     objParam.CurrentOffset = decodeURIComponent(objParam.CurrentOffset);
     var query = "SELECT tl.Id, tu.email,CONVERT_TZ(tu.LastLogin,'+00:00','" + objParam.CurrentOffset + "') as LastLoginDate ,tl.DeviceId,tv.iduser,tu.phone,tv.Name as VehicleName,ta.Id as idApp,ta.AppName,tl.LicenceRenewalType,tl.LicenceType,ta.LicenceRenewalType as appLicenceRenewalType,ta.LicenceType as appLicenceType, " +
@@ -249,7 +301,6 @@ router.get('/ExportAllRenewData', function (req, res) {
         " order by " + Orderby + " ";
 
     connection.query(query, function (err, response, fields) {
-        console.log(err)
         if (!err) {
             if (objParam.IsSuperAdmin == "0") {
                 conf.cols.splice(7, 1);
