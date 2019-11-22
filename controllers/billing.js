@@ -345,7 +345,7 @@ router.get('/ExportAllRenewData', function (req, res) {
         else {
             var result = nodeExcel.execute(conf);
             res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-            res.setHeader("Content-Disposition", "attachment; filename=DistributorRenew.xlsx");
+            res.setHeader("Content-Disposition", "attachment; filename=Renew.xlsx");
             res.end(result, 'binary');
         }
     });
