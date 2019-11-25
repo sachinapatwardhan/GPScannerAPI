@@ -12,7 +12,7 @@ var Vehicle = models.tblvehicle;
 var Commonfunction = require('./common.js');
 //End of Tables
 
-router.get('/GetAllGPSDeviceold', function(req, res) {
+router.get('/GetAllGPSDeviceold', function (req, res) {
     var objParam = req.query;
 
     var objColumns = objParam.columns;
@@ -150,14 +150,14 @@ router.get('/GetAllGPSDeviceold', function(req, res) {
                         model: User,
                         required: SalesAgSearchflg,
                     }],
-                }).then(function(response) {
+                }).then(function (response) {
                     var response1 = new Object();
                     response1.draw = objParam.draw;
                     response1.recordsTotal = response.count;
                     response1.recordsFiltered = response.count;
                     response1.data = response.rows;
                     res.json(response1);
-                }).catch(function(error) {
+                }).catch(function (error) {
                     res.json({
                         success: false,
                         response: error
@@ -168,7 +168,7 @@ router.get('/GetAllGPSDeviceold', function(req, res) {
         CheckUserCountry(0)
     }
 })
-router.get('/GetAllGPSDeviceold1', function(req, res) {
+router.get('/GetAllGPSDeviceold1', function (req, res) {
     var objParam = req.query;
 
     var objColumns = objParam.columns;
@@ -238,9 +238,9 @@ router.get('/GetAllGPSDeviceold1', function(req, res) {
         " Left Join tblcountrymgmt on tblcountrymgmt.id = tblgpsdevice.CountryId" +
         " Left Join tbltelco on tblsimdetails.idTelCo = tbltelco.id " + search;
     // " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
-    connection.query(query, function(err, response) {
+    connection.query(query, function (err, response) {
         if (response != undefined) {
-            connection.query(Countqry, function(err, lstCount, fields) {
+            connection.query(Countqry, function (err, lstCount, fields) {
                 var response1 = new Object();
                 response1.draw = objParam.draw;
                 response1.recordsTotal = lstCount[0].TotalRecord;
@@ -261,7 +261,7 @@ router.get('/GetAllGPSDeviceold1', function(req, res) {
 
 })
 
-router.get('/GetAllGPSDevice', function(req, res) {
+router.get('/GetAllGPSDevice', function (req, res) {
     var objParam = req.query;
 
     var objColumns = objParam.columns;
@@ -332,9 +332,9 @@ router.get('/GetAllGPSDevice', function(req, res) {
         " Left Join tblcountrymgmt on tblcountrymgmt.id = tblgpsdevice.CountryId" +
         " Left Join tbltelco on tblsimdetails.idTelCo = tbltelco.id " + search;
     // " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
-    connection.query(query, function(err, response) {
+    connection.query(query, function (err, response) {
         if (response != undefined) {
-            connection.query(Countqry, function(err, lstCount, fields) {
+            connection.query(Countqry, function (err, lstCount, fields) {
                 var response1 = new Object();
                 response1.draw = objParam.draw;
                 response1.recordsTotal = lstCount[0].TotalRecord;
@@ -354,7 +354,7 @@ router.get('/GetAllGPSDevice', function(req, res) {
     })
 
 })
-router.get('/ExportTracker', function(req, res) {
+router.get('/ExportTracker', function (req, res) {
     var objParam = req.query;
     var conf = {};
     conf.name = "Sheet1";
@@ -491,7 +491,7 @@ router.get('/ExportTracker', function(req, res) {
         " Left Join tbltelco on tblsimdetails.idTelCo = tbltelco.id " + search +
         " order by " + Orderby;
 
-    connection.query(query, function(err, response) {
+    connection.query(query, function (err, response) {
         if (response != undefined) {
             conf.rows = [];
             // conf1.rows = [];
@@ -608,14 +608,14 @@ router.get('/ExportTracker', function(req, res) {
 
 })
 
-router.get('/GetGPSDeviceById', function(req, res) {
+router.get('/GetGPSDeviceById', function (req, res) {
     GPSDevice.findOne({
         where: {
             IMEI: req.query.IMEI
         }
-    }).then(function(response) {
+    }).then(function (response) {
         res.json(response);
-    }).catch(function(err) {
+    }).catch(function (err) {
         res.json(err);
     })
 })
@@ -782,7 +782,7 @@ router.get('/GetGPSDeviceById', function(req, res) {
 
 // })
 
-router.get('/GetAllPetbyCountry', function(req, res) {
+router.get('/GetAllPetbyCountry', function (req, res) {
 
     var model = [];
 
@@ -898,7 +898,7 @@ router.get('/GetAllPetbyCountry', function(req, res) {
                             where: search1,
                             required: true
                         }]
-                    }).then(function(response) {
+                    }).then(function (response) {
                         var PetList = [];
                         var response1 = new Object();
                         response1.draw = objParam.draw;
@@ -907,7 +907,7 @@ router.get('/GetAllPetbyCountry', function(req, res) {
                         response1.data = response.rows;
                         res.json(response1);
 
-                    }).catch(function(error) {
+                    }).catch(function (error) {
                         res.json(error);
                     })
                 } else {
@@ -917,11 +917,11 @@ router.get('/GetAllPetbyCountry', function(req, res) {
                         offset: parseInt(objParam.start),
                         limit: parseInt(objParam.length),
                         include: [{
-                                model: User,
-                                required: true
-                            }]
-                            //include: model
-                    }).then(function(response) {
+                            model: User,
+                            required: true
+                        }]
+                        //include: model
+                    }).then(function (response) {
                         var PetList = [];
                         var response1 = new Object();
                         response1.draw = objParam.draw;
@@ -930,7 +930,7 @@ router.get('/GetAllPetbyCountry', function(req, res) {
                         response1.data = response.rows;
                         res.json(response1);
 
-                    }).catch(function(error) {
+                    }).catch(function (error) {
                         res.json(error);
                     })
                 }
@@ -940,8 +940,8 @@ router.get('/GetAllPetbyCountry', function(req, res) {
     }
 })
 
-router.get('/DeleteDeviceById', function(req, res) {
-    GPSDevice.destroy({ where: { id: req.query.id } }).then(function(response) {
+router.get('/DeleteDeviceById', function (req, res) {
+    GPSDevice.destroy({ where: { id: req.query.id } }).then(function (response) {
         console.log(response)
         if (response) {
             funAuditLog.CreateAuditLog('DeleteGPSDevice', 'Admin', 'Delete GPS Device ');
@@ -952,7 +952,7 @@ router.get('/DeleteDeviceById', function(req, res) {
     })
 });
 
-router.post('/SaveGPSDevice', jsonParser, function(req, res) {
+router.post('/SaveGPSDevice', jsonParser, function (req, res) {
     objGPSDevice = req.body;
     if (objGPSDevice.AppName == 'Tracking') {
         objGPSDevice.DeviceId = objGPSDevice.IMEI;
@@ -966,7 +966,7 @@ router.post('/SaveGPSDevice', jsonParser, function(req, res) {
     var token = getToken(objHeader);
     if (token) {
         var decoded = jwt.decode(token, TokenKey);
-        User.findOne({ where: { username: decoded.username, password: decoded.password } }).then(function(UserExist) {
+        User.findOne({ where: { username: decoded.username, password: decoded.password } }).then(function (UserExist) {
             if (UserExist != null) {
                 if (objGPSDevice.id == 0) {
                     req.query['permission'] = "Added";
@@ -975,16 +975,16 @@ router.post('/SaveGPSDevice', jsonParser, function(req, res) {
                     obj.headers = req.headers;
                     obj.query = req.query;
 
-                    funAccessPermission.CheckUserAccessPermission(obj, function(responseAccessPermission) {
+                    funAccessPermission.CheckUserAccessPermission(obj, function (responseAccessPermission) {
                         var AccessPermission = responseAccessPermission.success;
                         if (AccessPermission) {
                             objGPSDevice.CreatedDate = new Date();
                             objGPSDevice.CreatedBy = decoded.username;
-                            GPSDevice.findOrCreate({ where: { DeviceId: objGPSDevice.DeviceId }, defaults: objGPSDevice }).then(function(response) {
+                            GPSDevice.findOrCreate({ where: { DeviceId: objGPSDevice.DeviceId }, defaults: objGPSDevice }).then(function (response) {
                                 if ((response[1])) {
                                     funAuditLog.CreateAuditLog('SaveGPSDevice', UserExist.username, 'Create GPS Tracker Device / IMEI : (' + response[0].IMEI + ')');
                                     if (objGPSDevice.AppName == 'MYPINHERE') {
-                                        client.set(objGPSDevice.DeviceId + "ProjectIgnitionStatus", 'true', function(err, replies) {});
+                                        client.set(objGPSDevice.DeviceId + "ProjectIgnitionStatus", 'true', function (err, replies) { });
                                     }
                                     res.json({ success: true, message: "Tracker created successfully...", data: response });
                                 } else {
@@ -1003,27 +1003,27 @@ router.post('/SaveGPSDevice', jsonParser, function(req, res) {
                     obj.headers = req.headers;
                     obj.query = req.query;
 
-                    funAccessPermission.CheckUserAccessPermission(obj, function(responseAccessPermission) {
+                    funAccessPermission.CheckUserAccessPermission(obj, function (responseAccessPermission) {
                         var AccessPermission = responseAccessPermission.success;
                         if (AccessPermission) {
-                            GPSDevice.findOne({ where: { DeviceId: objGPSDevice.DeviceId } }).then(function(objGPSDeviceExit) {
+                            GPSDevice.findOne({ where: { DeviceId: objGPSDevice.DeviceId } }).then(function (objGPSDeviceExit) {
                                 if (objGPSDeviceExit != null && objGPSDevice.id != objGPSDeviceExit.id) {
                                     res.json({ success: false, message: "Tracker is already exist...", data: objGPSDeviceExit });
                                 } else {
-                                    GPSDevice.update(objGPSDevice, { where: { id: objGPSDevice.id } }).then(function(response) {
+                                    GPSDevice.update(objGPSDevice, { where: { id: objGPSDevice.id } }).then(function (response) {
                                         if (response[0]) {
                                             funAuditLog.CreateAuditLog('SaveGPSDevice', UserExist.username, 'Update GPS Tracker Device  IMEI : (' + objGPSDeviceExit.IMEI + ')');
-                                            Vehicle.findOne({ where: { deviceid: objGPSDevice.DeviceId } }).then(function(vehicleExits) {
+                                            Vehicle.findOne({ where: { deviceid: objGPSDevice.DeviceId } }).then(function (vehicleExits) {
                                                 if (vehicleExits) {
-                                                    vehicleExits.updateAttributes({ DeviceType: objGPSDevice.Type, DeviceCompany: objGPSDevice.Company }).then(function(VehicleDeviceTypeupdate) {
+                                                    vehicleExits.updateAttributes({ DeviceType: objGPSDevice.Type, DeviceCompany: objGPSDevice.Company }).then(function (VehicleDeviceTypeupdate) {
                                                         Commonfunction.UpdateVehicleRedis(objGPSDevice.DeviceId, 'Vehicle');
                                                     })
                                                 }
                                             })
                                             if (objGPSDevice.AppName == 'MYPINHERE') {
-                                                client.set(objGPSDevice.DeviceId + "ProjectIgnitionStatus", 'true', function(err, replies) {});
+                                                client.set(objGPSDevice.DeviceId + "ProjectIgnitionStatus", 'true', function (err, replies) { });
                                             } else {
-                                                client.del(objGPSDevice.DeviceId + "ProjectIgnitionStatus", function(err, replies) {});
+                                                client.del(objGPSDevice.DeviceId + "ProjectIgnitionStatus", function (err, replies) { });
                                             }
                                             res.json({ success: true, message: "Tracker updated successfully", data: response });
                                         } else {
@@ -1046,7 +1046,7 @@ router.post('/SaveGPSDevice', jsonParser, function(req, res) {
     }
 });
 
-router.get('/UpdateStatusold', function(req, res) {
+router.get('/UpdateStatusold', function (req, res) {
     objHeader = req.headers;
     var ExpiryDate = null;
     var ActivationDate = null;
@@ -1067,13 +1067,13 @@ router.get('/UpdateStatusold', function(req, res) {
             where: {
                 id: req.query.id,
             }
-        }).then(function(ObjExist) {
+        }).then(function (ObjExist) {
             if (ObjExist) {
                 ObjExist.updateAttributes({
                     IsActive: req.query.IsActive,
                     ExpiryDate: ExpiryDate,
                     ActivationDate: ActivationDate
-                }).then(function(response) {
+                }).then(function (response) {
                     if (response) {
                         res.json({ success: true, message: "Tracker Status Updated successfully", data: response });
                     } else {
@@ -1090,7 +1090,7 @@ router.get('/UpdateStatusold', function(req, res) {
 })
 
 
-router.get('/UpdateStatus', function(req, res) {
+router.get('/UpdateStatus', function (req, res) {
     objHeader = req.headers;
     var ExpiryDate = null;
     var ActivationDate = null;
@@ -1116,13 +1116,13 @@ router.get('/UpdateStatus', function(req, res) {
     var token = getToken(objHeader);
     if (token) {
         var decoded = jwt.decode(token, TokenKey);
-        User.findOne({ where: { username: decoded.username, password: decoded.password } }).then(function(UserExist) {
+        User.findOne({ where: { username: decoded.username, password: decoded.password } }).then(function (UserExist) {
             if (UserExist != null) {
                 GPSDevice.findOne({
                     where: {
                         id: req.query.id,
                     }
-                }).then(function(ObjExist) {
+                }).then(function (ObjExist) {
                     if (ObjExist) {
                         // ObjExist.updateAttributes({
                         //     IsActive: req.query.IsActive,
@@ -1139,7 +1139,7 @@ router.get('/UpdateStatus', function(req, res) {
                                 IsActive: req.query.IsActive,
                                 ExpiryDate: ExpiryDate,
                                 ActivationDate: ActivationDate
-                            }).then(function(response) {
+                            }).then(function (response) {
                                 if (response) {
                                     funAuditLog.CreateAuditLog('update tracker status', UserExist.username, 'update tracker status IsActive / IMEI: (' + ObjExist.IMEI + ')');
                                     res.json({ success: true, message: "Tracker Status Updated successfully", data: response });
@@ -1152,7 +1152,7 @@ router.get('/UpdateStatus', function(req, res) {
 
                             ObjExist.updateAttributes({
                                 IsActive: req.query.IsActive,
-                            }).then(function(response) {
+                            }).then(function (response) {
                                 if (response) {
                                     funAuditLog.CreateAuditLog('update tracker status', UserExist.username, 'update tracker status IsActive / IMEI: (' + ObjExist.IMEI + ')');
                                     res.json({ success: true, message: "Tracker Status Updated successfully", data: response });
@@ -1172,7 +1172,7 @@ router.get('/UpdateStatus', function(req, res) {
     }
 })
 
-router.post('/uploadExcelDevice', function(req, res) {
+router.post('/uploadExcelDevice', function (req, res) {
     var form = new formidable.IncomingForm();
     var lst = [];
     var FileName = [];
@@ -1191,7 +1191,7 @@ router.post('/uploadExcelDevice', function(req, res) {
     //var FileName = __dirname + '/../MediaUploads/FileUpload/DeviceList.xlsx';
     form.uploadDir = __dirname + '/../MediaUploads/FileUpload';
 
-    form.parse(req, function(err, fields, files) {
+    form.parse(req, function (err, fields, files) {
         //console.log(fields);
         Company = fields.Company;
         DeviceType = fields.Type;
@@ -1202,14 +1202,14 @@ router.post('/uploadExcelDevice', function(req, res) {
         AppName = fields.AppName;
     });
 
-    form.on('fileBegin', function(name, file) {
+    form.on('fileBegin', function (name, file) {
         file.path = form.uploadDir + "/" + file.name;
         // console.log(file.path);
         FileName = file.path.toString();
         //FileName.push(file.path);
     });
 
-    form.on('end', function() {
+    form.on('end', function () {
         if (FileName.length > 0) {
             var workbook = XLSX.readFile(FileName, { type: 'binary' });
             var first_sheet_name = workbook.SheetNames[0];
@@ -1247,30 +1247,37 @@ router.post('/uploadExcelDevice', function(req, res) {
                                         where: {
                                             SerialNum: lst[i].SIMSerialnumber.trim()
                                         }
-                                    }).then(function(ExistSim) {
+                                    }).then(function (ExistSim) {
                                         if (ExistSim != null) {
-                                            obj.idSim = ExistSim.id;
-                                            GPSDevice.findOrCreate({
-                                                where: { IMEI: obj.IMEI },
-                                                defaults: obj
-                                            }).then(function(response) {
-                                                if ((response[1])) {
-                                                    if (obj.AppName == 'MYPINHERE') {
-                                                        client.set(obj.DeviceId + "ProjectIgnitionStatus", 'true', function(err, replies) {});
-                                                    }
-                                                    addDevice(i + 1);
-                                                } else {
-                                                    GPSDevice.update(obj, { where: { id: response[0].id } }).then(function(resUpdate) {
+                                            var objUpdatesim = new Object();
+                                            objUpdatesim.SerialNum = lst[i].SIMSerialnumber.trim();
+                                            if (lst[i].SIMPhoneno != null && lst[i].SIMPhoneno != undefined) {
+                                                objUpdatesim.PhoneNum = lst[i].SIMPhoneno.trim();
+                                            }
+                                            ExistSim.updateAttributes(objUpdatesim).then(function (resUpdate) {
+                                                obj.idSim = ExistSim.id;
+                                                GPSDevice.findOrCreate({
+                                                    where: { IMEI: obj.IMEI },
+                                                    defaults: obj
+                                                }).then(function (response) {
+                                                    if ((response[1])) {
                                                         if (obj.AppName == 'MYPINHERE') {
-                                                            client.set(obj.DeviceId + "ProjectIgnitionStatus", 'true', function(err, replies) {});
-                                                        } else {
-                                                            client.del(obj.DeviceId + "ProjectIgnitionStatus", function(err, replies) {});
+                                                            client.set(obj.DeviceId + "ProjectIgnitionStatus", 'true', function (err, replies) { });
                                                         }
                                                         addDevice(i + 1);
-                                                    });
-                                                    // Importerror.push(lst[i].SerialNumber); 
-                                                }
-                                            })
+                                                    } else {
+                                                        GPSDevice.update(obj, { where: { id: response[0].id } }).then(function (resUpdate) {
+                                                            if (obj.AppName == 'MYPINHERE') {
+                                                                client.set(obj.DeviceId + "ProjectIgnitionStatus", 'true', function (err, replies) { });
+                                                            } else {
+                                                                client.del(obj.DeviceId + "ProjectIgnitionStatus", function (err, replies) { });
+                                                            }
+                                                            addDevice(i + 1);
+                                                        });
+                                                        // Importerror.push(lst[i].SerialNumber); 
+                                                    }
+                                                })
+                                            });
                                         } else {
                                             var Simobj = new Object();
                                             Simobj.SerialNum = lst[i].SIMSerialnumber.trim();
@@ -1285,49 +1292,49 @@ router.post('/uploadExcelDevice', function(req, res) {
                                                     SerialNum: lst[i].SIMSerialnumber
                                                 },
                                                 defaults: Simobj
-                                            }).then(function(resSerial) {
+                                            }).then(function (resSerial) {
                                                 if ((resSerial[1])) {
                                                     obj.idSim = resSerial[0].dataValues.id;
                                                     GPSDevice.findOrCreate({
                                                         where: { IMEI: obj.IMEI },
                                                         defaults: obj
-                                                    }).then(function(response) {
+                                                    }).then(function (response) {
                                                         if ((response[1])) {
                                                             if (obj.AppName == 'MYPINHERE') {
-                                                                client.set(obj.DeviceId + "ProjectIgnitionStatus", 'true', function(err, replies) {});
+                                                                client.set(obj.DeviceId + "ProjectIgnitionStatus", 'true', function (err, replies) { });
                                                             }
                                                             addDevice(i + 1);
                                                         } else {
                                                             // Importerror.push(lst[i].SerialNumber);
-                                                            GPSDevice.update(obj, { where: { id: response[0].id } }).then(function(resUpdate) {
+                                                            GPSDevice.update(obj, { where: { id: response[0].id } }).then(function (resUpdate) {
                                                                 if (obj.AppName == 'MYPINHERE') {
-                                                                    client.set(obj.DeviceId + "ProjectIgnitionStatus", 'true', function(err, replies) {});
+                                                                    client.set(obj.DeviceId + "ProjectIgnitionStatus", 'true', function (err, replies) { });
                                                                 } else {
-                                                                    client.del(obj.DeviceId + "ProjectIgnitionStatus", function(err, replies) {});
+                                                                    client.del(obj.DeviceId + "ProjectIgnitionStatus", function (err, replies) { });
                                                                 }
                                                                 addDevice(i + 1);
                                                             });
                                                         }
                                                     })
                                                 } else {
-                                                    SimService.update(oSimobjbj, { where: { id: resSerial[0].id } }).then(function(resUpdateSim) {
+                                                    SimService.update(Simobj, { where: { id: resSerial[0].id } }).then(function (resUpdateSim) {
                                                         obj.idSim = resSerial[0].id;
                                                         GPSDevice.findOrCreate({
                                                             where: { IMEI: obj.IMEI },
                                                             defaults: obj
-                                                        }).then(function(response) {
+                                                        }).then(function (response) {
                                                             if ((response[1])) {
                                                                 if (obj.AppName == 'MYPINHERE') {
-                                                                    client.set(obj.DeviceId + "ProjectIgnitionStatus", 'true', function(err, replies) {});
+                                                                    client.set(obj.DeviceId + "ProjectIgnitionStatus", 'true', function (err, replies) { });
                                                                 }
                                                                 addDevice(i + 1);
                                                             } else {
                                                                 // Importerror.push(lst[i].SerialNumber);
-                                                                GPSDevice.update(obj, { where: { id: response[0].id } }).then(function(resUpdate) {
+                                                                GPSDevice.update(obj, { where: { id: response[0].id } }).then(function (resUpdate) {
                                                                     if (obj.AppName == 'MYPINHERE') {
-                                                                        client.set(obj.DeviceId + "ProjectIgnitionStatus", 'true', function(err, replies) {});
+                                                                        client.set(obj.DeviceId + "ProjectIgnitionStatus", 'true', function (err, replies) { });
                                                                     } else {
-                                                                        client.del(obj.DeviceId + "ProjectIgnitionStatus", function(err, replies) {});
+                                                                        client.del(obj.DeviceId + "ProjectIgnitionStatus", function (err, replies) { });
                                                                     }
                                                                     addDevice(i + 1);
                                                                 });
@@ -1344,12 +1351,12 @@ router.post('/uploadExcelDevice', function(req, res) {
                                     GPSDevice.findOrCreate({
                                         where: { IMEI: obj.IMEI },
                                         defaults: obj
-                                    }).then(function(response) {
+                                    }).then(function (response) {
                                         if ((response[1])) {
                                             addDevice(i + 1);
                                         } else {
                                             // Importerror.push(lst[i].SerialNumber);
-                                            GPSDevice.update(obj, { where: { id: response[0].id } }).then(function(resUpdate) {
+                                            GPSDevice.update(obj, { where: { id: response[0].id } }).then(function (resUpdate) {
                                                 addDevice(i + 1);
                                             });
                                         }
@@ -1399,7 +1406,7 @@ router.post('/uploadExcelDevice', function(req, res) {
     });
 });
 
-router.get('/DownloadTemplate', function(req, res) {
+router.get('/DownloadTemplate', function (req, res) {
     var conf = {};
     conf.name = "Sheet1";
     conf.cols = [{
@@ -1429,7 +1436,7 @@ router.get('/DownloadTemplate', function(req, res) {
     res.end(result, 'binary');
 })
 
-router.get('/GetGPSDeviceByIMEI', function(req, res) {
+router.get('/GetGPSDeviceByIMEI', function (req, res) {
     GPSDevice.belongsTo(SimService, {
         foreignKey: {
             name: 'idSim',
@@ -1441,21 +1448,21 @@ router.get('/GetGPSDeviceByIMEI', function(req, res) {
         include: [{
             model: SimService,
         }]
-    }).then(function(response) {
+    }).then(function (response) {
         if (response != null) {
             res.json({ success: true, data: response });
         } else {
             res.json({ success: false, data: response });
         }
-    }).catch(function(err) {
+    }).catch(function (err) {
         res.json({ success: false, data: err });
     })
 })
 
-router.get('/GetSIMDetailBySerialNum', function(req, res) {
-    SimService.findOne({ where: { SerialNum: req.query.SerialNum } }).then(function(response) {
+router.get('/GetSIMDetailBySerialNum', function (req, res) {
+    SimService.findOne({ where: { SerialNum: req.query.SerialNum } }).then(function (response) {
         if (response != null) {
-            GPSDevice.findOne({ where: { idSim: response.id } }).then(function(response1) {
+            GPSDevice.findOne({ where: { idSim: response.id } }).then(function (response1) {
                 if (response1 != null) {
                     res.json({ success: false, message: 'SIM Is Already assigned.', data: 1 });
                 } else {
@@ -1465,7 +1472,7 @@ router.get('/GetSIMDetailBySerialNum', function(req, res) {
         } else {
             res.json({ success: false, message: 'Invalid Serial Number.', data: 0 });
         }
-    }).catch(function(err) {
+    }).catch(function (err) {
         res.json({ success: false, data: err });
     })
 })
@@ -1536,7 +1543,7 @@ router.get('/GetSIMDetailBySerialNum', function(req, res) {
 //     }
 // })
 
-router.post('/SaveSimServiceToIMEI', jsonParser, function(req, res) {
+router.post('/SaveSimServiceToIMEI', jsonParser, function (req, res) {
     var objIMEI = req.body;
     objHeader = req.headers;
     var token = getToken(objHeader);
@@ -1549,11 +1556,11 @@ router.post('/SaveSimServiceToIMEI', jsonParser, function(req, res) {
 
         if (objIMEI.IsIMEI && objIMEI.IsSim) {
             if (objIMEI.IsNewSIM) {
-                SimService.create(objIMEI).then(function(response) {
+                SimService.create(objIMEI).then(function (response) {
                     if (response) {
                         objIMEI.idSim = response.id;
                         if (objIMEI.IsNewIMEI) {
-                            GPSDevice.create(objIMEI).then(function(resIMEI) {
+                            GPSDevice.create(objIMEI).then(function (resIMEI) {
                                 if (resIMEI) {
                                     res.json({ success: true, message: "SIM Serial Num and IMEI Num Attached SuccessFully", data: resIMEI });
                                 } else {
@@ -1561,9 +1568,9 @@ router.post('/SaveSimServiceToIMEI', jsonParser, function(req, res) {
                                 }
                             })
                         } else {
-                            GPSDevice.findOne({ where: { IMEI: objIMEI.IMEI } }).then(function(objIMEIExist) {
+                            GPSDevice.findOne({ where: { IMEI: objIMEI.IMEI } }).then(function (objIMEIExist) {
                                 if (objIMEIExist != null) {
-                                    objIMEIExist.updateAttributes({ idSim: objIMEI.idSim, Type: objIMEI.Type, AppName: objIMEI.AppName }).then(function(response) {
+                                    objIMEIExist.updateAttributes({ idSim: objIMEI.idSim, Type: objIMEI.Type, AppName: objIMEI.AppName }).then(function (response) {
                                         if (response) {
                                             res.json({ success: true, message: "SIM Serial Num and IMEI Num Attached SuccessFully..", data: response });
                                         } else {
@@ -1580,11 +1587,11 @@ router.post('/SaveSimServiceToIMEI', jsonParser, function(req, res) {
                     }
                 })
             } else {
-                SimService.findOne({ where: { SerialNum: objIMEI.SerialNum } }).then(function(objSimExist) {
+                SimService.findOne({ where: { SerialNum: objIMEI.SerialNum } }).then(function (objSimExist) {
                     if (objSimExist != null) {
-                        objSimExist.updateAttributes({ PhoneNum: objIMEI.PhoneNum, idTelCo: objIMEI.idTelCo }).then(function(response) {
+                        objSimExist.updateAttributes({ PhoneNum: objIMEI.PhoneNum, idTelCo: objIMEI.idTelCo }).then(function (response) {
                             if (objIMEI.IsNewIMEI) {
-                                GPSDevice.create(objIMEI).then(function(resIMEI) {
+                                GPSDevice.create(objIMEI).then(function (resIMEI) {
                                     if (resIMEI) {
                                         res.json({ success: true, message: "SIM Serial Num and IMEI Num Attached SuccessFully", data: resIMEI });
                                     } else {
@@ -1592,9 +1599,9 @@ router.post('/SaveSimServiceToIMEI', jsonParser, function(req, res) {
                                     }
                                 })
                             } else {
-                                GPSDevice.findOne({ where: { IMEI: objIMEI.IMEI } }).then(function(objIMEIExist) {
+                                GPSDevice.findOne({ where: { IMEI: objIMEI.IMEI } }).then(function (objIMEIExist) {
                                     if (objIMEIExist != null) {
-                                        objIMEIExist.updateAttributes({ idSim: objIMEI.idSim, Type: objIMEI.Type, AppName: objIMEI.AppName }).then(function(response) {
+                                        objIMEIExist.updateAttributes({ idSim: objIMEI.idSim, Type: objIMEI.Type, AppName: objIMEI.AppName }).then(function (response) {
                                             if (response) {
                                                 res.json({ success: true, message: "SIM Serial Num and IMEI Num Attached SuccessFully..", data: response });
                                             } else {
@@ -1614,7 +1621,7 @@ router.post('/SaveSimServiceToIMEI', jsonParser, function(req, res) {
             }
         } else if (objIMEI.IsIMEI) {
             if (objIMEI.IsNewIMEI) {
-                GPSDevice.create(objIMEI).then(function(resIMEI) {
+                GPSDevice.create(objIMEI).then(function (resIMEI) {
                     if (resIMEI) {
                         res.json({ success: true, message: "IMEI Num Created SuccessFully", data: resIMEI });
                     } else {
@@ -1622,9 +1629,9 @@ router.post('/SaveSimServiceToIMEI', jsonParser, function(req, res) {
                     }
                 })
             } else {
-                GPSDevice.findOne({ where: { IMEI: objIMEI.IMEI } }).then(function(objIMEIExist) {
+                GPSDevice.findOne({ where: { IMEI: objIMEI.IMEI } }).then(function (objIMEIExist) {
                     if (objIMEIExist != null) {
-                        objIMEIExist.updateAttributes({ idSim: objIMEI.idSim, Type: objIMEI.Type, AppName: objIMEI.AppName }).then(function(response) {
+                        objIMEIExist.updateAttributes({ idSim: objIMEI.idSim, Type: objIMEI.Type, AppName: objIMEI.AppName }).then(function (response) {
                             if (response) {
                                 res.json({ success: true, message: "IMEI Num Updated SuccessFully..", data: response });
                             } else {
@@ -1638,7 +1645,7 @@ router.post('/SaveSimServiceToIMEI', jsonParser, function(req, res) {
             }
         } else if (objIMEI.IsSim) {
             if (objIMEI.IsNewSIM) {
-                SimService.create(objIMEI).then(function(resIMEI) {
+                SimService.create(objIMEI).then(function (resIMEI) {
                     if (resIMEI) {
                         res.json({ success: true, message: "SIM Serial Num Created SuccessFully", data: resIMEI });
                     } else {
@@ -1646,9 +1653,9 @@ router.post('/SaveSimServiceToIMEI', jsonParser, function(req, res) {
                     }
                 })
             } else {
-                SimService.findOne({ where: { SerialNum: objIMEI.SerialNum } }).then(function(objSimExist) {
+                SimService.findOne({ where: { SerialNum: objIMEI.SerialNum } }).then(function (objSimExist) {
                     if (objSimExist != null) {
-                        objSimExist.updateAttributes({ PhoneNum: objIMEI.PhoneNum, idTelCo: objIMEI.idTelCo }).then(function(response) {
+                        objSimExist.updateAttributes({ PhoneNum: objIMEI.PhoneNum, idTelCo: objIMEI.idTelCo }).then(function (response) {
                             if (response) {
                                 res.json({ success: true, message: "SIM Serial Num Updated SuccessFully..", data: response });
                             } else {
