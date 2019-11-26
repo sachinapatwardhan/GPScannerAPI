@@ -119,7 +119,7 @@ router.get('/GetAllRenewData', function (req, res) {
         " INNER JOIN (Select * from tblvehicle where IsDelete=0) tv on tv.deviceid =tl.DeviceId " +
         " INNER JOIN tbluserinformation as tu ON tv.iduser = tu.id " +
         " LEFT JOIN tbldeviceagentretailer AS dar ON  dar.deviceId = tv.deviceid " +
-        " LEFT JOIN tblgpsdevice ON tblgpsdevice.DeviceId = tl.DeviceId " +
+        " LEFT JOIN tblgpsdevice ON tblgpsdevice.DeviceId = tv.deviceid " +
         " where tl.IsDeleted=0  " + search +
         " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
     var countquery = "SELECT count(*) as TotalRecord " +
@@ -128,9 +128,9 @@ router.get('/GetAllRenewData', function (req, res) {
         " INNER JOIN (Select * from tblvehicle where IsDelete=0)  tv on tv.deviceid =tl.DeviceId " +
         " INNER JOIN tbluserinformation as tu ON tv.iduser = tu.id " +
         " LEFT JOIN tbldeviceagentretailer AS dar ON  dar.deviceId = tv.deviceid " +
-        " LEFT JOIN tblgpsdevice ON tblgpsdevice.DeviceId = tl.DeviceId " +
+        " LEFT JOIN tblgpsdevice ON tblgpsdevice.DeviceId = tv.deviceid " +
         " where tl.IsDeleted=0 " + search;
-
+    console.log(countquery)
 
     connection.query(query, function (err, response) {
         if (response != undefined) {
@@ -368,15 +368,16 @@ router.get('/ExportAllRenewData', function (req, res) {
 
                     function dateFormat1(date) {
                         if (date != null) {
-                            return moment.utc(date).utcOffset(objParam.CurrentOffset).format('DD-MM-YYYY');
-
+                            // return moment.utc(date).utcOffset(objParam.CurrentOffset).format('DD-MM-YYYY');
+                            return moment(moment.utc(date).toDate()).format("DD-MM-YYYY");
                         } else {
                             return 'N/A';
                         }
                     }
                     function dateFormat(date) {
                         if (date != null) {
-                            return moment.utc(date).utcOffset(objParam.CurrentOffset).format('DD-MM-YYYY hh:mm:ss a');
+                            // return moment.utc(date).utcOffset(objParam.CurrentOffset).format('DD-MM-YYYY hh:mm:ss a');
+                            return moment(moment.utc(date).toDate()).format("DD-MM-YYYY hh:mm:ss a");
                         } else {
                             return 'N/A';
                         }
