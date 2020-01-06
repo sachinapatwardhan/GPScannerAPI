@@ -10,7 +10,7 @@ router.get('/GetAllGPSByTimeZoneDate', function (req, res) {
 
     wherecondition = '';
     if (req.query.DeviceId != 'All' && req.query.DeviceId != '-1' && req.query.DeviceId != null) {
-        wherecondition = ' and tblgpsdata.deviceid in (' + req.query.DeviceId + ')';
+        wherecondition = " and tblgpsdata.deviceid in ('" + req.query.DeviceId + "')";
     }
     var Startdate = req.query.TodayStartDateTime;
     var Enddate = req.query.TodayEndDateTime;
@@ -26,7 +26,7 @@ router.get('/GetAllGPSByTimeZoneDate', function (req, res) {
     }
 
     var query = "select tblgpsdata.Date,tblgpsdata.IsPatchEngine as IsEngine,tblgpsdata.Speed,tblgpsdata.Direction,tblgpsdata.Latitude,tblgpsdata.Longitude,tblvehicle.Name from tblgpsdata left join tblvehicle on tblgpsdata.deviceid = tblvehicle.deviceid Where tblgpsdata.Date >= '" + unixStartdate + "' and tblgpsdata.Date <= '" + unixEnddate + "'" + wherecondition + orderby + " LIMIT " + req.query.length + " OFFSET " + req.query.start + ";"
-    var Count = "select count(*) AS Totalrecord from tblgpsdata left join tblvehicle on tblgpsdata.deviceid = tblvehicle.deviceid Where tblgpsdata.Date >= '" + unixStartdate + "' and tblgpsdata.Date <= '" + unixEnddate + "'" + wherecondition + ";"
+    var Count = "select count(*) AS Totalrecord from tblgpsdata Where tblgpsdata.Date >= '" + unixStartdate + "' and tblgpsdata.Date <= '" + unixEnddate + "'" + wherecondition + ";"
     connectionreport.query(query, function (err, lstGPSData, fields) {
         console.log(err)
         if (!err) {
@@ -100,7 +100,7 @@ router.get('/ExportDetailTripReport', function (req, res) {
 
     wherecondition = '';
     if (req.query.DeviceId != 'All' && req.query.DeviceId != '-1' && req.query.DeviceId != null) {
-        wherecondition = ' and tblgpsdata.deviceid=' + req.query.DeviceId;
+        wherecondition = " and tblgpsdata.deviceid='" + req.query.DeviceId + "'";
     }
     var Startdate = req.query.StartDate;
     var Enddate = req.query.EndDate;
@@ -292,7 +292,7 @@ router.get('/PrintDetailTripReport', function (req, res) {
 
     wherecondition = '';
     if (req.query.DeviceId != 'All' && req.query.DeviceId != '-1' && req.query.DeviceId != null) {
-        wherecondition = ' and tblgpsdata.deviceid=' + req.query.DeviceId;
+        wherecondition = " and tblgpsdata.deviceid='" + req.query.DeviceId + "'";
     }
     var Startdate = req.query.StartDate;
     var Enddate = req.query.EndDate;
@@ -978,26 +978,35 @@ router.get('/GetAllEngineData', function (req, res) {
 
 
     if (objParam.DeviceId != null && objParam.DeviceId != '' && objParam.DeviceId != undefined) {
+        var DeviceId = "";
+        var lstDeviceId = objParam.DeviceId.toString().split(",");
+        for (var i = 0; i < lstDeviceId.length; i++) {
+            if (DeviceId == "") {
+                DeviceId = "'" + lstDeviceId[i] + "'";
+            } else {
+                DeviceId = DeviceId + ",'" + lstDeviceId[i] + "'";
+            }
+        }
         if (search != "") {
-            search += " And tblgpsdata.DeviceId in (" + objParam.DeviceId + ")";
+            search += " And tblgpsdata.DeviceId in (" + DeviceId + ")";
         } else {
-            search += " Where tblgpsdata.DeviceId in (" + objParam.DeviceId + ")";
+            search += " Where tblgpsdata.DeviceId in (" + DeviceId + ")";
         }
     }
 
     if (objParam.StartDate != null && objParam.StartDate != '' && objParam.StartDate != undefined) {
         if (search != "") {
-            search += " And tblgpsdata.Date >= '" + unixStartdate + "'";
+            search += " And tblgpsdata.Date >= " + unixStartdate + "";
         } else {
-            search += " Where tblgpsdata.Date >= '" + unixStartdate + "'";
+            search += " Where tblgpsdata.Date >= " + unixStartdate + "";
         }
     }
 
     if (objParam.EndDate != null && objParam.EndDate != '' && objParam.EndDate != undefined) {
         if (search != "") {
-            search += " And tblgpsdata.Date <= '" + unixEnddate + "'";
+            search += " And tblgpsdata.Date <= " + unixEnddate + "";
         } else {
-            search += " Where tblgpsdata.Date <= '" + unixEnddate + "'";
+            search += " Where tblgpsdata.Date <= " + unixEnddate + "";
         }
     }
     var query = "SELECT  tblgpsdata.Datetime, tblgpsdata.Date, tblgpsdata.Latitude, tblgpsdata.Longitude, tblgpsdata.DeviceId, tblgpsdata.IsPatchEngine as IsEngine, tblgpsdata.Speed,tblgpsdata.GPSPositioning, tblvehicle.Name, tblvehicle.iduser FROM tblgpsdata LEFT JOIN tblvehicle ON tblvehicle.deviceid = tblgpsdata.DeviceId " + search;
@@ -1154,26 +1163,35 @@ router.get('/ExportEngineReport', function (req, res) {
 
 
     if (objParam.DeviceId != null && objParam.DeviceId != '' && objParam.DeviceId != undefined) {
+        var DeviceId = "";
+        var lstDeviceId = objParam.DeviceId.toString().split(",");
+        for (var i = 0; i < lstDeviceId.length; i++) {
+            if (DeviceId == "") {
+                DeviceId = "'" + lstDeviceId[i] + "'";
+            } else {
+                DeviceId = DeviceId + ",'" + lstDeviceId[i] + "'";
+            }
+        }
         if (search != "") {
-            search += " And tblgpsdata.DeviceId in (" + objParam.DeviceId + ")";
+            search += " And tblgpsdata.DeviceId in (" + DeviceId + ")";
         } else {
-            search += " Where tblgpsdata.DeviceId in (" + objParam.DeviceId + ")";
+            search += " Where tblgpsdata.DeviceId in (" + DeviceId + ")";
         }
     }
 
     if (objParam.StartDate != null && objParam.StartDate != '' && objParam.StartDate != undefined) {
         if (search != "") {
-            search += " And tblgpsdata.Date >= '" + unixStartdate + "'";
+            search += " And tblgpsdata.Date >= " + unixStartdate + "";
         } else {
-            search += " Where tblgpsdata.Date >= '" + unixStartdate + "'";
+            search += " Where tblgpsdata.Date >= " + unixStartdate + "";
         }
     }
 
     if (objParam.EndDate != null && objParam.EndDate != '' && objParam.EndDate != undefined) {
         if (search != "") {
-            search += " And tblgpsdata.Date <= '" + unixEnddate + "'";
+            search += " And tblgpsdata.Date <= " + unixEnddate + "";
         } else {
-            search += " Where tblgpsdata.Date <= '" + unixEnddate + "'";
+            search += " Where tblgpsdata.Date <= " + unixEnddate + "";
         }
     }
     // var query = "SELECT tblgpsdata.Id, tblgpsdata.Datetime, tblgpsdata.Date, tblgpsdata.Latitude, tblgpsdata.Longitude, tblgpsdata.DeviceId, tblgpsdata.IsEngine, tblgpsdata.Speed, tblvehicle.Name, tblvehicle.iduser FROM tblgpsdata LEFT JOIN tblvehicle ON tblvehicle.deviceid = tblgpsdata.DeviceId " + search;
@@ -1414,26 +1432,35 @@ router.get('/PrintEngineReport', function (req, res) {
 
 
     if (objParam.DeviceId != null && objParam.DeviceId != '' && objParam.DeviceId != undefined) {
+        var DeviceId = "";
+        var lstDeviceId = objParam.DeviceId.toString().split(",");
+        for (var i = 0; i < lstDeviceId.length; i++) {
+            if (DeviceId == "") {
+                DeviceId = "'" + lstDeviceId[i] + "'";
+            } else {
+                DeviceId = DeviceId + ",'" + lstDeviceId[i] + "'";
+            }
+        }
         if (search != "") {
-            search += " And tblgpsdata.DeviceId in (" + objParam.DeviceId + ")";
+            search += " And tblgpsdata.DeviceId in (" + DeviceId + ")";
         } else {
-            search += " Where tblgpsdata.DeviceId in (" + objParam.DeviceId + ")";
+            search += " Where tblgpsdata.DeviceId in (" + DeviceId + ")";
         }
     }
 
     if (objParam.StartDate != null && objParam.StartDate != '' && objParam.StartDate != undefined) {
         if (search != "") {
-            search += " And tblgpsdata.Date >= '" + unixStartdate + "'";
+            search += " And tblgpsdata.Date >= " + unixStartdate + "";
         } else {
-            search += " Where tblgpsdata.Date >= '" + unixStartdate + "'";
+            search += " Where tblgpsdata.Date >= " + unixStartdate + "";
         }
     }
 
     if (objParam.EndDate != null && objParam.EndDate != '' && objParam.EndDate != undefined) {
         if (search != "") {
-            search += " And tblgpsdata.Date <= '" + unixEnddate + "'";
+            search += " And tblgpsdata.Date <= " + unixEnddate + "";
         } else {
-            search += " Where tblgpsdata.Date <= '" + unixEnddate + "'";
+            search += " Where tblgpsdata.Date <= " + unixEnddate + "";
         }
     }
     var query = "SELECT  tblgpsdata.Datetime, tblgpsdata.Date, tblgpsdata.Latitude, tblgpsdata.Longitude, tblgpsdata.DeviceId, tblgpsdata.IsPatchEngine as IsEngine, tblgpsdata.Speed,tblgpsdata.GPSPositioning, tblvehicle.Name, tblvehicle.iduser FROM tblgpsdata LEFT JOIN tblvehicle ON tblvehicle.deviceid = tblgpsdata.DeviceId " + search;
