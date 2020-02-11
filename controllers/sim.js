@@ -497,4 +497,18 @@ router.get('/CheckSimDetail', function (req, res) {
     });
 });
 
+router.get('/GetSimSerialByDeviceId', function (req, res) {
+    var query = " SELECT ts.SerialNum,ts.PhoneNum,tg.DeviceId,tg.Type,tg.AppName,tc.Country FROM" +
+        " tblgpsdevice tg" +
+        " INNER JOIN tblsimdetails ts ON tg.idSim= ts.id" +
+        " INNER JOIN tblcountrymgmt tc ON tc.id= tg.CountryId where tg.DeviceId='" + req.query.DeviceId + "'";
+    connection.query(query, function (err, response) {
+        if (!err && response.length > 0) {
+            res.json(response);
+        } else {
+            res.json([]);
+        }
+    });
+})
+
 module.exports = router
