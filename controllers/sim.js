@@ -5,6 +5,7 @@ var User = models.tbluserinformation;
 var SIM = models.tblsimdetails;
 var AppInfo = models.tblappinfo;
 var TelCo = models.tbltelco;
+var GPSDevice = models.tblgpsdevice;
 //End of Tables
 
 router.get('/GetAllSIMInfo', function (req, res) {
@@ -498,12 +499,26 @@ router.get('/CheckSimDetail', function (req, res) {
 });
 
 router.get('/GetSimSerialByDeviceId', function (req, res) {
-    var query = " SELECT ts.SerialNum,ts.PhoneNum,tg.DeviceId,tg.Type,tg.AppName,tc.Country FROM" +
+    var query = " SELECT ts.SerialNum,ts.PhoneNum,tg.DeviceId,tg.Type,tg.AppName,tc.Country,IFNULL(tsu.email,tsu2.email) as SalesAgent,tsu1.email as Distributor,CONVERT_TZ(tl.ExpiryDate,'+00:00','" + CurrentOffset + "') as ExpiryDate,CASE WHEN tl.CreatedDate is not null then CONVERT_TZ(tl.CreatedDate,'+00:00','" + CurrentOffset + "') else CONVERT_TZ(tv.CreatedDate,'+00:00','" + CurrentOffset + "') end as CreatedDate,CASE WHEN tl.id is null then false else true END as IsLicenceHave,tl.LicenceNo FROM" +
         " tblgpsdevice tg" +
-        " INNER JOIN tblsimdetails ts ON tg.idSim= ts.id" +
-        " INNER JOIN tblcountrymgmt tc ON tc.id= tg.CountryId where tg.DeviceId='" + req.query.DeviceId + "'";
+        " left JOIN tblsimdetails ts ON tg.idSim= ts.id" +
+        " left JOIN tbllicencemanager tl ON tg.DeviceId= tl.DeviceId" +
+        " left JOIN tblvehicle tv ON tg.DeviceId= tv.deviceid and tv.IsDelete=0" +
+        " left JOIN tbluserinformation tsu2 ON tsu2.id= tg.idSalesAgent" +
+        " left JOIN tbldeviceagentretailer tdr ON tdr.deviceId= tg.DeviceId" +
+        " left JOIN tbluserinformation tsu ON tsu.id= tdr.agentId" +
+        " left JOIN tbluserinformation tsu1 ON tsu1.id= tdr.idDistributor" +
+        " left JOIN tblcountrymgmt tc ON tc.id= tg.CountryId where tg.DeviceId='" + req.query.DeviceId + "'";
     connection.query(query, function (err, response) {
         if (!err && response.length > 0) {
+            for (var i = 0; i < response.length; i++) {
+                if (response[i].ExpiryDate != null) {
+                    response[i].ExpiryDate = convertdateformat(response[i].ExpiryDate, 'Excel Export');
+                }
+                if (response[i].CreatedDate != null) {
+                    response[i].CreatedDate = convertdateformat(response[i].CreatedDate, 'Excel Export');
+                }
+            }
             res.json(response);
         } else {
             res.json([]);
@@ -511,4 +526,185 @@ router.get('/GetSimSerialByDeviceId', function (req, res) {
     });
 })
 
+router.get('/GetDeviceBySimSerial', function (req, res) {
+    var query = "select group_concat(tgd.DeviceId) as Deviceids from tblsimdetails ts inner join tblgpsdevice tgd on ts.id=tgd.idSim where ts.SerialNum='" + req.query.SerialNum + "'";
+    connection.query(query, function (err, response) {
+        if (!err && response.length > 0) {
+            res.json(response[0].Deviceids);
+        } else {
+            res.json('');
+        }
+    });
+})
+
+router.get('/GetExpiryByDeviceID', function (req, res) {
+    var query = "select CONVERT_TZ(renewaldate,'+00:00','" + CurrentOffset + "') as ExpiryDate,CONVERT_TZ(CreatedDate,'+00:00','" + CurrentOffset + "') as CreatedDate from tblvehicle where deviceid='" + req.query.DeviceId + "' and IsDelete=false;";
+    connection.query(query, function (err, response) {
+        if (!err && response.length > 0) {
+            var obj = new Object();
+            obj.ExpiryDate = convertdateformat(response[0].ExpiryDate, 'Excel Export');
+            obj.CreatedDate = convertdateformat(response[0].CreatedDate, 'Excel Export');
+            res.json(obj);
+        } else {
+            res.json({});
+        }
+    });
+})
+
+router.get('/GetFirstGPSDataByDeviceID', function (req, res) {
+    var query = "select * from tblgpsdata where DeviceId='" + req.query.DeviceId + "' order by Date limit 1;";
+    connection.query(query, function (err, response) {
+        if (!err && response.length > 0) {
+            var obj = new Object();
+            obj.IsEngine = response[0].IsEngine;
+            obj.Latitude = response[0].Latitude;
+            obj.Longitude = response[0].Longitude;
+            obj.Date = response[0].Date;
+            obj.DisplayDate = convertdateformat(new Date(response[0].Date * 1000), 'Excel Export');
+            obj.Speed = response[0].Speed;
+            obj.Direction = response[0].Direction;
+            obj.OdoMeter = response[0].OdoMeter;
+            obj.AD1 = response[0].AD1;
+            obj.AD2 = response[0].AD2;
+            obj.IsWiringForAntiTamper = response[0].IsWiringForAntiTamper;
+            res.json(obj);
+        } else {
+            res.json({});
+        }
+    });
+})
+
+router.get('/GetDeviceExpiryBySimSerial', function (req, res) {
+    var query = "select tgd.DeviceId,CONVERT_TZ(tv.renewaldate,'+00:00','" + CurrentOffset + "') as ExpiryDate,CONVERT_TZ(tv.CreatedDate,'+00:00','" + CurrentOffset + "') as CreatedDate from tblsimdetails ts inner join tblgpsdevice tgd on ts.id=tgd.idSim left join tblvehicle tv on tv.deviceid=tgd.DeviceId where ts.SerialNum='" + req.query.SerialNum + "'";
+    connection.query(query, function (err, response) {
+        if (!err && response.length > 0) {
+            var obj = new Object();
+            var Deviceids = '';
+            var ExpiryDate = '';
+            var CreatedDate = '';
+            for (var i = 0; i < response.length; i++) {
+                if (response[i].ExpiryDate != null) {
+                    var ExDate = convertdateformat(response[i].ExpiryDate, 'Excel Export');
+                } else {
+                    var ExDate = 'N/A';
+                }
+                if (response[i].CreatedDate != null) {
+                    var CrDate = convertdateformat(response[i].CreatedDate, 'Excel Export');
+                } else {
+                    var CrDate = 'N/A';
+                }
+                if (Deviceids == '') {
+                    Deviceids = Deviceids + response[i].DeviceId;
+
+                    ExpiryDate = ExpiryDate + ExDate;
+                    CreatedDate = CreatedDate + CrDate;
+                } else {
+                    Deviceids = Deviceids + ',' + response[i].DeviceId;
+                    ExpiryDate = ExpiryDate + ',' + ExDate;
+                    CreatedDate = CreatedDate + ',' + CrDate;
+                }
+            }
+            obj.Deviceids = Deviceids;
+            obj.ExpiryDate = ExpiryDate;
+            obj.CreatedDate = CreatedDate;
+            res.json(obj);
+        } else {
+            res.json({});
+        }
+    });
+})
+
+router.get('/ExportWithSalesAgent', function (req, res) {
+    var conf = {};
+    conf.cols = [{
+        caption: 'DeviceId',
+        type: 'string'
+    },
+    {
+        caption: 'SalesAgent',
+        type: 'string'
+    }];
+
+    // var query = " SELECT tda.deviceId,tu.email FROM tbldeviceagentretailer tda inner join tbluserinformation tu on tu.id=tda.agentId where agentId is not null;"
+    var query = "select tg.deviceId,tu.email from tblgpsdevice tg left join tbldeviceagentretailer tds on tg.DeviceId=tds.deviceId left join tbluserinformation tu on tds.agentId=tu.id;"
+    connection.query(query, function (err, response) {
+        conf.rows = [];
+        if (response.length > 0) {
+            for (var i = 0; i < response.length; i++) {
+                var row = [];
+                var DeviceId = '';
+                var SalesAgent = '';
+                if (response[i].deviceId != null && response[i].deviceId != undefined && response[i].deviceId != '') {
+                    DeviceId = response[i].deviceId.toString();
+                }
+                if (response[i].email != null && response[i].email != undefined && response[i].email != '') {
+                    SalesAgent = response[i].email.toString();
+                }
+                row.push(DeviceId, SalesAgent);
+                conf.rows.push(row);
+            }
+        }
+        var result = nodeExcel.execute(conf);
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats');
+        res.setHeader("Content-Disposition", "attachment; filename=DeviceWithSalesAgent.xlsx");
+        res.end(result, 'binary');
+    });
+});
+
+router.get('/ExportWithoutSalesAgent', function (req, res) {
+    var conf = {};
+    conf.cols = [{
+        caption: 'DeviceId',
+        type: 'string'
+    },
+    {
+        caption: 'SalesAgent',
+        type: 'string'
+    }];
+
+    var query = " select deviceId from tblgpsdevice where deviceId not in (select deviceId from tbldeviceagentretailer where agentId is not null);"
+    connection.query(query, function (err, response) {
+        conf.rows = [];
+        if (response.length > 0) {
+            for (var i = 0; i < response.length; i++) {
+                var row = [];
+                var DeviceId = '';
+                var SalesAgent = '';
+                if (response[i].deviceId != null && response[i].deviceId != undefined && response[i].deviceId != '') {
+                    DeviceId = response[i].deviceId.toString();
+                }
+
+                row.push(DeviceId, SalesAgent);
+                conf.rows.push(row);
+            }
+        }
+        var result = nodeExcel.execute(conf);
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats');
+        res.setHeader("Content-Disposition", "attachment; filename=DeviceWithOutSalesAgent.xlsx");
+        res.end(result, 'binary');
+    });
+});
+
+router.get('/DetachSimTracker', function (req, res) {
+    GPSDevice.findOne({
+        where: {
+            DeviceId: req.query.DeviceId,
+        }
+    }).then(function (ObjExist) {
+        if (ObjExist) {
+            ObjExist.updateAttributes({
+                idSim: null,
+            }).then(function (response) {
+                if (response) {
+                    funAuditLog.CreateAuditLog('Detach Sim Tracker', 'Direct URL', 'update tracker SIM: (' + ObjExist.DeviceId + ')');
+                    res.json({ success: true, message: "Tracker detached successfully." });
+                } else {
+                    res.json({ success: false, message: "Tacker not detached." })
+                }
+            })
+        } else {
+            res.json({ success: false, message: "Invalid GPS Device." });
+        }
+    })
+})
 module.exports = router

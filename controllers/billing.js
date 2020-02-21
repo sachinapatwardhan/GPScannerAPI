@@ -110,7 +110,7 @@ router.get('/GetAllRenewData', function (req, res) {
         search += ' and tblgpsdevice.CountryId = ' + objParam.idCountry;
     }
     if (objParam.idSalesAgent != null && objParam.idSalesAgent != '' && objParam.idSalesAgent != undefined) {
-        search += ' and tblgpsdevice.idSalesAgent = ' + objParam.idSalesAgent;
+        search += ' and (tblgpsdevice.idSalesAgent = ' + objParam.idSalesAgent + ' or dar.agentId=' + objParam.idSalesAgent + ')';
     }
     var query = "SELECT tl.Id, tu.email,CONVERT_TZ(tu.LastLogin,'+00:00','" + CurrentOffset + "') as LastLoginDate ,tl.DeviceId,tv.iduser,tu.phone,tv.Name as VehicleName,ta.Id as idApp,ta.AppName,tl.LicenceRenewalType,tl.LicenceType,ta.LicenceRenewalType as appLicenceRenewalType,ta.LicenceType as appLicenceType, " +
         "CONVERT_TZ(tl.ExpiryDate,'+00:00','" + CurrentOffset + "') as ExpiryDate " +
