@@ -707,4 +707,51 @@ router.get('/DetachSimTracker', function (req, res) {
         }
     })
 })
+
+router.get('/ExportSimExport', function (req, res) {
+    var conf = {};
+    conf.cols = [{
+        caption: 'SerialNum',
+        type: 'string'
+    },
+    {
+        caption: 'Deviceids',
+        type: 'string'
+    },
+    {
+        caption: 'AppName',
+        type: 'string'
+    }];
+
+    var query = " SELECT ts.SerialNum,group_concat(tg.DeviceId) as Deviceids,group_concat(tg.AppName) as AppName FROM tblsimdetails ts left join tblgpsdevice tg on ts.id=tg.idSim group by ts.id;"
+    connection.query(query, function (err, response) {
+        conf.rows = [];
+        if (response.length > 0) {
+            for (var i = 0; i < response.length; i++) {
+                var row = [];
+                var SerialNum = '';
+                var DeviceId = '';
+                var AppName = '';
+                if (response[i].Deviceids != null && response[i].Deviceids != undefined && response[i].Deviceids != '') {
+                    DeviceId = response[i].Deviceids.toString();
+                }
+
+                if (response[i].SerialNum != null && response[i].SerialNum != undefined && response[i].SerialNum != '') {
+                    SerialNum = response[i].SerialNum.toString();
+                }
+
+                if (response[i].AppName != null && response[i].AppName != undefined && response[i].AppName != '') {
+                    AppName = response[i].AppName.toString();
+                }
+
+                row.push(SerialNum, DeviceId, AppName);
+                conf.rows.push(row);
+            }
+        }
+        var result = nodeExcel.execute(conf);
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats');
+        res.setHeader("Content-Disposition", "attachment; filename=SimExport.xlsx");
+        res.end(result, 'binary');
+    });
+});
 module.exports = router
