@@ -9,11 +9,11 @@ module.exports = function(sequelize, DataTypes) {
       autoIncrement: true
     },
     SerialNum: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(45),
       allowNull: true
     },
     PhoneNum: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(45),
       allowNull: true
     },
     CreatedDate: {
@@ -26,6 +26,18 @@ module.exports = function(sequelize, DataTypes) {
     },
     idApp: {
       type: DataTypes.INTEGER(11),
+      allowNull: true
+    },
+    Status: {
+      type: DataTypes.STRING(45),
+      allowNull: true
+    },
+    StartDate: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    SpoilDate: {
+      type: DataTypes.DATE,
       allowNull: true
     }
   }, {

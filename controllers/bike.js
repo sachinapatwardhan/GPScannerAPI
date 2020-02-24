@@ -1166,6 +1166,7 @@ router.get('/SaveVehicleold', jsonParser, function (req, res) {
                                                 objVehicle.renewaldate = ExpiryDate;
                                                 Vehicle.create(objVehicle).then(function (response) {
                                                     if (response) {
+                                                        Commonfunction.updateSIMStartDate(objVehicle.deviceid);
                                                         Commonfunction.UpdateVehicleRedis(objVehicle.deviceid);
                                                         funAuditLog.CreateAuditLog('Create Vehicle', UserExist.username, 'SaveVehicle(IMEI:' + objVehicle.IMEI + ' , UserId : ' + objVehicle.iduser + ')');
 
@@ -1361,6 +1362,7 @@ router.get('/SaveVehicleold', jsonParser, function (req, res) {
                                                 objVehicle.renewaldate = ExpiryDate;
                                                 Vehicle.create(objVehicle).then(function (response) {
                                                     if (response) {
+                                                        Commonfunction.updateSIMStartDate(objVehicle.deviceid);
                                                         Commonfunction.UpdateVehicleRedis(objVehicle.deviceid);
                                                         funAuditLog.CreateAuditLog('Create Vehicle', UserExist.username, 'SaveVehicle(IMEI:' + objVehicle.IMEI + ' , UserId : ' + objVehicle.iduser + ')');
 
@@ -1631,6 +1633,7 @@ router.get('/SaveVehicle', jsonParser, function (req, res) {
                                                                 objVehicle.renewaldate = LicenceNores.data.ExpiryDate;
                                                                 Vehicle.create(objVehicle).then(function (response) {
                                                                     if (response) {
+                                                                        Commonfunction.updateSIMStartDate(objVehicle.deviceid);
                                                                         Commonfunction.UpdateVehicleRedis(objVehicle.deviceid);
                                                                         funAuditLog.CreateAuditLog('Create Vehicle', UserExist.username, 'SaveVehicle(IMEI:' + objVehicle.IMEI + ' , UserId : ' + objVehicle.iduser + ')');
 
@@ -1852,6 +1855,7 @@ router.get('/SaveVehicle', jsonParser, function (req, res) {
                                                                 objVehicle.renewaldate = LicenceNoExist.ExpiryDate;
                                                                 Vehicle.create(objVehicle).then(function (response) {
                                                                     if (response) {
+                                                                        Commonfunction.updateSIMStartDate(objVehicle.deviceid);
                                                                         Commonfunction.UpdateVehicleRedis(objVehicle.deviceid);
                                                                         funAuditLog.CreateAuditLog('Create Vehicle', UserExist.username, 'SaveVehicle(DeviceId:' + objVehicle.deviceid + ' , UserId : ' + objVehicle.iduser + ')');
                                                                         if (objGpsDevice.AppName == 'Tracking') {

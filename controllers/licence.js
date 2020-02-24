@@ -19,7 +19,7 @@ var Commonfunction = require('./common.js');
 var Sequelize = require('sequelize');
 var sequelize = require('../models1').sequelize;
 
-router.get('/GetAllLicence', function(req, res) {
+router.get('/GetAllLicence', function (req, res) {
     var objParam = req.query;
     var objColumns = objParam.columns;
     var objOrder = objParam.order;
@@ -34,6 +34,7 @@ router.get('/GetAllLicence', function(req, res) {
         search = search + 'tl.CreatedDate like "%' + objSearch + '%" or ';
         search = search + 'tu.email like "%' + objSearch + '%" or ';
         search = search + 'tu.phone like "%' + objSearch + '%" or ';
+        search = search + 'tu.country like "%' + objSearch + '%" or ';
         search = search + 'ta.AppName like "%' + objSearch + '%" or ';
         search = search + 'tl.LicenceType like "%' + objSearch + '%" or ';
         search = search + 'tl.LicenceRenewalType like "%' + objSearch + '%" or ';
@@ -59,12 +60,18 @@ router.get('/GetAllLicence', function(req, res) {
             search += " AND tl.ExpiryDate <= '" + convertdateformat(req.query.EndDate, 3) + "'";
         }
     }
+    if (req.query.country != null && req.query.country != undefined && req.query.country != '') {
+        search += " and tu.country='" + req.query.country + "' ";
+    }
 
     if (req.query.idApp != null && req.query.idApp != undefined && req.query.idApp != '') {
         search += " and ta.Id=" + req.query.idApp + " ";
     }
+    if (req.query.IsExpired != null && req.query.IsExpired != undefined && req.query.IsExpired != '') {
+        search += " and tl.IsExpired=" + req.query.IsExpired + " ";
+    }
 
-    var query = "SELECT tl.Id, tu.email,tl.DeviceId,tl.LicenceNo,tl.IdUser,tu.phone,tv.Name as VehicleName,ta.AppName,tl.LicenceRenewalType,tl.LicenceType,ta.LicenceRenewalType as appLicenceRenewalType,ta.LicenceType as appLicenceType, " +
+    var query = "SELECT tl.Id,tl.IsExpired, tu.email,tl.DeviceId,tl.LicenceNo,tl.IdUser,tu.country,tu.phone,tv.Name as VehicleName,ta.AppName,tl.LicenceRenewalType,tl.LicenceType,ta.LicenceRenewalType as appLicenceRenewalType,ta.LicenceType as appLicenceType, " +
         "CONVERT_TZ(tl.CreatedDate,'+00:00','" + CurrentOffset + "') as CreatedDate, " +
         "CONVERT_TZ(tl.ExpiryDate,'+00:00','" + CurrentOffset + "') as ExpiryDate, " +
         "CONVERT_TZ(tl.ModifiedDate,'+00:00','" + CurrentOffset + "') as ModifiedDate " +
@@ -80,9 +87,10 @@ router.get('/GetAllLicence', function(req, res) {
         " LEFT JOIN (Select * from tblvehicle where IsDelete=0)  tv on tv.deviceid =tl.DeviceId " +
         " LEFT JOIN tbluserinformation as tu ON tv.iduser = tu.id " +
         " where tl.IsDeleted=0 " + search;
-    connection.query(query, function(err, response) {
+
+    connection.query(query, function (err, response) {
         if (response != undefined) {
-            connection.query(countquery, function(err, lstCount, fields) {
+            connection.query(countquery, function (err, lstCount, fields) {
                 var response1 = new Object();
                 response1.draw = objParam.draw;
                 response1.recordsTotal = lstCount[0].TotalRecord;
@@ -102,7 +110,197 @@ router.get('/GetAllLicence', function(req, res) {
     })
 })
 
-router.get('/SaveLicenceDetail', function(req, res) {
+
+router.get('/ExportAllLicence', function (req, res) {
+    var conf = {};
+    conf.name = "Sheet1";
+    conf.cols = [{
+        caption: 'Licence No',
+        type: 'string'
+    }, {
+        caption: 'Device ID',
+        type: 'string'
+    }, {
+        caption: 'User Email',
+        type: 'string'
+    },
+    {
+        caption: 'Contact No',
+        type: 'string'
+    }, {
+        caption: 'Country',
+        type: 'string'
+    }, {
+        caption: 'Expiry Date',
+        type: 'string'
+    },
+    {
+        caption: 'Days Left',
+        type: 'string'
+    }, {
+        caption: 'Is Expired',
+        type: 'string'
+    },
+    {
+        caption: 'Licence Type',
+        type: 'string'
+    }, {
+        caption: 'Licence Renewal Type',
+        type: 'string'
+    }, {
+        caption: 'App Name',
+        type: 'string'
+    },
+    {
+        caption: ' Created Date',
+        type: 'string'
+    },
+
+    ];
+    var objParam = req.query;
+    var objColumns = JSON.parse(objParam.columns);
+    var objOrder = JSON.parse(objParam.order);
+    var objSearch = objParam.search;
+    if (objColumns[parseInt(objOrder[0].column)].data != 'ExpiryDate') {
+        var Orderby = objColumns[parseInt(objOrder[0].column)].data + ' ' + objOrder[0].dir;
+    }
+    else {
+        var Orderby = "tl." + objColumns[parseInt(objOrder[0].column)].data + ' ' + objOrder[0].dir;
+    }
+    var search = '';
+    if (objSearch != null && objSearch != '') {
+        search += ' and (tl.DeviceId like "%' + objSearch + '%" or ';
+        search = search + 'tl.LicenceNo like "%' + objSearch + '%" or ';
+        search = search + 'tl.ExpiryDate like "%' + objSearch + '%" or ';
+        search = search + 'tl.CreatedDate like "%' + objSearch + '%" or ';
+        search = search + 'tu.email like "%' + objSearch + '%" or ';
+        search = search + 'tu.phone like "%' + objSearch + '%" or ';
+        search = search + 'tu.country like "%' + objSearch + '%" or ';
+        search = search + 'ta.AppName like "%' + objSearch + '%" or ';
+        search = search + 'tl.LicenceType like "%' + objSearch + '%" or ';
+        search = search + 'tl.LicenceRenewalType like "%' + objSearch + '%" or ';
+        search = search + 'tv.Name like "%' + objSearch + '%") ';
+    };
+
+    if (req.query.StartDate != '' && req.query.EndDate != '') {
+        if (search == '') {
+            search += " AND tl.ExpiryDate between  '" + convertdateformat(req.query.StartDate, 3) + "' AND '" + convertdateformat(req.query.EndDate, 3) + "'";
+        } else {
+            search += search + " AND   tl.ExpiryDate between  '" + convertdateformat(req.query.StartDate, 3) + "' AND '" + convertdateformat(req.query.EndDate, 3) + "'";
+        }
+    } else if (req.query.StartDate != null && req.query.StartDate != '' && req.query.StartDate != undefined) {
+        if (search == '') {
+            search += " AND  tl.ExpiryDate >= '" + convertdateformat(req.query.StartDate, 3) + "'";
+        } else {
+            search += " AND tl.ExpiryDate >= '" + convertdateformat(req.query.StartDate, 3) + "'";
+        }
+    } else if (req.query.EndDate != null && req.query.EndDate != '' && req.query.EndDate != undefined) {
+        if (search == '') {
+            search += " AND tl.ExpiryDate <= '" + convertdateformat(req.query.EndDate, 3) + "'";
+        } else {
+            search += " AND tl.ExpiryDate <= '" + convertdateformat(req.query.EndDate, 3) + "'";
+        }
+    }
+    if (req.query.country != null && req.query.country != undefined && req.query.country != '') {
+        search += " and tu.country='" + req.query.country + "' ";
+    }
+
+    if (req.query.idApp != null && req.query.idApp != undefined && req.query.idApp != '') {
+        search += " and ta.Id=" + req.query.idApp + " ";
+    }
+    if (req.query.IsExpired != null && req.query.IsExpired != undefined && req.query.IsExpired != '') {
+        search += " and tl.IsExpired=" + req.query.IsExpired + " ";
+    }
+    objParam.CurrentOffset = decodeURIComponent(objParam.CurrentOffset);
+    var query = "SELECT tl.Id,tl.IsExpired, tu.email,tl.DeviceId,tl.LicenceNo,tl.IdUser,tu.country,tu.phone,tv.Name as VehicleName,ta.AppName,tl.LicenceRenewalType,tl.LicenceType,ta.LicenceRenewalType as appLicenceRenewalType,ta.LicenceType as appLicenceType, " +
+        "DATE_FORMAT(CONVERT_TZ(tl.CreatedDate,'+00:00','" + objParam.CurrentOffset + "'),'%d-%m-%Y %l:%i:%s %p') as CreatedDate, " +
+        "DATE_FORMAT(CONVERT_TZ(tl.ExpiryDate,'+00:00','" + objParam.CurrentOffset + "'),'%d-%m-%Y') as ExpiryDate, " +
+        "CONVERT_TZ(tl.ModifiedDate,'+00:00','" + objParam.CurrentOffset + "') as ModifiedDate " +
+        " from tbllicencemanager as tl " +
+        " LEFT JOIN tblappinfo as ta ON ta.Id= tl.idApp" +
+        " LEFT JOIN (Select * from tblvehicle where IsDelete=0) tv on tv.deviceid =tl.DeviceId " +
+        " LEFT JOIN tbluserinformation as tu ON tv.iduser = tu.id " +
+        " where tl.IsDeleted=0  " + search +
+        " order by " + Orderby + " ";
+
+    connection.query(query, function (err, response) {
+        if (response != undefined) {
+            conf.rows = [];
+
+            function ForLoop(i) {
+                var LicenceNo = '';
+                var DeviceId = '';
+                var email = '';
+                var phone = '';
+                var country = '';
+                var ExpiryDate = '';
+                var ExpiryDay = '';
+                var IsExpired = 'Not Expired';
+                var LicenceType = '';
+                var LicenceRenewalType = '';
+                var AppName = '';
+                var CreatedDate = '';
+                if (i < response.length) {
+
+                    var row = [];
+                    if (response[i].LicenceNo != null && response[i].LicenceNo != '' && response[i].LicenceNo != undefined) {
+                        LicenceNo = response[i].LicenceNo.toString();
+                    }
+                    if (response[i].DeviceId != null && response[i].DeviceId != '' && response[i].DeviceId != undefined) {
+                        DeviceId = response[i].DeviceId.toString();
+                    }
+                    if (response[i].email != null && response[i].email != '' && response[i].email != undefined) {
+                        email = response[i].email.toString();
+                    }
+                    if (response[i].phone != null && response[i].phone != '' && response[i].phone != undefined) {
+                        phone = response[i].phone.toString();
+                    }
+                    if (response[i].AppName != null && response[i].AppName != '' && response[i].AppName != undefined) {
+                        AppName = response[i].AppName.toString();
+                    }
+                    if (response[i].country != null && response[i].country != '' && response[i].country != undefined) {
+                        country = response[i].country.toString();
+                    }
+                    if (response[i].ExpiryDate != null && response[i].ExpiryDate != '' && response[i].ExpiryDate != undefined) {
+                        ExpiryDate = response[i].ExpiryDate.toString();
+                        var Today = moment();
+                        var exday = moment(response[i].ExpiryDate, 'DD-MM-YYYY"');
+                        var timeDiff = (new Date(exday)).getTime() - (new Date(Today)).getTime();
+                        var diffDays = Math.round(timeDiff / (1000 * 3600 * 24));
+                        ExpiryDay = diffDays + ' days';
+                    }
+
+                    if (response[i].IsExpired != null && response[i].IsExpired != '' && response[i].IsExpired != undefined) {
+                        IsExpired = response[i].IsExpired == true ? "Expired" : "Not Expired";
+                    }
+                    if (response[i].LicenceType != null && response[i].LicenceType != '' && response[i].LicenceType != undefined) {
+                        LicenceType = response[i].LicenceType.toString();
+                    }
+                    if (response[i].LicenceRenewalType != null && response[i].LicenceRenewalType != '' && response[i].LicenceRenewalType != undefined) {
+                        LicenceRenewalType = response[i].LicenceRenewalType.toString();
+                    }
+                    if (response[i].CreatedDate != null && response[i].CreatedDate != '' && response[i].CreatedDate != undefined) {
+                        CreatedDate = response[i].CreatedDate.toString();
+                    }
+                    if (objParam.UserRoles == 'Super Admin') {
+                        row.push(LicenceNo, DeviceId, email, phone, country, ExpiryDate, ExpiryDay, IsExpired, LicenceType, LicenceRenewalType, AppName, CreatedDate);
+                    } else {
+                        row.push(LicenceNo, DeviceId, email, phone, country, ExpiryDate, ExpiryDay, IsExpired, LicenceType, LicenceRenewalType, CreatedDate);
+                    }
+                    conf.rows.push(row);
+                    ForLoop(i + 1);
+                } else {
+                    var result = nodeExcel.execute(conf);
+                    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+                    res.setHeader("Content-Disposition", "attachment; filename=Assign Licence.xlsx");
+                    res.end(result, 'binary');
+                }
+            }
+            ForLoop(0);
+        }
+    })
+})
+router.get('/SaveLicenceDetail', function (req, res) {
     objHeader = req.headers;
     var token = getToken(objHeader);
 
@@ -114,9 +312,9 @@ router.get('/SaveLicenceDetail', function(req, res) {
                 username: decoded.username,
                 password: decoded.password
             }
-        }).then(function(UserExist) {
+        }).then(function (UserExist) {
             if (UserExist != null) {
-                LicenceManager.findOne({ where: { DeviceId: req.query.DeviceId, IsDeleted: 0 } }).then(function(LicenceAssigned) {
+                LicenceManager.findOne({ where: { DeviceId: req.query.DeviceId, IsDeleted: 0 } }).then(function (LicenceAssigned) {
                     if (LicenceAssigned && LicenceAssigned.Id != req.query.Id) {
                         res.json({
                             success: false,
@@ -127,10 +325,10 @@ router.get('/SaveLicenceDetail', function(req, res) {
                         //     if (DeviceUserExist) {
                         // AppInfo.findOne({ where: { Id: DeviceUserExist.idApp } }).then(function(AppExits) {
                         GpsDevice.findOne({ where: { DeviceId: req.query.DeviceId }, })
-                            .then(function(objGpsDevice) {
+                            .then(function (objGpsDevice) {
                                 if (objGpsDevice != null) {
-                                    AppInfo.findOne({ where: { AppName: objGpsDevice.AppName } }).then(function(AppExits) {
-                                        LicenceManager.findOne({ where: { Id: req.query.Id } }).then(function(LicenceExist) {
+                                    AppInfo.findOne({ where: { AppName: objGpsDevice.AppName } }).then(function (AppExits) {
+                                        LicenceManager.findOne({ where: { Id: req.query.Id } }).then(function (LicenceExist) {
                                             if (AppExits.Id == LicenceExist.idApp) {
                                                 if (LicenceExist.DeviceId == null || LicenceExist.DeviceId == '' || LicenceExist.DeviceId == undefined) {
                                                     LicenceExist.updateAttributes({
@@ -140,11 +338,11 @@ router.get('/SaveLicenceDetail', function(req, res) {
                                                         CreatedDate: new Date(),
                                                         LicenceRenewalType: req.query.LicenceRenewalType,
                                                         LicenceType: req.query.LicenceType,
-                                                    }).then(function(response) {
+                                                    }).then(function (response) {
                                                         if (response) {
-                                                            Vehicle.findOne({ where: { deviceid: response.DeviceId } }).then(function(vehicleExist) {
+                                                            Vehicle.findOne({ where: { deviceid: response.DeviceId } }).then(function (vehicleExist) {
                                                                 if (vehicleExist) {
-                                                                    vehicleExist.updateAttributes({ renewaldate: response.ExpiryDate }).then(function(updateRenewDate) {
+                                                                    vehicleExist.updateAttributes({ renewaldate: response.ExpiryDate }).then(function (updateRenewDate) {
                                                                         Commonfunction.UpdateVehicleRedis(response.DeviceId, 'Vehicle');
                                                                     })
                                                                 }
@@ -177,16 +375,16 @@ router.get('/SaveLicenceDetail', function(req, res) {
                                                         LicenceRenewalType: req.query.LicenceRenewalType,
                                                         LicenceType: req.query.LicenceType,
                                                         ModifiedDate: new Date(),
-                                                    }).then(function(response) {
+                                                    }).then(function (response) {
                                                         if (response) {
-                                                            Vehicle.findOne({ where: { deviceid: response.DeviceId, IsDelete: false } }).then(function(vehicleExist) {
-                                                                    if (vehicleExist) {
-                                                                        vehicleExist.updateAttributes({ renewaldate: response.ExpiryDate }).then(function(updateRenewDate) {
-                                                                            Commonfunction.UpdateVehicleRedis(response.DeviceId, 'Vehicle');
-                                                                        })
-                                                                    }
-                                                                })
-                                                                // funAuditLog.CreateAuditLog('Update Licence device ', UserExist.username, 'update Device (' + OldDeviceId + ') to (' + response.DeviceId + ') / Licence No (' + LicenceExist.LicenceNo + ')');
+                                                            Vehicle.findOne({ where: { deviceid: response.DeviceId, IsDelete: false } }).then(function (vehicleExist) {
+                                                                if (vehicleExist) {
+                                                                    vehicleExist.updateAttributes({ renewaldate: response.ExpiryDate }).then(function (updateRenewDate) {
+                                                                        Commonfunction.UpdateVehicleRedis(response.DeviceId, 'Vehicle');
+                                                                    })
+                                                                }
+                                                            })
+                                                            // funAuditLog.CreateAuditLog('Update Licence device ', UserExist.username, 'update Device (' + OldDeviceId + ') to (' + response.DeviceId + ') / Licence No (' + LicenceExist.LicenceNo + ')');
                                                             funAuditLogLicence.CreateAuditLogLicence('Update Licence', LicenceExist.LicenceNo, req.query.DeviceId, req.query.ExpiryDate, oldexpdate, UserExist.username, 'Update licence (old deviceId :' + OldDeviceId + ')');
                                                             res.json({
                                                                 success: true,
@@ -220,15 +418,15 @@ router.get('/SaveLicenceDetail', function(req, res) {
                                     });
                                 }
                             })
-                            // })
-                            //     } else {
-                            //         res.json({
-                            //             success: false,
-                            //             message: "Invalid User Name., Please insert valid User Name.",
-                            //             data: ""
-                            //         });
-                            //     }
-                            // })
+                        // })
+                        //     } else {
+                        //         res.json({
+                        //             success: false,
+                        //             message: "Invalid User Name., Please insert valid User Name.",
+                        //             data: ""
+                        //         });
+                        //     }
+                        // })
                     }
                 })
 
@@ -241,7 +439,7 @@ router.get('/SaveLicenceDetail', function(req, res) {
     }
 })
 
-router.get('/DeleteDeviceLicence', function(req, res) {
+router.get('/DeleteDeviceLicence', function (req, res) {
     objHeader = req.headers;
     var token = getToken(objHeader);
     var obj = {};
@@ -257,12 +455,12 @@ router.get('/DeleteDeviceLicence', function(req, res) {
                 username: decoded.username,
                 password: decoded.password
             }
-        }).then(function(UserExist) {
+        }).then(function (UserExist) {
             if (UserExist != null) {
                 if (req.query.Id != '' && req.query.Id != null) {
-                    LicenceManager.findOne({ where: { Id: req.query.Id } }).then(function(LicenceExist) {
+                    LicenceManager.findOne({ where: { Id: req.query.Id } }).then(function (LicenceExist) {
                         if (LicenceExist.DeviceId != null && LicenceExist.DeviceId != undefined && LicenceExist.DeviceId != '') {
-                            LicenceExist.updateAttributes({ IsDeleted: 1 }).then(function(response) {
+                            LicenceExist.updateAttributes({ IsDeleted: 1 }).then(function (response) {
                                 if (response) {
                                     funAuditLogLicence.CreateAuditLogLicence('Delete Licence', LicenceExist.LicenceNo, LicenceExist.DeviceId, LicenceExist.ExpiryDate, null, UserExist.username, 'update IsDeleted true');
                                     res.json({
@@ -277,7 +475,7 @@ router.get('/DeleteDeviceLicence', function(req, res) {
                                 }
                             })
                         } else {
-                            LicenceManager.destroy({ where: { Id: req.query.Id } }).then(function(response) {
+                            LicenceManager.destroy({ where: { Id: req.query.Id } }).then(function (response) {
                                 funAuditLogLicence.CreateAuditLogLicence('Delete Licence', LicenceExist.LicenceNo, null, null, null, UserExist.username, 'Delete licence');
                                 if (response) {
                                     res.json({
@@ -310,7 +508,7 @@ router.get('/DeleteDeviceLicence', function(req, res) {
 
 });
 
-router.get('/changestatusrenewal', function(req, res) {
+router.get('/changestatusrenewal', function (req, res) {
     objHeader = req.headers;
     var token = getToken(objHeader);
 
@@ -322,13 +520,13 @@ router.get('/changestatusrenewal', function(req, res) {
                 username: decoded.username,
                 password: decoded.password
             }
-        }).then(function(UserExist) {
+        }).then(function (UserExist) {
             if (UserExist != null) {
                 LicenceManager.findOne({
                     where: {
                         Id: req.query.id,
                     }
-                }).then(function(isExist) {
+                }).then(function (isExist) {
 
                     // AppInfo.findOne({ where: { AppName: req.query.AppName } }).then(function(AppInfo) {
                     var AddMonth = 0;
@@ -351,24 +549,24 @@ router.get('/changestatusrenewal', function(req, res) {
                         updatedDate = convertdateformat(date.setMonth(date.getMonth() + AddMonth), 3);
                     }
 
-                    isExist.updateAttributes({ ExpiryDate: updatedDate }).then(function(response) {
-                            var difference = (response.ExpiryDate.getFullYear() * 12 + response.ExpiryDate.getMonth()) - (oldexpdate.getFullYear() * 12 + oldexpdate.getMonth());
-                            // funAuditLog.CreateAuditLog('Update Licecence ExpiryDate of Device ', UserExist.username, 'DeviceID(' + response.DeviceId + ') / Updated ExpiryDate (' + convertdateformat(response.ExpiryDate, 4) + ') / Old ExpiryDate (' + convertdateformat(oldexpdate, 4) + ') / Updated for (' + difference + ') month)');
-                            Vehicle.findOne({ where: { DeviceId: isExist.DeviceId } }).then(function(vehicleExist) {
-                                if (vehicleExist) {
-                                    vehicleExist.updateAttributes({ renewaldate: updatedDate }).then(function(updateRenewDate) {
-                                        Commonfunction.UpdateVehicleRedis(isExist.DeviceId, 'Vehicle')
-                                    })
-                                }
-                            })
-                            funAuditLogLicence.CreateAuditLogLicence('Renew Licence', isExist.LicenceNo, isExist.DeviceId, updatedDate, oldexpdate, UserExist.username, 'Renew licence Expiry date for month:(' + difference + ')');
-                            res.json({
-                                success: true,
-                                message: " Device renewal successfully.",
-                                data: response
-                            })
+                    isExist.updateAttributes({ ExpiryDate: updatedDate }).then(function (response) {
+                        var difference = (response.ExpiryDate.getFullYear() * 12 + response.ExpiryDate.getMonth()) - (oldexpdate.getFullYear() * 12 + oldexpdate.getMonth());
+                        // funAuditLog.CreateAuditLog('Update Licecence ExpiryDate of Device ', UserExist.username, 'DeviceID(' + response.DeviceId + ') / Updated ExpiryDate (' + convertdateformat(response.ExpiryDate, 4) + ') / Old ExpiryDate (' + convertdateformat(oldexpdate, 4) + ') / Updated for (' + difference + ') month)');
+                        Vehicle.findOne({ where: { DeviceId: isExist.DeviceId } }).then(function (vehicleExist) {
+                            if (vehicleExist) {
+                                vehicleExist.updateAttributes({ renewaldate: updatedDate }).then(function (updateRenewDate) {
+                                    Commonfunction.UpdateVehicleRedis(isExist.DeviceId, 'Vehicle')
+                                })
+                            }
                         })
-                        // })
+                        funAuditLogLicence.CreateAuditLogLicence('Renew Licence', isExist.LicenceNo, isExist.DeviceId, updatedDate, oldexpdate, UserExist.username, 'Renew licence Expiry date for month:(' + difference + ')');
+                        res.json({
+                            success: true,
+                            message: " Device renewal successfully.",
+                            data: response
+                        })
+                    })
+                    // })
                 })
             } else {
                 res.json(InvalidToken);
@@ -380,178 +578,179 @@ router.get('/changestatusrenewal', function(req, res) {
 })
 
 
-router.get('/SwipeDeviceAdmin', function(req, res) {
-    sequelize.transaction(function(t) {
-            return GpsDevice.findOne({
+router.get('/SwipeDeviceAdmin', function (req, res) {
+    sequelize.transaction(function (t) {
+        return GpsDevice.findOne({
+            where: {
+                DeviceId: req.query.DeviceId
+            }
+        })
+            .then(function (GpsDeviceExist) {
+                if (!GpsDeviceExist) {
+                    var err = new Error('Invalid device id.');
+                    err.name = 'BugzError';
+                    throw err;
+                }
+                return AppInfo.findOne({
                     where: {
-                        DeviceId: req.query.DeviceId
+                        AppName: GpsDeviceExist.AppName
                     }
                 })
-                .then(function(GpsDeviceExist) {
-                    if (!GpsDeviceExist) {
-                        var err = new Error('Invalid device id.');
-                        err.name = 'BugzError';
-                        throw err;
-                    }
-                    return AppInfo.findOne({
+                    .then(function (AppInfoExist) {
+                        if (!AppInfoExist) {
+                            var err = new Error('Invalid device id.');
+                            err.name = 'BugzError';
+                            throw err;
+                        }
+                        return LicenceManager.findOne({
                             where: {
-                                AppName: GpsDeviceExist.AppName
+                                Id: req.query.Id
                             }
                         })
-                        .then(function(AppInfoExist) {
-                            if (!AppInfoExist) {
-                                var err = new Error('Invalid device id.');
-                                err.name = 'BugzError';
-                                throw err;
-                            }
-                            return LicenceManager.findOne({
+                            .then(function (LicenceManagerExist) {
+                                if (!LicenceManagerExist) {
+                                    var err = new Error('Licence not found.');
+                                    err.name = 'BugzError';
+                                    throw err;
+                                }
+
+                                return LicenceManager.findOne({
                                     where: {
-                                        Id: req.query.Id
+                                        DeviceId: req.query.DeviceId,
+                                        IsDeleted: 0
                                     }
                                 })
-                                .then(function(LicenceManagerExist) {
-                                    if (!LicenceManagerExist) {
-                                        var err = new Error('Licence not found.');
-                                        err.name = 'BugzError';
-                                        throw err;
-                                    }
+                                    .then(function (newLicenceManagerExist) {
+                                        if (newLicenceManagerExist) {
+                                            var err = new Error('This device licence is already assigned.');
+                                            err.name = 'BugzError';
+                                            throw err;
+                                        } else {
+                                            if (LicenceManagerExist.idApp == AppInfoExist.Id) {
+                                                return LicenceManagerExist.updateAttributes({
+                                                    DeviceId: req.query.DeviceId
+                                                })
+                                                    .then(function (resLicenceUpdate) {
+                                                        funAuditLogLicence.CreateAuditLogLicence('Swap Licence Device', LicenceManagerExist.LicenceNo, req.query.DeviceId, LicenceManagerExist.ExpiryDate, LicenceManagerExist.ExpiryDate, req.query.CreatedBy, 'Swap licence deviceId (old deviceId :' + req.query.OldDeviceId + ')');
 
-                                    return LicenceManager.findOne({
-                                            where: {
-                                                DeviceId: req.query.DeviceId,
-                                                IsDeleted: 0
-                                            }
-                                        })
-                                        .then(function(newLicenceManagerExist) {
-                                            if (newLicenceManagerExist) {
-                                                var err = new Error('This device licence is already assigned.');
+                                                        return Vehicle.findOne({
+                                                            where: {
+                                                                deviceid: req.query.OldDeviceId,
+                                                                IsDelete: 0
+                                                            }
+                                                        })
+                                                            .then(function (resVehical) {
+                                                                if (!resVehical) {
+                                                                    return LicenceManagerExist;
+                                                                }
+                                                                return resVehical.updateAttributes({
+                                                                    IsDelete: 1
+                                                                })
+                                                                    .then(function (resUpdateVehical) {
+                                                                        Commonfunction.DeleteVehicleRedis(resVehical.deviceid);
+                                                                        funAuditLogLicence.CreateAuditLogLicence('Swap Licence Device', null, req.query.OldDeviceId, null, null, req.query.CreatedBy, 'Update vehical IsDelete true.');
+
+                                                                        var obj = {
+                                                                            iduser: resUpdateVehical.iduser,
+                                                                            Name: resUpdateVehical.Name,
+                                                                            deviceid: req.query.DeviceId,
+                                                                            renewaldate: resUpdateVehical.renewaldate,
+                                                                            CreatedDate: resUpdateVehical.CreatedDate,
+                                                                            CreatedBy: req.query.CreatedBy,
+                                                                            DeviceType: GpsDeviceExist.Type,
+                                                                        }
+                                                                        return Vehicle.create(obj)
+                                                                            .then(function (resVreateVehical) {
+                                                                                Commonfunction.updateSIMStartDate(resVreateVehical.deviceid);
+                                                                                Commonfunction.UpdateVehicleRedis(resVreateVehical.deviceid, 'Vehicle');
+                                                                                console.log(GpsDeviceExist.CountryId, "!= 30 &&", obj.DeviceType)
+                                                                                if (GpsDeviceExist.CountryId != 30 && obj.DeviceType == 'MT05') {
+                                                                                    var CurrentDate = GetCurrentDate();
+                                                                                    var query = "INSERT INTO tbldeviceaccvalueset (DeviceId,CreatedDate ) VALUES ('" + obj.deviceid + "', '" + CurrentDate + "');";
+                                                                                    connectionbikedata.query(query, function (err, rows, fields) { });
+                                                                                }
+                                                                                funAuditLogLicence.CreateAuditLogLicence('Swap Licence Device', null, req.query.DeviceId, null, null, req.query.CreatedBy, 'Create new vehical with deviceid :' + req.query.DeviceId + '.');
+
+                                                                                return DeviceAgentRetailer.findOne({
+                                                                                    where: {
+                                                                                        deviceId: req.query.OldDeviceId
+                                                                                    }
+                                                                                })
+                                                                                    .then(function (DeviceAgentRetailerExits) {
+                                                                                        if (!DeviceAgentRetailerExits) {
+                                                                                            return LicenceManagerExist;
+                                                                                        }
+                                                                                        DeviceAgentRetailerExits.updateAttributes({
+                                                                                            deviceId: req.query.DeviceId
+                                                                                        })
+                                                                                            .then(function (DeviceAgentRetailerUpdated) {
+                                                                                                funAuditLogLicence.CreateAuditLogLicence('Swap Licence Device', null, req.query.DeviceId, null, null, req.query.CreatedBy, 'Swap agent Device Id (old deviceId :' + req.query.OldDeviceId + ').');
+                                                                                                if (!DeviceAgentRetailerUpdated) {
+                                                                                                    return DeviceAgentRetailerUpdated;
+                                                                                                }
+                                                                                                return OrderService.findOne({
+                                                                                                    where: {
+                                                                                                        OrderNotes: req.query.OldDeviceId
+                                                                                                    }
+                                                                                                })
+                                                                                                    .then(function (resOrder) {
+                                                                                                        if (!resOrder) {
+                                                                                                            return LicenceManagerExist;
+                                                                                                        }
+
+                                                                                                        return resOrder.updateAttributes({
+                                                                                                            OrderNotes: req.query.DeviceId
+                                                                                                        }).then(function (resOrderUpdate) {
+                                                                                                            funAuditLogLicence.CreateAuditLogLicence('Swap Licence Device', null, req.query.DeviceId, null, null, req.query.CreatedBy, 'Swap order service OrderNotes from old OrderNotes :' + req.query.OldDeviceId + ' to new OrderNotes :' + req.query.DeviceId);
+
+                                                                                                            return WalletTransaction.findOne({
+                                                                                                                where: {
+                                                                                                                    DeviceId: req.query.OldDeviceId
+                                                                                                                }
+                                                                                                            })
+                                                                                                                .then(function (resWallet) {
+                                                                                                                    if (!resWallet) {
+                                                                                                                        return LicenceManagerExist;
+                                                                                                                    }
+
+                                                                                                                    return resWallet.updateAttributes({
+                                                                                                                        DeviceId: req.query.DeviceId,
+                                                                                                                        ModifiedDate: new Date(),
+                                                                                                                        ModifiedBy: req.query.CreatedBy
+                                                                                                                    })
+                                                                                                                        .then(function (resWalletUpdate) {
+                                                                                                                            funAuditLogLicence.CreateAuditLogLicence('Swap Licence Device', null, req.query.DeviceId, null, null, req.query.CreatedBy, 'Swap wallet transaction DeviceId (old DeviceId :(' + req.query.OldDeviceId + ' )');
+                                                                                                                            return LicenceManagerExist;
+                                                                                                                        })
+                                                                                                                })
+                                                                                                        })
+                                                                                                    })
+                                                                                            })
+                                                                                    })
+                                                                            });
+                                                                    })
+                                                            })
+                                                    })
+                                            } else {
+                                                var err = new Error('Invalid device id.');
                                                 err.name = 'BugzError';
                                                 throw err;
-                                            } else {
-                                                if (LicenceManagerExist.idApp == AppInfoExist.Id) {
-                                                    return LicenceManagerExist.updateAttributes({
-                                                            DeviceId: req.query.DeviceId
-                                                        })
-                                                        .then(function(resLicenceUpdate) {
-                                                            funAuditLogLicence.CreateAuditLogLicence('Swap Licence Device', LicenceManagerExist.LicenceNo, req.query.DeviceId, LicenceManagerExist.ExpiryDate, LicenceManagerExist.ExpiryDate, req.query.CreatedBy, 'Swap licence deviceId (old deviceId :' + req.query.OldDeviceId + ')');
-
-                                                            return Vehicle.findOne({
-                                                                    where: {
-                                                                        deviceid: req.query.OldDeviceId,
-                                                                        IsDelete: 0
-                                                                    }
-                                                                })
-                                                                .then(function(resVehical) {
-                                                                    if (!resVehical) {
-                                                                        return LicenceManagerExist;
-                                                                    }
-                                                                    return resVehical.updateAttributes({
-                                                                            IsDelete: 1
-                                                                        })
-                                                                        .then(function(resUpdateVehical) {
-                                                                            Commonfunction.DeleteVehicleRedis(resVehical.deviceid);
-                                                                            funAuditLogLicence.CreateAuditLogLicence('Swap Licence Device', null, req.query.OldDeviceId, null, null, req.query.CreatedBy, 'Update vehical IsDelete true.');
-
-                                                                            var obj = {
-                                                                                iduser: resUpdateVehical.iduser,
-                                                                                Name: resUpdateVehical.Name,
-                                                                                deviceid: req.query.DeviceId,
-                                                                                renewaldate: resUpdateVehical.renewaldate,
-                                                                                CreatedDate: resUpdateVehical.CreatedDate,
-                                                                                CreatedBy: req.query.CreatedBy,
-                                                                                DeviceType: GpsDeviceExist.Type,
-                                                                            }
-                                                                            return Vehicle.create(obj)
-                                                                                .then(function(resVreateVehical) {
-                                                                                    Commonfunction.UpdateVehicleRedis(resVreateVehical.deviceid, 'Vehicle');
-                                                                                    console.log(GpsDeviceExist.CountryId, "!= 30 &&", obj.DeviceType)
-                                                                                    if (GpsDeviceExist.CountryId != 30 && obj.DeviceType == 'MT05') {
-                                                                                        var CurrentDate = GetCurrentDate();
-                                                                                        var query = "INSERT INTO tbldeviceaccvalueset (DeviceId,CreatedDate ) VALUES ('" + obj.deviceid + "', '" + CurrentDate + "');";
-                                                                                        connectionbikedata.query(query, function(err, rows, fields) {});
-                                                                                    }
-                                                                                    funAuditLogLicence.CreateAuditLogLicence('Swap Licence Device', null, req.query.DeviceId, null, null, req.query.CreatedBy, 'Create new vehical with deviceid :' + req.query.DeviceId + '.');
-
-                                                                                    return DeviceAgentRetailer.findOne({
-                                                                                            where: {
-                                                                                                deviceId: req.query.OldDeviceId
-                                                                                            }
-                                                                                        })
-                                                                                        .then(function(DeviceAgentRetailerExits) {
-                                                                                            if (!DeviceAgentRetailerExits) {
-                                                                                                return LicenceManagerExist;
-                                                                                            }
-                                                                                            DeviceAgentRetailerExits.updateAttributes({
-                                                                                                    deviceId: req.query.DeviceId
-                                                                                                })
-                                                                                                .then(function(DeviceAgentRetailerUpdated) {
-                                                                                                    funAuditLogLicence.CreateAuditLogLicence('Swap Licence Device', null, req.query.DeviceId, null, null, req.query.CreatedBy, 'Swap agent Device Id (old deviceId :' + req.query.OldDeviceId + ').');
-                                                                                                    if (!DeviceAgentRetailerUpdated) {
-                                                                                                        return DeviceAgentRetailerUpdated;
-                                                                                                    }
-                                                                                                    return OrderService.findOne({
-                                                                                                            where: {
-                                                                                                                OrderNotes: req.query.OldDeviceId
-                                                                                                            }
-                                                                                                        })
-                                                                                                        .then(function(resOrder) {
-                                                                                                            if (!resOrder) {
-                                                                                                                return LicenceManagerExist;
-                                                                                                            }
-
-                                                                                                            return resOrder.updateAttributes({
-                                                                                                                OrderNotes: req.query.DeviceId
-                                                                                                            }).then(function(resOrderUpdate) {
-                                                                                                                funAuditLogLicence.CreateAuditLogLicence('Swap Licence Device', null, req.query.DeviceId, null, null, req.query.CreatedBy, 'Swap order service OrderNotes from old OrderNotes :' + req.query.OldDeviceId + ' to new OrderNotes :' + req.query.DeviceId);
-
-                                                                                                                return WalletTransaction.findOne({
-                                                                                                                        where: {
-                                                                                                                            DeviceId: req.query.OldDeviceId
-                                                                                                                        }
-                                                                                                                    })
-                                                                                                                    .then(function(resWallet) {
-                                                                                                                        if (!resWallet) {
-                                                                                                                            return LicenceManagerExist;
-                                                                                                                        }
-
-                                                                                                                        return resWallet.updateAttributes({
-                                                                                                                                DeviceId: req.query.DeviceId,
-                                                                                                                                ModifiedDate: new Date(),
-                                                                                                                                ModifiedBy: req.query.CreatedBy
-                                                                                                                            })
-                                                                                                                            .then(function(resWalletUpdate) {
-                                                                                                                                funAuditLogLicence.CreateAuditLogLicence('Swap Licence Device', null, req.query.DeviceId, null, null, req.query.CreatedBy, 'Swap wallet transaction DeviceId (old DeviceId :(' + req.query.OldDeviceId + ' )');
-                                                                                                                                return LicenceManagerExist;
-                                                                                                                            })
-                                                                                                                    })
-                                                                                                            })
-                                                                                                        })
-                                                                                                })
-                                                                                        })
-                                                                                });
-                                                                        })
-                                                                })
-                                                        })
-                                                } else {
-                                                    var err = new Error('Invalid device id.');
-                                                    err.name = 'BugzError';
-                                                    throw err;
-                                                }
                                             }
-                                        })
+                                        }
+                                    })
 
-                                })
-                        })
-                })
-        })
-        .then(function(responsedata) {
+                            })
+                    })
+            })
+    })
+        .then(function (responsedata) {
             res.json({
                 success: true,
                 message: 'Swip device successfully.',
                 data: responsedata
             });
         })
-        .catch(function(err) {
+        .catch(function (err) {
             res.json({
                 success: false,
                 message: err.message
@@ -559,163 +758,164 @@ router.get('/SwipeDeviceAdmin', function(req, res) {
         });
 });
 
-router.post('/SwipeDevice', jsonParser, function(req, res) {
-    sequelize.transaction(function(t) {
-            return DeviceAgentRetailer.findOne({
-                    where: {
-                        agentId: req.body.agentId,
-                        deviceId: req.body.NewDeviceId
-                    }
-                })
-                .then(function(resDeviceAgent) {
-                    if (!resDeviceAgent) {
-                        var err = new Error('Invalid device id.');
-                        err.name = 'BugzError';
-                        throw err;
-                    }
-
-                    return resDeviceAgent.updateAttributes({
-                            retailerId: req.body.retailerId,
-                            activatedDatetime: req.body.activatedDatetime,
-                            expiryDatetime: req.body.expiryDatetime,
-                            lastModifiedDatetime: new Date(),
-                            simSerial: req.body.simSerial
-                        })
-                        .then(function(resUpdateDeviceAgent) {
-                            funAuditLogLicence.CreateAuditLogLicence('Swap Licence Device', null, req.body.NewDeviceId, null, null, req.body.CreatedBy, 'Copy agent device detail from old DeviceId :' + req.body.OldDeviceId + ' to new DeviceId :' + req.body.NewDeviceId);
-
-                            // return SimDetail.findOne({
-                            //         where: {
-                            //             SerialNum: req.body.simSerial
-                            //         }
-                            //     })
-                            //     .then(function(resSim) {
-                            //         if (!resSim) {
-                            //             var err = new Error('No sim found.');
-                            //             err.name = 'BugzError';
-                            //             throw err;
-                            //         }
-
-                            //         return GpsDevice.findOne({
-                            //                 where: {
-                            //                     DeviceId: req.body.NewDeviceId
-                            //                 }
-                            //             })
-                            //             .then(function(resGPSDevice) {
-                            //                 return resGPSDevice.updateAttributes({
-                            //                         idSim: resSim.id
-                            //                     })
-                            //                     .then(function(resGPSDeviceUpdate) {
-                            //                         funAuditLogLicence.CreateAuditLogLicence('Swap Licence Device', null, req.body.NewDeviceId, null, null, req.body.CreatedBy, 'Swap GPSDevice idSim from old DeviceId :' + req.body.OldDeviceId + ' to new DeviceId :' + req.body.NewDeviceId);
-                            return LicenceManager.findOne({
-                                    where: {
-                                        DeviceId: req.body.OldDeviceId,
-                                        IsDeleted: 0,
-                                        idApp: req.body.AppId
-                                    }
-                                })
-                                .then(function(resLicence) {
-                                    if (!resLicence) {
-                                        var err = new Error('No licenece found.');
-                                        err.name = 'BugzError';
-                                        throw err;
-                                    }
-
-                                    return resLicence.updateAttributes({
-                                            DeviceId: req.body.NewDeviceId
-                                        })
-                                        .then(function(resLicenceUpdate) {
-                                            funAuditLogLicence.CreateAuditLogLicence('Swap Licence Device', resLicence.LicenceNo, req.body.NewDeviceId, resLicence.updatedDate, resLicence.oldexpdate, req.body.CreatedBy, 'Swap licence deviceId (old deviceId :' + req.body.OldDeviceId + ')');
-
-                                            return Vehicle.findOne({
-                                                    where: {
-                                                        deviceid: req.body.OldDeviceId,
-                                                        IsDelete: 0
-                                                    }
-                                                })
-                                                .then(function(resVehical) {
-                                                    if (!resVehical) {
-                                                        return resLicence;
-                                                    }
-
-                                                    return resVehical.updateAttributes({
-                                                            IsDelete: 1
-                                                        })
-                                                        .then(function(resUpdateVehical) {
-                                                            Commonfunction.DeleteVehicleRedis(resUpdateVehical.deviceid);
-                                                            funAuditLogLicence.CreateAuditLogLicence('Swap Licence Device', null, req.body.OldDeviceId, null, null, req.body.CreatedBy, 'Update vehical IsDelete true.');
-
-                                                            var obj = {
-                                                                iduser: resUpdateVehical.iduser,
-                                                                Name: resUpdateVehical.Name,
-                                                                deviceid: req.body.NewDeviceId,
-                                                                renewaldate: resUpdateVehical.renewaldate,
-                                                                CreatedDate: resUpdateVehical.CreatedDate,
-                                                                CreatedBy: req.body.CreatedBy,
-                                                                DevcieType: resUpdateVehical.DevcieType
-                                                            }
-                                                            return Vehicle.create(obj)
-                                                                .then(function(resVreateVehical) {
-                                                                    Commonfunction.UpdateVehicleRedis(resVreateVehical, 'Vehicle')
-                                                                    funAuditLogLicence.CreateAuditLogLicence('Swap Licence Device', null, req.body.NewDeviceId, null, null, req.body.CreatedBy, 'Create new vehical with deviceid :' + req.body.NewDeviceId + '.');
-                                                                    updateDeviceAccValue(obj.deviceid);
-                                                                    return OrderService.findOne({
-                                                                            where: {
-                                                                                OrderNotes: req.body.OldDeviceId
-                                                                            }
-                                                                        })
-                                                                        .then(function(resOrder) {
-                                                                            if (!resOrder) {
-                                                                                return resLicence;
-                                                                            }
-
-                                                                            return resOrder.updateAttributes({
-                                                                                OrderNotes: req.body.NewDeviceId
-                                                                            }).then(function(resOrderUpdate) {
-                                                                                funAuditLogLicence.CreateAuditLogLicence('Swap Licence Device', null, req.body.NewDeviceId, null, null, req.body.CreatedBy, 'Swap order service OrderNotes from old OrderNotes :' + req.body.OldDeviceId + ' to new OrderNotes :' + req.body.NewDeviceId);
-
-                                                                                return WalletTransaction.findOne({
-                                                                                        where: {
-                                                                                            DeviceId: req.body.OldDeviceId
-                                                                                        }
-                                                                                    })
-                                                                                    .then(function(resWallet) {
-                                                                                        if (!resWallet) {
-                                                                                            return resLicence;
-                                                                                        }
-
-                                                                                        return resWallet.updateAttributes({
-                                                                                                DeviceId: req.query.NewDeviceId,
-                                                                                                ModifiedDate: new Date(),
-                                                                                                ModifiedBy: req.body.CreatedBy
-                                                                                            })
-                                                                                            .then(function(resWalletUpdate) {
-                                                                                                funAuditLogLicence.CreateAuditLogLicence('Swap Licence Device', null, req.body.NewDeviceId, null, null, req.body.CreatedBy, 'Swap wallet transaction DeviceId (old DeviceId :(' + req.body.OldDeviceId + ' )');
-                                                                                                return resLicence;
-                                                                                            })
-                                                                                    })
-                                                                            })
-                                                                        })
-                                                                });
-                                                        })
-                                                })
-                                        })
-                                })
-                                //                 })
-                                //         })
-                                // })
-
-                        })
-                })
+router.post('/SwipeDevice', jsonParser, function (req, res) {
+    sequelize.transaction(function (t) {
+        return DeviceAgentRetailer.findOne({
+            where: {
+                agentId: req.body.agentId,
+                deviceId: req.body.NewDeviceId
+            }
         })
-        .then(function(responsedata) {
+            .then(function (resDeviceAgent) {
+                if (!resDeviceAgent) {
+                    var err = new Error('Invalid device id.');
+                    err.name = 'BugzError';
+                    throw err;
+                }
+
+                return resDeviceAgent.updateAttributes({
+                    retailerId: req.body.retailerId,
+                    activatedDatetime: req.body.activatedDatetime,
+                    expiryDatetime: req.body.expiryDatetime,
+                    lastModifiedDatetime: new Date(),
+                    simSerial: req.body.simSerial
+                })
+                    .then(function (resUpdateDeviceAgent) {
+                        funAuditLogLicence.CreateAuditLogLicence('Swap Licence Device', null, req.body.NewDeviceId, null, null, req.body.CreatedBy, 'Copy agent device detail from old DeviceId :' + req.body.OldDeviceId + ' to new DeviceId :' + req.body.NewDeviceId);
+
+                        // return SimDetail.findOne({
+                        //         where: {
+                        //             SerialNum: req.body.simSerial
+                        //         }
+                        //     })
+                        //     .then(function(resSim) {
+                        //         if (!resSim) {
+                        //             var err = new Error('No sim found.');
+                        //             err.name = 'BugzError';
+                        //             throw err;
+                        //         }
+
+                        //         return GpsDevice.findOne({
+                        //                 where: {
+                        //                     DeviceId: req.body.NewDeviceId
+                        //                 }
+                        //             })
+                        //             .then(function(resGPSDevice) {
+                        //                 return resGPSDevice.updateAttributes({
+                        //                         idSim: resSim.id
+                        //                     })
+                        //                     .then(function(resGPSDeviceUpdate) {
+                        //                         funAuditLogLicence.CreateAuditLogLicence('Swap Licence Device', null, req.body.NewDeviceId, null, null, req.body.CreatedBy, 'Swap GPSDevice idSim from old DeviceId :' + req.body.OldDeviceId + ' to new DeviceId :' + req.body.NewDeviceId);
+                        return LicenceManager.findOne({
+                            where: {
+                                DeviceId: req.body.OldDeviceId,
+                                IsDeleted: 0,
+                                idApp: req.body.AppId
+                            }
+                        })
+                            .then(function (resLicence) {
+                                if (!resLicence) {
+                                    var err = new Error('No licenece found.');
+                                    err.name = 'BugzError';
+                                    throw err;
+                                }
+
+                                return resLicence.updateAttributes({
+                                    DeviceId: req.body.NewDeviceId
+                                })
+                                    .then(function (resLicenceUpdate) {
+                                        funAuditLogLicence.CreateAuditLogLicence('Swap Licence Device', resLicence.LicenceNo, req.body.NewDeviceId, resLicence.updatedDate, resLicence.oldexpdate, req.body.CreatedBy, 'Swap licence deviceId (old deviceId :' + req.body.OldDeviceId + ')');
+
+                                        return Vehicle.findOne({
+                                            where: {
+                                                deviceid: req.body.OldDeviceId,
+                                                IsDelete: 0
+                                            }
+                                        })
+                                            .then(function (resVehical) {
+                                                if (!resVehical) {
+                                                    return resLicence;
+                                                }
+
+                                                return resVehical.updateAttributes({
+                                                    IsDelete: 1
+                                                })
+                                                    .then(function (resUpdateVehical) {
+                                                        Commonfunction.DeleteVehicleRedis(resUpdateVehical.deviceid);
+                                                        funAuditLogLicence.CreateAuditLogLicence('Swap Licence Device', null, req.body.OldDeviceId, null, null, req.body.CreatedBy, 'Update vehical IsDelete true.');
+
+                                                        var obj = {
+                                                            iduser: resUpdateVehical.iduser,
+                                                            Name: resUpdateVehical.Name,
+                                                            deviceid: req.body.NewDeviceId,
+                                                            renewaldate: resUpdateVehical.renewaldate,
+                                                            CreatedDate: resUpdateVehical.CreatedDate,
+                                                            CreatedBy: req.body.CreatedBy,
+                                                            DevcieType: resUpdateVehical.DevcieType
+                                                        }
+                                                        return Vehicle.create(obj)
+                                                            .then(function (resVreateVehical) {
+                                                                Commonfunction.updateSIMStartDate(resVreateVehical.deviceid);
+                                                                Commonfunction.UpdateVehicleRedis(resVreateVehical, 'Vehicle')
+                                                                funAuditLogLicence.CreateAuditLogLicence('Swap Licence Device', null, req.body.NewDeviceId, null, null, req.body.CreatedBy, 'Create new vehical with deviceid :' + req.body.NewDeviceId + '.');
+                                                                updateDeviceAccValue(obj.deviceid);
+                                                                return OrderService.findOne({
+                                                                    where: {
+                                                                        OrderNotes: req.body.OldDeviceId
+                                                                    }
+                                                                })
+                                                                    .then(function (resOrder) {
+                                                                        if (!resOrder) {
+                                                                            return resLicence;
+                                                                        }
+
+                                                                        return resOrder.updateAttributes({
+                                                                            OrderNotes: req.body.NewDeviceId
+                                                                        }).then(function (resOrderUpdate) {
+                                                                            funAuditLogLicence.CreateAuditLogLicence('Swap Licence Device', null, req.body.NewDeviceId, null, null, req.body.CreatedBy, 'Swap order service OrderNotes from old OrderNotes :' + req.body.OldDeviceId + ' to new OrderNotes :' + req.body.NewDeviceId);
+
+                                                                            return WalletTransaction.findOne({
+                                                                                where: {
+                                                                                    DeviceId: req.body.OldDeviceId
+                                                                                }
+                                                                            })
+                                                                                .then(function (resWallet) {
+                                                                                    if (!resWallet) {
+                                                                                        return resLicence;
+                                                                                    }
+
+                                                                                    return resWallet.updateAttributes({
+                                                                                        DeviceId: req.query.NewDeviceId,
+                                                                                        ModifiedDate: new Date(),
+                                                                                        ModifiedBy: req.body.CreatedBy
+                                                                                    })
+                                                                                        .then(function (resWalletUpdate) {
+                                                                                            funAuditLogLicence.CreateAuditLogLicence('Swap Licence Device', null, req.body.NewDeviceId, null, null, req.body.CreatedBy, 'Swap wallet transaction DeviceId (old DeviceId :(' + req.body.OldDeviceId + ' )');
+                                                                                            return resLicence;
+                                                                                        })
+                                                                                })
+                                                                        })
+                                                                    })
+                                                            });
+                                                    })
+                                            })
+                                    })
+                            })
+                        //                 })
+                        //         })
+                        // })
+
+                    })
+            })
+    })
+        .then(function (responsedata) {
             res.json({
                 success: true,
                 message: 'Swap device successfully.',
                 data: responsedata
             });
         })
-        .catch(function(err) {
+        .catch(function (err) {
             res.json({
                 success: false,
                 message: err.message
@@ -723,7 +923,7 @@ router.post('/SwipeDevice', jsonParser, function(req, res) {
         });
 });
 
-router.get('/GetAllLiacenceAuditlog', function(req, res) {
+router.get('/GetAllLiacenceAuditlog', function (req, res) {
     var objParam = req.query;
     var objColumns = objParam.columns;
     var objOrder = objParam.order;
@@ -776,14 +976,14 @@ router.get('/GetAllLiacenceAuditlog', function(req, res) {
         order: Orderby,
         offset: parseInt(objParam.start),
         limit: parseInt(objParam.length),
-    }).then(function(response) {
+    }).then(function (response) {
         var response1 = new Object();
         response1.draw = objParam.draw;
         response1.recordsTotal = response.count;
         response1.recordsFiltered = response.count;
         response1.data = response.rows;
         res.json(response1);
-    }).catch(function(error) {
+    }).catch(function (error) {
         res.json(error);
     })
 })
@@ -852,7 +1052,7 @@ function customPassword1() {
 }
 var LicenceManager = models.tbllicencemanager;
 
-router.get('/CreateLicenceNumbers', function(req, res) {
+router.get('/CreateLicenceNumbers', function (req, res) {
     req.setTimeout(3600000);
     // function insertLicenceno() {
     // var coll = [];
@@ -880,7 +1080,7 @@ router.get('/CreateLicenceNumbers', function(req, res) {
             });
 
         } else {
-            AppInfo.findOne({ where: { AppName: AppName } }).then(function(AppExits) {
+            AppInfo.findOne({ where: { AppName: AppName } }).then(function (AppExits) {
                 if (AppExits != null) {
                     function uploder(i) {
                         if (i < LicenceGenerateLength) {
@@ -894,7 +1094,7 @@ router.get('/CreateLicenceNumbers', function(req, res) {
                             obj.idApp = AppExits.Id;
                             obj.LicenceRenewalType = AppExits.LicenceRenewalType;
                             obj.LicenceType = AppExits.LicenceType;
-                            LicenceManager.findOrCreate({ where: { LicenceNo: LicenceNo }, defaults: obj }).then(function(response) {
+                            LicenceManager.findOrCreate({ where: { LicenceNo: LicenceNo }, defaults: obj }).then(function (response) {
                                 // console.log("###")
                                 uploder(i + 1);
                             });
@@ -932,11 +1132,11 @@ router.get('/CreateLicenceNumbers', function(req, res) {
 // insertLicenceno();
 
 function updateDeviceAccValue(deviceid) {
-    GpsDevice.findOne({ where: { DeviceId: deviceid } }).then(function(GpsDeviceExits) {
+    GpsDevice.findOne({ where: { DeviceId: deviceid } }).then(function (GpsDeviceExits) {
         if (GpsDeviceExits.CountryId != 30 && GpsDeviceExits.Type == 'MT05') {
             var CurrentDate = GetCurrentDate();
             var query = "INSERT INTO tbldeviceaccvalueset (DeviceId,CreatedDate ) VALUES ('" + deviceid + "', '" + CurrentDate + "');";
-            connectionbikedata.query(query, function(err, rows, fields) {});
+            connectionbikedata.query(query, function (err, rows, fields) { });
         }
     })
 }

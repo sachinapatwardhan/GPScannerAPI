@@ -26,6 +26,9 @@ router.get('/GetAllDeviceId', function (req, res) {
     if (req.query.idApp != null && req.query.idApp != undefined && req.query.idApp != '') {
         search = " and tblappinfo.id = " + req.query.idApp;
     }
+    if (req.query.idUser != null && req.query.idUser != undefined && req.query.idUser != '') {
+        search = " and tblvehicle.iduser = " + req.query.idUser;
+    }
     var query = "select tblvehicle.deviceid " +
         " from tblvehicle " +
         " inner join tblgpsdevice on tblgpsdevice.DeviceId = tblvehicle.deviceid " +
@@ -1662,6 +1665,7 @@ router.post('/SaveOrderService', jsonParser, function (req, res) {
                                                             var query = "INSERT INTO tbldeviceaccvalueset (DeviceId,CreatedDate ) VALUES ('" + objVehicle.deviceid + "', '" + CurrentDate + "');";
                                                             connectionbikedata.query(query, function (err, rows, fields) { });
                                                         }
+                                                        Commonfunction.updateSIMStartDate(objVehicle.deviceid);
                                                         Commonfunction.UpdateVehicleRedis(objVehicle.deviceid);
                                                         funAuditLog.CreateAuditLog('Create Vehicle through Create Oder service', UserExist.username, 'Save Vehicle Type through Create Oder service / DeviceID (' + vehicleCreated.deviceid + ')');
                                                     }

@@ -9,11 +9,11 @@ module.exports = function(sequelize, DataTypes) {
       autoIncrement: true
     },
     DeviceId: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(100),
       allowNull: false
     },
     IMEI: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(100),
       allowNull: false
     },
     CreatedDate: {
@@ -21,15 +21,15 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     Type: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(45),
       allowNull: true
     },
     Version: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(200),
       allowNull: true
     },
     CreatedBy: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(100),
       allowNull: true
     },
     CountryId: {
@@ -49,7 +49,7 @@ module.exports = function(sequelize, DataTypes) {
       }
     },
     SimNum: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(45),
       allowNull: true
     },
     idSalesAgent: {
@@ -66,7 +66,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     AppName: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(45),
       allowNull: true
     },
     idSim: {
@@ -78,9 +78,17 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     Company: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(100),
       allowNull: true,
       defaultValue: 'Maark'
+    },
+    Status: {
+      type: DataTypes.STRING(45),
+      allowNull: true
+    },
+    Remark: {
+      type: DataTypes.STRING(200),
+      allowNull: true
     }
   }, {
     tableName: 'tblgpsdevice'

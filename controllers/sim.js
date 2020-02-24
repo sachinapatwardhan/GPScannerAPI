@@ -5,7 +5,23 @@ var User = models.tbluserinformation;
 var SIM = models.tblsimdetails;
 var AppInfo = models.tblappinfo;
 var TelCo = models.tbltelco;
+var Vehicle = models.tblvehicle;
 //End of Tables
+router.get('/GetSimSerialByDeviceId', function (req, res) {
+
+    var query = " SELECT ts.SerialNum,tg.DeviceId,tg.Type,tg.AppName,tc.Country FROM" +
+        " tblgpsdevice tg" +
+        " INNER JOIN tblsimdetails ts ON tg.idSim= ts.id" +
+        " INNER JOIN tblcountrymgmt tc ON tc.id= tg.CountryId where tg.DeviceId='" + req.query.DeviceId + "'";
+    connection.query(query, function (err, response) {
+        if (response != undefined) {
+            res.json(response);
+        } else {
+            var response1 = new Object();
+            res.json(response1);
+        }
+    });
+})
 
 router.get('/GetAllSIMInfo', function (req, res) {
 
@@ -43,11 +59,14 @@ router.get('/GetAllSIMInfoNew', function (req, res) {
         search = ' Where (ts.SerialNum like "%' + objSearch + '%" or ';
         search = search + 'ts.PhoneNum like "%' + objSearch + '%" or ';
         search = search + 'tai.AppName like "%' + objSearch + '%" or ';
+        search = search + 'ts.Status like "%' + objSearch + '%" or ';
         search = search + 'ts.CreatedDate like "%' + objSearch + '%" or ';
         search = search + 'tt.Name like "%' + objSearch + '%") ';
     };
 
-    var query = "SELECT ts.id,ts.SerialNum,ts.PhoneNum,ts.idApp,tai.AppName,CONVERT_TZ(ts.CreatedDate,'+00:00','" + CurrentOffset + "') as CreatedDate, tt.Name as TelName,tt.id as idTelCo " +
+    var query = "SELECT ts.id,ts.SerialNum,ts.PhoneNum,ts.idApp,ts.Status,tai.AppName,CONVERT_TZ(ts.CreatedDate,'+00:00','" + CurrentOffset + "') as CreatedDate, tt.Name as TelName,tt.id as idTelCo, " +
+        " CONVERT_TZ(ts.SpoilDate,'+00:00','" + CurrentOffset + "') as SpoilDate," +
+        " CONVERT_TZ(ts.StartDate,'+00:00','" + CurrentOffset + "') as StartDate" +
         " from tblsimdetails as ts " +
         " LEFT JOIN tbltelco as tt ON ts.idTelCo = tt.id " +
         " LEFT JOIN tblappinfo tai on ts.idApp = tai.Id  " + search +
@@ -110,7 +129,9 @@ router.post('/SaveSIMInfo', jsonParser, function (req, res) {
                     //         });
                     //     }
                     // })
-
+                    if (objSIMInfo.Status == 'Spoil') {
+                        objSIMInfo.SpoilDate = new Data()
+                    }
                     SIM.findOrCreate({ where: { SerialNum: objSIMInfo.SerialNum }, defaults: objSIMInfo }).then(function (response) {
                         if ((response[1])) {
                             funAuditLog.CreateAuditLog('Save SIM', UserExist.username, 'Cerate New SIM Data');
@@ -138,13 +159,19 @@ router.post('/SaveSIMInfo', jsonParser, function (req, res) {
                         if (objSimsExist != null && objSIMInfo.Id != objSimsExist.id) {
                             res.json({ success: false, message: "SIM Info is already Exist...", data: objSimsExist });
                         } else {
-                            SIM.update(objSIMInfo, { where: { id: objSIMInfo.Id } }).then(function (response) {
-                                if (response[0]) {
-                                    funAuditLog.CreateAuditLog('Update SIM', UserExist.username, 'Update SIM Data');
-                                    res.json({ success: true, message: "SIM Info updated successfully...", data: response });
-                                } else {
-                                    res.json({ success: false, message: "SIM Info not updated successfully...", data: response });
+                            SIM.findOne({ where: { id: objSIMInfo.Id } }).then(function (resSimsExist) {
+                                var Status = resSimsExist.Status;
+                                if (Status != 'Spoil' && objSIMInfo.Status == 'Spoil') {
+                                    objSIMInfo.SpoilDate = new Date()
                                 }
+                                SIM.update(objSIMInfo, { where: { id: objSIMInfo.Id } }).then(function (response) {
+                                    if (response[0]) {
+                                        funAuditLog.CreateAuditLog('Update SIM', UserExist.username, 'Update SIM Data');
+                                        res.json({ success: true, message: "SIM Info updated successfully...", data: response });
+                                    } else {
+                                        res.json({ success: false, message: "SIM Info not updated successfully...", data: response });
+                                    }
+                                })
                             })
                         }
                     })

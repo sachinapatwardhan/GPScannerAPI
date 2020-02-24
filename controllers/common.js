@@ -3,6 +3,8 @@ var mysql = require('mysql');
 var request = require('request');
 var NodeGeocoder = require('node-geocoder');
 var Address = models.tbladdress;
+var SIMDetails = models.tblsimdetails;
+var GpsDevice = models.tblgpsdevice;
 var options = {
     provider: 'google',
     httpAdapter: 'https', // Default
@@ -328,10 +330,25 @@ function GetLatLongAddress(Address, CallBack) {
     }
 }
 
+function updateSIMStartDate(DeviceId) {
+    GpsDevice.findOne({ where: { DeviceId: DeviceId, idSim: { $ne: null } } }).then(function (GpsDeviceExist) {
+        if (GpsDeviceExist) {
+            var idSim = GpsDeviceExist.idSim;
+            var StartDate = new Date();
+            SIMDetails.update({ StartDate: StartDate }, { where: { id: idSim } }).then(function (simupdated) {
+                // return callback({ success: true, message: "Sim Start Date updated successfully..." })
+            })
+        } else {
+            // return callback({ success: true, message: "Sim not assign..." })
+        }
+    })
+}
+
 module.exports = {
     UpdateVehicleRedis: UpdateVehicleRedis,
     DeleteVehicleRedis: DeleteVehicleRedis,
     UpdateAppInfoRedis: UpdateAppInfoRedis,
     GetAddressLatLong: GetAddressLatLong,
-    GetLatLongAddress: GetLatLongAddress
+    GetLatLongAddress: GetLatLongAddress,
+    updateSIMStartDate: updateSIMStartDate
 }

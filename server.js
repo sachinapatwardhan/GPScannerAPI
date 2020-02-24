@@ -616,8 +616,8 @@ app.use('/renewdevice', require('./RenewControllers/renewdevice'));
 app.use('/devicerenewprice', require('./controllers/devicerenewprice'));
 app.use('/assigndistributor', require('./controllers/assigndistributor.js'));
 app.use('/distributor', require('./controllers/distributor.js'));
-
-
+app.use('/warranty', require('./controllers/warranty.js'));
+app.use('/simreplace', require('./controllers/simreplace'));
 app.use('/SalesAgentDevice', require('./controllers/SalesAgentDevice.js'));
 app.use('/address', require('./controllers/address.js'));
 // MAARK Install App End

@@ -289,6 +289,8 @@ router.get('/GetAllGPSDevice', function (req, res) {
         search = search + 'tblgpsdevice.Version like "%' + objSearch + '%" or ';
         search = search + 'tblgpsdevice.SimNum like "%' + objSearch + '%" or ';
         search = search + 'tbltelco.Name like "%' + objSearch + '%" or ';
+        search = search + 'tblgpsdevice.Status like "%' + objSearch + '%" or ';
+        search = search + 'tblgpsdevice.Remark like "%' + objSearch + '%" or ';
         search = search + 'tblgpsdevice.ExpiryDate like "%' + objSearch + '%" or ';
         search = search + 'tblgpsdevice.CreatedDate like "%' + objSearch + '%" or ';
         search = search + 'tblgpsdevice.CreatedBy like "%' + objSearch + '%" or ';
@@ -296,8 +298,19 @@ router.get('/GetAllGPSDevice', function (req, res) {
         search = search + 'tblsimdetails.PhoneNum like "%' + objSearch + '%" or ';
         search = search + 'tblcountrymgmt.Country like "%' + objSearch + '%" or ';
         search = search + 'tblgpsdevice.AppName like "%' + objSearch + '%" or ';
+        if (objParam.idSalesAgent != null && objParam.idSalesAgent != undefined && objParam.idSalesAgent != '') {
+            search = search + 'tbllicencemanager.LicenceNo like "%' + objSearch + '%" or ';
+        }
         search = search + 'tblgpsdevice.Company like "%' + objSearch + '%") ';
     };
+    if (objParam.idSalesAgent != null && objParam.idSalesAgent != undefined && objParam.idSalesAgent != '') {
+        if (search != "") {
+            search += " and (tblgpsdevice.idSalesAgent =" + objParam.idSalesAgent + " OR tbldeviceagentretailer.agentId=" + objParam.idSalesAgent + ")";
+        } else {
+            search += " Where (tblgpsdevice.idSalesAgent =" + objParam.idSalesAgent + " OR tbldeviceagentretailer.agentId=" + objParam.idSalesAgent + ")";
+        }
+    }
+
     if (objParam.UserId != null && objParam.UserId != undefined && objParam.UserId != '') {
         if (search != "") {
             search += " and tblgpsdevice.idSalesAgent =" + objParam.UserId;
@@ -313,24 +326,49 @@ router.get('/GetAllGPSDevice', function (req, res) {
             search += ' where tblgpsdevice.AppName = "' + objParam.AppName + '"';
         }
     }
+    if (objParam.idSalesAgent != null && objParam.idSalesAgent != undefined && objParam.idSalesAgent != '') {
+        var query = " select tblgpsdevice.*, tblcountrymgmt.Country,tbllicencemanager.LicenceNo, " +
+            " CONVERT_TZ(tblgpsdevice.CreatedDate,'+00:00','" + CurrentOffset + "') as CreatedDate," +
+            " CONVERT_TZ(tbllicencemanager.ExpiryDate,'+00:00','" + CurrentOffset + "') as VehicleExpiryDate," +
+            " tbltelco.Name, tbluserinformation.username, tbluserinformation.idApp,tblsimdetails.SerialNum,tblsimdetails.PhoneNum" +
+            " from tblgpsdevice " +
+            " Left Join tbluserinformation on tblgpsdevice.idSalesAgent=tbluserinformation.id " +
+            " Left Join tblsimdetails on tblsimdetails.id = tblgpsdevice.idSim" +
+            " Left Join tblcountrymgmt on tblcountrymgmt.id = tblgpsdevice.CountryId" +
+            " Left Join tbllicencemanager on tbllicencemanager.DeviceId = tblgpsdevice.DeviceId" +
+            " Left Join tbldeviceagentretailer on tbldeviceagentretailer.deviceId = tblgpsdevice.DeviceId" +
+            " Left Join tbltelco on tblsimdetails.idTelCo = tbltelco.id " + search +
+            " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
+        var Countqry = "SELECT count(tblgpsdevice.id) as TotalRecord " +
+            " from tblgpsdevice " +
+            " Left Join tbluserinformation on  tblgpsdevice.idSalesAgent=tbluserinformation.id " +
+            " Left Join tblsimdetails on tblsimdetails.id = tblgpsdevice.idSim" +
+            " Left Join tblcountrymgmt on tblcountrymgmt.id = tblgpsdevice.CountryId" +
+            " Left Join tbllicencemanager on tbllicencemanager.DeviceId = tblgpsdevice.DeviceId" +
+            " Left Join tbldeviceagentretailer on tbldeviceagentretailer.deviceId = tblgpsdevice.DeviceId" +
+            " Left Join tbltelco on tblsimdetails.idTelCo = tbltelco.id " + search;
+    } else {
 
-    var query = " select tblgpsdevice.*, tblcountrymgmt.Country, " +
-        " CONVERT_TZ(tblgpsdevice.CreatedDate,'+00:00','" + CurrentOffset + "') as CreatedDate," +
-        " CONVERT_TZ(tblgpsdevice.ExpiryDate,'+00:00','" + CurrentOffset + "') as ExpiryDate," +
-        " tbltelco.Name, tbluserinformation.username, tbluserinformation.idApp,tblsimdetails.SerialNum,tblsimdetails.PhoneNum" +
-        " from tblgpsdevice " +
-        " Left Join tbluserinformation on tblgpsdevice.idSalesAgent=tbluserinformation.id " +
-        " Left Join tblsimdetails on tblsimdetails.id = tblgpsdevice.idSim" +
-        " Left Join tblcountrymgmt on tblcountrymgmt.id = tblgpsdevice.CountryId" +
-        " Left Join tbltelco on tblsimdetails.idTelCo = tbltelco.id " + search +
-        " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
+        var query = " select tblgpsdevice.*, tblcountrymgmt.Country, " +
+            " CONVERT_TZ(tblgpsdevice.CreatedDate,'+00:00','" + CurrentOffset + "') as CreatedDate," +
+            " CONVERT_TZ(tblgpsdevice.ExpiryDate,'+00:00','" + CurrentOffset + "') as ExpiryDate," +
+            " tbltelco.Name, tbluserinformation.username, tbluserinformation.idApp,tblsimdetails.SerialNum,tblsimdetails.PhoneNum" +
+            " from tblgpsdevice " +
+            " Left Join tbluserinformation on tblgpsdevice.idSalesAgent=tbluserinformation.id " +
+            " Left Join tblsimdetails on tblsimdetails.id = tblgpsdevice.idSim" +
+            " Left Join tblcountrymgmt on tblcountrymgmt.id = tblgpsdevice.CountryId" +
+            " Left Join tbltelco on tblsimdetails.idTelCo = tbltelco.id " + search +
+            " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
 
-    var Countqry = "SELECT count(tblgpsdevice.id) as TotalRecord " +
-        " from tblgpsdevice " +
-        " Left Join tbluserinformation on  tblgpsdevice.idSalesAgent=tbluserinformation.id " +
-        " Left Join tblsimdetails on tblsimdetails.id = tblgpsdevice.idSim" +
-        " Left Join tblcountrymgmt on tblcountrymgmt.id = tblgpsdevice.CountryId" +
-        " Left Join tbltelco on tblsimdetails.idTelCo = tbltelco.id " + search;
+        var Countqry = "SELECT count(tblgpsdevice.id) as TotalRecord " +
+            " from tblgpsdevice " +
+            " Left Join tbluserinformation on  tblgpsdevice.idSalesAgent=tbluserinformation.id " +
+            " Left Join tblsimdetails on tblsimdetails.id = tblgpsdevice.idSim" +
+            " Left Join tblcountrymgmt on tblcountrymgmt.id = tblgpsdevice.CountryId" +
+            " Left Join tbltelco on tblsimdetails.idTelCo = tbltelco.id " + search;
+
+    }
+    
     // " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
     connection.query(query, function (err, response) {
         if (response != undefined) {
@@ -1676,5 +1714,64 @@ router.post('/SaveSimServiceToIMEI', jsonParser, function (req, res) {
         res.json(InvalidToken);
     }
 })
+
+
+
+router.post('/DeleteVehicle', jsonParser, function (req, res) {
+    var objParam = req.body;
+    var objHeader = req.headers;
+    var token = getToken(objHeader);
+
+    var obj = {};
+    obj.headers = req.headers;
+    obj.query = req.query;
+    if (token) {
+        var decoded = jwt.decode(token, TokenKey);
+
+        var search = {};
+        search['$and'] = [];
+
+        var obj = new Object();
+        obj['username'] = {
+            $eq: decoded.username
+        };
+        search['$and'].push(obj);
+
+        var obj = new Object();
+        obj['password'] = {
+            $eq: decoded.password
+        };
+        search['$and'].push(obj);
+
+        User.findOne({
+            where: search
+        }).then(function (UserExist) {
+            if (UserExist != null) {
+                Vehicle.findOne({
+                    where: {
+                        deviceid: objParam.DeviceId,
+                        IsDelete: false
+                    }
+                }).then(function (VehicleExist) {
+                    if (VehicleExist) {
+                        res.json(NotDeleteReferenceData);
+                    } else {
+                        GPSDevice.destroy({ where: { DeviceId: objParam.DeviceId, } }).then(function (response) {
+                            if (response) {
+                                res.json({ success: true, message: "Tracker deleted successfully..." });
+                            } else {
+                                res.json({ success: true, message: "Tracker not deleted..." });
+                            }
+                        })
+                    }
+                })
+            } else {
+                res.json(InvalidToken);
+            }
+        })
+    } else {
+        res.json(InvalidToken);
+    }
+});
 
 module.exports = router
