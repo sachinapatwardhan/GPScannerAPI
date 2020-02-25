@@ -25,7 +25,7 @@ function convertdateformat(date1, flg) {
     }
 }
 
-Date.prototype.addDays = function(days) {
+Date.prototype.addDays = function (days) {
     this.setDate(this.getDate() + parseInt(days));
     return this;
 };
@@ -54,7 +54,7 @@ Date.prototype.addDays = function(days) {
 
 // })
 
-router.get('/GetAllWorkingBike', function(req, res) {
+router.get('/GetAllWorkingBike', function (req, res) {
     var search = '';
     var search1 = '';
     if (req.query.idApp != null && req.query.idApp != undefined && req.query.idApp != '' && req.query.idApp != 'All') {
@@ -69,7 +69,7 @@ router.get('/GetAllWorkingBike', function(req, res) {
         "RIGHT  join tblgpsdevice tgd on ve.deviceid = tgd.DeviceId  " +
         "left join tblappinfo ta on ta.AppName = tgd.AppName " + search1;
     //  var query ="SELECT tb.id,tb.deviceid,tb.Name,tb.IsOnline, tpg.IsEngine, tpg.Latitude,tpg.Longitude,tpg.Datetime, tpg.Date, tpg.Speed,tpg.Direction, tu.idApp FROM tblvehicle tb Left Join tbluserinformation as tu on tb.iduser = tu.id Left JOIN tblgpsdata tpg INNER JOIN (SELECT DeviceId,MAX(Date) Date FROM tblgpsdata GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId  AND tpg.Date = b.Date ON tb.deviceid=tpg.DeviceId WHERE IsDelete=false and idApp=" + req.query.idApp + " group by tb.DeviceId"
-    connectionDashboard.query(query, function(err, rows, fields) {
+    connectionDashboard.query(query, function (err, rows, fields) {
         if (!err) {
             // res.json({ success: true, data: rows });
 
@@ -85,7 +85,7 @@ router.get('/GetAllWorkingBike', function(req, res) {
                     obj.IsOnline = rows[i].IsOnline;
                     obj.AppName = rows[i].AppName;
 
-                    client.get(rows[i].DeviceId, function(err, strgpsdata) {
+                    client.get(rows[i].DeviceId, function (err, strgpsdata) {
                         if (!err) {
                             if (strgpsdata != null & strgpsdata != '' && strgpsdata != undefined) {
                                 var objgps = JSON.parse(strgpsdata);
@@ -138,7 +138,7 @@ router.get('/GetAllWorkingBike', function(req, res) {
 })
 
 var IsDashboardTakingLoad = false;
-router.get('/GetAllWorkingBikeNew', function(req, res) {
+router.get('/GetAllWorkingBikeNew', function (req, res) {
     var search = '';
     var search1 = '';
     var systemStarttime = new Date();
@@ -151,7 +151,7 @@ router.get('/GetAllWorkingBikeNew', function(req, res) {
         "left join tblvehicle tb on tb.deviceid=tgd.DeviceId and tb.IsDelete=false " + search1;
 
     //  var query ="SELECT tb.id,tb.deviceid,tb.Name,tb.IsOnline, tpg.IsEngine, tpg.Latitude,tpg.Longitude,tpg.Datetime, tpg.Date, tpg.Speed,tpg.Direction, tu.idApp FROM tblvehicle tb Left Join tbluserinformation as tu on tb.iduser = tu.id Left JOIN tblgpsdata tpg INNER JOIN (SELECT DeviceId,MAX(Date) Date FROM tblgpsdata GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId  AND tpg.Date = b.Date ON tb.deviceid=tpg.DeviceId WHERE IsDelete=false and idApp=" + req.query.idApp + " group by tb.DeviceId"
-    connectionDashboard.query(query, function(err, rows, fields) {
+    connectionDashboard.query(query, function (err, rows, fields) {
         if (!err) {
             // res.json({ success: true, data: rows });
             var systemEndtime = new Date();
@@ -169,7 +169,7 @@ router.get('/GetAllWorkingBikeNew', function(req, res) {
                         subject: 'Maark API taking Load. Please check',
                         text: 'Maark API taking Load; load time = ' + timediffernce + ' sec. Please check'
                     };
-                    transporter.sendMail(mail, function(error, response) {
+                    transporter.sendMail(mail, function (error, response) {
                         if (error) {
                             console.log("Maark API taking Load Email (Error). ===== ", error);
                         } else {
@@ -194,7 +194,7 @@ router.get('/GetAllWorkingBikeNew', function(req, res) {
                     obj.IsOnline = rows[i].IsOnline;
                     obj.AppName = rows[i].AppName;
 
-                    client.get(rows[i].deviceid, function(err, strgpsdata) {
+                    client.get(rows[i].deviceid, function (err, strgpsdata) {
                         if (!err) {
                             if (strgpsdata != null & strgpsdata != '' && strgpsdata != undefined) {
                                 var objgps = JSON.parse(strgpsdata);
@@ -246,8 +246,8 @@ router.get('/GetAllWorkingBikeNew', function(req, res) {
 
 })
 
-router.get('/GetAllDeviceForDashboard', jsonParser, function(req, res) {
-    connectionDashboard.query("SELECT tv.id,tv.deviceid,tv.Name,tv.IsOnline,  tu.idApp, b.IsEngine, b.Latitude, b.Longitude, b.Datetime, b.Speed, b.Direction, b.Date FROM tblvehicle as tv left join tbluserinformation as tu ON tv.iduser = tu.id left JOIN (SELECT DeviceId, IsEngine, Latitude, Longitude, Datetime, Speed, Direction, MAX(Date) Date FROM tblgpsdata GROUP BY DeviceId) b ON tv.DeviceId = b.DeviceId where tv.IsDelete = false and tu.idApp = " + req.query.idApp, function(err, rows, fields) {
+router.get('/GetAllDeviceForDashboard', jsonParser, function (req, res) {
+    connectionDashboard.query("SELECT tv.id,tv.deviceid,tv.Name,tv.IsOnline,  tu.idApp, b.IsEngine, b.Latitude, b.Longitude, b.Datetime, b.Speed, b.Direction, b.Date FROM tblvehicle as tv left join tbluserinformation as tu ON tv.iduser = tu.id left JOIN (SELECT DeviceId, IsEngine, Latitude, Longitude, Datetime, Speed, Direction, MAX(Date) Date FROM tblgpsdata GROUP BY DeviceId) b ON tv.DeviceId = b.DeviceId where tv.IsDelete = false and tu.idApp = " + req.query.idApp, function (err, rows, fields) {
         if (!err) {
             res.json({ success: true, data: rows });
         } else {
@@ -256,7 +256,7 @@ router.get('/GetAllDeviceForDashboard', jsonParser, function(req, res) {
     })
 })
 
-router.get('/GetTotalCustomerByCountry', function(req, res) {
+router.get('/GetTotalCustomerByCountry', function (req, res) {
     Vehicle.belongsTo(User, {
         foreignKey: {
             name: 'iduser',
@@ -292,7 +292,7 @@ router.get('/GetTotalCustomerByCountry', function(req, res) {
         }],
         group: ['country', 'Type'],
         order: 'country',
-    }).then(function(resUser) {
+    }).then(function (resUser) {
         if (resUser != null) {
             res.json({
                 success: true,
@@ -310,7 +310,7 @@ router.get('/GetTotalCustomerByCountry', function(req, res) {
 
 })
 
-router.get('/GetGraphData', function(req, res) {
+router.get('/GetGraphData', function (req, res) {
 
     // var CountryName = req.query.countryName;
 
@@ -399,7 +399,7 @@ router.get('/GetGraphData', function(req, res) {
         ],
         group: [models.sequelize.fn('day', models.sequelize.col('createddate')), models.sequelize.fn('month', models.sequelize.col('createddate')), models.sequelize.fn('year', models.sequelize.col('createddate'))],
         order: ['year', 'month', 'day']
-    }).then(function(resUser) {
+    }).then(function (resUser) {
         res.json({
             success: true,
             UserData: resUser
@@ -409,7 +409,7 @@ router.get('/GetGraphData', function(req, res) {
 
 })
 
-router.get('/GetDashboardData', function(req, res) {
+router.get('/GetDashboardData', function (req, res) {
 
     // var CountryName = req.query.countryName;
     // var CountryList = req.query.CountryList;
@@ -451,14 +451,14 @@ router.get('/GetDashboardData', function(req, res) {
         search['$and'].push(obj);
     }
 
-    User.count({ where: search }).then(function(TotalUser) {
+    User.count({ where: search }).then(function (TotalUser) {
         lstDashboard['TotalUser'] = TotalUser;
         res.json(lstDashboard);
     })
 
 })
 
-router.get('/GetTotalCustomer', function(req, res) {
+router.get('/GetTotalCustomer', function (req, res) {
     // var CountryName = req.query.countryName;
     // var IsSuperAdmin = req.query.IsSuperAdmin;
     // var CountryList = req.query.CountryList;
@@ -500,12 +500,12 @@ router.get('/GetTotalCustomer', function(req, res) {
             attributes: ['id', 'idApp', 'username'],
             where: search
         }]
-    }).then(function(response) {
+    }).then(function (response) {
         res.json(response);
     })
 })
 
-router.get('/GetBikeTotalDevice', function(req, res) {
+router.get('/GetBikeTotalDevice', function (req, res) {
 
     Vehicle.belongsTo(User, {
         foreignKey: {
@@ -590,7 +590,7 @@ router.get('/GetBikeTotalDevice', function(req, res) {
             where: search1,
 
         }],
-    }).then(function(respetdevice) {
+    }).then(function (respetdevice) {
 
         Vehicle.findAndCountAll({
             attributes: ["id", "IsOnline", "DeviceType"],
@@ -604,7 +604,7 @@ router.get('/GetBikeTotalDevice', function(req, res) {
                 model: User,
                 where: search1
             }]
-        }).then(function(respet) {
+        }).then(function (respet) {
             var bal_device = respetdevice - respet.count;
             res.json({ DeviceStatus: respet.rows, BalanceDevice: bal_device });
         })
@@ -612,7 +612,7 @@ router.get('/GetBikeTotalDevice', function(req, res) {
 
 })
 
-router.get('/GetGraphCustomer', function(req, res) {
+router.get('/GetGraphCustomer', function (req, res) {
     // var CountryName = req.query.countryName;
     // var StartDate = (new Date()).addDays(-30);
     // var EndDate = new Date();
@@ -713,7 +713,7 @@ router.get('/GetGraphCustomer', function(req, res) {
         ],
         // group: ['year', 'month', 'day'],
         order: ['year', 'month', 'day'],
-    }).then(function(resUser) {
+    }).then(function (resUser) {
         res.json({
             success: true,
             UserData: resUser
@@ -750,4 +750,40 @@ router.get('/GetGraphCustomer', function(req, res) {
 
 })
 
+router.get('/SalesDashBoardData', function (req, res) {
+    var IdUser = req.query.IdUser;
+    var objData = {
+        TotalDevice: 0,
+        TotalAttachedDevice: 0,
+        TotalExpiredDevice: 0,
+        TotalUnusedDevice: 0,
+    }
+    var WhereCondition = "";
+    if (IdUser != null && IdUser != undefined && IdUser != "") {
+        WhereCondition = " WHERE (tg.idSalesAgent=" + IdUser + " OR tad.agentId=" + IdUser + ")";
+    }
+    var query = " SELECT *,NOW()>CONVERT_TZ(tl.ExpiryDate,'+00:00','" + CurrentOffset + "') As ExpiredDevice " +
+        " FROM tblgpsdevice tg" +
+        " LEFT JOIN tbldeviceagentretailer tad ON tad.deviceId = tg.DeviceId" +
+        " LEFT JOIN tbllicencemanager tl ON tl.DeviceId = tg.DeviceId " + WhereCondition;
+    console.log(query)
+    connectionDashboard.query(query, function (err, rows, fields) {
+        console.log(err)
+        if (!err) {
+            objData.TotalDevice = rows.length;
+            var TotalAttachedDevice = u.filter(rows, function (o) { if (o.LicenceNo != null) { return o } });
+            objData.TotalAttachedDevice = TotalAttachedDevice != undefined ? TotalAttachedDevice.length : objData.TotalAttachedDevice;
+
+            var TotalExpiredDevice = u.filter(rows, { ExpiredDevice: 1 });
+            objData.TotalExpiredDevice = TotalExpiredDevice != undefined ? TotalExpiredDevice.length : objData.TotalExpiredDevice;
+
+            var TotalUnusedDevice = u.filter(rows, { LicenceNo: null });
+            objData.TotalUnusedDevice = TotalUnusedDevice != undefined ? TotalUnusedDevice.length : objData.TotalUnusedDevice;
+
+            res.json({ success: true, data: objData });
+        } else {
+            res.json({ success: false, data: objData });
+        }
+    })
+})
 module.exports = router

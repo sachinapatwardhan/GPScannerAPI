@@ -1386,49 +1386,22 @@ router.get('/ExportOrderServiceNew', function (req, res) {
             attributes: ['id', 'AppName'],
         }]
     }).then(function (response) {
-        var NewColumns = [{
-            caption: 'No',
-            type: 'string'
-        }, {
-            caption: 'Order No',
-            type: 'string'
-        }, {
-            caption: 'Type',
-            type: 'string'
-        }, {
-            caption: 'Email',
-            type: 'string'
-        }, {
-            caption: 'Created Date',
-            type: 'string'
-            // }, {
-            //     caption: 'Exipiry Date',
-            //     type: 'string'
-        }, {
-            caption: 'Order Total',
-            type: 'number'
-        }, {
-            caption: 'Device',
-            type: 'string'
-        }, {
-            caption: 'Country',
-            type: 'string'
-        }, {
-            caption: 'Status',
-            type: 'string'
-        }, {
-            caption: 'Created By',
-            type: 'string'
-        }, {
-            caption: 'Renew Remark',
-            type: 'string'
-        }];
-
+        var NewColumns = [];
+        NewColumns.push({ caption: 'No', type: 'string' })
+        NewColumns.push({ caption: 'Order No', type: 'string' })
+        NewColumns.push({ caption: 'Type', type: 'string' })
+        if (objParam.IsSalesAgent != true && objParam.IsSalesAgent != 'true') {
+            NewColumns.push({ caption: 'Email', type: 'string' })
+        }
+        NewColumns.push({ caption: 'Created Date', type: 'string' })
+        NewColumns.push({ caption: 'Order Total', type: 'string' })
+        NewColumns.push({ caption: 'Device', type: 'string' })
+        NewColumns.push({ caption: 'Country', type: 'string' })
+        NewColumns.push({ caption: 'Status', type: 'string' })
+        NewColumns.push({ caption: 'Created By', type: 'string' })
+        NewColumns.push({ caption: 'Renew Remark', type: 'string' })
         if (objParam.IsAdmin == true || objParam.IsAdmin == 'true') {
-            NewColumns.push({
-                caption: 'Admin Remark',
-                type: 'string'
-            })
+            NewColumns.push({ caption: 'Admin Remark', type: 'string' })
         }
 
         conf.cols = (NewColumns);
@@ -1461,7 +1434,9 @@ router.get('/ExportOrderServiceNew', function (req, res) {
             srow.push(No.toString());
             srow.push(OrderNo);
             srow.push(Type);
-            srow.push(Email);
+            if (objParam.IsSalesAgent != true || objParam.IsSalesAgent != 'true') {
+                srow.push(Email);
+            }
             srow.push(CreatedOnUtc);
             // srow.push(ExpiryDate);
             srow.push(OrderTotal.toString());
@@ -1470,7 +1445,7 @@ router.get('/ExportOrderServiceNew', function (req, res) {
             srow.push(Status);
             srow.push(ObjData.CreatedBy);
             srow.push(ObjData.Terms);
-            if (objParam.IsAdmin == true || objParam.IsAdmin == 'true') {
+            if (objParam.IsAdmin == true && objParam.IsAdmin == 'true') {
                 srow.push(ObjData.Remark);
             }
             row.push(srow);
