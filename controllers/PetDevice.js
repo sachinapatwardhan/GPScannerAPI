@@ -405,27 +405,29 @@ router.get('/ExportTracker', function (req, res) {
         type: 'string'
     });
 
-    if (objParam.AppName == 'DoTrack' || UserRoles == 'Super Admin' || (objParam.idSalesAgent != null && objParam.idSalesAgent != undefined && objParam.idSalesAgent != '')) {
+    if (objParam.AppName == 'DoTrack' || UserRoles == 'Super Admin') {
         conf.cols.push({
             caption: 'Company',
             type: 'string'
         });
     }
-
-    conf.cols.push({
-        caption: 'Type',
-        type: 'string'
-    });
+    if (objParam.idSalesAgent == null || objParam.idSalesAgent == undefined || objParam.idSalesAgent == '') {
+        conf.cols.push({
+            caption: 'Type',
+            type: 'string'
+        });
+    }
 
     conf.cols.push({
         caption: 'IMEI',
         type: 'string'
     });
-
-    conf.cols.push({
-        caption: 'Version',
-        type: 'string'
-    });
+    if (objParam.idSalesAgent == null || objParam.idSalesAgent == undefined || objParam.idSalesAgent == '') {
+        conf.cols.push({
+            caption: 'Version',
+            type: 'string'
+        });
+    }
 
     conf.cols.push({
         caption: 'SIM Serial Number',
@@ -468,10 +470,10 @@ router.get('/ExportTracker', function (req, res) {
             });
         }
 
-        conf.cols.push({
-            caption: 'Expiry Date',
-            type: 'string'
-        });
+        // conf.cols.push({
+        //     caption: 'Expiry Date',
+        //     type: 'string'
+        // });
 
         conf.cols.push({
             caption: 'Date',
@@ -482,17 +484,17 @@ router.get('/ExportTracker', function (req, res) {
             caption: 'Created By',
             type: 'string'
         });
+
+        conf.cols.push({
+            caption: 'Status',
+            type: 'string'
+        });
+
+        conf.cols.push({
+            caption: 'Remark',
+            type: 'string'
+        });
     }
-
-    conf.cols.push({
-        caption: 'Status',
-        type: 'string'
-    });
-
-    conf.cols.push({
-        caption: 'Remark',
-        type: 'string'
-    });
 
     var objColumns = objParam.columns;
     var objOrderBy = objParam.order;
@@ -641,9 +643,9 @@ router.get('/ExportTracker', function (req, res) {
                 // if (response[i].username != null && response[i].username != '' && response[i].username != undefined) {
                 //     SalesAgent = response[i].username;
                 // }
-                if (response[i].ExpiryDate != null && response[i].ExpiryDate != '' && response[i].ExpiryDate != undefined) {
-                    ExpiryDate = moment(response[i].ExpiryDate).format('DD-MM-YYYY hh:mm:ss a');
-                }
+                // if (response[i].ExpiryDate != null && response[i].ExpiryDate != '' && response[i].ExpiryDate != undefined) {
+                //     ExpiryDate = moment(response[i].ExpiryDate).format('DD-MM-YYYY hh:mm:ss a');
+                // }
                 if (response[i].CreatedDate != null && response[i].CreatedDate != '' && response[i].CreatedDate != undefined) {
                     Date = moment(response[i].CreatedDate).format('DD-MM-YYYY hh:mm:ss a');
                 }
@@ -683,21 +685,21 @@ router.get('/ExportTracker', function (req, res) {
                 }
 
                 if (UserRoles == 'Super Admin') {
-                    row.push(DeviceId, Company, Type, IMEI, Version, SimSerialNum, SimPhoneNum, TelCompany, Country, AppName, ExpiryDate, Date, CreatedBy, Status, Remark);
+                    row.push(DeviceId, Company, Type, IMEI, Version, SimSerialNum, SimPhoneNum, TelCompany, Country, AppName, Date, CreatedBy, Status, Remark);
                     conf.rows.push(row);
                 } else {
                     if (objParam.AppName == 'DoTrack') {
                         if (objParam.idSalesAgent != null && objParam.idSalesAgent != undefined && objParam.idSalesAgent != '') {
                             row.push(DeviceId, Company, Type, IMEI, Version, SimSerialNum, SimPhoneNum, LicenceNo, VehicleExpiryDate, Status, Remark);
                         } else {
-                            row.push(DeviceId, Company, Type, IMEI, Version, SimSerialNum, SimPhoneNum, TelCompany, Country, ExpiryDate, Date, CreatedBy, Status, Remark);
+                            row.push(DeviceId, Company, Type, IMEI, Version, SimSerialNum, SimPhoneNum, TelCompany, Country, Date, CreatedBy, Status, Remark);
                         }
                     } else {
 
                         if (objParam.idSalesAgent != null && objParam.idSalesAgent != undefined && objParam.idSalesAgent != '') {
-                            row.push(DeviceId, Company, Type, IMEI, Version, SimSerialNum, SimPhoneNum, LicenceNo, VehicleExpiryDate, Status, Remark)
+                            row.push(DeviceId, IMEI, SimSerialNum, SimPhoneNum, LicenceNo, VehicleExpiryDate)
                         } else {
-                            row.push(DeviceId, Type, IMEI, Version, SimSerialNum, SimPhoneNum, TelCompany, Country, ExpiryDate, Date, CreatedBy, Status, Remark);
+                            row.push(DeviceId, Type, IMEI, Version, SimSerialNum, SimPhoneNum, TelCompany, Country, Date, CreatedBy, Status, Remark);
                         }
                     }
 
