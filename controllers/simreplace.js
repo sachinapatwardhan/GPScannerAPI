@@ -12,9 +12,9 @@ router.post('/GetAllSim', jsonParser, function (req, res) {
     if (idApp != null && idApp != undefined && idApp != '') {
         wherecondition = " Where idApp='" + idApp + "' ";
     }
-    var query = " SELECT SerialNum,idApp as CreatedDate FROM tblsimdetails " + wherecondition +
+    var query = " SELECT SerialNum,CreatedDate FROM tblsimdetails " + wherecondition +
         // "Left outer join tblappinfo on tblappinfo.Id= tblsimdetails.idApp " +
-        " ORDER BY CreatedDate ";
+        "Group by SerialNum ORDER BY CreatedDate ";
     connection.query(query, function (err, response) {
         if (response.length) {
             res.json({
