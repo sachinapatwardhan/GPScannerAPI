@@ -136,76 +136,90 @@
                             }).then(function (ObjExist) {
                                 if (ObjExist) {
                                     ManageSimFun(objGpsDevice.SIM, objGpsDevice.idApp, function (objSIMData) {
-                                        ObjExist.updateAttributes({
-                                            idSim: objSIMData.id,
-                                            SimNum: objSIMData.SerialNum,
-                                            idSalesAgent: objGpsDevice.UserId,
-                                            AppName: resAppInfo.AppName
-                                        }).then(function (response) {
-                                            if (response) {
-                                                DeviceAgentRetailer.findOne({ where: { deviceId: objGpsDevice.IMEI.toString().trim().slice(1) } }).then(function (resDeviceAgentRetailer) {
-                                                    if (resDeviceAgentRetailer) {
-                                                        DeviceAgentRetailer.updateAttributes({
-                                                            agentId: objGpsDevice.UserId,
-                                                        }).then(function (response) {
-                                                            funAuditLog.CreateAuditLog('Tracker Update', UserExist.username, 'tracker Update by sales agent : (' + decoded.username + ') / IMEI: (' + ObjExist.IMEI + ')');
-                                                            res.json({ success: true, message: "Tracker Update successfully.", data: response });
-                                                        });
-                                                    } else {
-                                                        var objDeviceAgent = new Object();
-                                                        objDeviceAgent.agentId = objGpsDevice.UserId;
-                                                        objDeviceAgent.deviceId = objGpsDevice.IMEI.toString().trim().slice(1);
-                                                        objDeviceAgent.activatedDatetime = new Date();
-                                                        objDeviceAgent.createdDatetime = new Date();
-                                                        DeviceAgentRetailer.create(objDeviceAgent).then(function (rescreate) {
-                                                            funAuditLog.CreateAuditLog('Tracker Update', UserExist.username, 'tracker Update by sales agent : (' + decoded.username + ') / IMEI: (' + ObjExist.IMEI + ')');
-                                                            res.json({ success: true, message: "Tracker Update successfully.", data: response });
+                                        GPSDevice.findOne({ where: { idSim: objSIMData.id, IMEI: { $ne: objGpsDevice.IMEI } } }).then(function (SimAssign) {
+                                            if (SimAssign) {
+                                                res.json({ success: false, message: 'SIM Is Already assigned.', data: null })
+                                            } else {
+                                                console.log(objSIMData.id)
+                                                ObjExist.updateAttributes({
+                                                    idSim: objSIMData.id,
+                                                    SimNum: objSIMData.SerialNum,
+                                                    idSalesAgent: objGpsDevice.UserId,
+                                                    AppName: resAppInfo.AppName
+                                                }).then(function (response) {
+                                                    if (response) {
+                                                        DeviceAgentRetailer.findOne({ where: { deviceId: objGpsDevice.IMEI.toString().trim().slice(1) } }).then(function (resDeviceAgentRetailer) {
+                                                            if (resDeviceAgentRetailer) {
+                                                                resDeviceAgentRetailer.updateAttributes({
+                                                                    agentId: objGpsDevice.UserId,
+                                                                }).then(function (response) {
+                                                                    funAuditLog.CreateAuditLog('Tracker Update', UserExist.username, 'tracker Update by sales agent : (' + decoded.username + ') / IMEI: (' + ObjExist.IMEI + ')');
+                                                                    res.json({ success: true, message: "Tracker Update successfully.", data: response });
+                                                                });
+                                                            } else {
+                                                                var objDeviceAgent = new Object();
+                                                                objDeviceAgent.agentId = objGpsDevice.UserId;
+                                                                objDeviceAgent.deviceId = objGpsDevice.IMEI.toString().trim().slice(1);
+                                                                objDeviceAgent.activatedDatetime = new Date();
+                                                                objDeviceAgent.createdDatetime = new Date();
+                                                                DeviceAgentRetailer.create(objDeviceAgent).then(function (rescreate) {
+                                                                    funAuditLog.CreateAuditLog('Tracker Update', UserExist.username, 'tracker Update by sales agent : (' + decoded.username + ') / IMEI: (' + ObjExist.IMEI + ')');
+                                                                    res.json({ success: true, message: "Tracker Update successfully.", data: response });
+                                                                })
+                                                            }
                                                         })
+                                                    } else {
+                                                        res.json({ success: false, message: "Tacker Not Updated.", data: null })
                                                     }
                                                 })
-                                            } else {
-                                                res.json({ success: false, message: "Tacker Not Updated.", data: null })
                                             }
                                         })
+
                                     })
                                 } else {
                                     //res.json({ success: false, message: "Tacker Invalid.." })
                                     ManageSimFun(objGpsDevice.SIM, objGpsDevice.idApp, function (objSIMData) {
-                                        objGpsDevice.CreatedDate = new Date();
-                                        objGpsDevice.CreatedBy = decoded.username;
-                                        objGpsDevice.idSim = objSIMData.id;
-                                        objGpsDevice.SimNum = objSIMData.SerialNum;
-                                        objGpsDevice.idSalesAgent = objGpsDevice.UserId;
-                                        objGpsDevice.AppName = resAppInfo.AppName;
-                                        objGpsDevice.Type = 'MT05';
-                                        objGpsDevice.DeviceId = objGpsDevice.IMEI.toString().trim().slice(1);
-                                        GPSDevice.findOrCreate({ where: { IMEI: objGpsDevice.IMEI }, defaults: objGpsDevice }).then(function (response) {
-                                            if (response) {
-                                                DeviceAgentRetailer.findOne({ where: { deviceId: objGpsDevice.IMEI.toString().trim().slice(1) } }).then(function (resDeviceAgentRetailer) {
-                                                    if (resDeviceAgentRetailer) {
-                                                        DeviceAgentRetailer.updateAttributes({
-                                                            agentId: objGpsDevice.UserId,
-                                                        }).then(function (response) {
-                                                            funAuditLog.CreateAuditLog('Tracker Create', UserExist.username, 'tracker created by sales agent : (' + decoded.username + ') / IMEI: (' + objGpsDevice.IMEI + ')');
-                                                            res.json({ success: true, message: "Tracker Activated successfully.", data: response });
-                                                        });
-                                                    } else {
-                                                        var objDeviceAgent = new Object();
-                                                        objDeviceAgent.agentId = objGpsDevice.UserId;
-                                                        objDeviceAgent.deviceId = objGpsDevice.IMEI.toString().trim().slice(1);
-                                                        objDeviceAgent.activatedDatetime = new Date();
-                                                        objDeviceAgent.createdDatetime = new Date();
-                                                        objDeviceAgent.simSerial = objSIMData.SerialNum;
-                                                        DeviceAgentRetailer.create(objDeviceAgent).then(function (rescreate) {
-                                                            funAuditLog.CreateAuditLog('Tracker Create', UserExist.username, 'tracker created by sales agent : (' + decoded.username + ') / IMEI: (' + objGpsDevice.IMEI + ')');
-                                                            res.json({ success: true, message: "Tracker Activated successfully.", data: response });
-                                                        })
-                                                    }
-                                                })
+                                        GPSDevice.findOne({ where: { idSim: objSIMData.id, IMEI: { $ne: objGpsDevice.IMEI } } }).then(function (SimAssign) {
+                                            if (SimAssign) {
+                                                res.json({ success: false, message: 'SIM Is Already assigned.', data: null })
                                             } else {
-                                                res.json({ success: false, message: "Tacker Not Activated. Try again later.", data: null })
+                                                objGpsDevice.CreatedDate = new Date();
+                                                objGpsDevice.CreatedBy = decoded.username;
+                                                objGpsDevice.idSim = objSIMData.id;
+                                                objGpsDevice.SimNum = objSIMData.SerialNum;
+                                                objGpsDevice.idSalesAgent = objGpsDevice.UserId;
+                                                objGpsDevice.AppName = resAppInfo.AppName;
+                                                objGpsDevice.Type = 'MT05';
+                                                objGpsDevice.DeviceId = objGpsDevice.IMEI.toString().trim().slice(1);
+                                                GPSDevice.findOrCreate({ where: { IMEI: objGpsDevice.IMEI }, defaults: objGpsDevice }).then(function (response) {
+                                                    if (response) {
+                                                        DeviceAgentRetailer.findOne({ where: { deviceId: objGpsDevice.IMEI.toString().trim().slice(1) } }).then(function (resDeviceAgentRetailer) {
+                                                            if (resDeviceAgentRetailer) {
+                                                                DeviceAgentRetailer.updateAttributes({
+                                                                    agentId: objGpsDevice.UserId,
+                                                                }).then(function (response) {
+                                                                    funAuditLog.CreateAuditLog('Tracker Create', UserExist.username, 'tracker created by sales agent : (' + decoded.username + ') / IMEI: (' + objGpsDevice.IMEI + ')');
+                                                                    res.json({ success: true, message: "Tracker Activated successfully.", data: response });
+                                                                });
+                                                            } else {
+                                                                var objDeviceAgent = new Object();
+                                                                objDeviceAgent.agentId = objGpsDevice.UserId;
+                                                                objDeviceAgent.deviceId = objGpsDevice.IMEI.toString().trim().slice(1);
+                                                                objDeviceAgent.activatedDatetime = new Date();
+                                                                objDeviceAgent.createdDatetime = new Date();
+                                                                objDeviceAgent.simSerial = objSIMData.SerialNum;
+                                                                DeviceAgentRetailer.create(objDeviceAgent).then(function (rescreate) {
+                                                                    funAuditLog.CreateAuditLog('Tracker Create', UserExist.username, 'tracker created by sales agent : (' + decoded.username + ') / IMEI: (' + objGpsDevice.IMEI + ')');
+                                                                    res.json({ success: true, message: "Tracker Activated successfully.", data: response });
+                                                                })
+                                                            }
+                                                        })
+                                                    } else {
+                                                        res.json({ success: false, message: "Tacker Not Activated. Try again later.", data: null })
+                                                    }
+                                                });
                                             }
-                                        });
+                                        })
                                     })
                                 }
                             })

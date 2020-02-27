@@ -152,15 +152,21 @@ router.post('/ImportData', function (req, res) {
                                     objDevice.IsActive = true;
                                     objDevice.Type = "MT05";
                                     objDevice.Version = "v4";
-                                    GPSDevice.findOrCreate({ where: { IMEI: objDevice.IMEI }, defaults: objDevice }).then(function (response) {
-                                        if ((response[1])) {
-                                            funAuditLog.CreateAuditLog('SaveGPSDevice', CreatedBy, 'Create GPS Tracker Device');
-                                            CreateUser();
+                                    GPSDevice.findOne({ where: { idSim: objDevice.idSim, IMEI: { $ne: objData.IMEI } } }).then(function (DeviceSimExist) {
+                                        if (DeviceSimExist) {
+                                            addDevice(i + 1);
                                         } else {
-                                            // GPSDevice.update(objDevice, { where: { id: response[0].id } }).then(function(resUpdate) {
-                                            //     funAuditLog.CreateAuditLog('SaveGPSDevice', CreatedBy, 'Update GPS Tracker Device');
-                                            CreateUser();
-                                            // });
+                                            GPSDevice.findOrCreate({ where: { IMEI: objDevice.IMEI }, defaults: objDevice }).then(function (response) {
+                                                if ((response[1])) {
+                                                    funAuditLog.CreateAuditLog('SaveGPSDevice', CreatedBy, 'Create GPS Tracker Device');
+                                                    CreateUser();
+                                                } else {
+                                                    // GPSDevice.update(objDevice, { where: { id: response[0].id } }).then(function(resUpdate) {
+                                                    //     funAuditLog.CreateAuditLog('SaveGPSDevice', CreatedBy, 'Update GPS Tracker Device');
+                                                    CreateUser();
+                                                    // });
+                                                }
+                                            })
                                         }
                                     }).catch(function (resError) {
                                         CreateUser();

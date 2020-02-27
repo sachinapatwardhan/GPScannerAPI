@@ -1098,7 +1098,7 @@ router.post('/SaveGPSDevice', jsonParser, function (req, res) {
                         if (AccessPermission) {
                             objGPSDevice.CreatedDate = new Date();
                             objGPSDevice.CreatedBy = decoded.username;
-                            GPSDevice.findOrCreate({ where: { DeviceId: objGPSDevice.DeviceId }, defaults: objGPSDevice }).then(function (response) {
+                            GPSDevice.findOrCreate({ where: { $or: { DeviceId: objGPSDevice.DeviceId, idSim: objGPSDevice.idSim } }, defaults: objGPSDevice }).then(function (response) {
                                 if ((response[1])) {
                                     funAuditLog.CreateAuditLog('SaveGPSDevice', UserExist.username, 'Create GPS Tracker Device / IMEI : (' + response[0].IMEI + ')');
                                     if (objGPSDevice.AppName == 'MYPINHERE') {
@@ -1106,7 +1106,11 @@ router.post('/SaveGPSDevice', jsonParser, function (req, res) {
                                     }
                                     res.json({ success: true, message: "Tracker created successfully...", data: response });
                                 } else {
-                                    res.json({ success: false, message: "Tracker already exist...", data: response });
+                                    if (response[0].idSim == objGPSDevice.idSim) {
+                                        res.json({ success: false, message: "Sim already assign to other device. please, select other Sim...", data: response });
+                                    } else {
+                                        res.json({ success: false, message: "Tracker already exist...", data: response });
+                                    }
                                 }
                             })
                         } else {
@@ -1124,9 +1128,13 @@ router.post('/SaveGPSDevice', jsonParser, function (req, res) {
                     funAccessPermission.CheckUserAccessPermission(obj, function (responseAccessPermission) {
                         var AccessPermission = responseAccessPermission.success;
                         if (AccessPermission) {
-                            GPSDevice.findOne({ where: { DeviceId: objGPSDevice.DeviceId } }).then(function (objGPSDeviceExit) {
+                            GPSDevice.findOne({ where: { $or: { DeviceId: objGPSDevice.DeviceId, idSim: objGPSDevice.idSim } } }).then(function (objGPSDeviceExit) {
                                 if (objGPSDeviceExit != null && objGPSDevice.id != objGPSDeviceExit.id) {
-                                    res.json({ success: false, message: "Tracker is already exist...", data: objGPSDeviceExit });
+                                    if (objGPSDeviceExit.idSim == objGPSDevice.idSim) {
+                                        res.json({ success: false, message: "Sim already assign to other device. please, select other Sim...", data: objGPSDeviceExit });
+                                    } else {
+                                        res.json({ success: false, message: "Tracker is already exist...", data: objGPSDeviceExit });
+                                    }
                                 } else {
                                     GPSDevice.update(objGPSDevice, { where: { id: objGPSDevice.id } }).then(function (response) {
                                         if (response[0]) {
@@ -1374,27 +1382,35 @@ router.post('/uploadExcelDevice', function (req, res) {
                                             }
                                             ExistSim.updateAttributes(objUpdatesim).then(function (resUpdate) {
                                                 obj.idSim = ExistSim.id;
-                                                GPSDevice.findOrCreate({
-                                                    where: { IMEI: obj.IMEI },
-                                                    defaults: obj
-                                                }).then(function (response) {
-                                                    if ((response[1])) {
-                                                        if (obj.AppName == 'MYPINHERE') {
-                                                            client.set(obj.DeviceId + "ProjectIgnitionStatus", 'true', function (err, replies) { });
-                                                        }
+                                                GPSDevice.findOne({ where: { idSim: obj.idSim, IMEI: { $ne: obj.IMEI } } }).then(function (DeviceSimExist) {
+                                                    if (DeviceSimExist) {
+                                                        Importerror.push(lst[i].SerialNumber);
                                                         addDevice(i + 1);
                                                     } else {
-                                                        GPSDevice.update(obj, { where: { id: response[0].id } }).then(function (resUpdate) {
-                                                            if (obj.AppName == 'MYPINHERE') {
-                                                                client.set(obj.DeviceId + "ProjectIgnitionStatus", 'true', function (err, replies) { });
+                                                        GPSDevice.findOrCreate({
+                                                            where: { IMEI: obj.IMEI },
+                                                            defaults: obj
+                                                        }).then(function (response) {
+                                                            if ((response[1])) {
+                                                                if (obj.AppName == 'MYPINHERE') {
+                                                                    client.set(obj.DeviceId + "ProjectIgnitionStatus", 'true', function (err, replies) { });
+                                                                }
+                                                                addDevice(i + 1);
                                                             } else {
-                                                                client.del(obj.DeviceId + "ProjectIgnitionStatus", function (err, replies) { });
+                                                                GPSDevice.update(obj, { where: { id: response[0].id } }).then(function (resUpdate) {
+                                                                    if (obj.AppName == 'MYPINHERE') {
+                                                                        client.set(obj.DeviceId + "ProjectIgnitionStatus", 'true', function (err, replies) { });
+                                                                    } else {
+                                                                        client.del(obj.DeviceId + "ProjectIgnitionStatus", function (err, replies) { });
+                                                                    }
+                                                                    addDevice(i + 1);
+                                                                });
+                                                                // Importerror.push(lst[i].SerialNumber); 
                                                             }
-                                                            addDevice(i + 1);
-                                                        });
-                                                        // Importerror.push(lst[i].SerialNumber); 
+                                                        })
                                                     }
                                                 })
+
                                             });
                                         } else {
                                             var Simobj = new Object();
@@ -1413,49 +1429,63 @@ router.post('/uploadExcelDevice', function (req, res) {
                                             }).then(function (resSerial) {
                                                 if ((resSerial[1])) {
                                                     obj.idSim = resSerial[0].dataValues.id;
-                                                    GPSDevice.findOrCreate({
-                                                        where: { IMEI: obj.IMEI },
-                                                        defaults: obj
-                                                    }).then(function (response) {
-                                                        if ((response[1])) {
-                                                            if (obj.AppName == 'MYPINHERE') {
-                                                                client.set(obj.DeviceId + "ProjectIgnitionStatus", 'true', function (err, replies) { });
-                                                            }
+                                                    GPSDevice.findOne({ where: { idSim: obj.idSim, IMEI: { $ne: obj.IMEI } } }).then(function (DeviceSimExist) {
+                                                        if (DeviceSimExist) {
+                                                            Importerror.push(lst[i].SerialNumber);
                                                             addDevice(i + 1);
                                                         } else {
-                                                            // Importerror.push(lst[i].SerialNumber);
-                                                            GPSDevice.update(obj, { where: { id: response[0].id } }).then(function (resUpdate) {
-                                                                if (obj.AppName == 'MYPINHERE') {
-                                                                    client.set(obj.DeviceId + "ProjectIgnitionStatus", 'true', function (err, replies) { });
+                                                            GPSDevice.findOrCreate({
+                                                                where: { IMEI: obj.IMEI },
+                                                                defaults: obj
+                                                            }).then(function (response) {
+                                                                if ((response[1])) {
+                                                                    if (obj.AppName == 'MYPINHERE') {
+                                                                        client.set(obj.DeviceId + "ProjectIgnitionStatus", 'true', function (err, replies) { });
+                                                                    }
+                                                                    addDevice(i + 1);
                                                                 } else {
-                                                                    client.del(obj.DeviceId + "ProjectIgnitionStatus", function (err, replies) { });
+                                                                    // Importerror.push(lst[i].SerialNumber);
+                                                                    GPSDevice.update(obj, { where: { id: response[0].id } }).then(function (resUpdate) {
+                                                                        if (obj.AppName == 'MYPINHERE') {
+                                                                            client.set(obj.DeviceId + "ProjectIgnitionStatus", 'true', function (err, replies) { });
+                                                                        } else {
+                                                                            client.del(obj.DeviceId + "ProjectIgnitionStatus", function (err, replies) { });
+                                                                        }
+                                                                        addDevice(i + 1);
+                                                                    });
                                                                 }
-                                                                addDevice(i + 1);
-                                                            });
+                                                            })
                                                         }
                                                     })
                                                 } else {
                                                     SimService.update(Simobj, { where: { id: resSerial[0].id } }).then(function (resUpdateSim) {
                                                         obj.idSim = resSerial[0].id;
-                                                        GPSDevice.findOrCreate({
-                                                            where: { IMEI: obj.IMEI },
-                                                            defaults: obj
-                                                        }).then(function (response) {
-                                                            if ((response[1])) {
-                                                                if (obj.AppName == 'MYPINHERE') {
-                                                                    client.set(obj.DeviceId + "ProjectIgnitionStatus", 'true', function (err, replies) { });
-                                                                }
+                                                        GPSDevice.findOne({ where: { idSim: obj.idSim, IMEI: { $ne: obj.IMEI } } }).then(function (DeviceSimExist) {
+                                                            if (DeviceSimExist) {
+                                                                Importerror.push(lst[i].SerialNumber);
                                                                 addDevice(i + 1);
                                                             } else {
-                                                                // Importerror.push(lst[i].SerialNumber);
-                                                                GPSDevice.update(obj, { where: { id: response[0].id } }).then(function (resUpdate) {
-                                                                    if (obj.AppName == 'MYPINHERE') {
-                                                                        client.set(obj.DeviceId + "ProjectIgnitionStatus", 'true', function (err, replies) { });
+                                                                GPSDevice.findOrCreate({
+                                                                    where: { IMEI: obj.IMEI },
+                                                                    defaults: obj
+                                                                }).then(function (response) {
+                                                                    if ((response[1])) {
+                                                                        if (obj.AppName == 'MYPINHERE') {
+                                                                            client.set(obj.DeviceId + "ProjectIgnitionStatus", 'true', function (err, replies) { });
+                                                                        }
+                                                                        addDevice(i + 1);
                                                                     } else {
-                                                                        client.del(obj.DeviceId + "ProjectIgnitionStatus", function (err, replies) { });
+                                                                        // Importerror.push(lst[i].SerialNumber);
+                                                                        GPSDevice.update(obj, { where: { id: response[0].id } }).then(function (resUpdate) {
+                                                                            if (obj.AppName == 'MYPINHERE') {
+                                                                                client.set(obj.DeviceId + "ProjectIgnitionStatus", 'true', function (err, replies) { });
+                                                                            } else {
+                                                                                client.del(obj.DeviceId + "ProjectIgnitionStatus", function (err, replies) { });
+                                                                            }
+                                                                            addDevice(i + 1);
+                                                                        });
                                                                     }
-                                                                    addDevice(i + 1);
-                                                                });
+                                                                })
                                                             }
                                                         })
                                                     });
