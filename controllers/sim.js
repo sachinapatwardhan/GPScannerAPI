@@ -525,12 +525,13 @@ router.get('/CheckSimDetail', function (req, res) {
     });
 });
 
-router.get('/GetSimSerialByDeviceId', function (req, res) {
-    var query = " SELECT ts.SerialNum,ts.PhoneNum,tg.DeviceId,tg.Type,tg.AppName,tc.Country,IFNULL(tsu.email,tsu2.email) as SalesAgent,tsu1.email as Distributor,CONVERT_TZ(tl.ExpiryDate,'+00:00','" + CurrentOffset + "') as ExpiryDate,CASE WHEN tl.CreatedDate is not null then CONVERT_TZ(tl.CreatedDate,'+00:00','" + CurrentOffset + "') else CONVERT_TZ(tv.CreatedDate,'+00:00','" + CurrentOffset + "') end as CreatedDate,CASE WHEN tl.id is null then false else true END as IsLicenceHave,tl.LicenceNo FROM" +
+router.get('/GetFullSimSerialByDeviceId', function (req, res) {
+    var query = " SELECT ts.SerialNum,ts.PhoneNum,ts.Status as SimStatus,tg.Status as DeviceStatus,tsuVehicle.email as VehicleUser,CONVERT_TZ(tsuVehicle.LastLogin,'+00:00','" + CurrentOffset + "') as LastLogin,tg.DeviceId,tg.Type,tg.AppName,tc.Country,IFNULL(tsu.email,tsu2.email) as SalesAgent,tsu1.email as Distributor,CONVERT_TZ(tl.ExpiryDate,'+00:00','" + CurrentOffset + "') as ExpiryDate,CONVERT_TZ(tv.HandshakDatetime,'+00:00','" + CurrentOffset + "') as LastHandshake,CONVERT_TZ(tg.CreatedDate,'+00:00','" + CurrentOffset + "') as GPSCreatedDate,CASE WHEN tl.CreatedDate is not null then CONVERT_TZ(tl.CreatedDate,'+00:00','" + CurrentOffset + "') else CONVERT_TZ(tv.CreatedDate,'+00:00','" + CurrentOffset + "') end as CreatedDate,CASE WHEN tl.id is null then false else true END as IsLicenceHave,tl.LicenceNo FROM" +
         " tblgpsdevice tg" +
         " left JOIN tblsimdetails ts ON tg.idSim= ts.id" +
         " left JOIN tbllicencemanager tl ON tg.DeviceId= tl.DeviceId" +
         " left JOIN tblvehicle tv ON tg.DeviceId= tv.deviceid and tv.IsDelete=0" +
+        " left JOIN tbluserinformation tsuVehicle ON tsuVehicle.id= tv.iduser" +
         " left JOIN tbluserinformation tsu2 ON tsu2.id= tg.idSalesAgent" +
         " left JOIN tbldeviceagentretailer tdr ON tdr.deviceId= tg.DeviceId" +
         " left JOIN tbluserinformation tsu ON tsu.id= tdr.agentId" +
@@ -545,11 +546,110 @@ router.get('/GetSimSerialByDeviceId', function (req, res) {
                 if (response[i].CreatedDate != null) {
                     response[i].CreatedDate = convertdateformat(response[i].CreatedDate, 'Excel Export');
                 }
+                if (response[i].LastHandshake != null) {
+                    response[i].LastHandshake = convertdateformat(response[i].LastHandshake, 'Excel Export');
+                }
+                if (response[i].GPSCreatedDate != null) {
+                    response[i].GPSCreatedDate = convertdateformat(response[i].GPSCreatedDate, 'Excel Export');
+                }
+                if (response[i].LastLogin != null) {
+                    response[i].LastLogin = convertdateformat(response[i].LastLogin, 'Excel Export');
+                }
             }
             res.json(response);
         } else {
             res.json([]);
         }
+    });
+})
+
+router.get('/GetFullDeviceBySimSerial', function (req, res) {
+    var query = " SELECT ts.SerialNum,ts.PhoneNum,ts.Status as SimStatus,tg.Status as DeviceStatus,tsuVehicle.email as VehicleUser,CONVERT_TZ(tsuVehicle.LastLogin,'+00:00','" + CurrentOffset + "') as LastLogin,tg.DeviceId,tg.Type,tg.AppName,tc.Country,IFNULL(tsu.email,tsu2.email) as SalesAgent,tsu1.email as Distributor,CONVERT_TZ(tl.ExpiryDate,'+00:00','" + CurrentOffset + "') as ExpiryDate,CONVERT_TZ(tv.HandshakDatetime,'+00:00','" + CurrentOffset + "') as LastHandshake,CONVERT_TZ(tg.CreatedDate,'+00:00','" + CurrentOffset + "') as GPSCreatedDate,CASE WHEN tl.CreatedDate is not null then CONVERT_TZ(tl.CreatedDate,'+00:00','" + CurrentOffset + "') else CONVERT_TZ(tv.CreatedDate,'+00:00','" + CurrentOffset + "') end as CreatedDate,CASE WHEN tl.id is null then false else true END as IsLicenceHave,tl.LicenceNo FROM" +
+        " tblgpsdevice tg" +
+        " left JOIN tblsimdetails ts ON tg.idSim= ts.id" +
+        " left JOIN tbllicencemanager tl ON tg.DeviceId= tl.DeviceId" +
+        " left JOIN tblvehicle tv ON tg.DeviceId= tv.deviceid and tv.IsDelete=0" +
+        " left JOIN tbluserinformation tsuVehicle ON tsuVehicle.id= tv.iduser" +
+        " left JOIN tbluserinformation tsu2 ON tsu2.id= tg.idSalesAgent" +
+        " left JOIN tbldeviceagentretailer tdr ON tdr.deviceId= tg.DeviceId" +
+        " left JOIN tbluserinformation tsu ON tsu.id= tdr.agentId" +
+        " left JOIN tbluserinformation tsu1 ON tsu1.id= tdr.idDistributor" +
+        " left JOIN tblcountrymgmt tc ON tc.id= tg.CountryId where ts.SerialNum='" + req.query.Sim + "'";
+    connection.query(query, function (err, response) {
+        if (!err && response.length > 0) {
+            for (var i = 0; i < response.length; i++) {
+                if (response[i].ExpiryDate != null) {
+                    response[i].ExpiryDate = convertdateformat(response[i].ExpiryDate, 'Excel Export');
+                }
+                if (response[i].CreatedDate != null) {
+                    response[i].CreatedDate = convertdateformat(response[i].CreatedDate, 'Excel Export');
+                }
+                if (response[i].LastHandshake != null) {
+                    response[i].LastHandshake = convertdateformat(response[i].LastHandshake, 'Excel Export');
+                }
+                if (response[i].GPSCreatedDate != null) {
+                    response[i].GPSCreatedDate = convertdateformat(response[i].GPSCreatedDate, 'Excel Export');
+                }
+                if (response[i].LastLogin != null) {
+                    response[i].LastLogin = convertdateformat(response[i].LastLogin, 'Excel Export');
+                }
+            }
+            res.json(response);
+        } else {
+            res.json([]);
+        }
+    });
+})
+
+router.get('/GetFullDeviceByVehicle', function (req, res) {
+    var query = " SELECT ts.SerialNum,ts.PhoneNum,ts.Status as SimStatus,tg.Status as DeviceStatus,tsuVehicle.email as VehicleUser,CONVERT_TZ(tsuVehicle.LastLogin,'+00:00','" + CurrentOffset + "') as LastLogin,tg.DeviceId,tg.Type,tg.AppName,tc.Country,IFNULL(tsu.email,tsu2.email) as SalesAgent,tsu1.email as Distributor,CONVERT_TZ(tl.ExpiryDate,'+00:00','" + CurrentOffset + "') as ExpiryDate,CONVERT_TZ(tv.HandshakDatetime,'+00:00','" + CurrentOffset + "') as LastHandshake,CONVERT_TZ(tg.CreatedDate,'+00:00','" + CurrentOffset + "') as GPSCreatedDate,CASE WHEN tl.CreatedDate is not null then CONVERT_TZ(tl.CreatedDate,'+00:00','" + CurrentOffset + "') else CONVERT_TZ(tv.CreatedDate,'+00:00','" + CurrentOffset + "') end as CreatedDate,CASE WHEN tl.id is null then false else true END as IsLicenceHave,tl.LicenceNo FROM" +
+        " tblgpsdevice tg" +
+        " left JOIN tblsimdetails ts ON tg.idSim= ts.id" +
+        " left JOIN tbllicencemanager tl ON tg.DeviceId= tl.DeviceId" +
+        " left JOIN tblvehicle tv ON tg.DeviceId= tv.deviceid and tv.IsDelete=0" +
+        " left JOIN tbluserinformation tsuVehicle ON tsuVehicle.id= tv.iduser" +
+        " left JOIN tbluserinformation tsu2 ON tsu2.id= tg.idSalesAgent" +
+        " left JOIN tbldeviceagentretailer tdr ON tdr.deviceId= tg.DeviceId" +
+        " left JOIN tbluserinformation tsu ON tsu.id= tdr.agentId" +
+        " left JOIN tbluserinformation tsu1 ON tsu1.id= tdr.idDistributor" +
+        " left JOIN tblcountrymgmt tc ON tc.id= tg.CountryId where tv.Name like '%" + req.query.Vehicle + "%'";
+    connection.query(query, function (err, response) {
+        if (!err && response.length > 0) {
+            for (var i = 0; i < response.length; i++) {
+                if (response[i].ExpiryDate != null) {
+                    response[i].ExpiryDate = convertdateformat(response[i].ExpiryDate, 'Excel Export');
+                }
+                if (response[i].CreatedDate != null) {
+                    response[i].CreatedDate = convertdateformat(response[i].CreatedDate, 'Excel Export');
+                }
+                if (response[i].LastHandshake != null) {
+                    response[i].LastHandshake = convertdateformat(response[i].LastHandshake, 'Excel Export');
+                }
+                if (response[i].GPSCreatedDate != null) {
+                    response[i].GPSCreatedDate = convertdateformat(response[i].GPSCreatedDate, 'Excel Export');
+                }
+                if (response[i].LastLogin != null) {
+                    response[i].LastLogin = convertdateformat(response[i].LastLogin, 'Excel Export');
+                }
+            }
+            res.json(response);
+        } else {
+            res.json([]);
+        }
+    });
+})
+
+router.get('/GetOrderRenewByDevice', function (req, res) {
+    var query = "SELECT * FROM tblorderservice where OrderNotes like '%" + req.query.DeviceId + "%' order by id desc;";
+    connection.query(query, function (err, response) {
+        if (!err) {
+            for (var i = 0; i < response.length; i++) {
+                if (response[i].CreatedOnUtc != null) {
+                    response[i].CreatedOnUtc = convertdateformat(response[i].CreatedOnUtc, 'Excel Export');
+                }
+            }
+        }
+        res.json(response);
     });
 })
 
@@ -560,6 +660,73 @@ router.get('/GetDeviceBySimSerial', function (req, res) {
             res.json(response[0].Deviceids);
         } else {
             res.json('');
+        }
+    });
+})
+
+router.get('/AttachSimMDetail', function (req, res) {
+    var ChedkSim = "Select * from tblgpsdevice tg inner join tblsimdetails ts on ts.id=tg.idSim where ts.SerialNum='" + req.query.Sim + "'";
+    connection.query(ChedkSim, function (err, response) {
+        if (!err) {
+            if (response.length > 0) {
+                res.json({ success: false, message: 'This Sim already attached. try with different sim' });
+            } else {
+                var GetSim = "Select * from tblsimdetails where SerialNum='" + req.query.Sim + "'";
+                connection.query(GetSim, function (err, resSim) {
+                    if (!err) {
+                        if (resSim.length > 0) {
+                            var UpdateSim = "Update tblgpsdevice set idSim=" + resSim[0].id + " where DeviceId='" + req.query.DeviceId + "'";
+                            connection.query(UpdateSim, function (err, resSimAttach) {
+                                res.json({ success: true, message: 'Sim attach with device successfully.' })
+                            });
+                        } else {
+                            res.json({ success: false, message: 'This Sim not registered. Try wirth different sim or register from admin side.' });
+                        }
+                    } else {
+                        res.json({ success: false, message: 'Something went wrong. Try again later.' });
+                    }
+                });
+            }
+        } else {
+            res.json({ success: false, message: 'Something went wrong. Try again later.' });
+        }
+    });
+})
+
+router.get('/GetVehicleDetail', function (req, res) {
+    var query = `SELECT *,
+                    CONVERT_TZ(tv.renewaldate,
+                            '+00:00',
+                            '" + CurrentOffset + "') AS ExpiryDate,
+                    CONVERT_TZ(tv.CreatedDate,
+                            '+00:00',
+                            '" + CurrentOffset + "') AS DisplayCreatedDate,
+                    CONVERT_TZ(tv.HandshakDatetime,
+                            '+00:00',
+                            '" + CurrentOffset + "') AS LastHandshake
+                FROM
+                    tblvehicle tv
+                        INNER JOIN
+                    tbluserinformation tu ON tu.id = tv.iduser
+                WHERE
+                    tu.email = '` + req.query.Email + `' AND tv.IsDelete = FALSE;`
+
+    connection.query(query, function (err, response) {
+        if (!err && response.length > 0) {
+            for (var i = 0; i < response.length; i++) {
+                if (response[i].ExpiryDate != null) {
+                    response[i].ExpiryDate = convertdateformat(response[i].ExpiryDate, 'Excel Export');
+                }
+                if (response[i].DisplayCreatedDate != null) {
+                    response[i].DisplayCreatedDate = convertdateformat(response[i].DisplayCreatedDate, 'Excel Export');
+                }
+                if (response[i].LastHandshake != null) {
+                    response[i].LastHandshake = convertdateformat(response[i].LastHandshake, 'Excel Export');
+                }
+            }
+            res.json(response);
+        } else {
+            res.json([]);
         }
     });
 })
@@ -779,6 +946,431 @@ router.get('/ExportSimExport', function (req, res) {
         res.setHeader('Content-Type', 'application/vnd.openxmlformats');
         res.setHeader("Content-Disposition", "attachment; filename=SimExport.xlsx");
         res.end(result, 'binary');
+    });
+});
+
+router.get('/ExportSimMultiDeviceExport', function (req, res) {
+    var conf = {};
+    conf.cols = [{
+        caption: 'SerialNum',
+        type: 'string'
+    },
+    {
+        caption: 'Deviceids',
+        type: 'string'
+    },
+    {
+        caption: 'AppName',
+        type: 'string'
+    }];
+
+    var query = `SELECT 
+                    ts.SerialNum,
+                    GROUP_CONCAT(tg.DeviceId) AS Deviceids,
+                    GROUP_CONCAT(tg.AppName) AS AppName,
+                    Count(tg.id) as TotalDevice
+                FROM
+                    tblsimdetails ts
+                        LEFT JOIN
+                    tblgpsdevice tg ON ts.id = tg.idSim
+                GROUP BY ts.id
+                order by TotalDevice desc;`;
+    connection.query(query, function (err, response) {
+        conf.rows = [];
+        if (response.length > 0) {
+            for (var i = 0; i < response.length; i++) {
+                if (response[i].TotalDevice > 1) {
+                    var row = [];
+                    var SerialNum = '';
+                    var DeviceId = '';
+                    var AppName = '';
+                    if (response[i].Deviceids != null && response[i].Deviceids != undefined && response[i].Deviceids != '') {
+                        DeviceId = response[i].Deviceids.toString();
+                    }
+
+                    if (response[i].SerialNum != null && response[i].SerialNum != undefined && response[i].SerialNum != '') {
+                        SerialNum = response[i].SerialNum.toString();
+                    }
+
+                    if (response[i].AppName != null && response[i].AppName != undefined && response[i].AppName != '') {
+                        AppName = response[i].AppName.toString();
+                    }
+
+                    row.push(SerialNum, DeviceId, AppName);
+                    conf.rows.push(row);
+                }
+            }
+        }
+        var result = nodeExcel.execute(conf);
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats');
+        res.setHeader("Content-Disposition", "attachment; filename=SimMultiDeviceExport.xlsx");
+        res.end(result, 'binary');
+    });
+});
+
+router.get('/ExportNoSimNoAppDeviceExport', function (req, res) {
+    var conf = {};
+    conf.cols = [{
+        caption: 'SerialNum',
+        type: 'string'
+    },
+    {
+        caption: 'DeviceId',
+        type: 'string'
+    },
+    {
+        caption: 'AppName',
+        type: 'string'
+    },
+    {
+        caption: 'Country',
+        type: 'string'
+    }];
+
+    var query = `SELECT 
+                    DeviceId, IMEI, tg.AppName, ts.SerialNum, tc.Country
+                FROM
+                    tblgpsdevice tg
+                        LEFT JOIN
+                    tblcountrymgmt tc ON tc.id = tg.CountryId
+                        LEFT JOIN
+                    tblsimdetails ts ON ts.id = tg.idSim
+                WHERE
+                    idSim IS NULL OR AppName IS NULL;`;
+    connection.query(query, function (err, response) {
+        conf.rows = [];
+        if (response.length > 0) {
+            for (var i = 0; i < response.length; i++) {
+                var row = [];
+                var SerialNum = '';
+                var DeviceId = '';
+                var AppName = '';
+                var Country = '';
+                if (response[i].DeviceId != null && response[i].DeviceId != undefined && response[i].DeviceId != '') {
+                    DeviceId = response[i].DeviceId.toString();
+                }
+
+                if (response[i].SerialNum != null && response[i].SerialNum != undefined && response[i].SerialNum != '') {
+                    SerialNum = response[i].SerialNum.toString();
+                }
+
+                if (response[i].AppName != null && response[i].AppName != undefined && response[i].AppName != '') {
+                    AppName = response[i].AppName.toString();
+                }
+
+                if (response[i].Country != null && response[i].Country != undefined && response[i].Country != '') {
+                    Country = response[i].Country.toString();
+                }
+
+                row.push(SerialNum, DeviceId, AppName, Country);
+                conf.rows.push(row);
+            }
+        }
+        var result = nodeExcel.execute(conf);
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats');
+        res.setHeader("Content-Disposition", "attachment; filename=NoSimExport.xlsx");
+        res.end(result, 'binary');
+    });
+});
+
+router.get('/ExportKCDevice', function (req, res) {
+    var conf = {};
+    conf.cols = [{
+        caption: 'SerialNum',
+        type: 'string'
+    },
+    {
+        caption: 'DeviceId',
+        type: 'string'
+    },
+    {
+        caption: 'AppName',
+        type: 'string'
+    },
+    {
+        caption: 'SalesAgent',
+        type: 'string'
+    }];
+
+    var query = `SELECT 
+                    ts.SerialNum,
+                    ts.PhoneNum,
+                    tg.DeviceId,
+                    tg.AppName,
+                    IFNULL(tsu.email, tsu2.email) AS SalesAgent
+                FROM
+                    tblgpsdevice tg
+                        LEFT JOIN
+                    tblsimdetails ts ON tg.idSim = ts.id
+                        LEFT JOIN
+                    tbluserinformation tsu2 ON tsu2.id = tg.idSalesAgent
+                        LEFT JOIN
+                    tbldeviceagentretailer tdr ON tdr.deviceId = tg.DeviceId
+                        LEFT JOIN
+                    tbluserinformation tsu ON tsu.id = tdr.agentId
+                WHERE
+                    (tsu.email = 'kclim7@yahoo.com'
+                        OR tsu.email = 'kclim_maark@salesagent.com'
+                        OR tsu.email = 'kclim_navy@salesagent.com'
+                        OR tsu2.email = 'kclim7@yahoo.com'
+                        OR tsu2.email = 'kclim_maark@salesagent.com'
+                        OR tsu2.email = 'kclim_navy@salesagent.com');`;
+    connection.query(query, function (err, response) {
+        conf.rows = [];
+        if (response.length > 0) {
+            for (var i = 0; i < response.length; i++) {
+                var row = [];
+                var SerialNum = '';
+                var DeviceId = '';
+                var AppName = '';
+                var SalesAgent = '';
+                if (response[i].DeviceId != null && response[i].DeviceId != undefined && response[i].DeviceId != '') {
+                    DeviceId = response[i].DeviceId.toString();
+                }
+
+                if (response[i].SerialNum != null && response[i].SerialNum != undefined && response[i].SerialNum != '') {
+                    SerialNum = response[i].SerialNum.toString();
+                }
+
+                if (response[i].AppName != null && response[i].AppName != undefined && response[i].AppName != '') {
+                    AppName = response[i].AppName.toString();
+                }
+
+                if (response[i].SalesAgent != null && response[i].SalesAgent != undefined && response[i].SalesAgent != '') {
+                    SalesAgent = response[i].SalesAgent.toString();
+                }
+
+                row.push(SerialNum, DeviceId, AppName, SalesAgent);
+                conf.rows.push(row);
+            }
+        }
+        var result = nodeExcel.execute(conf);
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats');
+        res.setHeader("Content-Disposition", "attachment; filename=KCDevice.xlsx");
+        res.end(result, 'binary');
+    });
+});
+
+router.get('/UpdateManualSimStatus', function (req, res) {
+    if (req.query.secret == 'XjZ9A7Wasr82pQr8') {
+        SIM.findOne({
+            where: {
+                SerialNum: req.query.SerialSerial,
+            }
+        }).then(function (ObjExist) {
+            if (ObjExist) {
+                ObjExist.updateAttributes({
+                    Status: 'Terminate',
+                }).then(function (response) {
+                    if (response) {
+                        funAuditLog.CreateAuditLog('Update Sim Manual', 'Direct URL', 'update tracker SIM: (' + req.query.SerialSerial + ')');
+                        res.json("OK");
+                    } else {
+                        res.json("Can Not Update")
+                    }
+                })
+            } else {
+                res.json("Invalid Sim Serial.");
+            }
+        })
+    } else {
+        res.json("Invalid URL.");
+    }
+})
+
+router.get('/GetExpiredDeviceNoSimTerminate', function (req, res) {
+    var OrderBy = req.query.OrderBy;
+    var query = `SELECT 
+                    tg.DeviceId,
+                    tg.AppName,
+                    tc.Country,
+                    CONVERT_TZ(tl.ExpiryDate, '+00:00', '` + CurrentOffset + `') AS ExpiryDate,
+                    ts.SerialNum,
+                    ts.PhoneNum
+                FROM
+                    tblgpsdevice tg
+                        LEFT JOIN
+                    tblcountrymgmt tc ON tc.id = tg.CountryId
+                        INNER JOIN
+                    tblsimdetails ts ON tg.idSim = ts.id
+                        INNER JOIN
+                    tbllicencemanager tl ON tg.DeviceId = tl.DeviceId
+                WHERE
+                    tl.ExpiryDate < NOW() and (ts.Status!='Terminate' or ts.Status is null)
+                    ORDER BY `+ OrderBy + `;`;
+    connection.query(query, function (err, response) {
+        if (!err && response.length > 0) {
+            for (var i = 0; i < response.length; i++) {
+                if (response[i].ExpiryDate != null) {
+                    response[i].ExpiryDate = convertdateformat(response[i].ExpiryDate, 'Excel Export');
+                }
+            }
+            res.json(response);
+        } else {
+            res.json([]);
+        }
+    });
+})
+
+router.get('/GetExpiredDeviceIn30Days', function (req, res) {
+    var query = `SELECT 
+                    tg.DeviceId,
+                    tg.AppName,
+                    tc.Country,
+                    CONVERT_TZ(tl.ExpiryDate, '+00:00', '` + CurrentOffset + `') AS ExpiryDate
+                FROM
+                    tblgpsdevice tg
+                        LEFT JOIN
+                    tblcountrymgmt tc ON tc.id = tg.CountryId
+                        INNER JOIN
+                    tbllicencemanager tl ON tg.DeviceId = tl.DeviceId
+                WHERE
+                    tl.ExpiryDate > NOW() and tl.ExpiryDate < DATE_ADD(NOW(), INTERVAL 1 MONTH);`;
+    connection.query(query, function (err, response) {
+        if (!err && response.length > 0) {
+            for (var i = 0; i < response.length; i++) {
+                if (response[i].ExpiryDate != null) {
+                    response[i].ExpiryDate = convertdateformat(response[i].ExpiryDate, 'Excel Export');
+                }
+            }
+            res.json(response);
+        } else {
+            res.json([]);
+        }
+    });
+})
+
+router.get('/GetRenewalList', function (req, res) {
+    var objParam = req.query;
+    var offset = (parseInt(objParam.page) * 50);
+    var limit = 50;
+    var Where = "";
+    if (objParam.idApp != '' && objParam.idApp != null && objParam.idApp != undefined) {
+        Where = "Where ta.id=" + objParam.idApp + " ";
+    }
+    var query = `SELECT 
+                        torder.*, tl.LicenceNo, tv.Name AS VehicleName,tsu.email as SalesAgent,ta.AppName 
+                    FROM
+                        (SELECT 
+                            CONVERT_TZ(CreatedOnUtc, '+00:00', '` + CurrentOffset + `') AS CreateDate,
+                                Terms,
+                                SUBSTRING_INDEX(SUBSTRING_INDEX(tos.OrderNotes, ',', numbers.n), ',', - 1) DeviceId
+                        FROM
+                            (SELECT 1 n UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5) numbers
+                        INNER JOIN tblorderservice tos ON CHAR_LENGTH(tos.OrderNotes) - CHAR_LENGTH(REPLACE(tos.OrderNotes, ',', '')) >= numbers.n - 1) torder
+                            INNER JOIN
+                        tbllicencemanager tl ON tl.DeviceId = torder.DeviceId
+                            LEFT JOIN
+                        tblappinfo ta ON ta.id = tl.idApp 
+                            LEFT JOIN
+                        tblvehicle tv ON tv.deviceid = torder.DeviceId
+                            LEFT JOIN
+                        tbldeviceagentretailer tdr ON tdr.deviceId = torder.DeviceId
+                            LEFT JOIN
+                        tbluserinformation tsu ON tsu.id = tdr.agentId `+ Where + ` limit ` + limit + ` offset ` + offset;
+
+    connection.query(query, function (err, response) {
+        if (!err && response.length > 0) {
+            for (var i = 0; i < response.length; i++) {
+                if (response[i].CreateDate != null) {
+                    response[i].CreateDate = convertdateformat(response[i].CreateDate, 'Excel Export');
+                }
+            }
+            res.json(response);
+        } else {
+            res.json([]);
+        }
+    });
+})
+
+router.get('/ExportExpiredDevice', function (req, res) {
+    var conf = {};
+    conf.cols = [{
+        caption: 'Device Id',
+        type: 'string'
+    },
+    {
+        caption: 'App Name',
+        type: 'string'
+    }, {
+        caption: 'Country',
+        type: 'string'
+    },
+    {
+        caption: 'Expired Date',
+        type: 'string'
+    },
+    {
+        caption: 'SIM serial',
+        type: 'string'
+    }, {
+        caption: 'Phone No.',
+        type: 'string'
+    }
+
+    ];
+
+    var OrderBy = req.query.OrderBy;
+    var query = `SELECT 
+                    tg.DeviceId,
+                    tg.AppName,
+                    tc.Country,
+                    CONVERT_TZ(tl.ExpiryDate, '+00:00', '` + CurrentOffset + `') AS ExpiryDate,
+                    ts.SerialNum,
+                    ts.PhoneNum
+                FROM
+                    tblgpsdevice tg
+                        LEFT JOIN
+                    tblcountrymgmt tc ON tc.id = tg.CountryId
+                        INNER JOIN
+                    tblsimdetails ts ON tg.idSim = ts.id
+                        INNER JOIN
+                    tbllicencemanager tl ON tg.DeviceId = tl.DeviceId
+                WHERE
+                    tl.ExpiryDate < NOW() and (ts.Status!='Terminate' or ts.Status is null) 
+                ORDER BY `+ OrderBy + `;`;
+    connection.query(query, function (err, response) {
+        conf.rows = [];
+        if (response.length > 0) {
+            function setdata(i) {
+                if (i < response.length) {
+                    var row = [];
+                    var DeviceId = '';
+                    var AppName = '';
+                    var Country = '';
+                    var ExpiryDate = '';
+                    var SerialNum = '';
+                    var PhoneNum = '';
+
+
+                    DeviceId = response[i].DeviceId != null && response[i].DeviceId != undefined && response[i].DeviceId != '' ? response[i].DeviceId.toString() : DeviceId;
+                    AppName = response[i].AppName && response[i].AppName != undefined && response[i].AppName != '' ? response[i].AppName.toString() : AppName;
+                    Country = response[i].Country && response[i].Country != undefined && response[i].Country != '' ? response[i].Country.toString() : Country;
+                    ExpiryDate = response[i].ExpiryDate && response[i].ExpiryDate != undefined && response[i].ExpiryDate != '' ?
+                        moment(moment.utc(response[i].ExpiryDate).toDate()).format("YYYY-MM-DD HH:mm:ss") : ExpiryDate;
+                    SerialNum = response[i].SerialNum && response[i].SerialNum != undefined && response[i].SerialNum != '' ? response[i].SerialNum.toString() : SerialNum;
+                    PhoneNum = response[i].PhoneNum && response[i].PhoneNum != undefined && response[i].PhoneNum != '' ? response[i].PhoneNum.toString() : PhoneNum;
+
+                    row.push(DeviceId, AppName, Country, ExpiryDate, SerialNum, PhoneNum);
+
+                    conf.rows.push(row);
+
+                    setdata(i + 1);
+                } else {
+                    var result = nodeExcel.execute(conf);
+                    res.setHeader('Content-Type', 'application/vnd.openxmlformats');
+                    res.setHeader("Content-Disposition", "attachment; filename=" + "ExpiredTracker.xlsx");
+                    res.end(result, 'binary');
+
+                }
+            }
+            setdata(0);
+        } else {
+            var result = nodeExcel.execute(conf);
+            res.setHeader('Content-Type', 'application/vnd.openxmlformats');
+            res.setHeader("Content-Disposition", "attachment; filename=" + "ExpiredTracker.xlsx");
+            res.end(result, 'binary');
+        }
     });
 });
 module.exports = router
