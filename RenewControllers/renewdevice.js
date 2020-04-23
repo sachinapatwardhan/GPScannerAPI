@@ -6,6 +6,8 @@ var OrderServiceStatus = models.tblorderservicestatus;
 var LicenceManager = models.tbllicencemanager;
 var Vehicle = models.tblvehicle;
 var User = models.tbluserinformation;
+var SimDetail = models.tblsimdetails;
+var GPSDevice = models.tblgpsdevice;
 
 router.get('/GetRenewDeviceInfo', jsonParser, function (req, res) {
 
@@ -93,7 +95,9 @@ router.post('/SaveOrderServiceRenew', jsonParser, function (req, res) {
     var lstProduct = objOrderservice.lstProduct;
     var lstLicenceId = [];
     var lstDeviceId = [];
+    var lstGpsDeviceCheck = [];
     var PurchaseOrderNumber = new Date();
+    var error = {};
     OrderNumber = "BILLNO" + GetRandomWord() + Date.parse(PurchaseOrderNumber)
     var token = getToken(objHeader);
     if (token) {
@@ -106,16 +110,52 @@ router.post('/SaveOrderServiceRenew', jsonParser, function (req, res) {
         }).then(function (UserExist) {
 
             if (!UserExist) {
-                err.message = 'Token';
-                throw err;
+                error.message = 'Token';
+                throw error;
             }
 
             for (var i = 0; i < lstProduct.length; i++) {
+                lstGpsDeviceCheck.push(lstProduct[i].deviceid)
                 if (DeviceId == '') {
                     DeviceId = lstProduct[i].DeviceId;
                 } else {
                     DeviceId = DeviceId + "," + lstProduct[i].DeviceId;
                 }
+            }
+
+            GPSDevice.belongsTo(SimDetail, {
+                foreignKey: {
+                    name: 'idSim',
+                    allowNull: false
+                }
+            });
+            return GPSDevice.findAll({
+                where: { DeviceId: { $in: lstGpsDeviceCheck } },
+                include: [{
+                    model: SimDetail,
+                    attributes: ['id', 'Status'],
+                    required: false
+                }]
+            });
+        }).then(function (lstGpsDevices) {
+
+            var IsTerminate = false;
+            var TerminateDevices = "";
+            for (var i = 0; i < lstGpsDevices.length; i++) {
+                if (lstGpsDevices[i].tblsimdetail && lstGpsDevices[i].tblsimdetail.Status == 'Terminate') {
+                    IsTerminate = true;
+                    if (TerminateDevices == '') {
+                        TerminateDevices = lstGpsDevices[i].DeviceId;
+                    } else {
+                        TerminateDevices = TerminateDevices + "," + lstGpsDevices[i].DeviceId;
+                    }
+                }
+            }
+
+            if (IsTerminate) {
+                error.message = 'Terminate';
+                error.Data = TerminateDevices;
+                throw error;
             }
             var objOrder = new Object();
             objOrder.CustomerId = objOrderservice.idUser;
@@ -161,8 +201,8 @@ router.post('/SaveOrderServiceRenew', jsonParser, function (req, res) {
             return OrderService.create(objOrder);
         }).then(function (resOrder) {
             if (!resOrder) {
-                err.message = 'Order could not created. Try again later.';
-                throw err;
+                error.message = 'Order could not created. Try again later.';
+                throw error;
             }
             var lstOrderServiceItem = [];
             for (i = 0; i < lstProduct.length; i++) {
@@ -258,6 +298,11 @@ router.post('/SaveOrderServiceRenew', jsonParser, function (req, res) {
             .catch(function (err) {
                 if (err.message === 'Token') {
                     res.json(InvalidToken);
+                } else if (err.message === 'Terminate') {
+                    res.json({
+                        success: false,
+                        message: "Sim(s) are terminate for " + err.Data + " deevices. First replace that sim then try to renew it."
+                    });
                 } else {
                     res.json({
                         success: false,

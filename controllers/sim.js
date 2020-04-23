@@ -326,7 +326,7 @@ router.post('/uploadExcelDevice', function (req, res) {
                                         // funAuditLog.CreateAuditLog('Upload SIM Data', UserExist.username, 'Cerate New SIM Data');
                                         addSIm(i + 1);
                                     } else {
-                                        SimService.update(obj, { where: { id: response[0].id } }).then(function (resUpdateSim) {
+                                        SIM.update(obj, { where: { id: response[0].id } }).then(function (resUpdateSim) {
                                             // Importerror.push(lst[i].SerialNumber);
                                             addSIm(i + 1);
                                         });

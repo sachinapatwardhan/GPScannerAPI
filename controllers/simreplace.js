@@ -166,4 +166,73 @@ router.post('/SaveSimReplace', jsonParser, function (req, res) {
     } else { res.json(InvalidToken); }
 
 })
+
+router.post('/SaveSimReplaceMDetail', jsonParser, function (req, res) {
+    var objParam = req.body;
+    var wherecondition1 = "";
+    var wherecondition2 = "";
+    if (objParam.OldSim != null && objParam.OldSim != undefined && objParam.OldSim != '') {
+        wherecondition1 += " WHERE SerialNum='" + objParam.OldSim + "' ";
+    }
+    if (objParam.NewSim != null && objParam.NewSim != undefined && objParam.NewSim != '') {
+        wherecondition2 += " WHERE SerialNum='" + objParam.NewSim + "' ";
+    }
+    var query1 = " SELECT id,SerialNum FROM tblsimdetails " + wherecondition1;
+    connection.query(query1, function (err, OldSimExist) {
+        if (OldSimExist != null && OldSimExist.length > 0) {
+            var query2 = " SELECT id,SerialNum FROM tblsimdetails " + wherecondition2;
+            connection.query(query2, function (err, NewSimExist) {
+                if (NewSimExist != null && NewSimExist.length > 0) {
+                    var obj = new Object();
+                    obj.OldSim = objParam.OldSim;
+                    obj.NewSim = objParam.NewSim;
+                    obj.CreatedBy = 'MDetail';
+                    obj.CreatedDate = new Date();
+
+                    SimReplace.create(obj).then(function (ressim) {
+                        if (ressim) {
+                            GPSDevice.findOne({ where: { idSim: OldSimExist[0].id } }).then(function (OldGPSDeviceExist) {
+                                if (OldGPSDeviceExist) {
+                                    GPSDevice.findOne({ where: { idSim: NewSimExist[0].id } }).then(function (NewGPSDeviceExist) {
+                                        if (NewGPSDeviceExist) {
+                                            NewGPSDeviceExist.updateAttributes({ idSim: null }).then(function (updateNewGpsDevice) { })
+                                        }
+                                        var idSim = NewSimExist[0].id;
+                                        OldGPSDeviceExist.updateAttributes({ idSim: idSim }).then(function (updateOldGpsDevice) {
+                                            if (updateOldGpsDevice) {
+                                                SimDetail.findOne({ where: { SerialNum: objParam.OldSim } }).then(function (SimExist) {
+                                                    if (SimExist) {
+                                                        SimExist.updateAttributes({ Status: 'Spoil', SpoilDate: new Date() }).then(function (Updated) {
+                                                            if (Updated) {
+                                                                Vehicle.findOne({ where: { deviceid: OldGPSDeviceExist.DeviceId, IsDelete: 0 } }).then(function (VehicleExist) {
+                                                                    SimDetail.update({ StartDate: new Date(), Status: null, SpoilDate: null }, { where: { SerialNum: objParam.NewSim } }).then(function (NewSimUpdated) {
+                                                                        res.json({ success: true, message: "New SIM replace successfully..." })
+                                                                    })
+                                                                })
+                                                            } else {
+                                                                res.json({ success: false, message: "Device Vehicel not replace..." })
+                                                            }
+                                                        })
+                                                    } else {
+                                                        res.json({ success: true, message: "New SIM replace successfully..." })
+                                                    }
+                                                })
+                                            } else { res.json({ success: false, message: "Old SIM not updated..." }) }
+                                        })
+                                    })
+                                } else { res.json({ success: false, message: "Old SIM not exist in Gps Device..." }) }
+                            })
+                        } else {
+                            res.json({ success: false, message: "SIM not replace successfully..." })
+                        }
+                    })
+                } else {
+                    res.json({ success: false, message: "New SIM not exist..." })
+                }
+            })
+        } else {
+            res.json({ success: false, message: "Old SIM not exist..." })
+        }
+    })
+})
 module.exports = router

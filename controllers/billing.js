@@ -11,7 +11,8 @@ var SystemEmail = models.tblemailsettingsys;
 var EmailTemplate = models.tblemailtemplate;
 var Commonfunction = require('./common.js');
 var WebCashconfig = require('./../config/webcash.json');
-
+var SimDetail = models.tblsimdetails;
+var GPSDevice = models.tblgpsdevice;
 //////////
 
 
@@ -77,6 +78,7 @@ router.get('/GetAllRenewData', function (req, res) {
         search = search + 'ta.AppName like "%' + objSearch + '%" or ';
         search = search + 'tl.LicenceType like "%' + objSearch + '%" or ';
         search = search + 'tl.LicenceRenewalType like "%' + objSearch + '%" or ';
+        search = search + 'ts.Status like "%' + objSearch + '%" or ';
         search = search + 'tv.Name like "%' + objSearch + '%") ';
     };
 
@@ -112,7 +114,7 @@ router.get('/GetAllRenewData', function (req, res) {
     if (objParam.idSalesAgent != null && objParam.idSalesAgent != '' && objParam.idSalesAgent != undefined) {
         search += ' and (tblgpsdevice.idSalesAgent = ' + objParam.idSalesAgent + ' or dar.agentId=' + objParam.idSalesAgent + ')';
     }
-    var query = "SELECT tl.Id, tu.email,CONVERT_TZ(tu.LastLogin,'+00:00','" + CurrentOffset + "') as LastLoginDate ,tl.DeviceId,tv.iduser,tu.phone,tv.Name as VehicleName,ta.Id as idApp,ta.AppName,tl.LicenceRenewalType,tl.LicenceType,ta.LicenceRenewalType as appLicenceRenewalType,ta.LicenceType as appLicenceType, " +
+    var query = "SELECT ts.Status,tl.Id, tu.email,CONVERT_TZ(tu.LastLogin,'+00:00','" + CurrentOffset + "') as LastLoginDate ,tl.DeviceId,tv.iduser,tu.phone,tv.Name as VehicleName,ta.Id as idApp,ta.AppName,tl.LicenceRenewalType,tl.LicenceType,ta.LicenceRenewalType as appLicenceRenewalType,ta.LicenceType as appLicenceType, " +
         "CONVERT_TZ(tl.ExpiryDate,'+00:00','" + CurrentOffset + "') as ExpiryDate " +
         " from tbllicencemanager as tl " +
         " LEFT JOIN tblappinfo as ta ON ta.Id= tl.idApp" +
@@ -120,6 +122,7 @@ router.get('/GetAllRenewData', function (req, res) {
         " INNER JOIN tbluserinformation as tu ON tv.iduser = tu.id " +
         " LEFT JOIN tbldeviceagentretailer AS dar ON  dar.deviceId = tv.deviceid " +
         " LEFT JOIN tblgpsdevice ON tblgpsdevice.DeviceId = tv.deviceid " +
+        " LEFT JOIN tblsimdetails AS ts ON  ts.id = tblgpsdevice.idSim " +
         " where tl.IsDeleted=0  " + search +
         " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
     var countquery = "SELECT count(*) as TotalRecord " +
@@ -129,6 +132,7 @@ router.get('/GetAllRenewData', function (req, res) {
         " INNER JOIN tbluserinformation as tu ON tv.iduser = tu.id " +
         " LEFT JOIN tbldeviceagentretailer AS dar ON  dar.deviceId = tv.deviceid " +
         " LEFT JOIN tblgpsdevice ON tblgpsdevice.DeviceId = tv.deviceid " +
+        " LEFT JOIN tblsimdetails AS ts ON  ts.id = tblgpsdevice.idSim " +
         " where tl.IsDeleted=0 " + search;
     console.log(countquery)
 
@@ -153,7 +157,7 @@ router.get('/GetAllRenewData', function (req, res) {
                         obj.appLicenceRenewalType = response[i].appLicenceRenewalType;
                         obj.appLicenceType = response[i].appLicenceType;
                         obj.ExpiryDate = response[i].ExpiryDate;
-
+                        obj.Status = response[i].Status;
                         client.get(response[i].DeviceId, function (err, strgpsdata) {
                             if (!err) {
                                 if (strgpsdata != null & strgpsdata != '' && strgpsdata != undefined) {
@@ -233,6 +237,9 @@ router.get('/ExportAllRenewData', function (req, res) {
     {
         caption: 'Last GPS Date',
         type: 'string'
+    }, {
+        caption: 'Sim Status',
+        type: 'string'
     },
     ];
     conf.rows = [];
@@ -252,6 +259,7 @@ router.get('/ExportAllRenewData', function (req, res) {
         search = search + 'ta.AppName like "%' + objSearch + '%" or ';
         search = search + 'tl.LicenceType like "%' + objSearch + '%" or ';
         search = search + 'tl.LicenceRenewalType like "%' + objSearch + '%" or ';
+        search = search + 'ts.Status like "%' + objSearch + '%" or ';
         search = search + 'tv.Name like "%' + objSearch + '%") ';
     };
 
@@ -289,7 +297,7 @@ router.get('/ExportAllRenewData', function (req, res) {
         search += ' and tblgpsdevice.idSalesAgent = ' + objParam.idSalesAgent;
     }
     objParam.CurrentOffset = decodeURIComponent(objParam.CurrentOffset);
-    var query = "SELECT tl.Id, tu.email,CONVERT_TZ(tu.LastLogin,'+00:00','" + objParam.CurrentOffset + "') as LastLoginDate ,tl.DeviceId,tv.iduser,tu.phone,tv.Name as VehicleName,ta.Id as idApp,ta.AppName,tl.LicenceRenewalType,tl.LicenceType,ta.LicenceRenewalType as appLicenceRenewalType,ta.LicenceType as appLicenceType, " +
+    var query = "SELECT ts.Status,tl.Id, tu.email,CONVERT_TZ(tu.LastLogin,'+00:00','" + objParam.CurrentOffset + "') as LastLoginDate ,tl.DeviceId,tv.iduser,tu.phone,tv.Name as VehicleName,ta.Id as idApp,ta.AppName,tl.LicenceRenewalType,tl.LicenceType,ta.LicenceRenewalType as appLicenceRenewalType,ta.LicenceType as appLicenceType, " +
         "CONVERT_TZ(tl.ExpiryDate,'+00:00','" + objParam.CurrentOffset + "') as ExpiryDate " +
         " from tbllicencemanager as tl " +
         " LEFT JOIN tblappinfo as ta ON ta.Id= tl.idApp" +
@@ -297,13 +305,14 @@ router.get('/ExportAllRenewData', function (req, res) {
         " INNER JOIN tbluserinformation as tu ON tv.iduser = tu.id " +
         " LEFT JOIN tbldeviceagentretailer AS dar ON  dar.deviceId = tv.deviceid " +
         " LEFT JOIN tblgpsdevice ON tblgpsdevice.DeviceId = tl.DeviceId " +
+        " LEFT JOIN tblsimdetails AS ts ON  ts.id = tblgpsdevice.idSim " +
         " where tl.IsDeleted=0  " + search +
         " order by " + Orderby + " ";
 
     connection.query(query, function (err, response, fields) {
         if (!err) {
             if (objParam.IsSuperAdmin == "0") {
-                conf.cols.splice(7, 1);
+                conf.cols.splice(8, 1);
             }
             var lstAllVehicle = [];
             function getData(i) {
@@ -323,7 +332,7 @@ router.get('/ExportAllRenewData', function (req, res) {
                     obj.appLicenceRenewalType = response[i].appLicenceRenewalType;
                     obj.appLicenceType = response[i].appLicenceType;
                     obj.ExpiryDate = response[i].ExpiryDate;
-
+                    obj.Status = response[i].Status;
                     client.get(response[i].DeviceId, function (err, strgpsdata) {
                         if (!err) {
                             if (strgpsdata != null & strgpsdata != '' && strgpsdata != undefined) {
@@ -344,10 +353,10 @@ router.get('/ExportAllRenewData', function (req, res) {
                     for (var i = 0; i < lstAllVehicle.length; i++) {
                         var row = [];
                         if (objParam.IsSuperAdmin == "1") {
-                            row.push(lstAllVehicle[i].DeviceId, lstAllVehicle[i].email, lstAllVehicle[i].phone, dateFormat1(lstAllVehicle[i].ExpiryDate), daysHtml(lstAllVehicle[i]), lstAllVehicle[i].LicenceType, lstAllVehicle[i].LicenceRenewalType, lstAllVehicle[i].AppName, dateFormat(lstAllVehicle[i].LastLoginDate), gpsdateFormat(lstAllVehicle[i].GpsDate));
+                            row.push(lstAllVehicle[i].DeviceId, lstAllVehicle[i].email, lstAllVehicle[i].phone, dateFormat1(lstAllVehicle[i].ExpiryDate), daysHtml(lstAllVehicle[i]), lstAllVehicle[i].LicenceType, lstAllVehicle[i].LicenceRenewalType, lstAllVehicle[i].AppName, dateFormat(lstAllVehicle[i].LastLoginDate), gpsdateFormat(lstAllVehicle[i].GpsDate), lstAllVehicle[i].Status);
                         }
                         else {
-                            row.push(lstAllVehicle[i].DeviceId, lstAllVehicle[i].email, lstAllVehicle[i].phone, dateFormat1(lstAllVehicle[i].ExpiryDate), daysHtml(lstAllVehicle[i]), lstAllVehicle[i].LicenceType, lstAllVehicle[i].LicenceRenewalType, dateFormat(lstAllVehicle[i].LastLoginDate), gpsdateFormat(lstAllVehicle[i].GpsDate));
+                            row.push(lstAllVehicle[i].DeviceId, lstAllVehicle[i].email, lstAllVehicle[i].phone, dateFormat1(lstAllVehicle[i].ExpiryDate), daysHtml(lstAllVehicle[i]), lstAllVehicle[i].LicenceType, lstAllVehicle[i].LicenceRenewalType, dateFormat(lstAllVehicle[i].LastLoginDate), gpsdateFormat(lstAllVehicle[i].GpsDate), lstAllVehicle[i].Status);
                         }
                         conf.rows.push(row);
                     }
@@ -1430,7 +1439,9 @@ router.post('/SaveOrderServiceRenew', jsonParser, function (req, res) {
     var lstProduct = objOrderservice.lstProduct;
     var lstLicenceId = [];
     var lstDeviceId = [];
+    var lstGpsDeviceCheck = [];
     var PurchaseOrderNumber = new Date();
+    var error = {};
     OrderNumber = "BILLNO" + GetRandomWord() + Date.parse(PurchaseOrderNumber)
     var token = getToken(objHeader);
     if (token) {
@@ -1443,11 +1454,11 @@ router.post('/SaveOrderServiceRenew', jsonParser, function (req, res) {
         }).then(function (UserExist) {
 
             if (!UserExist) {
-                err.message = 'Token';
-                throw err;
+                error.message = 'Token';
+                throw error;
             }
-
             for (var i = 0; i < lstProduct.length; i++) {
+                lstGpsDeviceCheck.push(lstProduct[i].deviceid)
                 OrderTotal = OrderTotal + lstProduct[i].RenewPrice;
                 if (DeviceId == '') {
                     DeviceId = lstProduct[i].deviceid;
@@ -1455,6 +1466,42 @@ router.post('/SaveOrderServiceRenew', jsonParser, function (req, res) {
                     DeviceId = DeviceId + "," + lstProduct[i].deviceid;
                 }
             }
+            console.log(lstGpsDeviceCheck)
+            GPSDevice.belongsTo(SimDetail, {
+                foreignKey: {
+                    name: 'idSim',
+                    allowNull: false
+                }
+            });
+            return GPSDevice.findAll({
+                where: { DeviceId: { $in: lstGpsDeviceCheck } },
+                include: [{
+                    model: SimDetail,
+                    attributes: ['id', 'Status'],
+                    required: false
+                }]
+            });
+        }).then(function (lstGpsDevices) {
+
+            var IsTerminate = false;
+            var TerminateDevices = "";
+            for (var i = 0; i < lstGpsDevices.length; i++) {
+                if (lstGpsDevices[i].tblsimdetail && lstGpsDevices[i].tblsimdetail.Status == 'Terminate') {
+                    IsTerminate = true;
+                    if (TerminateDevices == '') {
+                        TerminateDevices = lstGpsDevices[i].DeviceId;
+                    } else {
+                        TerminateDevices = TerminateDevices + "," + lstGpsDevices[i].DeviceId;
+                    }
+                }
+            }
+
+            if (IsTerminate) {
+                error.message = 'Terminate';
+                error.Data = TerminateDevices;
+                throw error;
+            }
+
             console.log("Order Total = " + OrderTotal)
             var objOrder = new Object();
             objOrder.CustomerId = objOrderservice.idUser;
@@ -1503,8 +1550,8 @@ router.post('/SaveOrderServiceRenew', jsonParser, function (req, res) {
             return OrderService.create(objOrder);
         }).then(function (resOrder) {
             if (!resOrder) {
-                err.message = 'Order could not created. Try again later.';
-                throw err;
+                error.message = 'Order could not created. Try again later.';
+                throw error;
             }
             var lstOrderServiceItem = [];
             for (i = 0; i < lstProduct.length; i++) {
@@ -1631,6 +1678,11 @@ router.post('/SaveOrderServiceRenew', jsonParser, function (req, res) {
             .catch(function (err) {
                 if (err.message === 'Token') {
                     res.json(InvalidToken);
+                } else if (err.message === 'Terminate') {
+                    res.json({
+                        success: false,
+                        message: "Sim(s) are terminate for " + err.Data + " deevices. First replace that sim then try to renew it."
+                    });
                 } else {
                     res.json({
                         success: false,

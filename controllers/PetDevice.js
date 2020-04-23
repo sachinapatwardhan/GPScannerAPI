@@ -296,6 +296,7 @@ router.get('/GetAllGPSDevice', function (req, res) {
         search = search + 'tblgpsdevice.CreatedBy like "%' + objSearch + '%" or ';
         search = search + 'tblsimdetails.SerialNum like "%' + objSearch + '%" or ';
         search = search + 'tblsimdetails.PhoneNum like "%' + objSearch + '%" or ';
+        search = search + 'tblsimdetails.Status like "%' + objSearch + '%" or ';
         search = search + 'tblcountrymgmt.Country like "%' + objSearch + '%" or ';
         search = search + 'tblgpsdevice.AppName like "%' + objSearch + '%" or ';
         if (objParam.idSalesAgent != null && objParam.idSalesAgent != undefined && objParam.idSalesAgent != '') {
@@ -311,13 +312,13 @@ router.get('/GetAllGPSDevice', function (req, res) {
         }
     }
 
-    if (objParam.UserId != null && objParam.UserId != undefined && objParam.UserId != '') {
-        if (search != "") {
-            search += " and tblgpsdevice.idSalesAgent =" + objParam.UserId;
-        } else {
-            search += " Where tblgpsdevice.idSalesAgent =" + objParam.UserId;
-        }
-    }
+    // if (objParam.UserId != null && objParam.UserId != undefined && objParam.UserId != '') {
+    //     if (search != "") {
+    //         search += " and tblgpsdevice.idSalesAgent =" + objParam.UserId;
+    //     } else {
+    //         search += " Where tblgpsdevice.idSalesAgent =" + objParam.UserId;
+    //     }
+    // }
 
     if (objParam.AppName != null && objParam.AppName != undefined && objParam.AppName != '') {
         if (search != "") {
@@ -330,7 +331,7 @@ router.get('/GetAllGPSDevice', function (req, res) {
         var query = " select tblgpsdevice.*, tblcountrymgmt.Country,tbllicencemanager.LicenceNo, " +
             " CONVERT_TZ(tblgpsdevice.CreatedDate,'+00:00','" + CurrentOffset + "') as CreatedDate," +
             " CONVERT_TZ(tbllicencemanager.ExpiryDate,'+00:00','" + CurrentOffset + "') as VehicleExpiryDate," +
-            " tbltelco.Name, tbluserinformation.username, tbluserinformation.idApp,tblsimdetails.SerialNum,tblsimdetails.PhoneNum" +
+            " tbltelco.Name, tbluserinformation.username, tbluserinformation.idApp,tblsimdetails.SerialNum,tblsimdetails.PhoneNum,tblsimdetails.Status as SimStatus" +
             " from tblgpsdevice " +
             " Left Join tbluserinformation on tblgpsdevice.idSalesAgent=tbluserinformation.id " +
             " Left Join tblsimdetails on tblsimdetails.id = tblgpsdevice.idSim" +
@@ -352,7 +353,7 @@ router.get('/GetAllGPSDevice', function (req, res) {
         var query = " select tblgpsdevice.*, tblcountrymgmt.Country, " +
             " CONVERT_TZ(tblgpsdevice.CreatedDate,'+00:00','" + CurrentOffset + "') as CreatedDate," +
             " CONVERT_TZ(tblgpsdevice.ExpiryDate,'+00:00','" + CurrentOffset + "') as ExpiryDate," +
-            " tbltelco.Name, tbluserinformation.username, tbluserinformation.idApp,tblsimdetails.SerialNum,tblsimdetails.PhoneNum" +
+            " tbltelco.Name, tbluserinformation.username, tbluserinformation.idApp,tblsimdetails.SerialNum,tblsimdetails.PhoneNum,tblsimdetails.Status as SimStatus" +
             " from tblgpsdevice " +
             " Left Join tbluserinformation on tblgpsdevice.idSalesAgent=tbluserinformation.id " +
             " Left Join tblsimdetails on tblsimdetails.id = tblgpsdevice.idSim" +
@@ -368,7 +369,9 @@ router.get('/GetAllGPSDevice', function (req, res) {
             " Left Join tbltelco on tblsimdetails.idTelCo = tbltelco.id " + search;
 
     }
-
+    console.log("###############################################################################")
+    console.log(query)
+    console.log("###############################################################################")
     // " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
     connection.query(query, function (err, response) {
         if (response != undefined) {
@@ -1098,21 +1101,35 @@ router.post('/SaveGPSDevice', jsonParser, function (req, res) {
                         if (AccessPermission) {
                             objGPSDevice.CreatedDate = new Date();
                             objGPSDevice.CreatedBy = decoded.username;
-                            GPSDevice.findOrCreate({ where: { $or: { DeviceId: objGPSDevice.DeviceId, idSim: objGPSDevice.idSim } }, defaults: objGPSDevice }).then(function (response) {
-                                if ((response[1])) {
-                                    funAuditLog.CreateAuditLog('SaveGPSDevice', UserExist.username, 'Create GPS Tracker Device / IMEI : (' + response[0].IMEI + ')');
-                                    if (objGPSDevice.AppName == 'MYPINHERE') {
-                                        client.set(objGPSDevice.DeviceId + "ProjectIgnitionStatus", 'true', function (err, replies) { });
+                            if (objGPSDevice.idSim != null && objGPSDevice.idSim != '') {
+                                GPSDevice.findOrCreate({ where: { $or: { DeviceId: objGPSDevice.DeviceId, idSim: objGPSDevice.idSim } }, defaults: objGPSDevice }).then(function (response) {
+                                    if ((response[1])) {
+                                        funAuditLog.CreateAuditLog('SaveGPSDevice', UserExist.username, 'Create GPS Tracker Device / IMEI : (' + response[0].IMEI + ')');
+                                        if (objGPSDevice.AppName == 'MYPINHERE') {
+                                            client.set(objGPSDevice.DeviceId + "ProjectIgnitionStatus", 'true', function (err, replies) { });
+                                        }
+                                        res.json({ success: true, message: "Tracker created successfully...", data: response });
+                                    } else {
+                                        if (response[0].idSim == objGPSDevice.idSim) {
+                                            res.json({ success: false, message: "Sim already assign to other device. please, select other Sim...", data: response });
+                                        } else {
+                                            res.json({ success: false, message: "Tracker already exist...", data: response });
+                                        }
                                     }
-                                    res.json({ success: true, message: "Tracker created successfully...", data: response });
-                                } else {
-                                    if (response[0].idSim == objGPSDevice.idSim) {
-                                        res.json({ success: false, message: "Sim already assign to other device. please, select other Sim...", data: response });
+                                })
+                            } else {
+                                GPSDevice.findOrCreate({ where: { $or: { DeviceId: objGPSDevice.DeviceId } }, defaults: objGPSDevice }).then(function (response) {
+                                    if ((response[1])) {
+                                        funAuditLog.CreateAuditLog('SaveGPSDevice', UserExist.username, 'Create GPS Tracker Device / IMEI : (' + response[0].IMEI + ')');
+                                        if (objGPSDevice.AppName == 'MYPINHERE') {
+                                            client.set(objGPSDevice.DeviceId + "ProjectIgnitionStatus", 'true', function (err, replies) { });
+                                        }
+                                        res.json({ success: true, message: "Tracker created successfully...", data: response });
                                     } else {
                                         res.json({ success: false, message: "Tracker already exist...", data: response });
                                     }
-                                }
-                            })
+                                })
+                            }
                         } else {
                             res.json(NoAccessPermission);
                         }
