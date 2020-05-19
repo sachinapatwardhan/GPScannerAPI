@@ -864,7 +864,7 @@ router.get('/getAllExpiredDevice', function (req, res) {
         search += ' and (tblgpsdevice.idSalesAgent = ' + objParam.idSalesAgent + ' or dar.agentId=' + objParam.idSalesAgent + ')';
     }
     var query = "SELECT ts.Status,tl.Id, tu.email,CONVERT_TZ(tu.LastLogin,'+00:00','" + CurrentOffset + "') as LastLoginDate ,tl.DeviceId,tv.iduser,tu.phone,tv.Name as VehicleName,ta.Id as idApp,ta.AppName,tl.LicenceRenewalType,tl.LicenceType,ta.LicenceRenewalType as appLicenceRenewalType,ta.LicenceType as appLicenceType, " +
-        "CONVERT_TZ(tl.ExpiryDate,'+00:00','" + CurrentOffset + "') as ExpiryDate " +
+        "CONVERT_TZ(tl.ExpiryDate,'+00:00','" + CurrentOffset + "') as ExpiryDate,tblgpsdevice.Status as DeviceStatus " +
         " from tbllicencemanager as tl " +
         " LEFT JOIN tblappinfo as ta ON ta.Id= tl.idApp" +
         " INNER JOIN (Select * from tblvehicle where IsDelete=0) tv on tv.deviceid =tl.DeviceId " +
@@ -906,6 +906,7 @@ router.get('/getAllExpiredDevice', function (req, res) {
                         obj.appLicenceType = response[i].appLicenceType;
                         obj.ExpiryDate = response[i].ExpiryDate;
                         obj.Status = response[i].Status;
+                        obj.DeviceStatus = response[i].DeviceStatus;
                         client.get(response[i].DeviceId, function (err, strgpsdata) {
                             if (!err) {
                                 if (strgpsdata != null & strgpsdata != '' && strgpsdata != undefined) {

@@ -1248,6 +1248,13 @@ router.get('/GetRenewalList', function (req, res) {
     if (objParam.idApp != '' && objParam.idApp != null && objParam.idApp != undefined) {
         Where = "Where ta.id=" + objParam.idApp + " ";
     }
+    if (objParam.idCountry != '' && objParam.idCountry != null && objParam.idCountry != undefined) {
+        if (Where == '') {
+            Where = "Where tgd.CountryId=" + objParam.idCountry + " ";
+        } else {
+            Where = Where + " AND tgd.CountryId=" + objParam.idCountry + " ";
+        }
+    }
     var query = `SELECT 
                         torder.*, tl.LicenceNo, tv.Name AS VehicleName,tsu.email as SalesAgent,ta.AppName 
                     FROM
@@ -1265,10 +1272,12 @@ router.get('/GetRenewalList', function (req, res) {
                             LEFT JOIN
                         tblvehicle tv ON tv.deviceid = torder.DeviceId
                             LEFT JOIN
+                        tblgpsdevice tgd ON tgd.DeviceId = torder.DeviceId
+                            LEFT JOIN
                         tbldeviceagentretailer tdr ON tdr.deviceId = torder.DeviceId
                             LEFT JOIN
                         tbluserinformation tsu ON tsu.id = tdr.agentId `+ Where + ` limit ` + limit + ` offset ` + offset;
-
+    console.log(query)
     connection.query(query, function (err, response) {
         if (!err && response.length > 0) {
             for (var i = 0; i < response.length; i++) {
@@ -1373,4 +1382,61 @@ router.get('/ExportExpiredDevice', function (req, res) {
         }
     });
 });
+
+router.get('/GetSalesAgentDevice', function (req, res) {
+    var objParam = req.query;
+    var offset = (parseInt(objParam.page) * 50);
+    var limit = 50;
+    var Where = "";
+    if (objParam.Email != '' && objParam.Email != null && objParam.Email != undefined) {
+        Where = " AND tsu.email like '%" + objParam.Email + "%' ";
+    }
+
+    var query = `SELECT 
+    tdr.deviceId,
+    torder.CreateDate,
+    torder.Terms,
+    torder.DeviceId as RenewDevice,
+    tl.LicenceNo,
+    ts.SerialNum,
+    ts.PhoneNum,
+    ts.Status AS SimStatus,
+    tsu.email AS SalesAgent
+FROM
+    tbldeviceagentretailer tdr
+        INNER JOIN
+    tblgpsdevice tgd ON tgd.DeviceId = tdr.deviceId
+        LEFT JOIN
+    tblsimdetails ts ON ts.id = tgd.idSim
+        LEFT JOIN
+    (SELECT 
+        CONVERT_TZ(CreatedOnUtc, '+00:00', '` + CurrentOffset + `') AS CreateDate,
+            Terms,
+            SUBSTRING_INDEX(SUBSTRING_INDEX(tos.OrderNotes, ',', numbers.n), ',', - 1) DeviceId
+    FROM
+        (SELECT 1 n UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5) numbers
+    INNER JOIN tblorderservice tos ON CHAR_LENGTH(tos.OrderNotes) - CHAR_LENGTH(REPLACE(tos.OrderNotes, ',', '')) >= numbers.n - 1
+    ORDER BY CreatedOnUtc DESC) AS torder ON tdr.deviceId = torder.DeviceId
+        LEFT JOIN
+    tbllicencemanager tl ON tl.DeviceId = tdr.DeviceId
+        INNER JOIN
+    tbluserinformation tsu ON tsu.id = tdr.agentId
+WHERE
+    tdr.agentId IS NOT NULL  `+ Where + `
+GROUP BY tdr.deviceId
+limit ` + limit + ` offset ` + offset;
+    console.log(query)
+    connection.query(query, function (err, response) {
+        if (!err && response.length > 0) {
+            for (var i = 0; i < response.length; i++) {
+                if (response[i].CreateDate != null) {
+                    response[i].CreateDate = convertdateformat(response[i].CreateDate, 'Excel Export');
+                }
+            }
+            res.json(response);
+        } else {
+            res.json([]);
+        }
+    });
+})
 module.exports = router
