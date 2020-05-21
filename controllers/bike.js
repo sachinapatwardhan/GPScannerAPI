@@ -829,7 +829,7 @@ global.checkDeviceAgentorDistributer = checkDeviceAgentorDistributer;
 
 function checkLicence(objVehicle, username, callback) {
     checkDeviceAgentorDistributer(objVehicle.deviceid, function (checkAgentDistributerres) {
-        if (checkAgentDistributer.success == true) {
+        if (checkAgentDistributerres.success == true) {
             var query = "select tblappinfo.*,tblgpsdevice.Company as DeviceCompany from tblappinfo inner join tblgpsdevice on tblappinfo.AppName=tblgpsdevice.AppName where tblgpsdevice.DeviceId='" + objVehicle.deviceid + "'";
             connectionbikedata.query(query, function (err, DeviceExist) {
                 if (DeviceExist) {
