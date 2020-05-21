@@ -527,44 +527,49 @@ router.get('/changestatusrenewal', function (req, res) {
                         Id: req.query.id,
                     }
                 }).then(function (isExist) {
-
-                    // AppInfo.findOne({ where: { AppName: req.query.AppName } }).then(function(AppInfo) {
-                    var AddMonth = 0;
-                    if (isExist.LicenceRenewalType == 'Monthly') {
-                        AddMonth = 1;
-                    } else if (isExist.LicenceRenewalType == 'Quarterly') {
-                        AddMonth = 3;
-                    } else if (isExist.LicenceRenewalType == 'Yearly') {
-                        AddMonth = 12;
-                    }
-                    var oldexpdate = isExist.ExpiryDate;
-                    var date = new Date(isExist.ExpiryDate);
-                    var updatedDate = convertdateformat(date.setMonth(date.getMonth() + AddMonth), 3);
-
-                    var timeDiff = (new Date(oldexpdate)).getTime() - (new Date()).getTime();
-                    var diffDays = Math.round(timeDiff / (1000 * 3600 * 24));
-                    days = diffDays
-                    if (days < 0) {
-                        date = new Date();
-                        updatedDate = convertdateformat(date.setMonth(date.getMonth() + AddMonth), 3);
-                    }
-
-                    isExist.updateAttributes({ ExpiryDate: updatedDate }).then(function (response) {
-                        var difference = (response.ExpiryDate.getFullYear() * 12 + response.ExpiryDate.getMonth()) - (oldexpdate.getFullYear() * 12 + oldexpdate.getMonth());
-                        // funAuditLog.CreateAuditLog('Update Licecence ExpiryDate of Device ', UserExist.username, 'DeviceID(' + response.DeviceId + ') / Updated ExpiryDate (' + convertdateformat(response.ExpiryDate, 4) + ') / Old ExpiryDate (' + convertdateformat(oldexpdate, 4) + ') / Updated for (' + difference + ') month)');
-                        Vehicle.findOne({ where: { DeviceId: isExist.DeviceId } }).then(function (vehicleExist) {
-                            if (vehicleExist) {
-                                vehicleExist.updateAttributes({ renewaldate: updatedDate }).then(function (updateRenewDate) {
-                                    Commonfunction.UpdateVehicleRedis(isExist.DeviceId, 'Vehicle')
-                                })
+                    checkDeviceAgentorDistributer(isExist.DeviceId, function (checkAgentDistributerres) {
+                        if (checkAgentDistributerres.success == true) {
+                            // AppInfo.findOne({ where: { AppName: req.query.AppName } }).then(function(AppInfo) {
+                            var AddMonth = 0;
+                            if (isExist.LicenceRenewalType == 'Monthly') {
+                                AddMonth = 1;
+                            } else if (isExist.LicenceRenewalType == 'Quarterly') {
+                                AddMonth = 3;
+                            } else if (isExist.LicenceRenewalType == 'Yearly') {
+                                AddMonth = 12;
                             }
-                        })
-                        funAuditLogLicence.CreateAuditLogLicence('Renew Licence', isExist.LicenceNo, isExist.DeviceId, updatedDate, oldexpdate, UserExist.username, 'Renew licence Expiry date for month:(' + difference + ')');
-                        res.json({
-                            success: true,
-                            message: " Device renewal successfully.",
-                            data: response
-                        })
+                            var oldexpdate = isExist.ExpiryDate;
+                            var date = new Date(isExist.ExpiryDate);
+                            var updatedDate = convertdateformat(date.setMonth(date.getMonth() + AddMonth), 3);
+
+                            var timeDiff = (new Date(oldexpdate)).getTime() - (new Date()).getTime();
+                            var diffDays = Math.round(timeDiff / (1000 * 3600 * 24));
+                            days = diffDays
+                            if (days < 0) {
+                                date = new Date();
+                                updatedDate = convertdateformat(date.setMonth(date.getMonth() + AddMonth), 3);
+                            }
+
+                            isExist.updateAttributes({ ExpiryDate: updatedDate }).then(function (response) {
+                                var difference = (response.ExpiryDate.getFullYear() * 12 + response.ExpiryDate.getMonth()) - (oldexpdate.getFullYear() * 12 + oldexpdate.getMonth());
+                                // funAuditLog.CreateAuditLog('Update Licecence ExpiryDate of Device ', UserExist.username, 'DeviceID(' + response.DeviceId + ') / Updated ExpiryDate (' + convertdateformat(response.ExpiryDate, 4) + ') / Old ExpiryDate (' + convertdateformat(oldexpdate, 4) + ') / Updated for (' + difference + ') month)');
+                                Vehicle.findOne({ where: { DeviceId: isExist.DeviceId } }).then(function (vehicleExist) {
+                                    if (vehicleExist) {
+                                        vehicleExist.updateAttributes({ renewaldate: updatedDate }).then(function (updateRenewDate) {
+                                            Commonfunction.UpdateVehicleRedis(isExist.DeviceId, 'Vehicle')
+                                        })
+                                    }
+                                })
+                                funAuditLogLicence.CreateAuditLogLicence('Renew Licence', isExist.LicenceNo, isExist.DeviceId, updatedDate, oldexpdate, UserExist.username, 'Renew licence Expiry date for month:(' + difference + ')');
+                                res.json({
+                                    success: true,
+                                    message: " Device renewal successfully.",
+                                    data: response
+                                })
+                            })
+                        } else {
+                            res.json(checkAgentDistributerres)
+                        }
                     })
                     // })
                 })

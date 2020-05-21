@@ -8,6 +8,7 @@ var Vehicle = models.tblvehicle;
 var User = models.tbluserinformation;
 var SimDetail = models.tblsimdetails;
 var GPSDevice = models.tblgpsdevice;
+var DeviceAgentRetailer = models.tbldeviceagentretailer;
 
 router.get('/GetRenewDeviceInfo', jsonParser, function (req, res) {
 
@@ -122,7 +123,22 @@ router.post('/SaveOrderServiceRenew', jsonParser, function (req, res) {
                     DeviceId = DeviceId + "," + lstProduct[i].DeviceId;
                 }
             }
-
+            return DeviceAgentRetailer.findAll({
+                where: { DeviceId: { $in: lstGpsDeviceCheck } },
+            });
+        }).then(function (lstDeviceAgentRes) {
+            var NotAgentorDistributerDevice = [];
+            u.filter(lstGpsDeviceCheck, function (item) {
+                var obj = u.findWhere(lstDeviceAgentRes, { deviceId: item });
+                if (obj == undefined) {
+                    NotAgentorDistributerDevice.push(item);
+                }
+            })
+            if (NotAgentorDistributerDevice.length > 0) {
+                error.message = "Contact Admin Error : 1001";
+                error.Data = NotAgentorDistributerDevice;
+                throw error
+            }
             GPSDevice.belongsTo(SimDetail, {
                 foreignKey: {
                     name: 'idSim',
@@ -303,7 +319,13 @@ router.post('/SaveOrderServiceRenew', jsonParser, function (req, res) {
                         success: false,
                         message: "Sim(s) are terminate for " + err.Data + " deevices. First replace that sim then try to renew it."
                     });
-                } else {
+                } else if (err.message === 'Contact Admin Error : 1001') {
+                    res.json({
+                        success: false,
+                        message: "Contact Admin Error : 1001"
+                    });
+                }
+                else {
                     res.json({
                         success: false,
                         message: "Device Could not renewed. Try again later."
