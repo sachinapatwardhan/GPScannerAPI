@@ -67,11 +67,11 @@ router.get('/GetAllLicence', function (req, res) {
     if (req.query.idApp != null && req.query.idApp != undefined && req.query.idApp != '') {
         search += " and ta.Id=" + req.query.idApp + " ";
     }
-    if (req.query.IsExpired != null && req.query.IsExpired != undefined && req.query.IsExpired != '') {
-        search += " and tl.IsExpired=" + req.query.IsExpired + " ";
-    }
+    // if (req.query.IsExpired != null && req.query.IsExpired != undefined && req.query.IsExpired != '') {
+    //     search += " and tl.IsExpired=" + req.query.IsExpired + " ";
+    // }
 
-    var query = "SELECT tl.Id,tl.IsExpired, tu.email,tl.DeviceId,tl.LicenceNo,tl.IdUser,tu.country,tu.phone,tv.Name as VehicleName,ta.AppName,tl.LicenceRenewalType,tl.LicenceType,ta.LicenceRenewalType as appLicenceRenewalType,ta.LicenceType as appLicenceType, " +
+    var query = "SELECT tl.Id, tu.email,tl.DeviceId,tl.LicenceNo,tl.IdUser,tu.country,tu.phone,tv.Name as VehicleName,ta.AppName,tl.LicenceRenewalType,tl.LicenceType,ta.LicenceRenewalType as appLicenceRenewalType,ta.LicenceType as appLicenceType, " +
         "CONVERT_TZ(tl.CreatedDate,'+00:00','" + CurrentOffset + "') as CreatedDate, " +
         "CONVERT_TZ(tl.ExpiryDate,'+00:00','" + CurrentOffset + "') as ExpiryDate, " +
         "CONVERT_TZ(tl.ModifiedDate,'+00:00','" + CurrentOffset + "') as ModifiedDate " +
@@ -87,10 +87,12 @@ router.get('/GetAllLicence', function (req, res) {
         " LEFT JOIN (Select * from tblvehicle where IsDelete=0)  tv on tv.deviceid =tl.DeviceId " +
         " LEFT JOIN tbluserinformation as tu ON tv.iduser = tu.id " +
         " where tl.IsDeleted=0 " + search;
-
+    console.log(query)
     connection.query(query, function (err, response) {
+        console.log(err)
         if (response != undefined) {
             connection.query(countquery, function (err, lstCount, fields) {
+                console.log(err)
                 var response1 = new Object();
                 response1.draw = objParam.draw;
                 response1.recordsTotal = lstCount[0].TotalRecord;
@@ -208,11 +210,11 @@ router.get('/ExportAllLicence', function (req, res) {
     if (req.query.idApp != null && req.query.idApp != undefined && req.query.idApp != '') {
         search += " and ta.Id=" + req.query.idApp + " ";
     }
-    if (req.query.IsExpired != null && req.query.IsExpired != undefined && req.query.IsExpired != '') {
-        search += " and tl.IsExpired=" + req.query.IsExpired + " ";
-    }
+    // if (req.query.IsExpired != null && req.query.IsExpired != undefined && req.query.IsExpired != '') {
+    //     search += " and tl.IsExpired=" + req.query.IsExpired + " ";
+    // }
     objParam.CurrentOffset = decodeURIComponent(objParam.CurrentOffset);
-    var query = "SELECT tl.Id,tl.IsExpired, tu.email,tl.DeviceId,tl.LicenceNo,tl.IdUser,tu.country,tu.phone,tv.Name as VehicleName,ta.AppName,tl.LicenceRenewalType,tl.LicenceType,ta.LicenceRenewalType as appLicenceRenewalType,ta.LicenceType as appLicenceType, " +
+    var query = "SELECT tl.Id, tu.email,tl.DeviceId,tl.LicenceNo,tl.IdUser,tu.country,tu.phone,tv.Name as VehicleName,ta.AppName,tl.LicenceRenewalType,tl.LicenceType,ta.LicenceRenewalType as appLicenceRenewalType,ta.LicenceType as appLicenceType, " +
         "DATE_FORMAT(CONVERT_TZ(tl.CreatedDate,'+00:00','" + objParam.CurrentOffset + "'),'%d-%m-%Y %l:%i:%s %p') as CreatedDate, " +
         "DATE_FORMAT(CONVERT_TZ(tl.ExpiryDate,'+00:00','" + objParam.CurrentOffset + "'),'%d-%m-%Y') as ExpiryDate, " +
         "CONVERT_TZ(tl.ModifiedDate,'+00:00','" + objParam.CurrentOffset + "') as ModifiedDate " +
@@ -224,10 +226,9 @@ router.get('/ExportAllLicence', function (req, res) {
         " order by " + Orderby + " ";
 
     connection.query(query, function (err, response) {
+        conf.rows = [];
         if (response != undefined) {
-            conf.rows = [];
-
-            function ForLoop(i) {
+            for (var i = 0; i < response.length; i++) {
                 var LicenceNo = '';
                 var DeviceId = '';
                 var email = '';
@@ -240,63 +241,68 @@ router.get('/ExportAllLicence', function (req, res) {
                 var LicenceRenewalType = '';
                 var AppName = '';
                 var CreatedDate = '';
-                if (i < response.length) {
+                // if (i < response.length) {
 
-                    var row = [];
-                    if (response[i].LicenceNo != null && response[i].LicenceNo != '' && response[i].LicenceNo != undefined) {
-                        LicenceNo = response[i].LicenceNo.toString();
-                    }
-                    if (response[i].DeviceId != null && response[i].DeviceId != '' && response[i].DeviceId != undefined) {
-                        DeviceId = response[i].DeviceId.toString();
-                    }
-                    if (response[i].email != null && response[i].email != '' && response[i].email != undefined) {
-                        email = response[i].email.toString();
-                    }
-                    if (response[i].phone != null && response[i].phone != '' && response[i].phone != undefined) {
-                        phone = response[i].phone.toString();
-                    }
-                    if (response[i].AppName != null && response[i].AppName != '' && response[i].AppName != undefined) {
-                        AppName = response[i].AppName.toString();
-                    }
-                    if (response[i].country != null && response[i].country != '' && response[i].country != undefined) {
-                        country = response[i].country.toString();
-                    }
-                    if (response[i].ExpiryDate != null && response[i].ExpiryDate != '' && response[i].ExpiryDate != undefined) {
-                        ExpiryDate = response[i].ExpiryDate.toString();
-                        var Today = moment();
-                        var exday = moment(response[i].ExpiryDate, 'DD-MM-YYYY"');
-                        var timeDiff = (new Date(exday)).getTime() - (new Date(Today)).getTime();
-                        var diffDays = Math.round(timeDiff / (1000 * 3600 * 24));
-                        ExpiryDay = diffDays + ' days';
-                    }
-
-                    if (response[i].IsExpired != null && response[i].IsExpired != '' && response[i].IsExpired != undefined) {
-                        IsExpired = response[i].IsExpired == true ? "Expired" : "Not Expired";
-                    }
-                    if (response[i].LicenceType != null && response[i].LicenceType != '' && response[i].LicenceType != undefined) {
-                        LicenceType = response[i].LicenceType.toString();
-                    }
-                    if (response[i].LicenceRenewalType != null && response[i].LicenceRenewalType != '' && response[i].LicenceRenewalType != undefined) {
-                        LicenceRenewalType = response[i].LicenceRenewalType.toString();
-                    }
-                    if (response[i].CreatedDate != null && response[i].CreatedDate != '' && response[i].CreatedDate != undefined) {
-                        CreatedDate = response[i].CreatedDate.toString();
-                    }
-                    if (objParam.UserRoles == 'Super Admin') {
-                        row.push(LicenceNo, DeviceId, email, phone, country, ExpiryDate, ExpiryDay, IsExpired, LicenceType, LicenceRenewalType, AppName, CreatedDate);
-                    } else {
-                        row.push(LicenceNo, DeviceId, email, phone, country, ExpiryDate, ExpiryDay, IsExpired, LicenceType, LicenceRenewalType, CreatedDate);
-                    }
-                    conf.rows.push(row);
-                    ForLoop(i + 1);
-                } else {
-                    var result = nodeExcel.execute(conf);
-                    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-                    res.setHeader("Content-Disposition", "attachment; filename=Assign Licence.xlsx");
-                    res.end(result, 'binary');
+                var row = [];
+                if (response[i].LicenceNo != null && response[i].LicenceNo != '' && response[i].LicenceNo != undefined) {
+                    LicenceNo = response[i].LicenceNo.toString();
                 }
+                if (response[i].DeviceId != null && response[i].DeviceId != '' && response[i].DeviceId != undefined) {
+                    DeviceId = response[i].DeviceId.toString();
+                }
+                if (response[i].email != null && response[i].email != '' && response[i].email != undefined) {
+                    email = response[i].email.toString();
+                }
+                if (response[i].phone != null && response[i].phone != '' && response[i].phone != undefined) {
+                    phone = response[i].phone.toString();
+                }
+                if (response[i].AppName != null && response[i].AppName != '' && response[i].AppName != undefined) {
+                    AppName = response[i].AppName.toString();
+                }
+                if (response[i].country != null && response[i].country != '' && response[i].country != undefined) {
+                    country = response[i].country.toString();
+                }
+                if (response[i].ExpiryDate != null && response[i].ExpiryDate != '' && response[i].ExpiryDate != undefined) {
+                    ExpiryDate = response[i].ExpiryDate.toString();
+                    var Today = moment();
+                    var exday = moment(response[i].ExpiryDate, 'DD-MM-YYYY"');
+                    var timeDiff = (new Date(exday)).getTime() - (new Date(Today)).getTime();
+                    var diffDays = Math.round(timeDiff / (1000 * 3600 * 24));
+                    ExpiryDay = diffDays + ' days';
+                }
+
+                if (response[i].IsExpired != null && response[i].IsExpired != '' && response[i].IsExpired != undefined) {
+                    IsExpired = response[i].IsExpired == true ? "Expired" : "Not Expired";
+                }
+                if (response[i].LicenceType != null && response[i].LicenceType != '' && response[i].LicenceType != undefined) {
+                    LicenceType = response[i].LicenceType.toString();
+                }
+                if (response[i].LicenceRenewalType != null && response[i].LicenceRenewalType != '' && response[i].LicenceRenewalType != undefined) {
+                    LicenceRenewalType = response[i].LicenceRenewalType.toString();
+                }
+                if (response[i].CreatedDate != null && response[i].CreatedDate != '' && response[i].CreatedDate != undefined) {
+                    CreatedDate = response[i].CreatedDate.toString();
+                }
+                if (objParam.UserRoles == 'Super Admin') {
+                    row.push(LicenceNo, DeviceId, email, phone, country, ExpiryDate, ExpiryDay, IsExpired, LicenceType, LicenceRenewalType, AppName, CreatedDate);
+                } else {
+                    row.push(LicenceNo, DeviceId, email, phone, country, ExpiryDate, ExpiryDay, IsExpired, LicenceType, LicenceRenewalType, CreatedDate);
+                }
+                conf.rows.push(row);
+                // ForLoop(i + 1);
+
+                // } 
             }
-            ForLoop(0);
+            // ForLoop(0);
+            var result = nodeExcel.execute(conf);
+            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            res.setHeader("Content-Disposition", "attachment; filename=Assign Licence.xlsx");
+            res.end(result, 'binary');
+        } else {
+            var result = nodeExcel.execute(conf);
+            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            res.setHeader("Content-Disposition", "attachment; filename=Assign Licence.xlsx");
+            res.end(result, 'binary');
         }
     })
 })
