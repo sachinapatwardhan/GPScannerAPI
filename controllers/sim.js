@@ -1251,6 +1251,7 @@ router.get('/GetRenewalList', function (req, res) {
     var offset = (parseInt(objParam.page) * 50);
     var limit = 50;
     var Where = "";
+    var OrderBy = req.query.OrderBy;
     if (objParam.idApp != '' && objParam.idApp != null && objParam.idApp != undefined) {
         Where = "Where ta.id=" + objParam.idApp + " ";
     }
@@ -1282,7 +1283,7 @@ router.get('/GetRenewalList', function (req, res) {
                             LEFT JOIN
                         tbldeviceagentretailer tdr ON tdr.deviceId = torder.DeviceId
                             LEFT JOIN
-                        tbluserinformation tsu ON tsu.id = tdr.agentId `+ Where + ` limit ` + limit + ` offset ` + offset;
+                            tbluserinformation tsu ON tsu.id = tdr.agentId `+ Where + ` ORDER BY ` + OrderBy + ` limit ` + limit + ` offset ` + offset;
     console.log(query)
     connection.query(query, function (err, response) {
         if (!err && response.length > 0) {
@@ -1297,6 +1298,109 @@ router.get('/GetRenewalList', function (req, res) {
         }
     });
 })
+
+router.get('/ExportRenewalData', function (req, res) {
+    var conf = {};
+    conf.cols = [{
+        caption: 'Device Id',
+        type: 'string'
+    }, {
+        caption: 'App Name',
+        type: 'string'
+    }, {
+        caption: 'Date',
+        type: 'string'
+    }, {
+        caption: 'Agent',
+        type: 'string'
+    }, {
+        caption: 'Licence Code',
+        type: 'string'
+    }, {
+        caption: 'Vehicle',
+        type: 'string'
+    }, {
+        caption: 'Remark',
+        type: 'string'
+    }
+    ];
+
+    var objParam = req.query;
+    var Where = "";
+    if (objParam.idApp != '' && objParam.idApp != null && objParam.idApp != undefined) {
+        Where = "Where ta.id=" + objParam.idApp + " ";
+    }
+    if (objParam.idCountry != '' && objParam.idCountry != null && objParam.idCountry != undefined) {
+        if (Where == '') {
+            Where = "Where tgd.CountryId=" + objParam.idCountry + " ";
+        } else {
+            Where = Where + " AND tgd.CountryId=" + objParam.idCountry + " ";
+        }
+    }
+    console.log(objParam)
+    var query = `SELECT 
+                        torder.*, tl.LicenceNo, tv.Name AS VehicleName,tsu.email as SalesAgent,ta.AppName 
+                    FROM
+                        (SELECT 
+                            CONVERT_TZ(CreatedOnUtc, '+00:00', '` + CurrentOffset + `') AS CreateDate,
+                                Terms,
+                                SUBSTRING_INDEX(SUBSTRING_INDEX(tos.OrderNotes, ',', numbers.n), ',', - 1) DeviceId
+                        FROM
+                            (SELECT 1 n UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5) numbers
+                        INNER JOIN tblorderservice tos ON CHAR_LENGTH(tos.OrderNotes) - CHAR_LENGTH(REPLACE(tos.OrderNotes, ',', '')) >= numbers.n - 1) torder
+                            INNER JOIN
+                        tbllicencemanager tl ON tl.DeviceId = torder.DeviceId
+                            LEFT JOIN
+                        tblappinfo ta ON ta.id = tl.idApp 
+                            LEFT JOIN
+                        tblvehicle tv ON tv.deviceid = torder.DeviceId
+                            LEFT JOIN
+                        tblgpsdevice tgd ON tgd.DeviceId = torder.DeviceId
+                            LEFT JOIN
+                        tbldeviceagentretailer tdr ON tdr.deviceId = torder.DeviceId
+                            LEFT JOIN
+                        tbluserinformation tsu ON tsu.id = tdr.agentId `+ Where;
+    console.log(query)
+    connection.query(query, function (err, response) {
+        // console.log(response)
+        conf.rows = [];
+        if (response.length > 0) {
+            for (i = 0; i < response.length; i++) {
+                var row = [];
+                var DeviceId = 'N/A';
+                var AppName = 'N/A';
+                var Date = 'N/A';
+                var SalesAgent = 'N/A';
+                var LicenceCode = 'N/A';
+                var VehicleName = 'N/A';
+                var Terms = 'N/A';
+                if (response[i].CreateDate != null) {
+                    response[i].CreateDate = convertdateformat(response[i].CreateDate, 'Excel Export');
+                }
+                DeviceId = response[i].DeviceId != null && response[i].DeviceId != undefined && response[i].DeviceId != '' ? response[i].DeviceId.toString() : DeviceId;
+                AppName = response[i].AppName && response[i].AppName != undefined && response[i].AppName != '' ? response[i].AppName.toString() : AppName;
+                Date = response[i].CreateDate && response[i].CreateDate != undefined && response[i].CreateDate != '' ? response[i].CreateDate.toString() : CreateDate;
+                SalesAgent = response[i].SalesAgent && response[i].SalesAgent != undefined && response[i].SalesAgent != '' ? response[i].SalesAgent.toString() : SalesAgent;
+                LicenceCode = response[i].LicenceNo && response[i].LicenceNo != undefined && response[i].LicenceNo != '' ? response[i].LicenceNo.toString() : LicenceNo;
+                VehicleName = response[i].VehicleName && response[i].VehicleName != undefined && response[i].VehicleName != '' ? response[i].VehicleName.toString() : VehicleName;
+                Terms = response[i].Terms && response[i].Terms != undefined && response[i].Terms != '' ? response[i].Terms.toString() : Terms;
+
+                row.push(DeviceId, AppName, Date, SalesAgent, LicenceCode, VehicleName, Terms);
+                conf.rows.push(row);
+            }
+            var result = nodeExcel.execute(conf);
+            res.setHeader('Content-Type', 'application/vnd.openxmlformats');
+            res.setHeader("Content-Disposition", "attachment; filename=" + "Renewal.xlsx");
+            res.end(result, 'binary');
+
+        } else {
+            var result = nodeExcel.execute(conf);
+            res.setHeader('Content-Type', 'application/vnd.openxmlformats');
+            res.setHeader("Content-Disposition", "attachment; filename=" + "Renewal.xlsx");
+            res.end(result, 'binary');
+        }
+    });
+});
 
 router.get('/ExportExpiredDevice', function (req, res) {
     var conf = {};
@@ -1347,39 +1451,34 @@ router.get('/ExportExpiredDevice', function (req, res) {
     connection.query(query, function (err, response) {
         conf.rows = [];
         if (response.length > 0) {
-            function setdata(i) {
-                if (i < response.length) {
-                    var row = [];
-                    var DeviceId = '';
-                    var AppName = '';
-                    var Country = '';
-                    var ExpiryDate = '';
-                    var SerialNum = '';
-                    var PhoneNum = '';
+            for (var i = 0; i < response.length; i++) {
+                var row = [];
+                var DeviceId = '';
+                var AppName = '';
+                var Country = '';
+                var ExpiryDate = '';
+                var SerialNum = '';
+                var PhoneNum = '';
 
 
-                    DeviceId = response[i].DeviceId != null && response[i].DeviceId != undefined && response[i].DeviceId != '' ? response[i].DeviceId.toString() : DeviceId;
-                    AppName = response[i].AppName && response[i].AppName != undefined && response[i].AppName != '' ? response[i].AppName.toString() : AppName;
-                    Country = response[i].Country && response[i].Country != undefined && response[i].Country != '' ? response[i].Country.toString() : Country;
-                    ExpiryDate = response[i].ExpiryDate && response[i].ExpiryDate != undefined && response[i].ExpiryDate != '' ?
-                        moment(moment.utc(response[i].ExpiryDate).toDate()).format("YYYY-MM-DD HH:mm:ss") : ExpiryDate;
-                    SerialNum = response[i].SerialNum && response[i].SerialNum != undefined && response[i].SerialNum != '' ? response[i].SerialNum.toString() : SerialNum;
-                    PhoneNum = response[i].PhoneNum && response[i].PhoneNum != undefined && response[i].PhoneNum != '' ? response[i].PhoneNum.toString() : PhoneNum;
+                DeviceId = response[i].DeviceId != null && response[i].DeviceId != undefined && response[i].DeviceId != '' ? response[i].DeviceId.toString() : DeviceId;
+                AppName = response[i].AppName && response[i].AppName != undefined && response[i].AppName != '' ? response[i].AppName.toString() : AppName;
+                Country = response[i].Country && response[i].Country != undefined && response[i].Country != '' ? response[i].Country.toString() : Country;
+                ExpiryDate = response[i].ExpiryDate && response[i].ExpiryDate != undefined && response[i].ExpiryDate != '' ?
+                    moment(moment.utc(response[i].ExpiryDate).toDate()).format("YYYY-MM-DD HH:mm:ss") : ExpiryDate;
+                SerialNum = response[i].SerialNum && response[i].SerialNum != undefined && response[i].SerialNum != '' ? response[i].SerialNum.toString() : SerialNum;
+                PhoneNum = response[i].PhoneNum && response[i].PhoneNum != undefined && response[i].PhoneNum != '' ? response[i].PhoneNum.toString() : PhoneNum;
 
-                    row.push(DeviceId, AppName, Country, ExpiryDate, SerialNum, PhoneNum);
+                row.push(DeviceId, AppName, Country, ExpiryDate, SerialNum, PhoneNum);
 
-                    conf.rows.push(row);
+                conf.rows.push(row);
 
-                    setdata(i + 1);
-                } else {
-                    var result = nodeExcel.execute(conf);
-                    res.setHeader('Content-Type', 'application/vnd.openxmlformats');
-                    res.setHeader("Content-Disposition", "attachment; filename=" + "ExpiredTracker.xlsx");
-                    res.end(result, 'binary');
-
-                }
             }
-            setdata(0);
+            var result = nodeExcel.execute(conf);
+            res.setHeader('Content-Type', 'application/vnd.openxmlformats');
+            res.setHeader("Content-Disposition", "attachment; filename=" + "ExpiredTracker.xlsx");
+            res.end(result, 'binary');
+
         } else {
             var result = nodeExcel.execute(conf);
             res.setHeader('Content-Type', 'application/vnd.openxmlformats');
