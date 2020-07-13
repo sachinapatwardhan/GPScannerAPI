@@ -329,7 +329,7 @@ router.get('/GetAllGPSDevice', function (req, res) {
     }
     if (objParam.idSalesAgent != null && objParam.idSalesAgent != undefined && objParam.idSalesAgent != '') {
         var query = " select tblgpsdevice.*, tblcountrymgmt.Country,tbllicencemanager.LicenceNo, " +
-            " CONVERT_TZ(tblgpsdevice.CreatedDate,'+00:00','" + CurrentOffset + "') as CreatedDate," +
+            " CONVERT_TZ(tbllicencemanager.CreatedDate,'+00:00','" + CurrentOffset + "') as CreatedDate," +
             " CONVERT_TZ(tbllicencemanager.ExpiryDate,'+00:00','" + CurrentOffset + "') as VehicleExpiryDate," +
             " tbltelco.Name, tbluserinformation.username, tbluserinformation.idApp,tblsimdetails.SerialNum,tblsimdetails.PhoneNum,tblsimdetails.Status as SimStatus" +
             " from tblgpsdevice " +
@@ -351,13 +351,15 @@ router.get('/GetAllGPSDevice', function (req, res) {
     } else {
 
         var query = " select tblgpsdevice.*, tblcountrymgmt.Country, " +
-            " CONVERT_TZ(tblgpsdevice.CreatedDate,'+00:00','" + CurrentOffset + "') as CreatedDate," +
+            " CONVERT_TZ(tbllicencemanager.CreatedDate,'+00:00','" + CurrentOffset + "') as CreatedDate," +
             " CONVERT_TZ(tblgpsdevice.ExpiryDate,'+00:00','" + CurrentOffset + "') as ExpiryDate," +
+            " CONVERT_TZ(tbllicencemanager.ExpiryDate,'+00:00','" + CurrentOffset + "') as VehicleExpiryDate," +
             " tbltelco.Name, tbluserinformation.username, tbluserinformation.idApp,tblsimdetails.SerialNum,tblsimdetails.PhoneNum,tblsimdetails.Status as SimStatus" +
             " from tblgpsdevice " +
             " Left Join tbluserinformation on tblgpsdevice.idSalesAgent=tbluserinformation.id " +
             " Left Join tblsimdetails on tblsimdetails.id = tblgpsdevice.idSim" +
             " Left Join tblcountrymgmt on tblcountrymgmt.id = tblgpsdevice.CountryId" +
+            " Left Join tbllicencemanager on tbllicencemanager.DeviceId = tblgpsdevice.DeviceId" +
             " Left Join tbltelco on tblsimdetails.idTelCo = tbltelco.id " + search +
             " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
 
