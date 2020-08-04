@@ -2747,4 +2747,85 @@ function customPassword() {
 }
 //End of Private functions
 
+router.post('/AdminInpersionateLogin', jsonParser, function (req, res) {
+    console.log(req.body)
+    var token = req.body.Token;
+    if (token) {
+        try {
+            var decoded = jwt.decode(token, TokenKey);
+            User.findOne({
+                where: {
+                    username: decoded.username,
+                    password: decoded.password
+                }
+            }).then(function (UserExist) {
+                if (UserExist != null) {
+                    if (decoded.Role && decoded.Role.indexOf('Super Admin') >= 0) {
+                        User.findOne({
+                            where: {
+                                id: req.body.UserId
+                            }
+                        }).then(function (response) {
+                            if (response != null) {
+                                UserInRole.belongsTo(Role, {
+                                    foreignKey: {
+                                        name: 'roleId',
+                                        allowNull: false
+                                    }
+                                });
+                                UserInRole.findAll({
+                                    where: {
+                                        userId: response.id
+                                    },
+                                    include: [{
+                                        model: Role,
+                                        attributes: ['id', 'RoleName']
+                                    }]
+                                }).then(function (resUserInRole) {
+                                    var lstRole = [];
+                                    for (var i = 0; i < resUserInRole.length; i++) {
+                                        var objRole = resUserInRole[i].tblrole.RoleName;
+                                        lstRole.push(objRole);
+                                    }
+
+                                    var user = {
+                                        username: response.username,
+                                        password: response.password,
+                                        Role: lstRole
+                                    }
+                                    var token = jwt.encode(user, "bugz");
+                                    res.json({
+                                        success: true,
+                                        token: 'JWT ' + token,
+                                        UserId: response.id,
+                                        UserName: response.username,
+                                        Email: response.email,
+                                        Notification: response.Notification,
+                                        SpeedValue: response.SpeedValue,
+                                        IsIgnition: response.IsIgnition,
+                                        message: "Login Successfully..."
+                                    });
+                                })
+                            } else {
+                                res.json({
+                                    success: false,
+                                    message: "Invalid Username or Password..."
+                                });
+                            }
+                        })
+                    } else {
+                        res.json(InvalidToken);
+                    }
+                } else {
+                    res.json(InvalidToken);
+                }
+            })
+        } catch (ex) {
+            res.json(InvalidToken);
+        }
+    } else {
+        res.json(InvalidToken);
+    }
+});
+
 module.exports = router

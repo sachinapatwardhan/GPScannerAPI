@@ -15,7 +15,7 @@ var Commonfunction = require('./common.js');
 //End of Tables
 
 var AppInfo = models.tblappinfo;
-router.get('/AssignLicenceToExistVehicle', function(req, res) {
+router.get('/AssignLicenceToExistVehicle', function (req, res) {
 
     objHeader = req.headers;
     // var DeviceList = req.query.DeviceList;
@@ -27,21 +27,21 @@ router.get('/AssignLicenceToExistVehicle', function(req, res) {
                 username: decoded.username,
                 password: decoded.password
             }
-        }).then(function(UserExist) {
+        }).then(function (UserExist) {
             if (UserExist != null) {
                 var AppName = req.query.AppName;
                 var query = "Select tv.deviceid,CONVERT_TZ(tv.renewaldate,'+00:00','" + CurrentOffset + "') as renewaldate,ta.Id as AppId " +
                     "from tblvehicle as tv inner join tbluserinformation tu on tu.id=tv.iduser inner join tblappinfo ta on ta.Id = tu.idApp " +
                     "where tv.renewaldate is not null and tv.IsDelete=0 and tv.deviceid not in (select DeviceId from tbllicencemanager where IsDeleted=0 and DeviceID is not null) and ta.AppName='" + AppName + "'";
 
-                connection.query(query, function(err, VehicleList) {
+                connection.query(query, function (err, VehicleList) {
                     if (!err && VehicleList) {
                         if (VehicleList.length > 0) {
                             var AppId = VehicleList[0].AppId;
 
                             function uploder(i) {
                                 if (VehicleList.length > i) {
-                                    LicenceManager.findOne({ where: { DeviceID: VehicleList[i].deviceid, idApp: AppId } }).then(function(LicenceExits) {
+                                    LicenceManager.findOne({ where: { DeviceID: VehicleList[i].deviceid, idApp: AppId } }).then(function (LicenceExits) {
                                         if (LicenceExits) {
                                             uploder(i + 1);
                                         } else {
@@ -51,7 +51,7 @@ router.get('/AssignLicenceToExistVehicle', function(req, res) {
                                                     IsDeleted: 0,
                                                     idApp: AppId,
                                                 }
-                                            }).then(function(LicenceNew) {
+                                            }).then(function (LicenceNew) {
                                                 if (LicenceNew) {
                                                     // console.log(VehicleList[i].deviceid)
                                                     // uploder(i + 1);
@@ -59,7 +59,7 @@ router.get('/AssignLicenceToExistVehicle', function(req, res) {
                                                         DeviceId: VehicleList[i].deviceid,
                                                         ExpiryDate: VehicleList[i].renewaldate,
                                                         CreatedDate: new Date(),
-                                                    }).then(function(response) {
+                                                    }).then(function (response) {
                                                         funAuditLogLicence.CreateAuditLogLicence('Assign Licence', LicenceNew.LicenceNo, VehicleList[i].deviceid, VehicleList[i].renewaldate, null, UserExist.username, 'Assign Exist vehicle');
                                                         uploder(i + 1);
                                                     })
@@ -101,7 +101,7 @@ router.get('/AssignLicenceToExistVehicle', function(req, res) {
 
 // setVehicleLicence();
 
-router.get('/UpdateExpiryDate', function(req, res) {
+router.get('/UpdateExpiryDate', function (req, res) {
     objHeader = req.headers;
     // var DeviceList = req.query.DeviceList;
     var token = getToken(objHeader);
@@ -112,18 +112,18 @@ router.get('/UpdateExpiryDate', function(req, res) {
                 username: decoded.username,
                 password: decoded.password
             }
-        }).then(function(UserExist) {
+        }).then(function (UserExist) {
             if (UserExist != null) {
-                Vehicle.findOne({ where: { id: req.query.id } }).then(function(vehicleExist) {
+                Vehicle.findOne({ where: { id: req.query.id } }).then(function (vehicleExist) {
                     if (vehicleExist) {
                         var oldexpdate = vehicleExist.renewaldate;
 
-                        vehicleExist.updateAttributes({ renewaldate: req.query.renewaldate }).then(function(response) {
+                        vehicleExist.updateAttributes({ renewaldate: req.query.renewaldate }).then(function (response) {
                             Commonfunction.UpdateVehicleRedis(vehicleExist.deviceid, 'Vehicle');
-                            LicenceManager.findOne({ where: { DeviceId: vehicleExist.deviceid, IsDeleted: 0 } }).then(function(LicenceExist) {
+                            LicenceManager.findOne({ where: { DeviceId: vehicleExist.deviceid, IsDeleted: 0 } }).then(function (LicenceExist) {
                                 var oldExpiry = LicenceExist.ExpiryDate;
                                 if (LicenceExist) {
-                                    LicenceExist.updateAttributes({ ExpiryDate: req.query.renewaldate }).then(function(UpdateExpiry) {
+                                    LicenceExist.updateAttributes({ ExpiryDate: req.query.renewaldate }).then(function (UpdateExpiry) {
                                         if (UpdateExpiry) {
                                             funAuditLogLicence.CreateAuditLogLicence('Update Licence Expiry date', LicenceExist.LicenceNo, LicenceExist.DeviceId, req.query.renewaldate, oldExpiry, UserExist.username, 'Update Licence Expiry date througth vehicle expiry update');
 
@@ -154,14 +154,14 @@ router.get('/UpdateExpiryDate', function(req, res) {
 })
 
 
-router.get('/GetAllGroup', function(req, res) {
-    VehicleGroup.findAll({ where: { IdUser: req.query.IdUser } }).then(function(response) {
+router.get('/GetAllGroup', function (req, res) {
+    VehicleGroup.findAll({ where: { IdUser: req.query.IdUser } }).then(function (response) {
         res.json(response)
     })
 })
 
 
-router.get('/AddVehicleToGroup', function(req, res) {
+router.get('/AddVehicleToGroup', function (req, res) {
     objHeader = req.headers;
     var TotalSuccess = 0;
     var TotalError = 0;
@@ -174,18 +174,18 @@ router.get('/AddVehicleToGroup', function(req, res) {
                 username: decoded.username,
                 password: decoded.password
             }
-        }).then(function(UserExist) {
+        }).then(function (UserExist) {
             if (UserExist != null) {
-                connection.query("Update tblvehicle set IdGroup=null where IdGroup =" + req.query.Id, function(err, vehicleRemoveToGroup, fields) {
+                connection.query("Update tblvehicle set IdGroup=null where IdGroup =" + req.query.Id, function (err, vehicleRemoveToGroup, fields) {
                     ManageGroupUpdateVehicleForRedis(req.query.Id);
-                    connection.query("Update tblsharedevice set IdSharedGroup=null where idUser=" + req.query.idUser + " and IdSharedGroup =" + req.query.Id, function(err, sharedvehicleRemoveToGroup, fields) {
+                    connection.query("Update tblsharedevice set IdSharedGroup=null where idUser=" + req.query.idUser + " and IdSharedGroup =" + req.query.Id, function (err, sharedvehicleRemoveToGroup, fields) {
                         uploder(0);
 
                         function uploder(i) {
                             if (i < 2) {
                                 if (i == 0) {
                                     if (req.query.DeviceList != undefined && req.query.DeviceList != null && req.query.DeviceList != '') {
-                                        connection.query("Update tblvehicle set IdGroup=" + req.query.Id + " where deviceid in (" + [req.query.DeviceList] + ")", function(err, VehicleAddToGroup, fields) {
+                                        connection.query("Update tblvehicle set IdGroup=" + req.query.Id + " where deviceid in (" + [req.query.DeviceList] + ")", function (err, VehicleAddToGroup, fields) {
                                             if (!err && VehicleAddToGroup) {
                                                 ManageRedisForVehicle(req.query.DeviceList);
                                                 uploder(i + 1);
@@ -201,7 +201,7 @@ router.get('/AddVehicleToGroup', function(req, res) {
                                 }
                                 if (i == 1) {
                                     if (req.query.SharedDeviceList != undefined && req.query.SharedDeviceList != null && req.query.SharedDeviceList != '') {
-                                        connection.query("Update tblsharedevice set IdSharedGroup=" + req.query.Id + " where idUser=" + req.query.idUser + " and DeviceId in (" + [req.query.SharedDeviceList] + ")", function(err, VehicleAddToGroup, fields) {
+                                        connection.query("Update tblsharedevice set IdSharedGroup=" + req.query.Id + " where idUser=" + req.query.idUser + " and DeviceId in (" + [req.query.SharedDeviceList] + ")", function (err, VehicleAddToGroup, fields) {
 
                                             if (!err && VehicleAddToGroup) {
                                                 uploder(i + 1);
@@ -257,7 +257,7 @@ function ManageRedisForVehicle(Deviceidlist) {
 }
 
 function ManageGroupUpdateVehicleForRedis(Ids) {
-    connection.query("select * from  tblvehicle  where IdGroup =" + Ids, function(err, response, fields) {
+    connection.query("select * from  tblvehicle  where IdGroup =" + Ids, function (err, response, fields) {
         if (!err && response.length > 0) {
             for (var i = 0; i < response.length; i++) {
                 //Update Vehicle Data For in Redis Server
@@ -268,7 +268,7 @@ function ManageGroupUpdateVehicleForRedis(Ids) {
 }
 
 
-router.get('/GroupRemoveById', function(req, res) {
+router.get('/GroupRemoveById', function (req, res) {
     objHeader = req.headers;
     // var DeviceList = req.query.DeviceList;
     var token = getToken(objHeader);
@@ -279,15 +279,15 @@ router.get('/GroupRemoveById', function(req, res) {
                 username: decoded.username,
                 password: decoded.password
             }
-        }).then(function(UserExist) {
+        }).then(function (UserExist) {
             if (UserExist != null) {
 
-                connection.query("Update tblvehicle set IdGroup=null where IdGroup =" + req.query.Id, function(err, GroupRemoved, fields) {
+                connection.query("Update tblvehicle set IdGroup=null where IdGroup =" + req.query.Id, function (err, GroupRemoved, fields) {
                     if (!err && GroupRemoved) {
                         ManageGroupUpdateVehicleForRedis(req.query.Id);
-                        connection.query("Update tblsharedevice set IdSharedGroup=null where IdSharedGroup =" + req.query.Id, function(err, sharedvehicleRemoveToGroup, fields) {
+                        connection.query("Update tblsharedevice set IdSharedGroup=null where IdSharedGroup =" + req.query.Id, function (err, sharedvehicleRemoveToGroup, fields) {
                             if (!err && sharedvehicleRemoveToGroup) {
-                                VehicleGroup.destroy({ where: { Id: req.query.Id } }).then(function(response) {
+                                VehicleGroup.destroy({ where: { Id: req.query.Id } }).then(function (response) {
                                     if (response) {
                                         res.json({ success: true, message: 'Group removed successfully..' })
                                     }
@@ -312,7 +312,7 @@ router.get('/GroupRemoveById', function(req, res) {
 })
 
 
-router.get('/updateVehicleGroupName', function(req, res) {
+router.get('/updateVehicleGroupName', function (req, res) {
 
     objHeader = req.headers;
     var token = getToken(objHeader);
@@ -323,11 +323,11 @@ router.get('/updateVehicleGroupName', function(req, res) {
                 username: decoded.username,
                 password: decoded.password
             }
-        }).then(function(UserExist) {
+        }).then(function (UserExist) {
             if (UserExist != null) {
-                VehicleGroup.findOne({ where: { Id: req.query.Id } }).then(function(VehiceGroupExist) {
+                VehicleGroup.findOne({ where: { Id: req.query.Id } }).then(function (VehiceGroupExist) {
                     if (VehiceGroupExist) {
-                        VehiceGroupExist.updateAttributes({ GroupName: req.query.GroupName }).then(function(response) {
+                        VehiceGroupExist.updateAttributes({ GroupName: req.query.GroupName }).then(function (response) {
                             if (response) {
                                 funAuditLog.CreateAuditLog('update vehicle group name', UserExist.username, 'update vehicle group name');
                                 res.json({ success: true, message: "Group Name updated Successfully...", data: response });
@@ -349,7 +349,7 @@ router.get('/updateVehicleGroupName', function(req, res) {
 })
 
 
-router.get('/GetAllNotAssignGroupVehicle', function(req, res) {
+router.get('/GetAllNotAssignGroupVehicle', function (req, res) {
 
     var query = "Select tblvehicle.*,tblsharedevice.IdSharedGroup from tblvehicle " +
         "Left Join tblsharedevice on tblsharedevice.idVehicle = tblvehicle.id " +
@@ -365,12 +365,12 @@ router.get('/GetAllNotAssignGroupVehicle', function(req, res) {
                 IsDelete: 0
             }]
         }
-    }).then(function(response) {
+    }).then(function (response) {
         res.json(response)
     })
 })
 
-router.post('/SaveVehicleGroup', jsonParser, function(req, res) {
+router.post('/SaveVehicleGroup', jsonParser, function (req, res) {
     objGroup = req.body;
     objHeader = req.headers;
     var token = getToken(objHeader);
@@ -381,17 +381,17 @@ router.post('/SaveVehicleGroup', jsonParser, function(req, res) {
                 username: decoded.username,
                 password: decoded.password
             }
-        }).then(function(UserExist) {
+        }).then(function (UserExist) {
             if (UserExist != null) {
                 if (objGroup.Id == 0) {
                     objGroup.CreatedBy = UserExist.username;
                     objGroup.CreatedDate = new Date();
 
-                    VehicleGroup.findOne({ where: { IdUser: objGroup.IdUser, GroupName: objGroup.GroupName } }).then(function(VehiceGroupExist) {
+                    VehicleGroup.findOne({ where: { IdUser: objGroup.IdUser, GroupName: objGroup.GroupName } }).then(function (VehiceGroupExist) {
                         if (VehiceGroupExist) {
                             res.json({ success: false, message: "Group is already exist...", data: VehiceGroupExist });
                         } else {
-                            VehicleGroup.create(objGroup).then(function(response) {
+                            VehicleGroup.create(objGroup).then(function (response) {
                                 if (response) {
                                     funAuditLog.CreateAuditLog('Create vehicle group', UserExist.username, 'Cerate New vehicle group');
                                     res.json({ success: true, message: "Group created successfully...", data: response });
@@ -406,11 +406,11 @@ router.post('/SaveVehicleGroup', jsonParser, function(req, res) {
                     VehicleGroup.findOne({
                         where: { IdUser: objGroup.IdUser, GroupName: objGroup.GroupName },
                         defaults: objGroup
-                    }).then(function(objVehicleGroupExist) {
+                    }).then(function (objVehicleGroupExist) {
                         if (objVehicleGroupExist != null && objGroup.Id != objVehicleGroupExist.Id) {
                             res.json({ success: false, message: "Group is already exist...", data: objVehicleGroupExist });
                         } else {
-                            VehicleGroup.update(objGroup, { where: { Id: objGroup.Id } }).then(function(response) {
+                            VehicleGroup.update(objGroup, { where: { Id: objGroup.Id } }).then(function (response) {
                                 if (response[0]) {
                                     funAuditLog.CreateAuditLog('Update vehicle group', UserExist.username, 'Update vehicle group Data');
                                     res.json({ success: true, message: "Group updated successfully...", data: response });
@@ -433,7 +433,7 @@ router.post('/SaveVehicleGroup', jsonParser, function(req, res) {
 
 
 
-router.get('/GetAllDynamicVehicle', function(req, res) {
+router.get('/GetAllDynamicVehicle', function (req, res) {
     var objParam = req.query;
     var objColumns = objParam.columns;
     var objOrderBy = objParam.order;
@@ -452,6 +452,7 @@ router.get('/GetAllDynamicVehicle', function(req, res) {
         search = search + 'vehicle.HandshakDatetime like "%' + objSearch + '%" or ';
         search = search + 'vehicle.DeviceType like "%' + objSearch + '%" or ';
         search = search + 'vehicletype.Type like "%' + objSearch + '%" or ';
+        search = search + 'vehiclegroup.GroupName like "%' + objSearch + '%" or ';
         search = search + 'vehicle.IsOnline like "%' + objSearch + '%") ';
     }
 
@@ -495,10 +496,12 @@ router.get('/GetAllDynamicVehicle', function(req, res) {
     }
 
     // console.log(search)
-    var qry = "Select vehicle.*,vehicletype.Type,gpsdevice.IMEI,CONVERT_TZ(vehicle.HandshakDatetime,'+00:00','" + CurrentOffset + "') as DisplyHandshakDate, CONVERT_TZ(vehicle.renewaldate,'+00:00','" + CurrentOffset + "') as Displyrenewaldate,  " +
+    var qry = "Select vehicle.*,vehicletype.Type,vehiclegroup.GroupName,licencemanager.CreatedDate as LicenceStartDate, gpsdevice.IMEI,CONVERT_TZ(vehicle.HandshakDatetime,'+00:00','" + CurrentOffset + "') as DisplyHandshakDate, CONVERT_TZ(vehicle.renewaldate,'+00:00','" + CurrentOffset + "') as Displyrenewaldate,  " +
         "user.username AS username " +
         "FROM tblvehicle AS vehicle " +
         " left join tblvehicletype  as vehicletype on vehicletype.id = vehicle.idType " +
+        " left join tbllicencemanager  as licencemanager on licencemanager.DeviceId = vehicle.deviceid " +
+        " left join tblvehiclegroup  as vehiclegroup on vehiclegroup.id = vehicle.IdGroup " +
         " left join tblgpsdevice as gpsdevice on gpsdevice.DeviceId =vehicle.deviceid " +
         " LEFT JOIN tbluserinformation AS user ON vehicle.iduser = user.id " + search +
         " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
@@ -508,12 +511,14 @@ router.get('/GetAllDynamicVehicle', function(req, res) {
     var Countqry = "SELECT count(vehicle.id) as TotalRecord " +
         "FROM tblvehicle AS vehicle " +
         " left join tblvehicletype  as vehicletype on vehicletype.id = vehicle.idType " +
+        " left join tbllicencemanager  as licencemanager on licencemanager.DeviceId = vehicle.deviceid " +
+        " left join tblvehiclegroup  as vehiclegroup on vehiclegroup.id = vehicle.IdGroup " +
         " left join tblgpsdevice as gpsdevice on gpsdevice.DeviceId =vehicle.deviceid " +
         " LEFT JOIN tbluserinformation AS user ON vehicle.iduser = user.id " + search;
-
-    connection.query(qry, function(err, response) {
+    console.log(qry)
+    connection.query(qry, function (err, response) {
         if (response != undefined) {
-            connection.query(Countqry, function(err, lstCount, fields) {
+            connection.query(Countqry, function (err, lstCount, fields) {
                 var response1 = new Object();
                 response1.draw = objParam.draw;
                 response1.recordsTotal = lstCount[0].TotalRecord;
@@ -697,46 +702,46 @@ router.get('/GetAllDynamicVehicle', function(req, res) {
 //     })
 // })
 
-router.get('/ExportVehicle', function(req, res) {
+router.get('/ExportVehicle', function (req, res) {
     var conf = {};
     conf.name = "Sheet1";
     conf.cols = [{
-            caption: 'User Name',
-            type: 'string'
-        }, {
-            caption: 'Vehicle',
-            type: 'string'
-        }, {
-            caption: 'Tracker Id',
-            type: 'string'
-        },
-        {
-            caption: 'Sim Number',
-            type: 'string'
-        },
-        {
-            caption: 'Device Type',
-            type: 'string'
-        }, {
-            caption: 'Type',
-            type: 'string'
-        },
-        {
-            caption: 'Group Name',
-            type: 'string'
-        },
-        {
-            caption: 'Expiry Date',
-            type: 'string'
-        },
-        {
-            caption: 'HandShake Time',
-            type: 'string'
-        },
-        {
-            caption: 'Is Online',
-            type: 'string'
-        },
+        caption: 'User Name',
+        type: 'string'
+    }, {
+        caption: 'Vehicle',
+        type: 'string'
+    }, {
+        caption: 'Tracker Id',
+        type: 'string'
+    },
+    {
+        caption: 'Sim Number',
+        type: 'string'
+    },
+    {
+        caption: 'Device Type',
+        type: 'string'
+    }, {
+        caption: 'Type',
+        type: 'string'
+    },
+    {
+        caption: 'Group Name',
+        type: 'string'
+    },
+    {
+        caption: 'Expiry Date',
+        type: 'string'
+    },
+    {
+        caption: 'HandShake Time',
+        type: 'string'
+    },
+    {
+        caption: 'Is Online',
+        type: 'string'
+    },
     ];
 
     var objParam = req.query;
@@ -814,7 +819,7 @@ router.get('/ExportVehicle', function(req, res) {
         " LEFT JOIN tbluserinformation AS user ON vehicle.iduser = user.id " + search +
         " order by username desc";
     // console.log("@@@@@@@@@@@@", qry)
-    connection.query(qry, function(err, response) {
+    connection.query(qry, function (err, response) {
         // console.log(err)
         if (response != undefined) {
             conf.rows = [];
@@ -883,7 +888,7 @@ router.get('/ExportVehicle', function(req, res) {
     })
 })
 
-router.post('/SaveVehicle', jsonParser, function(req, res) {
+router.post('/SaveVehicle', jsonParser, function (req, res) {
     objVehicle = req.body;
     objHeader = req.headers;
     var token = getToken(objHeader);
@@ -894,12 +899,12 @@ router.post('/SaveVehicle', jsonParser, function(req, res) {
                 username: decoded.username,
                 password: decoded.password
             }
-        }).then(function(UserExist) {
+        }).then(function (UserExist) {
             if (UserExist != null) {
                 if (objVehicle.id == 0) {
                     objVehicle.CreatedDate = new Date();
                     objVehicle.CreatedBy = decoded.username;
-                    Vehicle.findOrCreate({ where: { deviceid: objVehicle.deviceid }, defaults: objVehicle }).then(function(response) {
+                    Vehicle.findOrCreate({ where: { deviceid: objVehicle.deviceid }, defaults: objVehicle }).then(function (response) {
                         if (response[0]) {
                             Commonfunction.UpdateVehicleRedis(objVehicle.deviceid);
                             funAuditLog.CreateAuditLog('SaveVehicle', decoded.username, 'Create Vehicle (DeviceId:' + response[0].deviceid + ' , UserId : ' + response[0].iduser + ')');
@@ -923,7 +928,7 @@ router.post('/SaveVehicle', jsonParser, function(req, res) {
                         where: {
                             id: objVehicle.id
                         }
-                    }).then(function(response) {
+                    }).then(function (response) {
                         if (response[0]) {
                             Commonfunction.UpdateVehicleRedis(objVehicle.deviceid, 'Vehicle');
                             funAuditLog.CreateAuditLog('SaveVehicle', decoded.username, 'Update Vehicle (DeviceId:' + response[0].deviceid + ' , UserId : ' + response[0].iduser + ')');
@@ -950,7 +955,7 @@ router.post('/SaveVehicle', jsonParser, function(req, res) {
     }
 })
 
-router.get('/DeleteVehicle', function(req, res) {
+router.get('/DeleteVehicle', function (req, res) {
     objHeader = req.headers;
     var token = getToken(objHeader);
 
@@ -984,7 +989,7 @@ router.get('/DeleteVehicle', function(req, res) {
 
         User.findOne({
             where: search
-        }).then(function(UserExist) {
+        }).then(function (UserExist) {
             if (UserExist != null) {
                 if (req.query.id != '' && req.query.id != null) {
                     Vehicle.findOne({
@@ -992,9 +997,9 @@ router.get('/DeleteVehicle', function(req, res) {
                             id: req.query.id,
                             IsDelete: false
                         }
-                    }).then(function(response) {
+                    }).then(function (response) {
                         if (response) {
-                            response.updateAttributes({ IsDelete: true }).then(function(resUpdate) {
+                            response.updateAttributes({ IsDelete: true }).then(function (resUpdate) {
                                 Commonfunction.DeleteVehicleRedis(response.deviceid);
                                 funAuditLog.CreateAuditLog('Delete Vehicle', UserExist.username, 'Delete Vehicle (DeviceId:' + response.deviceid + ' , UserId : ' + response.iduser + ')');
                                 res.json({
@@ -1027,7 +1032,7 @@ router.get('/DeleteVehicle', function(req, res) {
     // });
 });
 
-router.get('/GetAllVehicleByUser', function(req, res) {
+router.get('/GetAllVehicleByUser', function (req, res) {
     if (req.query.iduser != null || req.query.iduser != undefined) {
 
         var search = "";
@@ -1051,7 +1056,7 @@ router.get('/GetAllVehicleByUser', function(req, res) {
             }
         }
         var query = "SELECT tv.*, CONVERT_TZ(tgd.ExpiryDate,'+00:00','" + CurrentOffset + "') as ExpiryDate FROM tblvehicle as tv LEFT JOIN tblgpsdevice as tgd ON tgd.DeviceId = tv.deviceid " + search;
-        connection.query(query, function(err, response) {
+        connection.query(query, function (err, response) {
             if (response != undefined) {
                 res.json(response);
             } else {
@@ -1078,7 +1083,7 @@ router.get('/GetAllVehicleByUser', function(req, res) {
 
 })
 
-router.get('/GetAllVehicleById', function(req, res) {
+router.get('/GetAllVehicleById', function (req, res) {
     if (req.query.id != null || req.query.id != undefined) {
         var search = {};
 
@@ -1097,9 +1102,9 @@ router.get('/GetAllVehicleById', function(req, res) {
         search['$and'].push(obj);
         Vehicle.findOne({
             where: search,
-        }).then(function(response) {
+        }).then(function (response) {
             res.json(response);
-        }).catch(function(error) {
+        }).catch(function (error) {
             res.json(error);
         })
     } else {
@@ -1108,23 +1113,23 @@ router.get('/GetAllVehicleById', function(req, res) {
 
 })
 
-router.get('/GetDrivingDataByDeviceId', function(req, res) {
+router.get('/GetDrivingDataByDeviceId', function (req, res) {
     DrivingData.findOne({
         where: { DeviceId: req.query.DeviceId },
         order: 'Datetime desc'
-    }).then(function(response) {
+    }).then(function (response) {
         res.json({
             success: true,
             message: "Record found...",
             data: response
         });
-    }).catch(function(error) {
+    }).catch(function (error) {
         res.json(RecordNotFound);
     })
 
 })
 
-router.get('/GetVehicleCurrentLocation', function(req, res) {
+router.get('/GetVehicleCurrentLocation', function (req, res) {
 
     var Startdate = new Date();
 
@@ -1142,7 +1147,7 @@ router.get('/GetVehicleCurrentLocation', function(req, res) {
     // res.json({ success: true, data: response });
 
     //----------------call redix server data--------------------------
-    client.get(req.query.DeviceId, function(err, response) {
+    client.get(req.query.DeviceId, function (err, response) {
 
         if (!err && response != null && response != '' && response != undefined) {
             //----------------End redix server data--------------------------
@@ -1168,7 +1173,7 @@ function convertdateformatForUnix(date1) {
 
 }
 
-router.get('/GetAllOnlineVehicle', function(req, res) {
+router.get('/GetAllOnlineVehicle', function (req, res) {
     var objParam = req.query;
     var objColumns = objParam.columns;
     var objOrderBy = objParam.order;
@@ -1222,9 +1227,9 @@ router.get('/GetAllOnlineVehicle', function(req, res) {
         "FROM tblvehicle AS vehicle " +
         "LEFT JOIN tbluserinformation AS user ON vehicle.iduser = user.id " + search;
 
-    connection.query(qry, function(err, response) {
+    connection.query(qry, function (err, response) {
         if (response != undefined) {
-            connection.query(Countqry, function(err, lstCount, fields) {
+            connection.query(Countqry, function (err, lstCount, fields) {
                 var response1 = new Object();
                 response1.draw = objParam.draw;
                 response1.recordsTotal = lstCount[0].TotalRecord;
@@ -1243,14 +1248,14 @@ router.get('/GetAllOnlineVehicle', function(req, res) {
     })
 });
 
-router.get('/getAllDefaultValue', function(req, res) {
+router.get('/getAllDefaultValue', function (req, res) {
 
-    DefaultValue.findAll().then(function(response) {
+    DefaultValue.findAll().then(function (response) {
         res.json(response);
     });
 })
 
-router.get('/UpdateDefultValue', function(req, res) {
+router.get('/UpdateDefultValue', function (req, res) {
     objHeader = req.headers;
     var token = getToken(objHeader);
     if (token) {
@@ -1260,12 +1265,12 @@ router.get('/UpdateDefultValue', function(req, res) {
                 username: decoded.username,
                 password: decoded.password
             }
-        }).then(function(UserExist) {
+        }).then(function (UserExist) {
             if (UserExist != null) {
-                DefaultValue.findOne({ where: { Type: req.query.Type } }).then(function(objexist) {
+                DefaultValue.findOne({ where: { Type: req.query.Type } }).then(function (objexist) {
                     objexist.updateAttributes({
                         Value: req.query.Value
-                    }).then(function(response) {
+                    }).then(function (response) {
                         funAuditLog.CreateAuditLog('Update Default value', UserExist.username, 'Update Default value of ' + req.query.Type);
                         res.json({ success: true, message: ' updated successfully', data: response });
                     });
@@ -1280,9 +1285,9 @@ router.get('/UpdateDefultValue', function(req, res) {
 
 })
 
-router.get('/GetAllNotAssignDevice', function(req, res) {
+router.get('/GetAllNotAssignDevice', function (req, res) {
     var query = "select id, DeviceId from tblgpsdevice  where DeviceId not in (select deviceid from tblvehicle)";
-    connection.query(query, function(err, rows, fields) {
+    connection.query(query, function (err, rows, fields) {
         if (!err) {
             res.json({ success: true, data: rows });
         } else {
@@ -1292,7 +1297,7 @@ router.get('/GetAllNotAssignDevice', function(req, res) {
 })
 
 
-router.get('/TransferDevicetoUser', function(req, res) {
+router.get('/TransferDevicetoUser', function (req, res) {
     // var query = "Update tblvehicle set deviceid = '" + req.query.deviceid + "' where iduser = '" + req.query.iduser + "' and deviceid = '" + req.query.olddeviceid + "'";
     // var query = "Update tblvehicle set deviceid = '" + req.query.deviceid + "', MaxSpeed='0.0' where id = '" + req.query.id + "'";
     objHeader = req.headers;
@@ -1304,10 +1309,10 @@ router.get('/TransferDevicetoUser', function(req, res) {
                 username: decoded.username,
                 password: decoded.password
             }
-        }).then(function(UserExist) {
+        }).then(function (UserExist) {
             if (UserExist != null) {
                 var query = "update tblvehicle left join tblfence on tblvehicle.deviceid = tblfence.deviceId set  tblvehicle.deviceid='" + req.query.deviceid + "' ,tblfence.deviceId  = '" + req.query.deviceid + "' ,tblvehicle.MaxSpeed = 0 where tblvehicle.id= '" + req.query.id + "'"
-                connection.query(query, function(err, rows, fields) {
+                connection.query(query, function (err, rows, fields) {
                     if (!err) {
                         Commonfunction.UpdateVehicleRedis(req.query.deviceid, 'Vehicle');
                         funAuditLog.CreateAuditLog('Transfer Device', UserExist.username, 'Transfer Device (' + req.query.olddeviceid + ') to (' + req.query.deviceid + ')');
@@ -1326,7 +1331,7 @@ router.get('/TransferDevicetoUser', function(req, res) {
 })
 
 
-router.get('/GetAllNotUseDevcie', function(req, res) {
+router.get('/GetAllNotUseDevcie', function (req, res) {
     var objParam = req.query;
 
 
@@ -1351,7 +1356,7 @@ router.get('/GetAllNotUseDevcie', function(req, res) {
         " where IsDelete=false  group by tb.deviceid";
     var lstObject = [];
 
-    connection.query(qry, function(err, response) {
+    connection.query(qry, function (err, response) {
 
         var listdata = [];
         if (!err && response) {
@@ -1383,7 +1388,7 @@ function convertdateformatForUnix(date1) {
 }
 
 
-router.get('/GetAllVehicleDeviceId', function(req, res) {
+router.get('/GetAllVehicleDeviceId', function (req, res) {
     var search = req.query.search;
     var searchdevice = {};
 
@@ -1403,7 +1408,7 @@ router.get('/GetAllVehicleDeviceId', function(req, res) {
         };
         searchdevice['$and'].push(obj);
     }
-    Vehicle.findAll({ where: searchdevice }).then(function(response) {
+    Vehicle.findAll({ where: searchdevice }).then(function (response) {
         res.json(response)
     })
 

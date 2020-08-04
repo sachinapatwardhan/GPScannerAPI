@@ -3059,13 +3059,13 @@ router.get('/GetAllDynamicOwnerCustomer', function (req, res) {
 
     var CheckRole = u.contains(UserInRole, "Super Admin");
     if (CheckRole == false) {
-        var query = "select SQL_CALC_FOUND_ROWS tbluserinformation.CreatedDate, tblappinfo.AppName,tbluserinformation.id,tbluserinformation.username,tbluserinformation.idApp,tbluserinformation.email,tbluserinformation.phone,tbluserinformation.country,tbluserinformation.OTP,tbluserinformation.IsMobileVerify,CONVERT_TZ(tbluserinformation.LastLogin,'+00:00','" + CurrentOffset + "') as LastLogin, " +
+        var query = "select SQL_CALC_FOUND_ROWS tbluserinformation.CreatedDate, tblappinfo.AppName,tbluserinformation.id,tbluserinformation.username,tbluserinformation.idApp,tbluserinformation.email,tbluserinformation.phone,tbluserinformation.country,tbluserinformation.OTP,tbluserinformation.IsMobileVerify,tblappinfo.WebAppUrl,CONVERT_TZ(tbluserinformation.LastLogin,'+00:00','" + CurrentOffset + "') as LastLogin, " +
             "(select count(tblvehicle.deviceid) from tblvehicle where iduser = tbluserinformation.id and tblvehicle.IsDelete=0 and tblvehicle.deviceid !='' ) as TotalDevice " +
             "from tbluserinformation left join tblappinfo on tbluserinformation.idApp = tblappinfo.id   inner join tbluserinrole on tbluserinformation.id=tbluserinrole.userId inner join tblrole on tblrole.id=tbluserinrole.roleId and tblrole.RoleName='User' " + search +
             " group by tbluserinformation.id " +
             " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start) + ";";
     } else {
-        var query = "select SQL_CALC_FOUND_ROWS tbluserinformation.CreatedDate, tblappinfo.AppName,tbluserinformation.id,tbluserinformation.username,tbluserinformation.idApp,tbluserinformation.email,tbluserinformation.phone,tbluserinformation.country,tbluserinformation.OTP,tbluserinformation.IsMobileVerify,CONVERT_TZ(tbluserinformation.LastLogin,'+00:00','" + CurrentOffset + "') as LastLogin, " +
+        var query = "select SQL_CALC_FOUND_ROWS tbluserinformation.CreatedDate, tblappinfo.AppName,tbluserinformation.id,tbluserinformation.username,tbluserinformation.idApp,tbluserinformation.email,tbluserinformation.phone,tbluserinformation.country,tbluserinformation.OTP,tbluserinformation.IsMobileVerify,tblappinfo.WebAppUrl,CONVERT_TZ(tbluserinformation.LastLogin,'+00:00','" + CurrentOffset + "') as LastLogin, " +
             "(select count(tblvehicle.deviceid) from tblvehicle where iduser = tbluserinformation.id and tblvehicle.IsDelete=0 and tblvehicle.deviceid !='' ) as TotalDevice " +
             "from tbluserinformation left join tblappinfo on tbluserinformation.idApp = tblappinfo.id  " + search +
             " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start) + ";";

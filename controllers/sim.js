@@ -1694,4 +1694,180 @@ router.get('/ExportTerminatedSim', function (req, res) {
         }
     });
 });
+
+router.get('/GetTerminatedSimAdmin', function (req, res) {
+    var objParam = req.query;
+    var objColumns = objParam.columns;
+    var objOrderBy = objParam.order;
+    var objSearch = objParam.search;
+    var Orderby = objColumns[parseInt(objOrderBy[0].column)].data + ' ' + objOrderBy[0].dir;
+    var search = '';
+    if (objSearch != null && objSearch != '') {
+        search = 'and (tgd.DeviceId like "%' + objSearch + '%" or ';
+        search = search + 'tgd.AppName like "%' + objSearch + '%" or ';
+        search = search + 'tc.Country like "%' + objSearch + '%" or ';
+        search = search + 'ts.SerialNum like "%' + objSearch + '%" or ';
+        search = search + 'ts.PhoneNum like "%' + objSearch + '%") ';
+    };
+    var query = `SELECT SQL_CALC_FOUND_ROWS 
+                    tgd.id,
+                    tgd.DeviceId,
+                    tgd.AppName,
+                    tc.Country,
+                    ts.SerialNum,
+                    ts.PhoneNum
+                FROM
+                    tblgpsdevice tgd
+                        INNER JOIN
+                    tblsimdetails ts ON tgd.idSim = ts.id
+                        LEFT JOIN
+                    tblcountrymgmt tc ON tgd.CountryId = tc.id
+                WHERE
+                    ts.Status = 'Terminate' `+ search + ` order by ` + Orderby + ` limit ` + parseInt(objParam.length) + ` offset ` + parseInt(objParam.start);
+    query += ";SELECT FOUND_ROWS() as TotalRecord;"
+
+    connection.query(query, function (err, response) {
+        if (!err) {
+            var lstDevice = [];
+
+            function getData(i) {
+                if (i < response[0].length) {
+                    var obj = new Object();
+                    obj.id = response[0][i].id;
+                    obj.DeviceId = response[0][i].DeviceId;
+                    obj.AppName = response[0][i].AppName;
+                    obj.Country = response[0][i].Country;
+                    obj.SerialNum = response[0][i].SerialNum;
+                    obj.PhoneNum = response[0][i].PhoneNum;
+                    client.get(response[0][i].DeviceId, function (err, strgpsdata) {
+                        if (!err) {
+                            if (strgpsdata != null & strgpsdata != '' && strgpsdata != undefined) {
+                                var objgps = JSON.parse(strgpsdata);
+                                obj.GPSDate = objgps.Date;
+                            } else {
+                                obj.GPSDate = null;
+                            }
+                        } else {
+                            obj.GPSDate = null;
+                        }
+                        lstDevice.push(obj);
+                        getData(i + 1);
+                    });
+                } else {
+
+                    var response1 = new Object();
+                    response1.draw = objParam.draw;
+                    response1.recordsTotal = response[1][0].TotalRecord;
+                    response1.recordsFiltered = response[1][0].TotalRecord;
+                    response1.data = lstDevice;
+                    res.json(response1);
+                    // res.json(lstDevice);
+                }
+            }
+            getData(0)
+        } else {
+            var response1 = new Object();
+            response1.draw = objParam.draw;
+            response1.recordsTotal = 0;
+            response1.recordsFiltered = 0;
+            response1.data = [];
+            res.json(response1);
+        }
+    });
+})
+
+router.get('/ExportTerminatedSimAdmin', function (req, res) {
+    var conf = {};
+    conf.cols = [{
+        caption: 'Device Id',
+        type: 'string'
+    },
+    {
+        caption: 'App Name',
+        type: 'string'
+    }, {
+        caption: 'Country',
+        type: 'string'
+    },
+    {
+        caption: 'SIM serial',
+        type: 'string'
+    }, {
+        caption: 'Phone No.',
+        type: 'string'
+    },
+    {
+        caption: 'Last GPS Date',
+        type: 'string'
+    }
+    ];
+
+    var OrderBy = req.query.OrderBy;
+    var query = `SELECT
+                    tgd.id,
+                    tgd.DeviceId,
+                    tgd.AppName,
+                    tc.Country,
+                    ts.SerialNum,
+                    ts.PhoneNum
+                FROM
+                    tblgpsdevice tgd
+                INNER JOIN
+                    tblsimdetails ts ON tgd.idSim = ts.id
+                LEFT JOIN
+                    tblcountrymgmt tc ON tgd.CountryId = tc.id
+                WHERE
+                    ts.Status = 'Terminate'; `;
+    connection.query(query, function (err, response) {
+        conf.rows = [];
+        if (response.length > 0) {
+            function setdata(i) {
+                if (i < response.length) {
+                    var row = [];
+                    var DeviceId = 'N/A';
+                    var AppName = 'N/A';
+                    var Country = 'N/A';
+                    var GPSDate = 'N/A';
+                    var SerialNum = 'N/A';
+                    var PhoneNum = 'N/A';
+                    client.get(response[i].DeviceId, function (err, strgpsdata) {
+                        if (!err) {
+                            if (strgpsdata != null & strgpsdata != '' && strgpsdata != undefined) {
+                                var objgps = JSON.parse(strgpsdata);
+                                GPSDate = moment(moment.utc(objgps.Date * 1000).toDate()).format("YYYY-MM-DD HH:mm:ss");
+                            } else {
+                                GPSDate = 'N/A';
+                            }
+                        } else {
+                            GPSDate = 'N/A';
+                        }
+                        DeviceId = response[i].DeviceId != null && response[i].DeviceId != undefined && response[i].DeviceId != '' ? response[i].DeviceId.toString() : DeviceId;
+                        AppName = response[i].AppName && response[i].AppName != undefined && response[i].AppName != '' ? response[i].AppName.toString() : AppName;
+                        Country = response[i].Country && response[i].Country != undefined && response[i].Country != '' ? response[i].Country.toString() : Country;
+                        SerialNum = response[i].SerialNum && response[i].SerialNum != undefined && response[i].SerialNum != '' ? response[i].SerialNum.toString() : SerialNum;
+                        PhoneNum = response[i].PhoneNum && response[i].PhoneNum != undefined && response[i].PhoneNum != '' ? response[i].PhoneNum.toString() : PhoneNum;
+
+                        row.push(DeviceId, AppName, Country, SerialNum, PhoneNum, GPSDate);
+
+                        conf.rows.push(row);
+                        setdata(i + 1);
+                    });
+
+                } else {
+                    var result = nodeExcel.execute(conf);
+                    res.setHeader('Content-Type', 'application/vnd.openxmlformats');
+                    res.setHeader("Content-Disposition", "attachment; filename=" + "TerminatedSim.xlsx");
+                    res.end(result, 'binary');
+
+                }
+            }
+            setdata(0);
+        } else {
+            var result = nodeExcel.execute(conf);
+            res.setHeader('Content-Type', 'application/vnd.openxmlformats');
+            res.setHeader("Content-Disposition", "attachment; filename=" + "TerminatedSim.xlsx");
+            res.end(result, 'binary');
+        }
+    });
+});
 module.exports = router

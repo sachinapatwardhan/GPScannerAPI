@@ -329,7 +329,8 @@ router.get('/GetAllGPSDevice', function (req, res) {
     }
     if (objParam.idSalesAgent != null && objParam.idSalesAgent != undefined && objParam.idSalesAgent != '') {
         var query = " select tblgpsdevice.*, tblcountrymgmt.Country,tbllicencemanager.LicenceNo, " +
-            " CONVERT_TZ(tbllicencemanager.CreatedDate,'+00:00','" + CurrentOffset + "') as CreatedDate," +
+            " CONVERT_TZ(tblgpsdevice.CreatedDate,'+00:00','" + CurrentOffset + "') as CreatedDate," +
+            " CONVERT_TZ(tbllicencemanager.CreatedDate,'+00:00','" + CurrentOffset + "') as LicenceCreatedDate," +
             " CONVERT_TZ(tbllicencemanager.ExpiryDate,'+00:00','" + CurrentOffset + "') as VehicleExpiryDate," +
             " tbltelco.Name, tbluserinformation.username, tbluserinformation.idApp,tblsimdetails.SerialNum,tblsimdetails.PhoneNum,tblsimdetails.Status as SimStatus" +
             " from tblgpsdevice " +
@@ -351,12 +352,18 @@ router.get('/GetAllGPSDevice', function (req, res) {
     } else {
 
         var query = " select tblgpsdevice.*, tblcountrymgmt.Country, " +
-            " CONVERT_TZ(tbllicencemanager.CreatedDate,'+00:00','" + CurrentOffset + "') as CreatedDate," +
+            " CONVERT_TZ(tblgpsdevice.CreatedDate,'+00:00','" + CurrentOffset + "') as CreatedDate," +
+            " CONVERT_TZ(tbllicencemanager.CreatedDate,'+00:00','" + CurrentOffset + "') as LicenceCreatedDate," +
             " CONVERT_TZ(tblgpsdevice.ExpiryDate,'+00:00','" + CurrentOffset + "') as ExpiryDate," +
             " CONVERT_TZ(tbllicencemanager.ExpiryDate,'+00:00','" + CurrentOffset + "') as VehicleExpiryDate," +
-            " tbltelco.Name, tbluserinformation.username, tbluserinformation.idApp,tblsimdetails.SerialNum,tblsimdetails.PhoneNum,tblsimdetails.Status as SimStatus" +
+            " tbltelco.Name, tu.username as Customer,tu.idApp,t1.agentId,t1.idDistributor,tu1.username as Agent, " +
+            " tu2.username as Distibutor,tblsimdetails.SerialNum,tblsimdetails.PhoneNum,tblsimdetails.Status as SimStatus" +
             " from tblgpsdevice " +
-            " Left Join tbluserinformation on tblgpsdevice.idSalesAgent=tbluserinformation.id " +
+            " LEFT JOIN tblvehicle ON tblvehicle.deviceid = tblgpsdevice.DeviceId " +
+            " LEFT JOIN tbluserinformation as tu ON tblvehicle.iduser = tu.id " +
+            " LEFT JOIN tbldeviceagentretailer as t1 ON t1.deviceId = tblgpsdevice.DeviceId " +
+            " LEFT JOIN tbluserinformation as tu1 ON tu1.id=t1.agentId " +
+            " LEFT JOIN tbluserinformation as tu2 ON tu2.id=t1.idDistributor " +
             " Left Join tblsimdetails on tblsimdetails.id = tblgpsdevice.idSim" +
             " Left Join tblcountrymgmt on tblcountrymgmt.id = tblgpsdevice.CountryId" +
             " Left Join tbllicencemanager on tbllicencemanager.DeviceId = tblgpsdevice.DeviceId" +
@@ -365,7 +372,11 @@ router.get('/GetAllGPSDevice', function (req, res) {
 
         var Countqry = "SELECT count(tblgpsdevice.id) as TotalRecord " +
             " from tblgpsdevice " +
-            " Left Join tbluserinformation on  tblgpsdevice.idSalesAgent=tbluserinformation.id " +
+            " LEFT JOIN tblvehicle ON tblvehicle.deviceid = tblgpsdevice.DeviceId " +
+            " LEFT JOIN tbluserinformation as tu ON tblvehicle.iduser = tu.id " +
+            " LEFT JOIN tbldeviceagentretailer as t1 ON t1.deviceId = tblgpsdevice.DeviceId " +
+            " LEFT JOIN tbluserinformation as tu1 ON tu1.id=t1.agentId " +
+            " LEFT JOIN tbluserinformation as tu2 ON tu2.id=t1.idDistributor " +
             " Left Join tblsimdetails on tblsimdetails.id = tblgpsdevice.idSim" +
             " Left Join tblcountrymgmt on tblcountrymgmt.id = tblgpsdevice.CountryId" +
             " Left Join tbltelco on tblsimdetails.idTelCo = tbltelco.id " + search;
