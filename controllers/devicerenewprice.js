@@ -7,7 +7,7 @@ var DeviceRenewPrice = models.tbldevicerenewprice;
 
 
 
-router.get('/GetAllAgentDevicePrice', function(req, res) {
+router.get('/GetAllAgentDevicePrice', function (req, res) {
     var objParam = req.query;
     var objColumns = objParam.columns;
     var objOrder = objParam.order;
@@ -39,9 +39,9 @@ router.get('/GetAllAgentDevicePrice', function(req, res) {
         " FROM tbldevicerenewprice as tdp " +
         " INNER JOIN tbluserinformation as tu ON tu.id = tdp.IdUser " +
         " INNER JOIN tblappinfo ta on ta.id = tu.idApp  " + search;
-    connection.query(query, function(err, response) {
+    connection.query(query, function (err, response) {
         if (response != undefined) {
-            connection.query(countquery, function(err, lstCount, fields) {
+            connection.query(countquery, function (err, lstCount, fields) {
                 var response1 = new Object();
                 response1.draw = objParam.draw;
                 response1.recordsTotal = lstCount[0].TotalRecord;
@@ -60,8 +60,22 @@ router.get('/GetAllAgentDevicePrice', function(req, res) {
     })
 })
 
-
-router.post('/SaveDevcieRenewPrice', jsonParser, function(req, res) {
+router.get('/GetAllAgentAndDistributor', function (req, res) {
+    var search = '';
+    if (req.query.idApp != undefined && req.query.idApp != null && req.query.idApp != '' && req.query.idApp != 'All') {
+        search = " where idApp=" + req.query.idApp;
+    }
+    var query = "SELECT tbluserinformation.id,tbluserinformation.email " +
+        " FROM tbluserinformation" +
+        " INNER JOIN tbluserinrole ON tbluserinrole.userId =tbluserinformation.id  " +
+        " INNER JOIN tblrole ON tblrole.id =tbluserinrole.roleId and (RoleName='Sales Agent' or RoleName='Distributor')" +
+        " INNER JOIN tblappinfo On tblappinfo.Id = tbluserinformation.idApp " + search;
+    console.log(query)
+    connection.query(query, function (err, response) {
+        res.json(response)
+    })
+})
+router.post('/SaveDevcieRenewPrice', jsonParser, function (req, res) {
     objdata = req.body;
     objHeader = req.headers;
     var token = getToken(objHeader);
@@ -72,31 +86,31 @@ router.post('/SaveDevcieRenewPrice', jsonParser, function(req, res) {
                 username: decoded.username,
                 password: decoded.password
             }
-        }).then(function(UserExist) {
+        }).then(function (UserExist) {
             if (UserExist != null) {
                 if (objdata.Id == 0) {
                     objdata.CreatedDate = new Date();
                     objdata.CreatedBy = UserExist.username;
 
-                    DeviceRenewPrice.findOrCreate({ where: { IdUser: objdata.IdUser, Type: objdata.Type }, defaults: objdata }).then(function(response) {
+                    DeviceRenewPrice.findOrCreate({ where: { IdUser: objdata.IdUser, LicenceRenewalType: objdata.LicenceRenewalType, LicenceType: objdata.LicenceType, Type: objdata.Type }, defaults: objdata }).then(function (response) {
                         if ((response[1])) {
                             funAuditLog.CreateAuditLog('Agent Device Type Price Created', UserExist.username, 'Agent Device Type Price Created');
-                            res.json({ success: true, message: "Agent device type price created successfully...", data: response });
+                            res.json({ success: true, message: "Agent device renew price created successfully...", data: response });
                         } else {
-                            res.json({ success: false, message: "Agent device type price is already Exist...", data: response });
+                            res.json({ success: false, message: "Agent device renew price is already Exist...", data: response });
                         }
                     })
                 } else {
-                    DeviceRenewPrice.findOne({ where: { IdUser: objdata.IdUser, Type: objdata.Type }, defaults: objdata }).then(function(objExist) {
+                    DeviceRenewPrice.findOne({ where: { IdUser: objdata.IdUser, LicenceRenewalType: objdata.LicenceRenewalType, LicenceType: objdata.LicenceType, Type: objdata.Type }, defaults: objdata }).then(function (objExist) {
                         if (objExist != null && objdata.Id != objExist.Id) {
-                            res.json({ success: false, message: "Agent device type price is already Exist...", data: objExist });
+                            res.json({ success: false, message: "Agent device renew price is already Exist...", data: objExist });
                         } else {
-                            DeviceRenewPrice.update(objdata, { where: { Id: objdata.Id } }).then(function(response) {
+                            DeviceRenewPrice.update(objdata, { where: { Id: objdata.Id } }).then(function (response) {
                                 if (response[0]) {
-                                    funAuditLog.CreateAuditLog('Update Agent device type price ', UserExist.username, 'Update Agent device type price  Data');
-                                    res.json({ success: true, message: "Agent device type price  updated successfully...", data: response });
+                                    funAuditLog.CreateAuditLog('Update Agent device renew price ', UserExist.username, 'Update Agent device type price  Data');
+                                    res.json({ success: true, message: "Agent device renew price  updated successfully...", data: response });
                                 } else {
-                                    res.json({ success: false, message: "Agent device type price  not updated successfully...", data: response });
+                                    res.json({ success: false, message: "Agent device renew price  not updated successfully...", data: response });
                                 }
                             })
                         }
@@ -113,7 +127,7 @@ router.post('/SaveDevcieRenewPrice', jsonParser, function(req, res) {
 
 
 
-router.get('/DeleteDevicePrice', function(req, res) {
+router.get('/DeleteDevicePrice', function (req, res) {
     objHeader = req.headers;
     var token = getToken(objHeader);
     var obj = {};
@@ -129,7 +143,7 @@ router.get('/DeleteDevicePrice', function(req, res) {
                 username: decoded.username,
                 password: decoded.password
             }
-        }).then(function(UserExist) {
+        }).then(function (UserExist) {
             if (UserExist != null) {
                 if (req.query.Id != '' && req.query.Id != null) {
 
@@ -137,7 +151,7 @@ router.get('/DeleteDevicePrice', function(req, res) {
                         where: {
                             Id: req.query.Id
                         }
-                    }).then(function(response) {
+                    }).then(function (response) {
                         if (response) {
                             funAuditLog.CreateAuditLog('Delete Agent Device Type Price', UserExist.username, 'Delete Agent Device Type Price');
                             res.json({

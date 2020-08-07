@@ -13,7 +13,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     Type: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(100),
       allowNull: true
     },
     Price: {
@@ -21,11 +21,19 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     CreatedBy: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(45),
       allowNull: true
     },
     CreatedDate: {
       type: DataTypes.DATE,
+      allowNull: true
+    },
+    LicenceRenewalType: {
+      type: DataTypes.STRING(100),
+      allowNull: true
+    },
+    LicenceType: {
+      type: DataTypes.STRING(100),
       allowNull: true
     }
   }, {

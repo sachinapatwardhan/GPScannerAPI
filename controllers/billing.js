@@ -14,7 +14,8 @@ var WebCashconfig = require('./../config/webcash.json');
 var SimDetail = models.tblsimdetails;
 var GPSDevice = models.tblgpsdevice;
 var DeviceAgentRetailer = models.tbldeviceagentretailer;
-
+var Database = require('./../connection/DatabaseConnection.js');
+var DBConnection = new Database();
 //////////
 
 
@@ -489,6 +490,9 @@ router.post('/SaveOrderService', jsonParser, function (req, res) {
     var lstProduct = objOrderservice.lstProduct;
     var lstLicenceId = [];
     var lstDeviceId = [];
+    var lstGpsDeviceCheck = [];
+    var SalesAgentId = null;
+    var DistributorId = null;
     var PurchaseOrderNumber = new Date();
     OrderNumber = "BILLNO" + GetRandomWord() + Date.parse(PurchaseOrderNumber)
     var token = getToken(objHeader);
@@ -507,6 +511,7 @@ router.post('/SaveOrderService', jsonParser, function (req, res) {
             }
 
             for (var i = 0; i < lstProduct.length; i++) {
+                lstGpsDeviceCheck.push(lstProduct[i].deviceid)
                 OrderTotal = OrderTotal + lstProduct[i].RenewPrice;
                 if (DeviceId == '') {
                     DeviceId = lstProduct[i].deviceid;
@@ -514,6 +519,13 @@ router.post('/SaveOrderService', jsonParser, function (req, res) {
                     DeviceId = DeviceId + "," + lstProduct[i].deviceid;
                 }
             }
+            return GetDevicePricebyDeviceIds(lstProduct, lstGpsDeviceCheck)
+        }).then(function (objDeviceRenewPrice) {
+            console.log(objDeviceRenewPrice)
+            lstProduct = objDeviceRenewPrice.lstProduct;
+            OrderTotal = objDeviceRenewPrice.OrderTotal;
+            SalesAgentId = objDeviceRenewPrice.SalesAgentId;
+            DistributorId = objDeviceRenewPrice.DistributorId;
 
             var objOrder = new Object();
             objOrder.CustomerId = objOrderservice.idUser;
@@ -521,7 +533,8 @@ router.post('/SaveOrderService', jsonParser, function (req, res) {
             // objOrder.ExpiryDate = AddDate(objOrder.CreatedOnUtc, 1, "Year");
             // objOrder.ExpiryDurationValue = 1;
             // objOrder.ExpiryDurationType = "Year";
-            objOrder.MerchantId = 0;
+            objOrder.MerchantId = SalesAgentId;
+            objOrder.AuthorizeWorkId = DistributorId;
             objOrder.PurchaseOrderNumber = OrderNumber;
             objOrder.CustomerCurrencyCode = "MYR / Rs";
             objOrder.OrderTotal = OrderTotal;
@@ -580,6 +593,8 @@ router.post('/SaveOrderService', jsonParser, function (req, res) {
                 objOrderDetail.AttributeDescription = lstProduct[i].Name;
                 objOrderDetail.AttributesXml = lstProduct[i].ExpireDate;
                 objOrderDetail.ItemWeight = lstProduct[i].NextExpireDate;
+                objOrderDetail.LicenseDownloadId = lstProduct[i].SalesAgentId;
+                objOrderDetail.DownloadCount = lstProduct[i].DistributorId;
 
                 lstOrderServiceItem.push(objOrderDetail);
                 lstLicenceId.push(lstProduct[i].LicenceId);
@@ -1236,6 +1251,9 @@ router.post('/SaveOrderServiceNew', jsonParser, function (req, res) {
     var lstProduct = objOrderservice.lstProduct;
     var lstLicenceId = [];
     var lstDeviceId = [];
+    var SalesAgentId = null;
+    var DistributorId = null;
+    var lstGpsDeviceCheck = [];
     var PurchaseOrderNumber = new Date();
     OrderNumber = "BILLNO" + GetRandomWord() + Date.parse(PurchaseOrderNumber)
     var token = getToken(objHeader);
@@ -1254,6 +1272,7 @@ router.post('/SaveOrderServiceNew', jsonParser, function (req, res) {
             }
 
             for (var i = 0; i < lstProduct.length; i++) {
+                lstGpsDeviceCheck.push(lstProduct[i].deviceid)
                 // OrderTotal = OrderTotal + lstProduct[i].RenewPrice;
                 if (DeviceId == '') {
                     DeviceId = lstProduct[i].deviceid;
@@ -1261,6 +1280,13 @@ router.post('/SaveOrderServiceNew', jsonParser, function (req, res) {
                     DeviceId = DeviceId + "," + lstProduct[i].deviceid;
                 }
             }
+            return GetDevicePricebyDeviceIds(lstProduct, lstGpsDeviceCheck)
+        }).then(function (objDeviceRenewPrice) {
+            console.log(objDeviceRenewPrice)
+            lstProduct = objDeviceRenewPrice.lstProduct;
+            OrderTotal = objDeviceRenewPrice.OrderTotal;
+            SalesAgentId = objDeviceRenewPrice.SalesAgentId;
+            DistributorId = objDeviceRenewPrice.DistributorId;
             console.log("Order Total = " + OrderTotal)
             var objOrder = new Object();
             objOrder.CustomerId = objOrderservice.idUser;
@@ -1268,7 +1294,8 @@ router.post('/SaveOrderServiceNew', jsonParser, function (req, res) {
             // objOrder.ExpiryDate = AddDate(objOrder.CreatedOnUtc, 1, "Year");
             // objOrder.ExpiryDurationValue = 1;
             // objOrder.ExpiryDurationType = "Year";
-            objOrder.MerchantId = 0;
+            objOrder.MerchantId = SalesAgentId;
+            objOrder.AuthorizeWorkId = DistributorId;
             objOrder.PurchaseOrderNumber = OrderNumber;
             objOrder.CustomerCurrencyCode = "MYR / Rs";
             objOrder.OrderTotal = OrderTotal;
@@ -1330,6 +1357,8 @@ router.post('/SaveOrderServiceNew', jsonParser, function (req, res) {
                 objOrderDetail.AttributesXml = lstProduct[i].ExpireDate;
                 objOrderDetail.ItemWeight = lstProduct[i].NextExpireDate;
                 objOrderDetail.CaptureTransactionResult = lstProduct[i].RefNumber;
+                objOrderDetail.LicenseDownloadId = lstProduct[i].SalesAgentId;
+                objOrderDetail.DownloadCount = lstProduct[i].DistributorId;
                 lstOrderServiceItem.push(objOrderDetail);
                 lstLicenceId.push(lstProduct[i].LicenceId);
                 lstDeviceId.push(lstProduct[i].deviceid);
@@ -1444,6 +1473,8 @@ router.post('/SaveOrderServiceRenew', jsonParser, function (req, res) {
     var lstGpsDeviceCheck = [];
     var PurchaseOrderNumber = new Date();
     var error = {};
+    var SalesAgentId = null;
+    var DistributorId = null;
     OrderNumber = "BILLNO" + GetRandomWord() + Date.parse(PurchaseOrderNumber)
     var token = getToken(objHeader);
     if (token) {
@@ -1485,6 +1516,13 @@ router.post('/SaveOrderServiceRenew', jsonParser, function (req, res) {
                 error.Data = NotAgentorDistributerDevice;
                 throw error
             }
+            return GetDevicePricebyDeviceIds(lstProduct, lstGpsDeviceCheck)
+        }).then(function (objDeviceRenewPrice) {
+            console.log(objDeviceRenewPrice)
+            lstProduct = objDeviceRenewPrice.lstProduct;
+            OrderTotal = objDeviceRenewPrice.OrderTotal;
+            SalesAgentId = objDeviceRenewPrice.SalesAgentId;
+            DistributorId = objDeviceRenewPrice.DistributorId;
             GPSDevice.belongsTo(SimDetail, {
                 foreignKey: {
                     name: 'idSim',
@@ -1526,7 +1564,8 @@ router.post('/SaveOrderServiceRenew', jsonParser, function (req, res) {
             // objOrder.ExpiryDate = AddDate(objOrder.CreatedOnUtc, 1, "Year");
             // objOrder.ExpiryDurationValue = 1;
             // objOrder.ExpiryDurationType = "Year";
-            objOrder.MerchantId = 0;
+            objOrder.MerchantId = SalesAgentId;
+            objOrder.AuthorizeWorkId = DistributorId;
             objOrder.PurchaseOrderNumber = OrderNumber;
             objOrder.CustomerCurrencyCode = "MYR / Rs";
             objOrder.OrderTotal = OrderTotal;
@@ -1591,6 +1630,8 @@ router.post('/SaveOrderServiceRenew', jsonParser, function (req, res) {
                 objOrderDetail.AttributesXml = lstProduct[i].ExpireDate;
                 objOrderDetail.ItemWeight = lstProduct[i].NextExpireDate;
                 objOrderDetail.CaptureTransactionResult = lstProduct[i].RefNumber;
+                objOrderDetail.LicenseDownloadId = lstProduct[i].SalesAgentId;
+                objOrderDetail.DownloadCount = lstProduct[i].DistributorId;
                 lstOrderServiceItem.push(objOrderDetail);
                 lstLicenceId.push(lstProduct[i].LicenceId);
                 lstDeviceId.push(lstProduct[i].deviceid);
@@ -2200,5 +2241,60 @@ function GetImageNameFromDate() {
 }
 //Order API End
 //////////
+
+function GetDevicePricebyDeviceIds(lstProduct, lstGpsDeviceCheck) {
+    return new Promise((resolve, reject) => {
+        var Query = `SELECT 
+                        tgd.DeviceId,
+                        tgd.Type,
+                        tda.agentId,
+                        tda.idDistributor,
+                        tl.LicenceRenewalType,
+                        tl.LicenceType,
+                        tdrp.Price
+                    FROM
+                        tblgpsdevice tgd
+                            INNER JOIN
+                        tbldeviceagentretailer tda ON tgd.DeviceId = tda.deviceId
+                            INNER JOIN
+                        tbllicencemanager tl ON tgd.DeviceId = tl.DeviceId
+                            INNER JOIN
+                        tbldevicerenewprice tdrp ON (tdrp.IdUser = tda.agentId
+                            OR tdrp.IdUser = tda.idDistributor)
+                            AND tdrp.Type = tgd.Type
+                            AND tdrp.LicenceRenewalType = tl.LicenceRenewalType
+                            AND tdrp.LicenceType = tl.LicenceType
+                    WHERE
+                        tgd.DeviceId IN (`+ lstGpsDeviceCheck + `);`;
+        DBConnection.query(Query).then(function (lstRenewPrice) {
+            var OrderTotal = 0;
+            var SalesAgentId = null;
+            var DistributorId = null;
+            for (var i = 0; i < lstProduct.length; i++) {
+                var DeviceId = lstProduct[i].deviceid.toString();
+                var objRenewPrice = u.findWhere(lstRenewPrice, { DeviceId: DeviceId });
+                if (objRenewPrice) {
+                    SalesAgentId = objRenewPrice.agentId;
+                    DistributorId = objRenewPrice.idDistributor;
+                    lstProduct[i].RenewPrice = objRenewPrice.Price;
+                    lstProduct[i].SalesAgentId = SalesAgentId;
+                    lstProduct[i].DistributorId = DistributorId;
+
+                } else {
+                    lstProduct[i].RenewPrice = 0;
+                    lstProduct[i].SalesAgentId = null;
+                    lstProduct[i].DistributorId = null;
+                }
+                OrderTotal = OrderTotal + lstProduct[i].RenewPrice;
+            }
+            resolve({
+                lstProduct: lstProduct,
+                OrderTotal: OrderTotal,
+                SalesAgentId: SalesAgentId,
+                DistributorId: DistributorId
+            })
+        })
+    });
+}
 
 module.exports = router;

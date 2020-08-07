@@ -9,6 +9,8 @@ var User = models.tbluserinformation;
 var SimDetail = models.tblsimdetails;
 var GPSDevice = models.tblgpsdevice;
 var DeviceAgentRetailer = models.tbldeviceagentretailer;
+var Database = require('./../connection/DatabaseConnection.js');
+var DBConnection = new Database();
 
 router.get('/GetRenewDeviceInfo', jsonParser, function (req, res) {
 
@@ -21,17 +23,19 @@ router.get('/GetRenewDeviceInfo', jsonParser, function (req, res) {
         search = search + "tv.Name ='" + objSearch + "') ";
     };
 
-    var query = "SELECT tl.Id, tl.LicenceNo,tu.email,CONVERT_TZ(tu.LastLogin,'+00:00','+05:30') as LastLoginDate,tgd.Type,tdp.Price,tv.renewaldate, " +
+    var query = "SELECT tl.Id, tl.LicenceNo,tu.email,CONVERT_TZ(tu.LastLogin,'+00:00','" + CurrentOffset + "') as LastLoginDate,tgd.Type,IFNULL(tdp.Price,0) as Price,tv.renewaldate, " +
         " tl.DeviceId, tv.iduser, tu.phone,tu.username, tv.Name as VehicleName, ta.Id as idApp, ta.AppName, " +
         " tl.LicenceRenewalType, tl.LicenceType, ta.LicenceRenewalType as appLicenceRenewalType, " +
-        " ta.LicenceType as appLicenceType, CONVERT_TZ(tl.ExpiryDate, '+00:00', '+05:30') as ExpiryDate " +
+        " ta.LicenceType as appLicenceType, CONVERT_TZ(tl.ExpiryDate, '+00:00', '" + CurrentOffset + "') as ExpiryDate " +
         " from tbllicencemanager as tl  " +
         " INNER JOIN tblappinfo as ta ON ta.Id = tl.idApp " +
         " INNER JOIN (Select * from tblvehicle where IsDelete = 0) tv on tv.deviceid = tl.DeviceId " +
         " INNER JOIN tblgpsdevice tgd on tgd.DeviceId = tv.deviceid" +
         " INNER JOIN tbluserinformation as tu ON tv.iduser = tu.id " +
-        " LEFT JOIN (select * from tbldevicerenewprice where IdUser=" + req.query.idUser + " ) as tdp ON tdp.Type = tgd.Type " +
+        " LEFT JOIN (select * from tbldevicerenewprice where IdUser=" + req.query.idUser + " ) as tdp ON tdp.Type = tgd.Type AND tdp.LicenceRenewalType = tl.LicenceRenewalType AND tdp.LicenceType = tl.LicenceType " +
         " where tl.IsDeleted = 0 AND ta.Id = " + req.query.idApp + " " + search + " order by tl.ExpiryDate asc";
+
+    console.log(query)
     connection.query(query, function (err, response) {
         var lstAllVehicle = [];
 
@@ -99,6 +103,8 @@ router.post('/SaveOrderServiceRenew', jsonParser, function (req, res) {
     var lstGpsDeviceCheck = [];
     var PurchaseOrderNumber = new Date();
     var error = {};
+    var SalesAgentId = null;
+    var DistributorId = null;
     OrderNumber = "BILLNO" + GetRandomWord() + Date.parse(PurchaseOrderNumber)
     var token = getToken(objHeader);
     if (token) {
@@ -139,6 +145,13 @@ router.post('/SaveOrderServiceRenew', jsonParser, function (req, res) {
                 error.Data = NotAgentorDistributerDevice;
                 throw error
             }
+            return GetDevicePricebyDeviceIds(lstProduct, lstGpsDeviceCheck)
+        }).then(function (objDeviceRenewPrice) {
+            console.log(objDeviceRenewPrice)
+            lstProduct = objDeviceRenewPrice.lstProduct;
+            OrderTotal = objDeviceRenewPrice.OrderTotal;
+            SalesAgentId = objDeviceRenewPrice.SalesAgentId;
+            DistributorId = objDeviceRenewPrice.DistributorId;
             GPSDevice.belongsTo(SimDetail, {
                 foreignKey: {
                     name: 'idSim',
@@ -176,7 +189,8 @@ router.post('/SaveOrderServiceRenew', jsonParser, function (req, res) {
             var objOrder = new Object();
             objOrder.CustomerId = objOrderservice.idUser;
             objOrder.CreatedOnUtc = new Date();
-            objOrder.MerchantId = 0;
+            objOrder.MerchantId = SalesAgentId;
+            objOrder.AuthorizeWorkId = DistributorId;
             objOrder.PurchaseOrderNumber = OrderNumber;
             objOrder.CustomerCurrencyCode = "MYR / Rs";
             objOrder.OrderTotal = OrderTotal;
@@ -241,6 +255,8 @@ router.post('/SaveOrderServiceRenew', jsonParser, function (req, res) {
                 objOrderDetail.AttributesXml = lstProduct[i].ExpiryDate;
                 objOrderDetail.ItemWeight = lstProduct[i].NextExpireDate;
                 objOrderDetail.CaptureTransactionResult = lstProduct[i].RefNumber;
+                objOrderDetail.LicenseDownloadId = lstProduct[i].SalesAgentId;
+                objOrderDetail.DownloadCount = lstProduct[i].DistributorId;
                 lstOrderServiceItem.push(objOrderDetail);
                 lstLicenceId.push(lstProduct[i].Id);
                 lstDeviceId.push(lstProduct[i].DeviceId);
@@ -359,4 +375,59 @@ function convertdateformat(date1, flg) {
     }
 }
 
+
+function GetDevicePricebyDeviceIds(lstProduct, lstGpsDeviceCheck) {
+    return new Promise((resolve, reject) => {
+        var Query = `SELECT 
+                        tgd.DeviceId,
+                        tgd.Type,
+                        tda.agentId,
+                        tda.idDistributor,
+                        tl.LicenceRenewalType,
+                        tl.LicenceType,
+                        tdrp.Price
+                    FROM
+                        tblgpsdevice tgd
+                            INNER JOIN
+                        tbldeviceagentretailer tda ON tgd.DeviceId = tda.deviceId
+                            INNER JOIN
+                        tbllicencemanager tl ON tgd.DeviceId = tl.DeviceId
+                            INNER JOIN
+                        tbldevicerenewprice tdrp ON (tdrp.IdUser = tda.agentId
+                            OR tdrp.IdUser = tda.idDistributor)
+                            AND tdrp.Type = tgd.Type
+                            AND tdrp.LicenceRenewalType = tl.LicenceRenewalType
+                            AND tdrp.LicenceType = tl.LicenceType
+                    WHERE
+                        tgd.DeviceId IN (`+ lstGpsDeviceCheck + `);`;
+        DBConnection.query(Query).then(function (lstRenewPrice) {
+            var OrderTotal = 0;
+            var SalesAgentId = null;
+            var DistributorId = null;
+            for (var i = 0; i < lstProduct.length; i++) {
+                var DeviceId = lstProduct[i].deviceid.toString();
+                var objRenewPrice = u.findWhere(lstRenewPrice, { DeviceId: DeviceId });
+                if (objRenewPrice) {
+                    SalesAgentId = objRenewPrice.agentId;
+                    DistributorId = objRenewPrice.idDistributor;
+                    lstProduct[i].RenewPrice = objRenewPrice.Price;
+                    lstProduct[i].SalesAgentId = SalesAgentId;
+                    lstProduct[i].DistributorId = DistributorId;
+
+                } else {
+                    lstProduct[i].RenewPrice = 0;
+                    lstProduct[i].SalesAgentId = null;
+                    lstProduct[i].DistributorId = null;
+                }
+                OrderTotal = OrderTotal + lstProduct[i].RenewPrice;
+            }
+            resolve({
+                lstProduct: lstProduct,
+                OrderTotal: OrderTotal,
+                SalesAgentId: SalesAgentId,
+                DistributorId: DistributorId
+            })
+        })
+    });
+}
 module.exports = router
