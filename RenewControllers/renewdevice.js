@@ -263,71 +263,78 @@ router.post('/SaveOrderServiceRenew', jsonParser, function (req, res) {
             }
             return OrderServiceDetail.bulkCreate(lstOrderServiceItem);
 
-        }).then(function (resOrderServiceItem) {
-            return [LicenceManager.findAll({
-                where: {
-                    Id: {
-                        $in: lstLicenceId
-                    },
-                    IsDeleted: false
-                }
-            }), Vehicle.findAll({
-                where: {
-                    deviceid: {
-                        $in: lstDeviceId
-                    },
-                    IsDelete: false
-                }
-            })];
-        }).spread(function (lstLicenceList, lstVehicleList) {
-            var TotalRecords = lstLicenceList.length;
-
-            function UpdateLicenceVehicle(j) {
-                if (j < TotalRecords) {
-                    var UpdateDeviceId = lstLicenceList[j].DeviceId;
-                    var AddMonth = 0;
-                    if (lstLicenceList[j].LicenceRenewalType == 'Monthly') {
-                        AddMonth = 1;
-                    } else if (lstLicenceList[j].LicenceRenewalType == 'Quarterly') {
-                        AddMonth = 3;
-                    } else if (lstLicenceList[j].LicenceRenewalType == 'Yearly') {
-                        AddMonth = 12;
-                    }
-
-                    var oldexpdate = lstLicenceList[j].ExpiryDate;
-                    var date = new Date(lstLicenceList[j].ExpiryDate);
-                    var updatedDate = convertdateformat(date.setMonth(date.getMonth() + AddMonth), 3);
-
-                    var timeDiff = (new Date(oldexpdate)).getTime() - (new Date()).getTime();
-                    var diffDays = Math.round(timeDiff / (1000 * 3600 * 24));
-                    days = diffDays;
-                    if (days < 0) {
-                        date = new Date();
-                        updatedDate = convertdateformat(date.setMonth(date.getMonth() + AddMonth), 3);
-                    }
-                    lstLicenceList[j].updateAttributes({ ExpiryDate: updatedDate }).then((resUpdateExpiryLicence) => {
-
-                        var objVehicle = u.findWhere(lstVehicleList, { deviceid: UpdateDeviceId });
-                        if (objVehicle != undefined) {
-                            objVehicle.updateAttributes({ renewaldate: updatedDate }).then((resVehicleUpdate) => {
-                                // Commonfunction.UpdateVehicleRedis(objVehicle.deviceid, 'Vehicle');
-                                UpdateLicenceVehicle(j + 1);
-                            });
-                        } else {
-                            UpdateLicenceVehicle(j + 1);
-                        }
-                    })
-
-                } else {
-                    res.json({
-                        success: true,
-                        message: 'Device renewed successfully.',
-                    });
-                }
-            }
-            UpdateLicenceVehicle(0);
         })
-            .catch(function (err) {
+            // .then(function (resOrderServiceItem) {
+            //     return [LicenceManager.findAll({
+            //         where: {
+            //             Id: {
+            //                 $in: lstLicenceId
+            //             },
+            //             IsDeleted: false
+            //         }
+            //     }), Vehicle.findAll({
+            //         where: {
+            //             deviceid: {
+            //                 $in: lstDeviceId
+            //             },
+            //             IsDelete: false
+            //         }
+            //     })];
+            // }).spread(function (lstLicenceList, lstVehicleList) {
+            //     var TotalRecords = lstLicenceList.length;
+
+            //     function UpdateLicenceVehicle(j) {
+            //         if (j < TotalRecords) {
+            //             var UpdateDeviceId = lstLicenceList[j].DeviceId;
+            //             var AddMonth = 0;
+            //             if (lstLicenceList[j].LicenceRenewalType == 'Monthly') {
+            //                 AddMonth = 1;
+            //             } else if (lstLicenceList[j].LicenceRenewalType == 'Quarterly') {
+            //                 AddMonth = 3;
+            //             } else if (lstLicenceList[j].LicenceRenewalType == 'Yearly') {
+            //                 AddMonth = 12;
+            //             }
+
+            //             var oldexpdate = lstLicenceList[j].ExpiryDate;
+            //             var date = new Date(lstLicenceList[j].ExpiryDate);
+            //             var updatedDate = convertdateformat(date.setMonth(date.getMonth() + AddMonth), 3);
+
+            //             var timeDiff = (new Date(oldexpdate)).getTime() - (new Date()).getTime();
+            //             var diffDays = Math.round(timeDiff / (1000 * 3600 * 24));
+            //             days = diffDays;
+            //             if (days < 0) {
+            //                 date = new Date();
+            //                 updatedDate = convertdateformat(date.setMonth(date.getMonth() + AddMonth), 3);
+            //             }
+            //             lstLicenceList[j].updateAttributes({ ExpiryDate: updatedDate }).then((resUpdateExpiryLicence) => {
+
+            //                 var objVehicle = u.findWhere(lstVehicleList, { deviceid: UpdateDeviceId });
+            //                 if (objVehicle != undefined) {
+            //                     objVehicle.updateAttributes({ renewaldate: updatedDate }).then((resVehicleUpdate) => {
+            //                         // Commonfunction.UpdateVehicleRedis(objVehicle.deviceid, 'Vehicle');
+            //                         UpdateLicenceVehicle(j + 1);
+            //                     });
+            //                 } else {
+            //                     UpdateLicenceVehicle(j + 1);
+            //                 }
+            //             })
+
+            //         } else {
+            //             res.json({
+            //                 success: true,
+            //                 message: 'Device renewed successfully.',
+            //             });
+            //         }
+            //     }
+            //     UpdateLicenceVehicle(0);
+            // })
+            .then(function (aaa) {
+                // console.log("Order create succerss final");
+                res.json({
+                    success: true,
+                    message: 'Device renewed successfully.',
+                });
+            }).catch(function (err) {
                 if (err.message === 'Token') {
                     res.json(InvalidToken);
                 } else if (err.message === 'Terminate') {

@@ -327,7 +327,7 @@ router.get('/GetAllOrderServiceNew', function (req, res) {
             if (objColumns[i].data != null && objColumns[i].data != '') {
                 var columnName = objColumns[i].data;
 
-                if (columnName != 'CreatedOnUtc' && columnName != 'ExpiryDate') {
+                if (columnName != 'CreatedOnUtc' && columnName != 'ExpiryDate' && columnName != 'id') {
                     if (columnName == "AppName") {
                         search['$or'].push(['tblappinfo.AppName like ?', "%" + objSearch + "%"]);
                     } else if (columnName == 'Email') {
@@ -553,6 +553,89 @@ router.get('/GetAllOrderServiceNew', function (req, res) {
             success: false,
             response: error
         });
+    })
+
+})
+
+router.get('/GetAllOrderServiceMobile', function (req, res) {
+    var objParam = req.query;
+    var offset = (parseInt(objParam.page) * 25);
+    var objSearch = objParam.search;
+    var Orderby = 'id desc';
+    var search = {};
+
+    if (objSearch != null && objSearch != '') {
+        search['$or'] = [];
+        search['$or'].push(['PurchaseOrderNumber like ?', "%" + objSearch + "%"]);
+        search['$or'].push(['OrderNotes like ?', "%" + objSearch + "%"]);
+        search['$or'].push(['PaymentMethodSystemName like ?', "%" + objSearch + "%"]);
+        search['$or'].push(['AuthorizationTransactionCode like ?', "%" + objSearch + "%"]);
+        search['$or'].push(['tblorderservicestatus.OrderStatus like ?', "%" + objSearch + "%"]);
+        search['$or'].push(['Terms like ?', "%" + objSearch + "%"]);
+    }
+
+    // OrderService.hasMany(OrderServiceDetail, {
+    //     foreignKey: {
+    //         name: 'OrderId',
+    //         allowNull: false
+    //     }
+    // });
+
+    OrderService.belongsTo(OrderServiceStatus, {
+        foreignKey: {
+            name: 'OrderStatusId',
+            allowNull: false
+        }
+    });
+
+    if (objParam.Status > 0) {
+        if (search['$and'] == undefined) {
+            search['$and'] = [];
+        }
+        var obj = new Object();
+        obj['OrderStatusId'] = {
+            $eq: objParam.Status
+        };
+        search['$and'].push(obj);
+    }
+
+    if (objParam.idApp != '' && objParam.idApp != undefined && objParam.idApp != null) {
+        if (search['$and'] == undefined) {
+            search['$and'] = [];
+        }
+        var obj = new Object();
+        obj['SubscriptionTransactionId'] = {
+            $eq: parseInt(objParam.idApp)
+        };
+        search['$and'].push(obj);
+    }
+
+    if (objParam.IdUser != '' && objParam.IdUser != undefined && objParam.IdUser != '' && objParam.IdUser != 'All') {
+        if (search['$and'] == undefined) {
+            search['$and'] = [];
+        }
+        var obj = new Object();
+        obj['CustomerId'] = {
+            $eq: objParam.IdUser
+        };
+        search['$and'].push(obj);
+    }
+
+    OrderService.findAll({
+        where: search,
+        offset: offset,
+        limit: 25,
+        include: [{
+            model: OrderServiceStatus,
+            attributes: ['id', 'OrderStatus'],
+            required: true
+        }],
+        order: Orderby
+    }).then(function (response) {
+        res.json(response);
+    }).catch(function (error) {
+        console.log(error)
+        res.json([]);
     })
 
 })
