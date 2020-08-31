@@ -17,14 +17,14 @@ var momentz = require('moment-timezone');
 
 //End of Tables
 
-global.deg_to_lat_long = function(deg, Direction) {
+global.deg_to_lat_long = function (deg, Direction) {
 
     // var Direction = deg.substring(deg.length - 1, deg.length);
     // var Minute = deg.substring(deg.length - 7, deg.length)
     // var degree = deg.substring(0, deg.length - 7)
     var Minute = deg.substring(deg.indexOf('.') - 2, deg.length)
     var degree = deg.substring(0, deg.indexOf('.') - 2)
-        // console.log(Minute)
+    // console.log(Minute)
     var min = Minute.substring(0, Minute.indexOf('.'));
     var sec = parseFloat(Minute.substring(Minute.indexOf('.'), Minute.length)) * 60;
     // console.log("#######################")
@@ -48,7 +48,7 @@ global.deg_to_lat_long = function(deg, Direction) {
     return lat_long;
 }
 
-router.get('/TestDegree', function(req, res) {
+router.get('/TestDegree', function (req, res) {
     var A = global.deg_to_lat_long('5016.8633N')
     var B = global.deg_to_lat_long('00347.3997W')
     console.log(A)
@@ -87,33 +87,33 @@ function SendIOSPushNotification(DeviceId) {
         // if (i < response.length) {
         // deviceIds.push(response[i].PushNotificationId)
         deviceIds.push(DeviceId)
-            // SendNotification(i + 1);
-            // } else {
+        // SendNotification(i + 1);
+        // } else {
         console.log(deviceIds)
         if (deviceIds.length > 0) {
-            objPushNotificationSend.send(deviceIds, data, function(result) {
+            objPushNotificationSend.send(deviceIds, data, function (result) {
                 console.log(result);
             });
         };
         // }
     }
     SendNotification(0)
-        // }).catch(function(error) {
-        //     // console.log(error);
-        // })
+    // }).catch(function(error) {
+    //     // console.log(error);
+    // })
 
 }
 
 
-router.get('/SendIOSPush', function(req, res) {
+router.get('/SendIOSPush', function (req, res) {
     var DeviceId = req.query.Token;
     SendIOSPushNotification(DeviceId);
     res.send("Done")
 })
 
-router.get('/SendPushTest', function(req, res) {
+router.get('/SendPushTest', function (req, res) {
     var UserId = req.query.UserId;
-    connection.query("SELECT tu.id, tu.username, ta.AppName, ta.IOSCertificate, ta.IOSKey, ta.AndroidId, ta.AndroidSenderId FROM tbluserinformation as tu inner Join tblappinfo as ta ON ta.id = tu.idApp where tu.id=" + UserId, function(err, objAppInfo, fields) {
+    connection.query("SELECT tu.id, tu.username, ta.AppName, ta.IOSCertificate, ta.IOSKey, ta.AndroidId, ta.AndroidSenderId FROM tbluserinformation as tu inner Join tblappinfo as ta ON ta.id = tu.idApp where tu.id=" + UserId, function (err, objAppInfo, fields) {
         var PushNotificationdata = {
             title: 'Alert',
             message: '9787 is out of Home Fence.',
@@ -140,9 +140,9 @@ function clone(obj) {
     return copy;
 }
 
-global.SendPushNotification = function(data, UserId, objAppInfo) {
+global.SendPushNotification = function (data, UserId, objAppInfo) {
     // var deviceIds = [];
-    connection.query("SELECT PushNotificationId,Platform,MessageCount,UserType,udid from tblpushnotification where iduser in (" + UserId + ") group by PushNotificationId, Platform", function(err, response, fields) {
+    connection.query("SELECT PushNotificationId,Platform,MessageCount,UserType,udid from tblpushnotification where iduser in (" + UserId + ") group by PushNotificationId, Platform", function (err, response, fields) {
         if (!err && response.length > 0) {
             // PushNotification.findAll({ where: { iduser: UserId } }).then(function(response) {
             function SendNotification(i) {
@@ -156,8 +156,8 @@ global.SendPushNotification = function(data, UserId, objAppInfo) {
                         //     if (lstSetting[0].Value == 1) {
                         var deviceIds = [];
                         deviceIds.push(response[i].PushNotificationId)
-                            //SendNotification(i + 1);
-                            // } else {
+                        //SendNotification(i + 1);
+                        // } else {
                         console.log(deviceIds)
                         var objData = clone(data);
 
@@ -188,9 +188,9 @@ global.SendPushNotification = function(data, UserId, objAppInfo) {
                         var objPushNotificationSend = new PushNotifications(PushNotificationSettings);
                         if (deviceIds.length > 0) {
 
-                            objPushNotificationSend.send(deviceIds, objData, function(result) {
+                            objPushNotificationSend.send(deviceIds, objData, function (result) {
                                 // console.log(result);
-                                connection.query("Update tblpushnotification set messagecount=" + messagecount + " where udid='" + response[i].udid + "' and UserType='" + response[i].UserType + "'", function(errupdate, updateresp, fields) {
+                                connection.query("Update tblpushnotification set messagecount=" + messagecount + " where udid='" + response[i].udid + "' and UserType='" + response[i].UserType + "'", function (errupdate, updateresp, fields) {
                                     console.log(errupdate)
                                     SendNotification(i + 1);
                                 });
@@ -222,7 +222,7 @@ global.SendPushNotification = function(data, UserId, objAppInfo) {
 function SendPWAPushNotification(data, UserId) {
     try {
         if (UserId.length > 0 && data.title != undefined && data.title != null && data.title != '') {
-            connection.query("SELECT * from tblpwa_notification_subscription where iduser in (" + UserId + ")", function(errors, lstPWASubscribers, fields) {
+            connection.query("SELECT * from tblpwa_notification_subscription where iduser in (" + UserId + ")", function (errors, lstPWASubscribers, fields) {
                 if (!errors && lstPWASubscribers.length > 0) {
                     var title = data.title;
                     var message = data.message;
@@ -242,12 +242,12 @@ function SendPWAPushNotification(data, UserId) {
                                         p256dh: p256dh
                                     }
                                 };
-                                webpush.sendNotification(pushSubscription, JSON.stringify({ title: title, content: message })).then(function(resPWA) {
+                                webpush.sendNotification(pushSubscription, JSON.stringify({ title: title, content: message })).then(function (resPWA) {
                                     SendOneByOne(p + 1);
                                     // console.log("========================================================")
                                     // console.log(resPWA)
                                     // console.log("========================================================")
-                                }).catch(function(err) {
+                                }).catch(function (err) {
                                     // console.log(err);
                                     SendOneByOne(p + 1);
                                 });
@@ -260,7 +260,7 @@ function SendPWAPushNotification(data, UserId) {
                 }
             });
         }
-    } catch (er) {}
+    } catch (er) { }
 }
 
 
@@ -287,12 +287,12 @@ function GetCurrentDate() {
 //     return ("0000" + decimalToHexString(crc.crc16ccitt(bytedata))).slice(-4);
 // }
 
-global.CalculateCRCbyHex = function(hex) {
+global.CalculateCRCbyHex = function (hex) {
     var bytedata = hex2byteCRC(hex);
     return ("0000" + decimalToHexString(crc.crc16x25(bytedata))).slice(-4);
 }
 
-router.get('/CalculateCRCOnline', function(req, res) {
+router.get('/CalculateCRCOnline', function (req, res) {
     res.send(CalculateCRCbyHex(req.query.data));
 });
 //Hex to Byte For CRC
@@ -367,26 +367,26 @@ function hex2a(hexx) {
     return str;
 }
 
-router.get('/TestAPI', function(req, res) {
+router.get('/TestAPI', function (req, res) {
     console.log(req.query);
     res.send("Success");
 });
 
-router.get('/RequestIMEINumberbyUDID', function(req, res) {
+router.get('/RequestIMEINumberbyUDID', function (req, res) {
     var UDID = req.query.UDID;
-    IMEINumberMapping.findOne({ where: { UDID: UDID } }).then(function(objUserIMEI) {
+    IMEINumberMapping.findOne({ where: { UDID: UDID } }).then(function (objUserIMEI) {
         if (objUserIMEI != null) {
             res.json({ IMEI: objUserIMEI.IMEI });
         } else {
-            IMEINumber.findOne({ where: { IsUse: false } }).then(function(objIMEI) {
+            IMEINumber.findOne({ where: { IsUse: false } }).then(function (objIMEI) {
                 var obj = new Object();
                 obj.UDID = UDID;
                 obj.IMEI = objIMEI.IMEI;
                 obj.Type = 'IOS';
                 obj.CreatedDate = new Date();
-                IMEINumberMapping.create(obj).then(function(resUserIMEI) {
-                    objIMEI.updateAttributes({ IsUse: true }).then(function(resIMEI) {
-                        GPSDevice.findOne({ where: { IMEI: objIMEI.IMEI } }).then(function(resDevice) {
+                IMEINumberMapping.create(obj).then(function (resUserIMEI) {
+                    objIMEI.updateAttributes({ IsUse: true }).then(function (resIMEI) {
+                        GPSDevice.findOne({ where: { IMEI: objIMEI.IMEI } }).then(function (resDevice) {
                             if (resDevice == null) {
                                 var objDevice = new Object();
                                 objDevice.IMEI = objIMEI.IMEI;
@@ -403,7 +403,7 @@ router.get('/RequestIMEINumberbyUDID', function(req, res) {
                                 expireDate.setMinutes(00);
                                 expireDate.setSeconds(00);
                                 objDevice.ExpiryDate = expireDate;
-                                GPSDevice.create(objDevice).then(function(resCreate) {
+                                GPSDevice.create(objDevice).then(function (resCreate) {
                                     res.json({ IMEI: objIMEI.IMEI });
                                 })
                             } else {
@@ -418,8 +418,8 @@ router.get('/RequestIMEINumberbyUDID', function(req, res) {
 
 });
 
-router.get('/RequestIMEINumberForAndroid', function(req, res) {
-    IMEINumberMapping.findOne({ where: { UDID: req.query.UDID } }).then(function(objUserIMEI) {
+router.get('/RequestIMEINumberForAndroid', function (req, res) {
+    IMEINumberMapping.findOne({ where: { UDID: req.query.UDID } }).then(function (objUserIMEI) {
         if (objUserIMEI != null) {
             res.json({ IMEI: objUserIMEI.IMEI });
         } else {
@@ -428,9 +428,9 @@ router.get('/RequestIMEINumberForAndroid', function(req, res) {
             obj.IMEI = req.query.IMEI;
             obj.Type = req.query.Type;
             obj.CreatedDate = new Date();
-            IMEINumberMapping.create(obj).then(function(resUserIMEI) {
+            IMEINumberMapping.create(obj).then(function (resUserIMEI) {
                 if (resUserIMEI != null) {
-                    GPSDevice.findOne({ where: { IMEI: resUserIMEI.IMEI } }).then(function(resDevice) {
+                    GPSDevice.findOne({ where: { IMEI: resUserIMEI.IMEI } }).then(function (resDevice) {
                         if (resDevice == null) {
                             var objDevice = new Object();
                             objDevice.IMEI = resUserIMEI.IMEI;
@@ -447,7 +447,7 @@ router.get('/RequestIMEINumberForAndroid', function(req, res) {
                             expireDate.setMinutes(00);
                             expireDate.setSeconds(00);
                             objDevice.ExpiryDate = expireDate;
-                            GPSDevice.create(objDevice).then(function(resCreate) {
+                            GPSDevice.create(objDevice).then(function (resCreate) {
                                 res.json({ IMEI: req.query.IMEI });
                             })
                         } else {
@@ -460,7 +460,7 @@ router.get('/RequestIMEINumberForAndroid', function(req, res) {
     })
 })
 
-router.get('/GenerateIMEI', function(req, res) {
+router.get('/GenerateIMEI', function (req, res) {
     req.setTimeout(3600000);
     // for (var i = 0; i < 10; i++) {
     // var NewPassword = customPassword();
@@ -471,12 +471,12 @@ router.get('/GenerateIMEI', function(req, res) {
     function InsertIMEI(i) {
         if (i < 10000) {
             var IMEINumber = customPassword();
-            connection.query("SELECT * from tblimeinumber where IMEI=" + IMEINumber + "", function(err, numberrow, fields) {
+            connection.query("SELECT * from tblimeinumber where IMEI=" + IMEINumber + "", function (err, numberrow, fields) {
                 if (!err) {
                     if (numberrow.length > 0) {
                         InsertIMEI(i + 1);
                     } else {
-                        connection.query("Insert INTO tblimeinumber (`IMEI`,`IsUse`) VALUES(" + IMEINumber + ",0)", function(err, Bikerows, fields) {
+                        connection.query("Insert INTO tblimeinumber (`IMEI`,`IsUse`) VALUES(" + IMEINumber + ",0)", function (err, Bikerows, fields) {
                             InsertIMEI(i + 1);
                         });
                     }
@@ -536,7 +536,7 @@ function customPassword() {
 //End of Private functions
 
 //5000 - Login
-router.get('/Command5000', function(req, res) {
+router.get('/Command5000', function (req, res) {
 
     var line = req.query.Code;
     console.log("Login = " + line);
@@ -546,31 +546,17 @@ router.get('/Command5000', function(req, res) {
     var CurrentDate = GetCurrentDate();
     var response = '40400012' + DeviceId + '400001';
     response = response + CalculateCRCbyHex(response) + '0D0A';
-    connection.query("SELECT * from tblgpsdevice where DeviceId=" + DeviceId, function(err, rows, fields) {
-        if (!err) {
-            //if (rows.length > 0) {
-            //tblapisresponse Entry
-            // var ResponceQuery = "INSERT INTO tblapisresponse (Code,Response,Datetime) VALUES ('5000', '" + response + "', '" + CurrentDate + "');";
-            // connection.query(ResponceQuery, function(err, rows1, fields) {
-            res.send(response);
-            // });
-            // } else {
-            //     //tblPetgps Entry
-
-            //     var ResponceQuery = "INSERT INTO tblgpsdevice (Code,Response,Datetime) VALUES ('5000', '" + response + "', '" + CurrentDate + "');";
-            //     connection.query(ResponceQuery, function(err, rows1, fields) {
-            //         res.json(response);
-            //     });
-            //     //});
-            // }
-        }
-    })
+    // connection.query("SELECT * from tblgpsdevice where DeviceId=" + DeviceId, function(err, rows, fields) {
+    //     if (!err) {
+    res.send(response);
+    //     }
+    // })
 
 
 })
 
 //Command5001 - Heartbeat Command
-global.Command5001 = function(line, Callback) {
+global.Command5001 = function (line, Callback) {
     console.log("HandShak = " + line);
     try {
         //Server Reconnet If Disconneted
@@ -589,9 +575,9 @@ global.Command5001 = function(line, Callback) {
 
         //tblPetgps Entry
         var query = "INSERT INTO tblhandshake (DeviceId,Datetime ) VALUES ('" + DeviceId + "', '" + CurrentDate + "');";
-        connection.query(query, function(err, rows, fields) {
+        connection.query(query, function (err, rows, fields) {
 
-            connection.query("Update tblvehicle set HandshakDatetime='" + CurrentDate + "',IsOnline=true where deviceid=" + DeviceId, function(err, rows1, fields) {
+            connection.query("Update tblvehicle set HandshakDatetime='" + CurrentDate + "',IsOnline=true where deviceid=" + DeviceId, function (err, rows1, fields) {
                 var objConnection = {
                     DeviceId: DeviceId,
                     Status: true
@@ -607,7 +593,7 @@ global.Command5001 = function(line, Callback) {
 };
 
 //Command9955 - GPS Command
-global.Command9955 = function(line, Callback) {
+global.Command9955 = function (line, Callback) {
     console.log("GPS Data = " + line);
     try {
         //Server Reconnet If Disconneted
@@ -737,7 +723,7 @@ global.Command9955 = function(line, Callback) {
             // //Insert data in gps
             var query = "INSERT INTO tblgpsdata (Datetime,Latitude,Longitude,GPSPositioning,Speed,Direction,Status,DeviceId,IsRelayToStopTheCar,IsSirenSound,IsUserDefined,IsLockTheDoor,IsUnlockTheDoor,IsSOS,IsWiringForAntiTamper,IsDoor,IsEngine,IsOriginalSirenTriggeringStatus,CreatedDate,HDOP,Altitude,AD1,AD2,OdoMeter,Date ) " +
                 "VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + inputoutputSTatus + "', '" + DeviceId + "'," + IsRelayToStopTheCar + "," + IsSirenSound + "," + IsUserDefined + "," + IsLockTheDoor + "," + IsUnlockTheDoor + "," + IsSOS + "," + IsWiringForAntiTamper + "," + IsDoor + "," + IsEngine + "," + IsOriginalSirenTriggeringStatus + ",'" + CurrentDate + "','" + HDOP + "','" + altitude + "','" + AD1 + "','" + AD2 + "','" + Odometer + "','" + unixDateStemp + "');";
-            connection.query(query, function(err, rows, fields) {
+            connection.query(query, function (err, rows, fields) {
                 // console.log(err);
                 var objConnection = {
                     Position: Position,
@@ -761,7 +747,7 @@ global.Command9955 = function(line, Callback) {
                 }
 
                 if (Position == 'A') {
-                    client.set(DeviceId, JSON.stringify(objConnection), function(err, replies) {});
+                    client.set(DeviceId, JSON.stringify(objConnection), function (err, replies) { });
                     io.sockets.emit('BikeRoute', JSON.stringify(objConnection));
                     io.sockets.emit(DeviceId + 'BikeRoute', JSON.stringify(objConnection));
                 }
@@ -769,9 +755,9 @@ global.Command9955 = function(line, Callback) {
 
             if (IsEngine == true) {
                 //Fence
-                connection.query("SELECT * from tblfence where deviceId=" + DeviceId + " and IsFenceOnline=true", function(err, rows, fields) {
+                connection.query("SELECT * from tblfence where deviceId=" + DeviceId + " and IsFenceOnline=true", function (err, rows, fields) {
                     if (!err && rows.length > 0) {
-                        connection.query("SELECT id,Name,iduser,deviceid from tblvehicle where deviceid=" + DeviceId + " and IsDelete=false", function(err, Bikerows, fields) {
+                        connection.query("SELECT id,Name,iduser,deviceid from tblvehicle where deviceid=" + DeviceId + " and IsDelete=false", function (err, Bikerows, fields) {
                             if (!err && Bikerows.length > 0) {
                                 var objVehicle = Bikerows[0];
                                 if (Position == 'A') {
@@ -869,13 +855,13 @@ global.Command9955 = function(line, Callback) {
                                                     soundname = "Default";
                                                 }
                                                 // console.log(unixDateStemp);
-                                                connection.query('UPDATE tblfence set IsInFence=' + IsPetInFence + ' WHERE id=' + rows[j].id, function(err, rowsFence, fields) {
+                                                connection.query('UPDATE tblfence set IsInFence=' + IsPetInFence + ' WHERE id=' + rows[j].id, function (err, rowsFence, fields) {
                                                     // console.log(err)
                                                     var Alarmquery = "INSERT INTO tblalarm (Datetime, Date, Latitude,Longitude,GPSPositioning,Speed,Direction,Status,DeviceId,AlarmCode,CreatedDate,FenceName ) VALUES ('" + GPSDateTime + "', '" + unixDateStemp + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + inputoutputSTatus + "', '" + DeviceId + "','" + AlarmCode + "','" + CurrentDate + "','" + rows[j].name + "');";
                                                     // var Alarmquery = "INSERT INTO tblalarm (Datetime,Latitude,Longitude,GPSPositioning,Speed,Direction,Status,ReservedSign,ReservedSelection,DeviceId,AlarmCode ) VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + Status + "', '" + Sign + "', '" + ReserveSection + "', '" + deviceID + "','" + AlarmCode + "');";
-                                                    connection.query(Alarmquery, function(err1, Alarmrows, fields) {
+                                                    connection.query(Alarmquery, function (err1, Alarmrows, fields) {
 
-                                                        connection.query("SELECT * from tblsharedevice where idVehicle=" + objVehicle.id + " and IsSharedUserNotification=true and IsNotification=true", function(err, lstShareUser, fields) {
+                                                        connection.query("SELECT * from tblsharedevice where idVehicle=" + objVehicle.id + " and IsSharedUserNotification=true and IsNotification=true", function (err, lstShareUser, fields) {
                                                             var lstAllUser = [objVehicle.iduser];
                                                             var AllUser = objVehicle.iduser.toString();
                                                             if (!err && lstShareUser.length > 0) {
@@ -884,7 +870,7 @@ global.Command9955 = function(line, Callback) {
                                                                     AllUser = AllUser + ',' + lstShareUser[i].idUser;
                                                                 }
                                                             }
-                                                            connection.query("SELECT tu.id, tu.username, ta.AppName, ta.IOSCertificate, ta.IOSKey, ta.AndroidId, ta.AndroidSenderId FROM tbluserinformation as tu inner Join tblappinfo as ta ON ta.id = tu.idApp where tu.id=" + objVehicle.iduser, function(err, objAppInfo, fields) {
+                                                            connection.query("SELECT tu.id, tu.username, ta.AppName, ta.IOSCertificate, ta.IOSKey, ta.AndroidId, ta.AndroidSenderId FROM tbluserinformation as tu inner Join tblappinfo as ta ON ta.id = tu.idApp where tu.id=" + objVehicle.iduser, function (err, objAppInfo, fields) {
 
                                                                 var PushNotificationdata = {
                                                                     title: 'Alert',
@@ -969,84 +955,10 @@ global.Command9955 = function(line, Callback) {
                         });
                     };
                 });
-
-                //Favorite place
-                // connection.query("SELECT * from tblfavoriteplace where DeviceId=" + DeviceId, function(err, rows, fields) {
-                //     if (!err && rows.length > 0) {
-                //         connection.query("SELECT * from tblvehicle where deviceid=" + DeviceId + " and IsDelete=false", function(err, Bikerows, fields) {
-                //             if (!err && Bikerows.length > 0) {
-                //                 var objBike = Bikerows[0];
-                //                 if (Position == 'A') {
-                //                     function checkFavorite(j) {
-                //                         if (j < rows.length) {
-                //                             rows[j].IsInFavoritePlace = true;
-                //                             var response = rows[j];
-
-                //                             // var response = rows[0];
-
-                //                             var CheckPoints = {
-                //                                 latitude: parseFloat(Latitude),
-                //                                 longitude: parseFloat(Longitude)
-                //                             }
-
-                //                             var IsInFavoritePlace = true;
-
-                //                             // if (response.fencedraw == "circle") {
-                //                             var CircleCenterPoints = {
-                //                                 latitude: parseFloat(response.Latitude),
-                //                                 longitude: parseFloat(response.Longitude)
-                //                             }
-                //                             var CircleRadius = parseFloat(response.Range);
-                //                             IsInFavoritePlace = geolib.isPointInCircle(CheckPoints, CircleCenterPoints, CircleRadius)
-                //                                 // }
-
-                //                             // console.log("Fence Last State = " + objBike.IsInFence)
-                //                             // console.log("Fence Current State = " + IsPetInFence)
-                //                             if (IsInFavoritePlace != rows[j].IsInFavoritePlace && rows[j].IsInFavoritePlace) {
-                //                                 var Code = '0';
-                //                                 var message = '';
-
-                //                                 if (IsInFavoritePlace == false) {
-                //                                     AlarmCode = '1';
-                //                                     if (rows[j].Name != null && rows[j].Name != '' && rows[j].Name != undefined) {
-                //                                         message = objBike.Name + ' is out of ' + rows[j].Name + ' Favorite Place.';
-                //                                     } else {
-                //                                         message = objBike.Name + ' is out of Favorite Place.';
-                //                                     }
-                //                                 } else {
-                //                                     AlarmCode = '0';
-                //                                     if (rows[j].Name != null && rows[j].Name != '' && rows[j].Name != undefined) {
-                //                                         message = objBike.Name + ' is in ' + rows[j].Name + ' Favorite Place.';
-                //                                     } else {
-                //                                         message = objBike.Name + ' is in Favorite Place.';
-                //                                     }
-                //                                 }
-                //                                 console.log(unixDateStemp);
-                //                                 connection.query('UPDATE tblfavoriteplace set IsInFavoritePlace=' + IsInFavoritePlace + ' WHERE id=' + rows[j].id, function(err, rowsFavorite, fields) {
-                //                                     console.log(err)
-                //                                     var query = "INSERT INTO tblfavoriteinout (Datetime, Date, Latitude,Longitude,GPSPositioning,Speed,Direction,Status,DeviceId,Code,CreatedDate ) VALUES ('" + GPSDateTime + "', '" + unixDateStemp + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + inputoutputSTatus + "', '" + DeviceId + "','" + Code + "','" + CurrentDate + "');";
-                //                                     // var Alarmquery = "INSERT INTO tblalarm (Datetime,Latitude,Longitude,GPSPositioning,Speed,Direction,Status,ReservedSign,ReservedSelection,DeviceId,AlarmCode ) VALUES ('" + GPSDateTime + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + Status + "', '" + Sign + "', '" + ReserveSection + "', '" + deviceID + "','" + AlarmCode + "');";
-                //                                     connection.query(query, function(err1, Favrows, fields) {
-                //                                         checkFavorite(j + 1);
-                //                                     });
-                //                                 });
-                //                             } else {
-                //                                 checkFavorite(j + 1);
-                //                             }
-                //                         } else {
-
-                //                         }
-                //                     }
-                //                     checkFavorite(0);
-                //                 }
-                //             }
-                //         });
-                //     };
-                // });
             }
 
             //check Arm settings
-            connection.query("SELECT * from tblvehicle where deviceid=" + DeviceId + " and IsDelete=false", function(err, Bikerows, fields) {
+            connection.query("SELECT * from tblvehicle where deviceid=" + DeviceId + " and IsDelete=false", function (err, Bikerows, fields) {
                 if (!err) {
                     if (Bikerows.length > 0) {
                         if (Bikerows[0].Arm == 2) {
@@ -1061,7 +973,7 @@ global.Command9955 = function(line, Callback) {
                                 obj.DeviceId = DeviceId;
                                 obj.Arm = 2;
                                 obj.ArmStatus = ArmStatus;
-                                SetArmSettings(obj, function(data) {
+                                SetArmSettings(obj, function (data) {
 
                                 })
                             }
@@ -1076,7 +988,7 @@ global.Command9955 = function(line, Callback) {
             } else {
                 var Relay = 0;
             }
-            connection.query("Update tblvehicle set Relay = " + Relay + " where deviceid=" + DeviceId + " and IsDelete=false", function(err, relayData, fields) {
+            connection.query("Update tblvehicle set Relay = " + Relay + " where deviceid=" + DeviceId + " and IsDelete=false", function (err, relayData, fields) {
                 if (!err) {
                     var objRelay = {
                         DeviceId: DeviceId,
@@ -1103,7 +1015,7 @@ global.Command9955 = function(line, Callback) {
                     model: Vehicle,
                     where: { deviceid: DeviceId }
                 }]
-            }).then(function(response) {
+            }).then(function (response) {
                 if (response) {
                     function uploader(i) {
                         if (response.length > i) {
@@ -1139,7 +1051,7 @@ global.Command9955 = function(line, Callback) {
                                         days: diffkm
                                     },
                                     defaults: obj
-                                }).then(function(ServiceEnhacementcerated) {
+                                }).then(function (ServiceEnhacementcerated) {
 
                                     if (ServiceEnhacementcerated[1]) {
                                         var NewObj = new Object()
@@ -1181,7 +1093,7 @@ global.Command9955 = function(line, Callback) {
 
                                         //push Notification Send
 
-                                        connection.query("SELECT tu.id, tu.username, ta.AppName, ta.IOSCertificate, ta.IOSKey, ta.AndroidId, ta.AndroidSenderId FROM tbluserinformation as tu inner Join tblappinfo as ta ON ta.id = tu.idApp where tu.id=" + response[i].tblvehicle.iduser, function(err, objAppInfo, fields) {
+                                        connection.query("SELECT tu.id, tu.username, ta.AppName, ta.IOSCertificate, ta.IOSKey, ta.AndroidId, ta.AndroidSenderId FROM tbluserinformation as tu inner Join tblappinfo as ta ON ta.id = tu.idApp where tu.id=" + response[i].tblvehicle.iduser, function (err, objAppInfo, fields) {
                                             var soundname = "Default";
                                             var AllUser = response[i].tblvehicle.iduser.toString();
                                             var PushNotificationdata = {
@@ -1226,7 +1138,7 @@ global.Command9955 = function(line, Callback) {
 };
 
 //Command9999 - Alarm Command
-global.Command9999 = function(line, Callback) {
+global.Command9999 = function (line, Callback) {
     console.log("Alarm Data = " + line);
     try {
         //Server Reconnet If Disconneted
@@ -1294,13 +1206,13 @@ global.Command9999 = function(line, Callback) {
         // console.log(GPSDateTime)
 
         var query = "INSERT INTO tblalarm (Datetime, Date, Latitude,Longitude,GPSPositioning,Speed,Direction,Status,DeviceId,AlarmCode,CreatedDate ) VALUES ('" + GPSDateTime + "', '" + unixDateStemp + "', '" + Latitude + "', '" + Longitude + "', '" + Position + "', '" + Speed + "', '" + Direction + "', '" + inputoutputSTatus + "', '" + DeviceId + "','" + AlarmCode + "','" + CurrentDate + "');";
-        connection.query(query, function(err, rows, fields) {
+        connection.query(query, function (err, rows, fields) {
 
 
-            connection.query("SELECT id,Name,iduser,deviceid from tblvehicle where deviceid=" + DeviceId + " and IsDelete=false", function(err, lstVehicle, fields) {
+            connection.query("SELECT id,Name,iduser,deviceid from tblvehicle where deviceid=" + DeviceId + " and IsDelete=false", function (err, lstVehicle, fields) {
                 if (!err && lstVehicle.length > 0) {
                     var objVehicle = lstVehicle[0];
-                    connection.query("SELECT * from tblsharedevice where idVehicle=" + objVehicle.id + " and IsSharedUserNotification=true and IsNotification=true", function(err, lstShareUser, fields) {
+                    connection.query("SELECT * from tblsharedevice where idVehicle=" + objVehicle.id + " and IsSharedUserNotification=true and IsNotification=true", function (err, lstShareUser, fields) {
                         var lstAllUser = [objVehicle.iduser];
                         var AllUser = objVehicle.iduser.toString();
                         if (!err && lstShareUser.length > 0) {
@@ -1309,7 +1221,7 @@ global.Command9999 = function(line, Callback) {
                                 AllUser = AllUser + ',' + lstShareUser[i].idUser;
                             }
                         }
-                        connection.query("SELECT tu.id, tu.username, ta.AppName, ta.IOSCertificate, ta.IOSKey, ta.AndroidId, ta.AndroidSenderId FROM tbluserinformation as tu inner Join tblappinfo as ta ON ta.id = tu.idApp where tu.id=" + objVehicle.iduser, function(err, objAppInfo, fields) {
+                        connection.query("SELECT tu.id, tu.username, ta.AppName, ta.IOSCertificate, ta.IOSKey, ta.AndroidId, ta.AndroidSenderId FROM tbluserinformation as tu inner Join tblappinfo as ta ON ta.id = tu.idApp where tu.id=" + objVehicle.iduser, function (err, objAppInfo, fields) {
 
                             var Message = "";
                             var soundname = "";
@@ -1427,7 +1339,7 @@ global.Command9999 = function(line, Callback) {
 };
 
 //Command9901 - CAN-BUS Command
-global.Command9901 = function(line, Callback) {
+global.Command9901 = function (line, Callback) {
     console.log("CAN-BUS Data = " + line);
     try {
         //Server Reconnet If Disconneted
@@ -1469,7 +1381,7 @@ global.Command9901 = function(line, Callback) {
 
         var query = "INSERT INTO tblcanbusdata (DeviceId,Datetime,BatteryVoltage,EngineSpeed,RunningSpeed,ThrottleOpeningWidth,EngineLoad,CoolantTemperature,InstantaneousFuelConsumption,AverageFuelConsumption,DrivingRange,TotalMileage,SingleFuelConsumptionVolume,TotalFuelConsumptionVolume,CurrentErrorCodeNumbers,HarshAccelerationNo,HarshBrakeNo,CreatedDate) " +
             "VALUES ('" + DeviceId + "', '" + unixDateStemp + "', '" + BatteryVoltage + "', '" + EngineSpeed + "', '" + RunningSpeed + "', '" + ThrottleOpeningWidth + "', '" + EngineLoad + "', '" + CoolantTemperature + "'," + InstantaneousFuelConsumption + "," + AverageFuelConsumption + "," + DrivingRange + "," + TotalMileage + "," + SingleFuelConsumptionVolume + "," + TotalFuelConsumptionVolume + "," + CurrentErrorCodeNumbers + "," + HarshAccelerationNo + "," + HarshBrakeNo + ",'" + CurrentDate + "');";
-        connection.query(query, function(err, rows, fields) {
+        connection.query(query, function (err, rows, fields) {
 
             var objConnection = {
                 DeviceId: DeviceId,
@@ -1502,7 +1414,7 @@ global.Command9901 = function(line, Callback) {
 };
 
 //Command9902 -  Driving Behavior Command
-global.Command9902 = function(line, Callback) {
+global.Command9902 = function (line, Callback) {
     console.log("Driving Data = " + line);
     try {
         //Server Reconnet If Disconneted
@@ -1539,7 +1451,7 @@ global.Command9902 = function(line, Callback) {
 
         var query = "INSERT INTO tbldrivingdata (DeviceId,Datetime,TotalIgnition,TotalDrivingTime,TotalIdlingTime,AverageHotStartTime,AverageSpeed,HistoryHighestSpeed,HistoryHighestRotation,TotalHarshAcceleration,TotalHarshBrake,CreatedDate) " +
             "VALUES ('" + DeviceId + "', '" + unixDateStemp + "', '" + TotalIgnition + "', '" + TotalDrivingTime + "', '" + TotalIdlingTime + "', '" + AverageHotStartTime + "', '" + AverageSpeed + "', '" + HistoryHighestSpeed + "'," + HistoryHighestRotation + "," + TotalHarshAcceleration + "," + TotalHarshBrake + ",'" + CurrentDate + "');";
-        connection.query(query, function(err, rows, fields) {
+        connection.query(query, function (err, rows, fields) {
 
             var objConnection = {
                 DeviceId: DeviceId,
@@ -1565,14 +1477,14 @@ global.Command9902 = function(line, Callback) {
 };
 
 //Send Speed Data
-router.get('/SendSpeedData', function(req, res) {
+router.get('/SendSpeedData', function (req, res) {
     req.setTimeout(3600000);
     //GetLookAtMeDP3110a0f
     //Test Device 075034699503
     var obj = new Object();
     obj.DeviceId = req.query.DeviceId;
     obj.Speed = req.query.Speed;
-    SendSpeedData(obj, function(data) {
+    SendSpeedData(obj, function (data) {
         res.json(data);
     })
 
@@ -1580,7 +1492,7 @@ router.get('/SendSpeedData', function(req, res) {
 })
 
 //Send Speed Data
-global.SendSpeedData = function(objdata, Callback) {
+global.SendSpeedData = function (objdata, Callback) {
 
     var DeviceId = objdata.DeviceId;
     var Speed = ('00' + decimalToHexString(parseInt(objdata.Speed) / 10)).slice(-2);
@@ -1590,11 +1502,11 @@ global.SendSpeedData = function(objdata, Callback) {
     var client = new net.Socket();
     var Sendflag = false;
 
-    client.connect(SocketPort, SocketIPAddress, function() {
+    client.connect(SocketPort, SocketIPAddress, function () {
         // console.log('Speed send to ' + Data);
         client.write(Data, 'hex');
 
-        client.setTimeout(10000, function() {
+        client.setTimeout(10000, function () {
             if (Sendflag == false) {
                 Sendflag = true;
 
@@ -1606,7 +1518,7 @@ global.SendSpeedData = function(objdata, Callback) {
         });
     });
 
-    client.on('data', function(data) {
+    client.on('data', function (data) {
         var line = data.toString();
         if (Sendflag == false) {
             if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4105') {
@@ -1617,7 +1529,7 @@ global.SendSpeedData = function(objdata, Callback) {
                 // res.json(objNavigation);
                 client.destroy(); // kill client after server's response
                 if (StatusCode == '01') {
-                    connection.query("Update tblvehicle set MaxSpeed=" + objdata.Speed + " where deviceid=" + DeviceId, function(err, rows, fields) {
+                    connection.query("Update tblvehicle set MaxSpeed=" + objdata.Speed + " where deviceid=" + DeviceId, function (err, rows, fields) {
                         Callback({ success: true, message: 'Speed Settings Save Successfully.' });
                     });
                 } else {
@@ -1636,20 +1548,20 @@ global.SendSpeedData = function(objdata, Callback) {
 
     });
 
-    client.on('close', function() {
+    client.on('close', function () {
         console.log('Connection closed');
     });
 }
 
 //Send Movement Data
-router.get('/SendMovementData', function(req, res) {
+router.get('/SendMovementData', function (req, res) {
     req.setTimeout(3600000);
     //GetLookAtMeDP3110a0f
     //Test Device 075034699503
     var obj = new Object();
     obj.DeviceId = req.query.DeviceId;
     obj.Movement = req.query.Movement;
-    SendMovementData(obj, function(data) {
+    SendMovementData(obj, function (data) {
         res.json(data);
     })
 
@@ -1657,7 +1569,7 @@ router.get('/SendMovementData', function(req, res) {
 })
 
 //Send Movement Data
-global.SendMovementData = function(objdata, Callback) {
+global.SendMovementData = function (objdata, Callback) {
 
     var DeviceId = objdata.DeviceId;
     var Movement = ('00' + objdata.Movement).slice(-2);
@@ -1667,11 +1579,11 @@ global.SendMovementData = function(objdata, Callback) {
     var client = new net.Socket();
     var Sendflag = false;
 
-    client.connect(SocketPort, SocketIPAddress, function() {
+    client.connect(SocketPort, SocketIPAddress, function () {
         // console.log('Speed send to ' + Data);
         client.write(Data, 'hex');
 
-        client.setTimeout(10000, function() {
+        client.setTimeout(10000, function () {
             if (Sendflag == false) {
                 Sendflag = true;
 
@@ -1683,7 +1595,7 @@ global.SendMovementData = function(objdata, Callback) {
         });
     });
 
-    client.on('data', function(data) {
+    client.on('data', function (data) {
         var line = data.toString();
         if (Sendflag == false) {
             if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4106') {
@@ -1694,7 +1606,7 @@ global.SendMovementData = function(objdata, Callback) {
                 // res.json(objNavigation);
                 client.destroy(); // kill client after server's response
                 if (StatusCode == '01') {
-                    connection.query("Update tblvehicle set Movement=" + objdata.Movement + " where deviceid=" + DeviceId, function(err, rows, fields) {
+                    connection.query("Update tblvehicle set Movement=" + objdata.Movement + " where deviceid=" + DeviceId, function (err, rows, fields) {
                         Callback({ success: true, message: 'Movement Settings Save Successfully.' });
                     });
                 } else {
@@ -1713,13 +1625,13 @@ global.SendMovementData = function(objdata, Callback) {
 
     });
 
-    client.on('close', function() {
+    client.on('close', function () {
         console.log('Connection closed');
     });
 }
 
 //Get Current Location
-router.get('/GetCurrentLocation', function(req, res) {
+router.get('/GetCurrentLocation', function (req, res) {
     req.setTimeout(3600000);
     //GetLookAtMeDP3110a0f
     //Test Device 075034699503
@@ -1731,11 +1643,11 @@ router.get('/GetCurrentLocation', function(req, res) {
     var client = new net.Socket();
     var Sendflag = false;
 
-    client.connect(SocketPort, SocketIPAddress, function() {
+    client.connect(SocketPort, SocketIPAddress, function () {
         // console.log('G-Sensor send to ' + DeviceId);
         client.write(Data, 'hex');
 
-        client.setTimeout(10000, function() {
+        client.setTimeout(10000, function () {
             if (Sendflag == false) {
                 Sendflag = true;
 
@@ -1747,7 +1659,7 @@ router.get('/GetCurrentLocation', function(req, res) {
         });
     });
 
-    client.on('data', function(data) {
+    client.on('data', function (data) {
         var line = data.toString();
         if (Sendflag == false) {
             if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '9955') {
@@ -1773,14 +1685,14 @@ router.get('/GetCurrentLocation', function(req, res) {
 
     });
 
-    client.on('close', function() {
+    client.on('close', function () {
         console.log('Connection closed');
     });
 
 
 })
 
-router.get('/SendCommandToDevice', function(req, res) {
+router.get('/SendCommandToDevice', function (req, res) {
     var lstDevice = req.query.objDevice;
     var objDevice = [];
     if (Array.isArray(lstDevice)) {
@@ -1798,42 +1710,42 @@ router.get('/SendCommandToDevice', function(req, res) {
             var objMaxSpeed = new Object();
             objMaxSpeed.DeviceId = objDevice[i];
             objMaxSpeed.Speed = req.query.MaxSpeed;
-            SendSpeedData(objMaxSpeed, function(data) {})
+            SendSpeedData(objMaxSpeed, function (data) { })
 
             var objSleepMode = new Object();
             objSleepMode.DeviceId = objDevice[i];
             objSleepMode.SleepMode = req.query.SleepMode;
-            SetSleepMode(objSleepMode, function(data) {})
+            SetSleepMode(objSleepMode, function (data) { })
 
             var objGPRSInterval = new Object();
             objGPRSInterval.DeviceId = objDevice[i];
             objGPRSInterval.TimeInterval = req.query.TimeInterval;
-            SetGPRSInterval(objGPRSInterval, function(data) {})
+            SetGPRSInterval(objGPRSInterval, function (data) { })
 
             var objArm = new Object();
             objArm.DeviceId = objDevice[i];
             objArm.Arm = req.query.Arm;
-            SetArmSettings(objArm, function(data) {})
+            SetArmSettings(objArm, function (data) { })
 
             var objOdoMeter = new Object();
             objOdoMeter.DeviceId = objDevice[i];
             objOdoMeter.odometer = req.query.odometer;
-            SetOdometerSetting(objOdoMeter, function(data) {})
+            SetOdometerSetting(objOdoMeter, function (data) { })
 
             var objHeartbeatInterval = new Object();
             objHeartbeatInterval.DeviceId = objDevice[i];
             objHeartbeatInterval.TimeInterval = req.query.HeartbeatInterval;
-            SetHeartBeatInterval(objHeartbeatInterval, function(data) {})
+            SetHeartBeatInterval(objHeartbeatInterval, function (data) { })
 
             var objGPRSStopInterval = new Object();
             objGPRSStopInterval.DeviceId = objDevice[i];
             objGPRSStopInterval.TimeInterval = req.query.GPRSStopInterval;
-            SetGPRSIntervalStopCar(objGPRSStopInterval, function(data) {})
+            SetGPRSIntervalStopCar(objGPRSStopInterval, function (data) { })
 
             var objACC = new Object();
             objACC.DeviceId = objDevice[i];
             objACC.TimeInterval = req.query.ACC;
-            SetACCSetting(objACC, function(data) { uploader(i + 1); })
+            SetACCSetting(objACC, function (data) { uploader(i + 1); })
 
         } else {
             res.json({ success: true, message: 'Default value send to device successfully.' });
@@ -1843,14 +1755,14 @@ router.get('/SendCommandToDevice', function(req, res) {
 })
 
 //Set GPRS Interval Settings
-router.get('/SetGPRSInterval', function(req, res) {
+router.get('/SetGPRSInterval', function (req, res) {
     req.setTimeout(3600000);
     //GetLookAtMeDP3110a0f
     //Test Device 075034699503
     var obj = new Object();
     obj.DeviceId = req.query.DeviceId;
     obj.TimeInterval = req.query.TimeInterval;
-    SetGPRSInterval(obj, function(data) {
+    SetGPRSInterval(obj, function (data) {
         res.json(data);
     })
 
@@ -1858,7 +1770,7 @@ router.get('/SetGPRSInterval', function(req, res) {
 })
 
 //Set GPRS Interval Settings
-global.SetGPRSInterval = function(objdata, Callback) {
+global.SetGPRSInterval = function (objdata, Callback) {
 
     var DeviceId = objdata.DeviceId;
     var TimeInterval = ('0000' + decimalToHexString(parseInt(objdata.TimeInterval) / 10)).slice(-4);
@@ -1868,11 +1780,11 @@ global.SetGPRSInterval = function(objdata, Callback) {
     var client = new net.Socket();
     var Sendflag = false;
 
-    client.connect(SocketPort, SocketIPAddress, function() {
+    client.connect(SocketPort, SocketIPAddress, function () {
         // console.log('G-Sensor send to ' + DeviceId);
         client.write(Data, 'hex');
 
-        client.setTimeout(10000, function() {
+        client.setTimeout(10000, function () {
             if (Sendflag == false) {
                 Sendflag = true;
 
@@ -1884,7 +1796,7 @@ global.SetGPRSInterval = function(objdata, Callback) {
         });
     });
 
-    client.on('data', function(data) {
+    client.on('data', function (data) {
         var line = data.toString();
         if (Sendflag == false) {
             if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4102') {
@@ -1895,7 +1807,7 @@ global.SetGPRSInterval = function(objdata, Callback) {
                 // res.json(objNavigation);
                 client.destroy(); // kill client after server's response
                 if (StatusCode == '01') {
-                    connection.query("Update tblvehicle set GPRSInterval=" + objdata.TimeInterval + " where deviceid=" + DeviceId, function(err, rows, fields) {
+                    connection.query("Update tblvehicle set GPRSInterval=" + objdata.TimeInterval + " where deviceid=" + DeviceId, function (err, rows, fields) {
                         Callback({ success: true, message: 'GPRS Interval Settings Save Successfully.' });
                     });
                 } else {
@@ -1914,13 +1826,13 @@ global.SetGPRSInterval = function(objdata, Callback) {
 
     });
 
-    client.on('close', function() {
+    client.on('close', function () {
         console.log('Connection closed');
     });
 }
 
 //Factory Restet
-router.get('/FectoryReset', function(req, res) {
+router.get('/FectoryReset', function (req, res) {
     req.setTimeout(3600000);
     //GetLookAtMeDP3110a0f
     //Test Device 075034699503
@@ -1932,11 +1844,11 @@ router.get('/FectoryReset', function(req, res) {
     var client = new net.Socket();
     var Sendflag = false;
 
-    client.connect(SocketPort, SocketIPAddress, function() {
+    client.connect(SocketPort, SocketIPAddress, function () {
         // console.log('G-Sensor send to ' + DeviceId);
         client.write(Data, 'hex');
 
-        client.setTimeout(10000, function() {
+        client.setTimeout(10000, function () {
             if (Sendflag == false) {
                 Sendflag = true;
 
@@ -1948,7 +1860,7 @@ router.get('/FectoryReset', function(req, res) {
         });
     });
 
-    client.on('data', function(data) {
+    client.on('data', function (data) {
         var line = data.toString();
         if (Sendflag == false) {
             if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4110') {
@@ -1978,7 +1890,7 @@ router.get('/FectoryReset', function(req, res) {
 
     });
 
-    client.on('close', function() {
+    client.on('close', function () {
         console.log('Connection closed');
     });
 
@@ -1986,7 +1898,7 @@ router.get('/FectoryReset', function(req, res) {
 })
 
 //Reboot Device
-router.get('/RebootDevice', function(req, res) {
+router.get('/RebootDevice', function (req, res) {
     req.setTimeout(3600000);
     //GetLookAtMeDP3110a0f
     //Test Device 075034699503
@@ -1998,11 +1910,11 @@ router.get('/RebootDevice', function(req, res) {
     var client = new net.Socket();
     var Sendflag = false;
 
-    client.connect(SocketPort, SocketIPAddress, function() {
+    client.connect(SocketPort, SocketIPAddress, function () {
         // console.log('G-Sensor send to ' + DeviceId);
         client.write(Data, 'hex');
 
-        client.setTimeout(10000, function() {
+        client.setTimeout(10000, function () {
             if (Sendflag == false) {
                 Sendflag = true;
 
@@ -2014,7 +1926,7 @@ router.get('/RebootDevice', function(req, res) {
         });
     });
 
-    client.on('data', function(data) {
+    client.on('data', function (data) {
         var line = data.toString();
         if (Sendflag == false) {
             if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4902') {
@@ -2044,7 +1956,7 @@ router.get('/RebootDevice', function(req, res) {
 
     });
 
-    client.on('close', function() {
+    client.on('close', function () {
         console.log('Connection closed');
     });
 
@@ -2052,20 +1964,20 @@ router.get('/RebootDevice', function(req, res) {
 })
 
 //Set Sleep Mode Settings
-router.get('/SetSleepMode', function(req, res) {
+router.get('/SetSleepMode', function (req, res) {
     req.setTimeout(3600000);
     //GetLookAtMeDP3110a0f
     //Test Device 075034699503
     var obj = new Object();
     obj.DeviceId = req.query.DeviceId;
     obj.SleepMode = req.query.SleepMode;
-    SetSleepMode(obj, function(data) {
+    SetSleepMode(obj, function (data) {
         res.json(data);
     })
 })
 
 //Set Sleep Mode
-global.SetSleepMode = function(objdata, Callback) {
+global.SetSleepMode = function (objdata, Callback) {
 
     var DeviceId = objdata.DeviceId;
     var SleepMode = ('00' + decimalToHexString(parseInt(objdata.SleepMode))).slice(-2);
@@ -2076,11 +1988,11 @@ global.SetSleepMode = function(objdata, Callback) {
     var client = new net.Socket();
     var Sendflag = false;
 
-    client.connect(SocketPort, SocketIPAddress, function() {
+    client.connect(SocketPort, SocketIPAddress, function () {
         // console.log('G-Sensor send to ' + DeviceId);
         client.write(Data, 'hex');
 
-        client.setTimeout(10000, function() {
+        client.setTimeout(10000, function () {
             if (Sendflag == false) {
                 Sendflag = true;
 
@@ -2092,7 +2004,7 @@ global.SetSleepMode = function(objdata, Callback) {
         });
     });
 
-    client.on('data', function(data) {
+    client.on('data', function (data) {
         var line = data.toString();
         if (Sendflag == false) {
             if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4113') {
@@ -2103,7 +2015,7 @@ global.SetSleepMode = function(objdata, Callback) {
                 // res.json(objNavigation);
                 client.destroy(); // kill client after server's response
                 if (StatusCode == '01') {
-                    connection.query("Update tblvehicle set SleepMode=" + objdata.SleepMode + " where deviceid=" + DeviceId, function(err, rows, fields) {
+                    connection.query("Update tblvehicle set SleepMode=" + objdata.SleepMode + " where deviceid=" + DeviceId, function (err, rows, fields) {
                         Callback({ success: true, message: 'Sleep Mode Save Successfully.' });
                     });
                 } else {
@@ -2122,13 +2034,13 @@ global.SetSleepMode = function(objdata, Callback) {
 
     });
 
-    client.on('close', function() {
+    client.on('close', function () {
         console.log('Connection closed');
     });
 }
 
 //Set Output Control Settings
-router.get('/SetOutputControl', function(req, res) {
+router.get('/SetOutputControl', function (req, res) {
     req.setTimeout(3600000);
     //GetLookAtMeDP3110a0f
     //Test Device 075034699503
@@ -2200,11 +2112,11 @@ router.get('/SetOutputControl', function(req, res) {
     var client = new net.Socket();
     var Sendflag = false;
 
-    client.connect(SocketPort, SocketIPAddress, function() {
+    client.connect(SocketPort, SocketIPAddress, function () {
         // console.log('G-Sensor send to ' + DeviceId);
         client.write(Data, 'hex');
 
-        client.setTimeout(10000, function() {
+        client.setTimeout(10000, function () {
             if (Sendflag == false) {
                 Sendflag = true;
 
@@ -2215,7 +2127,7 @@ router.get('/SetOutputControl', function(req, res) {
         });
     });
 
-    client.on('data', function(data) {
+    client.on('data', function (data) {
         var line = data.toString();
         if (Sendflag == false) {
             if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4114') {
@@ -2226,7 +2138,7 @@ router.get('/SetOutputControl', function(req, res) {
                 // res.json(objNavigation);
                 client.destroy(); // kill client after server's response
                 if (StatusCode == '01') {
-                    connection.query("Update tblvehicle set " + updateQuery + " where deviceid='" + DeviceId + "'", function(err, rows, fields) {
+                    connection.query("Update tblvehicle set " + updateQuery + " where deviceid='" + DeviceId + "'", function (err, rows, fields) {
                         res.json({ success: true, message: 'Setting Save Successfully.' });
                     });
                 } else {
@@ -2245,7 +2157,7 @@ router.get('/SetOutputControl', function(req, res) {
 
     });
 
-    client.on('close', function() {
+    client.on('close', function () {
         console.log('Connection closed');
     });
 
@@ -2253,7 +2165,7 @@ router.get('/SetOutputControl', function(req, res) {
 })
 
 //Set Arm Settings
-router.get('/SetArmSettings', function(req, res) {
+router.get('/SetArmSettings', function (req, res) {
     req.setTimeout(3600000);
     //GetLookAtMeDP3110a0f
     //Test Device 075034699503
@@ -2263,7 +2175,7 @@ router.get('/SetArmSettings', function(req, res) {
         obj.DeviceId = DeviceId;
         obj.Arm = req.query.Arm;
 
-        connection.query("Update tblvehicle set Arm=" + obj.Arm + " where deviceid=" + DeviceId, function(err, rows, fields) {
+        connection.query("Update tblvehicle set Arm=" + obj.Arm + " where deviceid=" + DeviceId, function (err, rows, fields) {
             var Startdate = new Date();
 
             var convertDate = convertdateformatForUnix(Startdate);
@@ -2280,7 +2192,7 @@ router.get('/SetArmSettings', function(req, res) {
             //     if (response != null) {
 
             //----------------call redix server data--------------------------
-            client.get(DeviceId, function(err, response) {
+            client.get(DeviceId, function (err, response) {
 
                 if (!err && response != null && response != '' && response != undefined) {
                     response = JSON.parse(response);
@@ -2291,7 +2203,7 @@ router.get('/SetArmSettings', function(req, res) {
                     } else {
                         obj.ArmStatus = 1;
                     }
-                    SetArmSettings(obj, function(data) {});
+                    SetArmSettings(obj, function (data) { });
                     res.json({ success: true, message: 'Arm Settings Save Successfully.' });
 
                 } else {
@@ -2306,7 +2218,7 @@ router.get('/SetArmSettings', function(req, res) {
         obj.DeviceId = DeviceId;
         obj.Arm = req.query.Arm;
         obj.ArmStatus = req.query.Arm;
-        SetArmSettings(obj, function(data) {
+        SetArmSettings(obj, function (data) {
             res.json(data);
         })
     }
@@ -2315,7 +2227,7 @@ router.get('/SetArmSettings', function(req, res) {
 })
 
 //Set Arm Settings
-global.SetArmSettings = function(objdata, Callback) {
+global.SetArmSettings = function (objdata, Callback) {
 
     var Arm = ('00' + decimalToHexString(parseInt(objdata.ArmStatus))).slice(-2);
     var DeviceId = objdata.DeviceId;
@@ -2325,11 +2237,11 @@ global.SetArmSettings = function(objdata, Callback) {
     var client = new net.Socket();
     var Sendflag = false;
 
-    client.connect(SocketPort, SocketIPAddress, function() {
+    client.connect(SocketPort, SocketIPAddress, function () {
         // console.log('G-Sensor send to ' + DeviceId);
         client.write(Data, 'hex');
 
-        client.setTimeout(10000, function() {
+        client.setTimeout(10000, function () {
             if (Sendflag == false) {
                 Sendflag = true;
 
@@ -2341,7 +2253,7 @@ global.SetArmSettings = function(objdata, Callback) {
         });
     });
 
-    client.on('data', function(data) {
+    client.on('data', function (data) {
         var line = data.toString();
         if (Sendflag == false) {
             if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4116') {
@@ -2351,7 +2263,7 @@ global.SetArmSettings = function(objdata, Callback) {
 
                 client.destroy(); // kill client after server's response
                 if (StatusCode == '01') {
-                    connection.query("Update tblvehicle set Arm=" + objdata.Arm + ", LastArmSetting=" + objdata.ArmStatus + " where deviceid=" + DeviceId, function(err, rows, fields) {
+                    connection.query("Update tblvehicle set Arm=" + objdata.Arm + ", LastArmSetting=" + objdata.ArmStatus + " where deviceid=" + DeviceId, function (err, rows, fields) {
                         Callback({ success: true, message: 'Arm Settings Save Successfully.' });
                     });
                 } else {
@@ -2370,20 +2282,20 @@ global.SetArmSettings = function(objdata, Callback) {
 
     });
 
-    client.on('close', function() {
+    client.on('close', function () {
         console.log('Connection closed');
     });
 }
 
 //Set GPRS Interval Settings When Car in Stop
-router.get('/SetGPRSIntervalStopCar', function(req, res) {
+router.get('/SetGPRSIntervalStopCar', function (req, res) {
     req.setTimeout(3600000);
     //GetLookAtMeDP3110a0f
     //Test Device 075034699503
     var obj = new Object();
     obj.DeviceId = req.query.DeviceId;
     obj.TimeInterval = req.query.TimeInterval;
-    SetGPRSIntervalStopCar(obj, function(data) {
+    SetGPRSIntervalStopCar(obj, function (data) {
         res.json(data);
     })
 
@@ -2391,7 +2303,7 @@ router.get('/SetGPRSIntervalStopCar', function(req, res) {
 })
 
 //Set GPRS Interval Settings When Car in Stop
-global.SetGPRSIntervalStopCar = function(objdata, Callback) {
+global.SetGPRSIntervalStopCar = function (objdata, Callback) {
 
     var DeviceId = objdata.DeviceId;
     var TimeInterval = ('0000' + decimalToHexString(parseInt(objdata.TimeInterval) / 10)).slice(-4);
@@ -2401,11 +2313,11 @@ global.SetGPRSIntervalStopCar = function(objdata, Callback) {
     var client = new net.Socket();
     var Sendflag = false;
 
-    client.connect(SocketPort, SocketIPAddress, function() {
+    client.connect(SocketPort, SocketIPAddress, function () {
         // console.log('G-Sensor send to ' + DeviceId);
         client.write(Data, 'hex');
 
-        client.setTimeout(10000, function() {
+        client.setTimeout(10000, function () {
             if (Sendflag == false) {
                 Sendflag = true;
 
@@ -2417,7 +2329,7 @@ global.SetGPRSIntervalStopCar = function(objdata, Callback) {
         });
     });
 
-    client.on('data', function(data) {
+    client.on('data', function (data) {
         var line = data.toString();
         if (Sendflag == false) {
             if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4126') {
@@ -2428,7 +2340,7 @@ global.SetGPRSIntervalStopCar = function(objdata, Callback) {
                 // res.json(objNavigation);
                 client.destroy(); // kill client after server's response
                 if (StatusCode == '01') {
-                    connection.query("Update tblvehicle set GPRSStopInterval=" + objdata.TimeInterval + " where deviceid=" + DeviceId, function(err, rows, fields) {
+                    connection.query("Update tblvehicle set GPRSStopInterval=" + objdata.TimeInterval + " where deviceid=" + DeviceId, function (err, rows, fields) {
                         Callback({ success: true, message: 'GPRS Interval Settings for Stop Car Save Successfully.' });
                     });
                 } else {
@@ -2447,13 +2359,13 @@ global.SetGPRSIntervalStopCar = function(objdata, Callback) {
 
     });
 
-    client.on('close', function() {
+    client.on('close', function () {
         console.log('Connection closed');
     });
 }
 
 //Set TimeZone Settings
-router.get('/SetTimeZone', function(req, res) {
+router.get('/SetTimeZone', function (req, res) {
     req.setTimeout(3600000);
     //GetLookAtMeDP3110a0f
     //Test Device 075034699503
@@ -2472,11 +2384,11 @@ router.get('/SetTimeZone', function(req, res) {
     var client = new net.Socket();
     var Sendflag = false;
 
-    client.connect(SocketPort, SocketIPAddress, function() {
+    client.connect(SocketPort, SocketIPAddress, function () {
         // console.log('G-Sensor send to ' + DeviceId);
         client.write(Data, 'hex');
 
-        client.setTimeout(10000, function() {
+        client.setTimeout(10000, function () {
             if (Sendflag == false) {
                 Sendflag = true;
 
@@ -2488,7 +2400,7 @@ router.get('/SetTimeZone', function(req, res) {
         });
     });
 
-    client.on('data', function(data) {
+    client.on('data', function (data) {
         var line = data.toString();
         if (Sendflag == false) {
             if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4132') {
@@ -2499,7 +2411,7 @@ router.get('/SetTimeZone', function(req, res) {
                 // res.json(objNavigation);
                 client.destroy(); // kill client after server's response
                 if (StatusCode == '01') {
-                    connection.query("Update tblvehicle set TimeZone=" + req.query.TimeZone + " where deviceid=" + DeviceId, function(err, rows, fields) {
+                    connection.query("Update tblvehicle set TimeZone=" + req.query.TimeZone + " where deviceid=" + DeviceId, function (err, rows, fields) {
                         res.json({ success: true, message: 'TimeZone Save Successfully.' });
                     });
                 } else {
@@ -2518,7 +2430,7 @@ router.get('/SetTimeZone', function(req, res) {
 
     });
 
-    client.on('close', function() {
+    client.on('close', function () {
         console.log('Connection closed');
     });
 
@@ -2526,14 +2438,14 @@ router.get('/SetTimeZone', function(req, res) {
 })
 
 //Set Initial ODOmeter Settings
-router.get('/SetOdometerSetting', function(req, res) {
+router.get('/SetOdometerSetting', function (req, res) {
     req.setTimeout(3600000);
     //GetLookAtMeDP3110a0f
     //Test Device 075034699503
     var obj = new Object();
     obj.DeviceId = req.query.DeviceId;
     obj.odometer = req.query.odometer;
-    SetOdometerSetting(obj, function(data) {
+    SetOdometerSetting(obj, function (data) {
         res.json(data);
     })
 
@@ -2541,7 +2453,7 @@ router.get('/SetOdometerSetting', function(req, res) {
 })
 
 //Set Initial ODOmeter Settings
-global.SetOdometerSetting = function(objdata, Callback) {
+global.SetOdometerSetting = function (objdata, Callback) {
 
     var DeviceId = objdata.DeviceId;
     var odometer = a2hex(objdata.odometer);
@@ -2553,11 +2465,11 @@ global.SetOdometerSetting = function(objdata, Callback) {
     var client = new net.Socket();
     var Sendflag = false;
 
-    client.connect(SocketPort, SocketIPAddress, function() {
+    client.connect(SocketPort, SocketIPAddress, function () {
         // console.log('G-Sensor send to ' + DeviceId);
         client.write(Data, 'hex');
 
-        client.setTimeout(10000, function() {
+        client.setTimeout(10000, function () {
             if (Sendflag == false) {
                 Sendflag = true;
 
@@ -2569,7 +2481,7 @@ global.SetOdometerSetting = function(objdata, Callback) {
         });
     });
 
-    client.on('data', function(data) {
+    client.on('data', function (data) {
         var line = data.toString();
         if (Sendflag == false) {
             if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4145') {
@@ -2580,7 +2492,7 @@ global.SetOdometerSetting = function(objdata, Callback) {
                 // res.json(objNavigation);
                 client.destroy(); // kill client after server's response
                 if (StatusCode == '01') {
-                    connection.query("Update tblvehicle set OdoMeter=" + objdata.odometer + " where deviceid=" + DeviceId, function(err, rows, fields) {
+                    connection.query("Update tblvehicle set OdoMeter=" + objdata.odometer + " where deviceid=" + DeviceId, function (err, rows, fields) {
                         Callback({ success: true, message: 'Odometer settings Save Successfully.' });
                     });
                 } else {
@@ -2599,21 +2511,21 @@ global.SetOdometerSetting = function(objdata, Callback) {
 
     });
 
-    client.on('close', function() {
+    client.on('close', function () {
         console.log('Connection closed');
     });
 
 }
 
 //Set Initial ACC Settings
-router.get('/SetACCSetting', function(req, res) {
+router.get('/SetACCSetting', function (req, res) {
     req.setTimeout(3600000);
     //GetLookAtMeDP3110a0f
     //Test Device 075034699503
     var obj = new Object();
     obj.DeviceId = req.query.DeviceId;
     obj.ACC = req.query.ACC;
-    SetACCSetting(obj, function(data) {
+    SetACCSetting(obj, function (data) {
         res.json(data);
     })
 
@@ -2621,7 +2533,7 @@ router.get('/SetACCSetting', function(req, res) {
 })
 
 //Set Initial ACC Settings
-global.SetACCSetting = function(objdata, Callback) {
+global.SetACCSetting = function (objdata, Callback) {
 
     var DeviceId = objdata.DeviceId;
     var ACC = a2hex(objdata.ACC.toString());
@@ -2633,11 +2545,11 @@ global.SetACCSetting = function(objdata, Callback) {
     var client = new net.Socket();
     var Sendflag = false;
 
-    client.connect(SocketPort, SocketIPAddress, function() {
+    client.connect(SocketPort, SocketIPAddress, function () {
         // console.log('G-Sensor send to ' + DeviceId);
         client.write(Data, 'hex');
 
-        client.setTimeout(10000, function() {
+        client.setTimeout(10000, function () {
             if (Sendflag == false) {
                 Sendflag = true;
 
@@ -2649,7 +2561,7 @@ global.SetACCSetting = function(objdata, Callback) {
         });
     });
 
-    client.on('data', function(data) {
+    client.on('data', function (data) {
         var line = data.toString();
         if (Sendflag == false) {
             if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4148') {
@@ -2660,7 +2572,7 @@ global.SetACCSetting = function(objdata, Callback) {
                 // res.json(objNavigation);
                 client.destroy(); // kill client after server's response
                 if (StatusCode == '01') {
-                    connection.query("Update tblvehicle set ACC=" + objdata.ACC + " where deviceid=" + DeviceId, function(err, rows, fields) {
+                    connection.query("Update tblvehicle set ACC=" + objdata.ACC + " where deviceid=" + DeviceId, function (err, rows, fields) {
                         Callback({ success: true, message: 'ACC settings Save Successfully.' });
                     });
                 } else {
@@ -2681,14 +2593,14 @@ global.SetACCSetting = function(objdata, Callback) {
 
     });
 
-    client.on('close', function() {
+    client.on('close', function () {
         console.log('Connection closed');
     });
 
 }
 
 //Set HeartBeat Interval Settings
-router.get('/SetHeartBeatInterval', function(req, res) {
+router.get('/SetHeartBeatInterval', function (req, res) {
     req.setTimeout(3600000);
     //GetLookAtMeDP3110a0f
     //Test Device 075034699503  
@@ -2696,7 +2608,7 @@ router.get('/SetHeartBeatInterval', function(req, res) {
     var obj = new Object();
     obj.DeviceId = req.query.DeviceId;
     obj.TimeInterval = req.query.TimeInterval;
-    SetHeartBeatInterval(obj, function(data) {
+    SetHeartBeatInterval(obj, function (data) {
         res.json(data);
     })
 
@@ -2704,7 +2616,7 @@ router.get('/SetHeartBeatInterval', function(req, res) {
 })
 
 //Set HeartBeat Interval Settings
-global.SetHeartBeatInterval = function(objdata, Callback) {
+global.SetHeartBeatInterval = function (objdata, Callback) {
 
     var packetLength = 17;
     var DeviceId = objdata.DeviceId;
@@ -2716,11 +2628,11 @@ global.SetHeartBeatInterval = function(objdata, Callback) {
     var client = new net.Socket();
     var Sendflag = false;
 
-    client.connect(SocketPort, SocketIPAddress, function() {
+    client.connect(SocketPort, SocketIPAddress, function () {
         // console.log('G-Sensor send to ' + DeviceId);
         client.write(Data, 'hex');
 
-        client.setTimeout(10000, function() {
+        client.setTimeout(10000, function () {
             if (Sendflag == false) {
                 Sendflag = true;
 
@@ -2732,7 +2644,7 @@ global.SetHeartBeatInterval = function(objdata, Callback) {
         });
     });
 
-    client.on('data', function(data) {
+    client.on('data', function (data) {
         var line = data.toString();
         if (Sendflag == false) {
             if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '5119') {
@@ -2743,7 +2655,7 @@ global.SetHeartBeatInterval = function(objdata, Callback) {
                 // res.json(objNavigation);
                 client.destroy(); // kill client after server's response
                 if (StatusCode == '01') {
-                    connection.query("Update tblvehicle set HeartbeatInterval=" + objdata.TimeInterval + " where deviceid=" + DeviceId, function(err, rows, fields) {
+                    connection.query("Update tblvehicle set HeartbeatInterval=" + objdata.TimeInterval + " where deviceid=" + DeviceId, function (err, rows, fields) {
                         Callback({ success: true, message: 'HeartBeat Interval Settings Save Successfully.' });
                     });
                 } else {
@@ -2762,14 +2674,14 @@ global.SetHeartBeatInterval = function(objdata, Callback) {
 
     });
 
-    client.on('close', function() {
+    client.on('close', function () {
         console.log('Connection closed');
     });
 
 }
 
 //Clear data Logger
-router.get('/ClearDataLogger', function(req, res) {
+router.get('/ClearDataLogger', function (req, res) {
     req.setTimeout(3600000);
     //GetLookAtMeDP3110a0f
     //Test Device 075034699503  
@@ -2780,11 +2692,11 @@ router.get('/ClearDataLogger', function(req, res) {
     var client = new net.Socket();
     var Sendflag = false;
 
-    client.connect(SocketPort, SocketIPAddress, function() {
+    client.connect(SocketPort, SocketIPAddress, function () {
         // console.log('G-Sensor send to ' + DeviceId);
         client.write(Data, 'hex');
 
-        client.setTimeout(10000, function() {
+        client.setTimeout(10000, function () {
             if (Sendflag == false) {
                 Sendflag = true;
 
@@ -2796,7 +2708,7 @@ router.get('/ClearDataLogger', function(req, res) {
         });
     });
 
-    client.on('data', function(data) {
+    client.on('data', function (data) {
         var line = data.toString();
         if (Sendflag == false) {
             if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '5503') {
@@ -2824,7 +2736,7 @@ router.get('/ClearDataLogger', function(req, res) {
 
     });
 
-    client.on('close', function() {
+    client.on('close', function () {
         console.log('Connection closed');
     });
 
@@ -2832,7 +2744,7 @@ router.get('/ClearDataLogger', function(req, res) {
 })
 
 //Clear data Logger
-router.get('/GetFirmWareVersion', function(req, res) {
+router.get('/GetFirmWareVersion', function (req, res) {
     req.setTimeout(3600000);
     //GetLookAtMeDP3110a0f
     //Test Device 075034699503  
@@ -2843,11 +2755,11 @@ router.get('/GetFirmWareVersion', function(req, res) {
     var client = new net.Socket();
     var Sendflag = false;
 
-    client.connect(SocketPort, SocketIPAddress, function() {
+    client.connect(SocketPort, SocketIPAddress, function () {
         // console.log('G-Sensor send to ' + DeviceId);
         client.write(Data, 'hex');
 
-        client.setTimeout(10000, function() {
+        client.setTimeout(10000, function () {
             if (Sendflag == false) {
                 Sendflag = true;
 
@@ -2859,7 +2771,7 @@ router.get('/GetFirmWareVersion', function(req, res) {
         });
     });
 
-    client.on('data', function(data) {
+    client.on('data', function (data) {
         var line = data.toString();
         if (Sendflag == false) {
             if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '9001') {
@@ -2894,7 +2806,7 @@ router.get('/GetFirmWareVersion', function(req, res) {
 
     });
 
-    client.on('close', function() {
+    client.on('close', function () {
         console.log('Connection closed');
     });
 
@@ -2902,7 +2814,7 @@ router.get('/GetFirmWareVersion', function(req, res) {
 })
 
 //Read GPRS Time Interval
-router.get('/ReadGPRSTimeInterval', function(req, res) {
+router.get('/ReadGPRSTimeInterval', function (req, res) {
     req.setTimeout(3600000);
     //GetLookAtMeDP3110a0f
     //Test Device 075034699503  
@@ -2913,11 +2825,11 @@ router.get('/ReadGPRSTimeInterval', function(req, res) {
     var client = new net.Socket();
     var Sendflag = false;
 
-    client.connect(SocketPort, SocketIPAddress, function() {
+    client.connect(SocketPort, SocketIPAddress, function () {
         // console.log('G-Sensor send to ' + DeviceId);
         client.write(Data, 'hex');
 
-        client.setTimeout(10000, function() {
+        client.setTimeout(10000, function () {
             if (Sendflag == false) {
                 Sendflag = true;
 
@@ -2929,7 +2841,7 @@ router.get('/ReadGPRSTimeInterval', function(req, res) {
         });
     });
 
-    client.on('data', function(data) {
+    client.on('data', function (data) {
         var line = data.toString();
         if (Sendflag == false) {
             if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '9002') {
@@ -2959,7 +2871,7 @@ router.get('/ReadGPRSTimeInterval', function(req, res) {
 
     });
 
-    client.on('close', function() {
+    client.on('close', function () {
         console.log('Connection closed');
     });
 
@@ -2967,7 +2879,7 @@ router.get('/ReadGPRSTimeInterval', function(req, res) {
 })
 
 //Read Trouble Code
-router.get('/ReadTroubleCode', function(req, res) {
+router.get('/ReadTroubleCode', function (req, res) {
     req.setTimeout(3600000);
 
     var DeviceId = req.query.DeviceId;
@@ -2976,10 +2888,10 @@ router.get('/ReadTroubleCode', function(req, res) {
     var client = new net.Socket();
     var Sendflag = false;
 
-    client.connect(SocketPort, SocketIPAddress, function() {
+    client.connect(SocketPort, SocketIPAddress, function () {
 
         client.write(Data, 'hex');
-        client.setTimeout(10000, function() {
+        client.setTimeout(10000, function () {
             if (Sendflag == false) {
                 Sendflag = true;
 
@@ -2991,7 +2903,7 @@ router.get('/ReadTroubleCode', function(req, res) {
         });
     });
 
-    client.on('data', function(data) {
+    client.on('data', function (data) {
         var line = data.toString();
         if (Sendflag == false) {
             if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '9903') {
@@ -3017,7 +2929,7 @@ router.get('/ReadTroubleCode', function(req, res) {
 
     });
 
-    client.on('close', function() {
+    client.on('close', function () {
         console.log('Connection closed');
     });
 
@@ -3025,7 +2937,7 @@ router.get('/ReadTroubleCode', function(req, res) {
 })
 
 //Clear Trouble Code
-router.get('/ClearTroubleCode', function(req, res) {
+router.get('/ClearTroubleCode', function (req, res) {
     req.setTimeout(3600000);
 
     var DeviceId = req.query.DeviceId;
@@ -3035,11 +2947,11 @@ router.get('/ClearTroubleCode', function(req, res) {
     var client = new net.Socket();
     var Sendflag = false;
 
-    client.connect(SocketPort, SocketIPAddress, function() {
+    client.connect(SocketPort, SocketIPAddress, function () {
 
         client.write(Data, 'hex');
 
-        client.setTimeout(10000, function() {
+        client.setTimeout(10000, function () {
             if (Sendflag == false) {
                 Sendflag = true;
 
@@ -3050,7 +2962,7 @@ router.get('/ClearTroubleCode', function(req, res) {
         });
     });
 
-    client.on('data', function(data) {
+    client.on('data', function (data) {
         var line = data.toString();
         if (Sendflag == false) {
             if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '9904') {
@@ -3076,7 +2988,7 @@ router.get('/ClearTroubleCode', function(req, res) {
 
     });
 
-    client.on('close', function() {
+    client.on('close', function () {
         console.log('Connection closed');
     });
 
@@ -3084,7 +2996,7 @@ router.get('/ClearTroubleCode', function(req, res) {
 })
 
 //Read VIN Code
-router.get('/ReadVINCode', function(req, res) {
+router.get('/ReadVINCode', function (req, res) {
     req.setTimeout(3600000);
 
     var DeviceId = req.query.DeviceId;
@@ -3093,10 +3005,10 @@ router.get('/ReadVINCode', function(req, res) {
     var client = new net.Socket();
     var Sendflag = false;
 
-    client.connect(SocketPort, SocketIPAddress, function() {
+    client.connect(SocketPort, SocketIPAddress, function () {
 
         client.write(Data, 'hex');
-        client.setTimeout(10000, function() {
+        client.setTimeout(10000, function () {
             if (Sendflag == false) {
                 Sendflag = true;
 
@@ -3108,7 +3020,7 @@ router.get('/ReadVINCode', function(req, res) {
         });
     });
 
-    client.on('data', function(data) {
+    client.on('data', function (data) {
         var line = data.toString();
         if (Sendflag == false) {
             if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '9905') {
@@ -3134,7 +3046,7 @@ router.get('/ReadVINCode', function(req, res) {
 
     });
 
-    client.on('close', function() {
+    client.on('close', function () {
         console.log('Connection closed');
     });
 
@@ -3142,7 +3054,7 @@ router.get('/ReadVINCode', function(req, res) {
 })
 
 //Read RFID Tags
-router.get('/ReadRFIDTags', function(req, res) {
+router.get('/ReadRFIDTags', function (req, res) {
     req.setTimeout(3600000);
     //GetLookAtMeDP3110a0f
     //Test Device 075034699503  
@@ -3153,11 +3065,11 @@ router.get('/ReadRFIDTags', function(req, res) {
     var client = new net.Socket();
     var Sendflag = false;
 
-    client.connect(SocketPort, SocketIPAddress, function() {
+    client.connect(SocketPort, SocketIPAddress, function () {
         // console.log('G-Sensor send to ' + DeviceId);
         client.write(Data, 'hex');
 
-        client.setTimeout(10000, function() {
+        client.setTimeout(10000, function () {
             if (Sendflag == false) {
                 Sendflag = true;
 
@@ -3169,7 +3081,7 @@ router.get('/ReadRFIDTags', function(req, res) {
         });
     });
 
-    client.on('data', function(data) {
+    client.on('data', function (data) {
         var line = data.toString();
         if (Sendflag == false) {
             if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4170') {
@@ -3199,7 +3111,7 @@ router.get('/ReadRFIDTags', function(req, res) {
 
     });
 
-    client.on('close', function() {
+    client.on('close', function () {
         console.log('Connection closed');
     });
 
@@ -3207,7 +3119,7 @@ router.get('/ReadRFIDTags', function(req, res) {
 })
 
 //Minitor Voice
-router.get('/MonitorVoice', function(req, res) {
+router.get('/MonitorVoice', function (req, res) {
     req.setTimeout(3600000);
 
     var packetLength = 17;
@@ -3221,11 +3133,11 @@ router.get('/MonitorVoice', function(req, res) {
     var client = new net.Socket();
     var Sendflag = false;
 
-    client.connect(SocketPort, SocketIPAddress, function() {
+    client.connect(SocketPort, SocketIPAddress, function () {
         // console.log('G-Sensor send to ' + DeviceId);
         client.write(Data, 'hex');
 
-        client.setTimeout(10000, function() {
+        client.setTimeout(10000, function () {
             if (Sendflag == false) {
                 Sendflag = true;
 
@@ -3237,7 +3149,7 @@ router.get('/MonitorVoice', function(req, res) {
         });
     });
 
-    client.on('data', function(data) {
+    client.on('data', function (data) {
         var line = data.toString();
         if (Sendflag == false) {
             if (line.substring(0, 4) == '2424' && line.substring(22, 26) == '4130') {
@@ -3264,7 +3176,7 @@ router.get('/MonitorVoice', function(req, res) {
 
     });
 
-    client.on('close', function() {
+    client.on('close', function () {
         console.log('Connection closed');
     });
 
@@ -3297,13 +3209,13 @@ function convertdateformatForUnix(date1) {
 
 }
 
-router.get('/UpdateDeviceStatus', function(req, res) {
+router.get('/UpdateDeviceStatus', function (req, res) {
     var DeviceId = req.query.DeviceId;
     // deviceID = '075034903863';
     var Status = req.query.Status;
     // var Status = true;
 
-    connection.query("SELECT * from tblvehicle where deviceid=" + DeviceId + " and IsDelete=false", function(err, Vehiclerows, fields) {
+    connection.query("SELECT * from tblvehicle where deviceid=" + DeviceId + " and IsDelete=false", function (err, Vehiclerows, fields) {
         //tblPetgps Entry
         if (!err && Vehiclerows.length > 0) {
             var objVehicle = Vehiclerows[0];
@@ -3314,7 +3226,7 @@ router.get('/UpdateDeviceStatus', function(req, res) {
             }
             if (Status.toString() != flgOnline.toString()) {
                 var query = "Update tblvehicle set IsOnline=" + Status + " where deviceid='" + DeviceId + "';";
-                connection.query(query, function(err, rows, fields) {
+                connection.query(query, function (err, rows, fields) {
                     //tblapisresponse Entry
                     // if (objVehicle.IsDelete == false) {
                     //     if (!Status) {

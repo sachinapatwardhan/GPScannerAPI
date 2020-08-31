@@ -1054,15 +1054,6 @@ router.post('/WebCashResponseUrl', jsonParser, function (req, res) {
 
                         })
 
-                        // CallUpdateWalletTransation(resMarchant.MerchantID, resMarchant.MerchantKey, response, resData, function(res) {
-                        //     if (res.success == true) {
-                        //         io.sockets.emit(resdataparam.OrderNumber + 'ApiResponse', JSON.stringify(res));
-                        //         //res.send('RECEIVEOK');
-                        //     } else {
-                        //         io.sockets.emit(resdataparam.OrderNumber + 'ApiResponse', JSON.stringify(res));
-                        //         //res.send('RECEIVEOK');
-                        //     }
-                        // })
                     } else {
                         //res.send('RECEIVEOK');
                         var res = {

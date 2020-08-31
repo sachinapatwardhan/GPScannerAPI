@@ -520,13 +520,11 @@
                                                         data: rDeviceAgentRetailer
                                                     });
                                                 } else {
-                                                    CreateDabitWalletTransactionGlobal(DeviceCountry, rDeviceAgentRetailer.deviceId, UserExist.username, UserExist.idApp, function (resFlg) {
-                                                        res.json({
-                                                            success: true,
-                                                            message: 'Device activated!',
-                                                            data: rDeviceAgentRetailer
-                                                        });
-                                                    })
+                                                    res.json({
+                                                        success: true,
+                                                        message: 'Device activated!',
+                                                        data: rDeviceAgentRetailer
+                                                    });
                                                 }
                                             })
                                         })
@@ -546,20 +544,6 @@
                         });
                 }
             })
-            // .then(function(rDeviceAgentRetailer) {
-            //     User.findOne({ where: rDeviceAgentRetailer.agentId }).then(function(UserExist) {
-            //         console.log(rDeviceAgentRetailer)
-
-            //         console.log(UserExist.country, "===", rDeviceAgentRetailer.DeviceId, "===", UserExist.username, "===", UserExist.idApp)
-            //         CreateDabitWalletTransactionGlobal(UserExist.country, rDeviceAgentRetailer.DeviceId, UserExist.username, UserExist.idApp, function(resFlg) {
-            //             res.json({
-            //                 success: true,
-            //                 message: 'Device activated!',
-            //                 data: rDeviceAgentRetailer
-            //             });
-            //         })
-            //     })
-            // })
             .catch(function (err) {
                 console.log("err..", err);
                 res.json({

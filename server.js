@@ -492,7 +492,6 @@ app.use('/customer', require('./controllers/customers'));
 app.use('/dashboard', require('./controllers/dashboard'));
 app.use('/account', require('./controllers/account'));
 
-app.use('/enquiry', require('./controllers/enquiry'));
 app.use('/vehicles', require('./controllers/vehicles'));
 
 app.use('/pettracking', require('./controllers/petTracking'));
@@ -506,19 +505,7 @@ app.use('/carrier', require('./controllers/carrier'));
 app.use('/deviceacc', require('./controllers/deviceacc'));
 //CMS
 app.use('/media', require('./controllers/media'));
-app.use('/menu', require('./controllers/menu'));
-app.use('/banner', require('./controllers/banner'));
-app.use('/stickyfooter', require('./controllers/stickyfooter'));
-app.use('/widget', require('./controllers/widget'));
-app.use('/news', require('./controllers/news'));
-
 //End of CMS
-
-
-app.use('/warehouse', require('./controllers/warehouse'));
-app.use('/vendor', require('./controllers/vendor'));
-app.use('/store', require('./controllers/store'));
-
 
 //User
 app.use('/role', require('./controllers/role'));
@@ -538,9 +525,6 @@ app.use('/city', require('./controllers/city'));
 
 app.use('/settings', require('./controllers/settings'));
 app.use('/email', require('./controllers/email'));
-app.use('/category', require('./controllers/category'));
-app.use('/taxcategory', require('./controllers/taxcategory'));
-app.use('/taxrate', require('./controllers/taxrate'));
 app.use('/language', require('./controllers/language'));
 app.use('/languageresources', require('./controllers/languageResources'));
 app.use('/pushnotification', require('./controllers/pushnotification'));
@@ -552,7 +536,6 @@ app.use('/product', require('./controllers/product'));
 app.use('/productAttributeMapping', require('./controllers/productAttributeMapping'));
 app.use('/productAttributeValue', require('./controllers/productAttributeValue'));
 app.use('/productAttributeCombination', require('./controllers/productAttributeCombination'));
-app.use('/productPictureMapping', require('./controllers/productPictureMapping'));
 app.use('/orderservice', require('./controllers/orderservice'));
 app.use('/journey', require('./controllers/journey'));
 app.use('/NotificationSetting', require('./controllers/NotificationSetting.js'));
@@ -564,8 +547,6 @@ app.use('/NotificationSetting', require('./controllers/NotificationSetting.js'))
 //Bike
 app.use('/bike', require('./controllers/bike'));
 // End of Bike
-
-app.use('/dynamicpage', require('./controllers/dynamicpage'));
 
 //socket API start
 app.use('/socketapi', require('./controllers/socketapi'));
@@ -586,14 +567,12 @@ app.use('/sim', require('./controllers/sim'));
 app.use('/appsetting', require('./controllers/appsetting'));
 app.use('/vehicletype', require('./controllers/vehicletype'));
 app.use('/mainsetting', require('./controllers/mainsetting'));
-app.use('/DeviceStock', require('./controllers/DeviceStock'));
 app.use('/serviceenhancement', require('./controllers/serviceenhancement'));
 app.use('/advancefence', require('./controllers/advancefence'));
 app.use('/lastGPSdata', require('./controllers/lastGPSdata'));
 //socket API End
 
-//Wallet Transaction
-app.use('/WalletTransaction', require('./controllers/WalletTransaction'));
+
 
 // MAARK Install App
 app.use('/salesAgent', require('./controllers/salesAgent'));

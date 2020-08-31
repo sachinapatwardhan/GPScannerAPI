@@ -3,34 +3,30 @@ var router = express.Router();
 var User = models.tbluserinformation;
 var Country = models.tblcountrymgmt;
 var State = models.tblcountrystatemgmt;
-var Address = models.address;
-var BillingAddress = models.tblbillingaddress;
-var DeliveryAddress = models.tbldeliveryaddress;
-var Order = models.tblorder;
 var Countrycode = models.tblcountrycode;
 var LanguageInCountry = models.tbllanguageincountry;
 
 //End of Tables
 
-router.get('/GetAllCountry', function(req, res) {
-    Country.findAll().then(function(response) {
+router.get('/GetAllCountry', function (req, res) {
+    Country.findAll().then(function (response) {
         res.json(response);
-    }).catch(function(error) {
+    }).catch(function (error) {
         res.json(error);
     })
 })
 
 
-router.get('/GetAllEuropeCountry', function(req, res) {
-    Country.findAll({ where: { IsEurope: true } }).then(function(response) {
+router.get('/GetAllEuropeCountry', function (req, res) {
+    Country.findAll({ where: { IsEurope: true } }).then(function (response) {
         res.json(response);
-    }).catch(function(error) {
+    }).catch(function (error) {
         res.json(error);
     })
 })
 
 //Get Current country
-router.get('/GetCurrentCountry', function(req, res) {
+router.get('/GetCurrentCountry', function (req, res) {
     var lstip = req.connection.remoteAddress.toString().split(":");
     var ip = '0.0.0.0';
     if (lstip.length > 0) {
@@ -38,7 +34,7 @@ router.get('/GetCurrentCountry', function(req, res) {
     }
     request.get({
         url: 'http://geoip.maark.my/GetCurrentCountryByIp?IP=' + ip,
-    }, function(error, response, body) {
+    }, function (error, response, body) {
         if (body != '' && body != null && body != undefined) {
             try {
                 var data = JSON.parse(body);
@@ -53,7 +49,7 @@ router.get('/GetCurrentCountry', function(req, res) {
 });
 
 
-router.get('/GetAllCountryByPagging', function(req, res) {
+router.get('/GetAllCountryByPagging', function (req, res) {
     var objParam = req.query;
     var objColumns = objParam.columns;
     var objOrder = objParam.order;
@@ -77,14 +73,14 @@ router.get('/GetAllCountryByPagging', function(req, res) {
         order: Orderby,
         offset: parseInt(objParam.start),
         limit: parseInt(objParam.length),
-    }).then(function(response) {
+    }).then(function (response) {
         var response1 = new Object();
         response1.draw = objParam.draw;
         response1.recordsTotal = response.count;
         response1.recordsFiltered = response.count;
         response1.data = response.rows;
         res.json(response1);
-    }).catch(function(error) {
+    }).catch(function (error) {
         res.json({
             success: false,
             response: error
@@ -93,8 +89,8 @@ router.get('/GetAllCountryByPagging', function(req, res) {
 })
 
 
-router.get('/GetCountryById', function(req, res) {
-    Country.findOne({ where: { id: req.query.idCountry } }).then(function(response) {
+router.get('/GetCountryById', function (req, res) {
+    Country.findOne({ where: { id: req.query.idCountry } }).then(function (response) {
         if (response != null) {
             res.json({ success: true, message: "Country found...", data: response });
         } else {
@@ -103,7 +99,7 @@ router.get('/GetCountryById', function(req, res) {
     })
 })
 
-router.post('/SaveCountry', jsonParser, function(req, res) {
+router.post('/SaveCountry', jsonParser, function (req, res) {
     objCountry = req.body;
     objHeader = req.headers;
 
@@ -113,7 +109,7 @@ router.post('/SaveCountry', jsonParser, function(req, res) {
     var token = getToken(objHeader);
     if (token) {
         var decoded = jwt.decode(token, TokenKey);
-        User.findOne({ where: { username: decoded.username, password: decoded.password } }).then(function(UserExist) {
+        User.findOne({ where: { username: decoded.username, password: decoded.password } }).then(function (UserExist) {
             if (UserExist != null) {
                 if (objCountry.id == 0) {
 
@@ -124,11 +120,11 @@ router.post('/SaveCountry', jsonParser, function(req, res) {
                     obj.headers = req.headers;
                     obj.query = req.query;
 
-                    funAccessPermission.CheckUserAccessPermission(obj, function(responseAccessPermission) {
+                    funAccessPermission.CheckUserAccessPermission(obj, function (responseAccessPermission) {
                         var AccessPermission = responseAccessPermission.success;
                         if (AccessPermission) {
 
-                            Country.findOrCreate({ where: { Country: objCountry.Country }, defaults: objCountry }).then(function(response) {
+                            Country.findOrCreate({ where: { Country: objCountry.Country }, defaults: objCountry }).then(function (response) {
                                 if ((response[1])) {
                                     // funAuditLog.CreateAuditLog('SaveCountry', UserExist.username, 'Create Country');
                                     res.json({ success: true, message: "Country created successfully...", data: response });
@@ -150,15 +146,15 @@ router.post('/SaveCountry', jsonParser, function(req, res) {
                     obj.headers = req.headers;
                     obj.query = req.query;
 
-                    funAccessPermission.CheckUserAccessPermission(obj, function(responseAccessPermission) {
+                    funAccessPermission.CheckUserAccessPermission(obj, function (responseAccessPermission) {
                         var AccessPermission = responseAccessPermission.success;
                         if (AccessPermission) {
 
-                            Country.findOne({ where: { Country: objCountry.Country }, defaults: objCountry }).then(function(objCountryExist) {
+                            Country.findOne({ where: { Country: objCountry.Country }, defaults: objCountry }).then(function (objCountryExist) {
                                 if (objCountryExist != null && objCountry.id != objCountryExist.id) {
                                     res.json({ success: false, message: "Country is already Exist...", data: objCountryExist });
                                 } else {
-                                    Country.update(objCountry, { where: { id: objCountry.id } }).then(function(response) {
+                                    Country.update(objCountry, { where: { id: objCountry.id } }).then(function (response) {
                                         if (response[0]) {
                                             //   funAuditLog.CreateAuditLog('SaveCountry', UserExist.username, 'Update Country');
                                             res.json({ success: true, message: "Country updated successfully...", data: response });
@@ -180,7 +176,7 @@ router.post('/SaveCountry', jsonParser, function(req, res) {
     }
 })
 
-router.get('/DeleteCountry', function(req, res) {
+router.get('/DeleteCountry', function (req, res) {
     objHeader = req.headers;
     var token = getToken(objHeader);
 
@@ -192,35 +188,27 @@ router.get('/DeleteCountry', function(req, res) {
     obj.headers = req.headers;
     obj.query = req.query;
 
-    funAccessPermission.CheckUserAccessPermission(obj, function(responseAccessPermission) {
+    funAccessPermission.CheckUserAccessPermission(obj, function (responseAccessPermission) {
         var AccessPermission = responseAccessPermission.success;
         if (AccessPermission) {
 
             if (token) {
                 var decoded = jwt.decode(token, TokenKey);
-                User.findOne({ where: { username: decoded.username, password: decoded.password } }).then(function(UserExist) {
+                User.findOne({ where: { username: decoded.username, password: decoded.password } }).then(function (UserExist) {
                     if (UserExist != null) {
-                        State.findOne({ where: { idCountry: req.query.CountryId } }).then(function(resState) {
-                            Address.findOne({ where: { CountryId: req.query.CountryId } }).then(function(resAddress) {
-                                BillingAddress.findOne({ where: { idCountry: req.query.CountryId } }).then(function(resBillingAddress) {
-                                    DeliveryAddress.findOne({ where: { idCountry: req.query.CountryId } }).then(function(resDeliveryAddress) {
-                                        Order.findOne({ where: { ShippidCountry: req.query.CountryId } }).then(function(resOrder) {
-                                            if (resState == null && resAddress == null && resBillingAddress == null && resDeliveryAddress == null && resOrder == null) {
-                                                Country.destroy({ where: { id: req.query.idCountry } }).then(function(response) {
-                                                    if (response) {
-                                                        //  funAuditLog.CreateAuditLog('DeleteCountry', UserExist.username, 'Delete Country');
-                                                        res.json({ success: true, message: "Country deleted successfully...", data: response });
-                                                    } else {
-                                                        res.json({ success: false, message: "Requested Country not Exist...", data: response });
-                                                    }
-                                                })
-                                            } else {
-                                                res.json(NotDeleteReferenceData);
-                                            }
-                                        })
-                                    })
+                        State.findOne({ where: { idCountry: req.query.CountryId } }).then(function (resState) {
+                            if (resState == null) {
+                                Country.destroy({ where: { id: req.query.idCountry } }).then(function (response) {
+                                    if (response) {
+                                        //  funAuditLog.CreateAuditLog('DeleteCountry', UserExist.username, 'Delete Country');
+                                        res.json({ success: true, message: "Country deleted successfully...", data: response });
+                                    } else {
+                                        res.json({ success: false, message: "Requested Country not Exist...", data: response });
+                                    }
                                 })
-                            })
+                            } else {
+                                res.json(NotDeleteReferenceData);
+                            }
                         })
                     } else {
                         res.json(InvalidToken);
@@ -235,23 +223,23 @@ router.get('/DeleteCountry', function(req, res) {
     });
 });
 
-router.get('/GetCountryCode', function(req, res) {
-    Countrycode.findAll().then(function(response) {
+router.get('/GetCountryCode', function (req, res) {
+    Countrycode.findAll().then(function (response) {
         res.json(response);
-    }).catch(function(error) {
+    }).catch(function (error) {
         res.json(error);
     })
 })
 
-router.get('/getAllLangauageInCountry', function(req, res) {
-    LanguageInCountry.findAll({ where: { IdLanguage: req.query.Id } }).then(function(response) {
+router.get('/getAllLangauageInCountry', function (req, res) {
+    LanguageInCountry.findAll({ where: { IdLanguage: req.query.Id } }).then(function (response) {
         res.json(response);
-    }).catch(function(error) {
+    }).catch(function (error) {
         res.json(error);
     })
 })
 
-router.post('/SaveLagaugeInCountry', jsonParser, function(req, res) {
+router.post('/SaveLagaugeInCountry', jsonParser, function (req, res) {
     objlagCountry = req.body;
     objHeader = req.headers;
 
@@ -261,7 +249,7 @@ router.post('/SaveLagaugeInCountry', jsonParser, function(req, res) {
     var token = getToken(objHeader);
     if (token) {
         var decoded = jwt.decode(token, TokenKey);
-        User.findOne({ where: { username: decoded.username, password: decoded.password } }).then(function(UserExist) {
+        User.findOne({ where: { username: decoded.username, password: decoded.password } }).then(function (UserExist) {
             if (UserExist != null) {
 
                 //set Parameter
@@ -271,13 +259,13 @@ router.post('/SaveLagaugeInCountry', jsonParser, function(req, res) {
                 obj.headers = req.headers;
                 obj.query = req.query;
 
-                funAccessPermission.CheckUserAccessPermission(obj, function(responseAccessPermission) {
+                funAccessPermission.CheckUserAccessPermission(obj, function (responseAccessPermission) {
                     var AccessPermission = responseAccessPermission.success;
                     if (AccessPermission) {
                         console.log(objlagCountry.Country)
                         if (objlagCountry.Country == 'All') {
-                            LanguageInCountry.destroy({ where: { IdLanguage: objlagCountry.IdLanguage } }).then(function(resposeDelete) {
-                                LanguageInCountry.create(objlagCountry).then(function(response) {
+                            LanguageInCountry.destroy({ where: { IdLanguage: objlagCountry.IdLanguage } }).then(function (resposeDelete) {
+                                LanguageInCountry.create(objlagCountry).then(function (response) {
                                     if (response) {
                                         //  funAuditLog.CreateAuditLog('Add language country', UserExist.username, 'Create Add language country');
                                         res.json({ success: true, message: "Language add for all country successfully...", data: response });
@@ -289,7 +277,7 @@ router.post('/SaveLagaugeInCountry', jsonParser, function(req, res) {
 
 
                         } else {
-                            LanguageInCountry.findOrCreate({ where: { IdLanguage: objlagCountry.IdLanguage, Country: objlagCountry.Country }, defaults: objlagCountry }).then(function(response) {
+                            LanguageInCountry.findOrCreate({ where: { IdLanguage: objlagCountry.IdLanguage, Country: objlagCountry.Country }, defaults: objlagCountry }).then(function (response) {
                                 if ((response[1])) {
                                     // funAuditLog.CreateAuditLog('Add language country', UserExist.username, 'Create Add language country');
                                     res.json({ success: true, message: "Language add in country successfully...", data: response });
@@ -313,7 +301,7 @@ router.post('/SaveLagaugeInCountry', jsonParser, function(req, res) {
 
 
 
-router.get('/DeleteLagauagefromCountry', function(req, res) {
+router.get('/DeleteLagauagefromCountry', function (req, res) {
     objHeader = req.headers;
     var token = getToken(objHeader);
 
@@ -325,16 +313,16 @@ router.get('/DeleteLagauagefromCountry', function(req, res) {
     obj.headers = req.headers;
     obj.query = req.query;
 
-    funAccessPermission.CheckUserAccessPermission(obj, function(responseAccessPermission) {
+    funAccessPermission.CheckUserAccessPermission(obj, function (responseAccessPermission) {
         var AccessPermission = responseAccessPermission.success;
         if (AccessPermission) {
 
             if (token) {
                 var decoded = jwt.decode(token, TokenKey);
-                User.findOne({ where: { username: decoded.username, password: decoded.password } }).then(function(UserExist) {
+                User.findOne({ where: { username: decoded.username, password: decoded.password } }).then(function (UserExist) {
                     if (UserExist != null) {
 
-                        LanguageInCountry.destroy({ where: { IdLanguage: req.query.IdLanguage, Country: req.query.Country } }).then(function(response) {
+                        LanguageInCountry.destroy({ where: { IdLanguage: req.query.IdLanguage, Country: req.query.Country } }).then(function (response) {
                             if (response) {
                                 // funAuditLog.CreateAuditLog('Delete language from country', UserExist.username, 'Delete language from country');
                                 res.json({ success: true, message: "Language remove from country successfully...", data: response });

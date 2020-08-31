@@ -36,7 +36,7 @@ global.RecordNotFound = {
 
 var https = require('https');
 
-router.get('/SendOTP', function(req, res) {
+router.get('/SendOTP', function (req, res) {
     var data = JSON.stringify({
         api_key: 'a692ce5b',
         api_secret: '928903ee92ecd3e4',
@@ -63,12 +63,12 @@ router.get('/SendOTP', function(req, res) {
     req.end();
 
     var responseData = '';
-    req.on('response', function(res1) {
-        res1.on('data', function(chunk) {
+    req.on('response', function (res1) {
+        res1.on('data', function (chunk) {
             responseData += chunk;
         });
 
-        res1.on('end', function() {
+        res1.on('end', function () {
             // console.log(JSON.parse(responseData));
             res.json(JSON.parse(responseData));
         });
@@ -76,7 +76,7 @@ router.get('/SendOTP', function(req, res) {
 });
 
 
-router.get('/SendTestMail', function(req, res) {
+router.get('/SendTestMail', function (req, res) {
 
     var mail = {
         from: 'soham.patel@bugzstudio.com',
@@ -84,7 +84,7 @@ router.get('/SendTestMail', function(req, res) {
         subject: 'hello',
         text: 'hello world!'
     };
-    transporter.sendMail(mail, function(error, response) {
+    transporter.sendMail(mail, function (error, response) {
         if (error) {
             res.json(error);
         } else {
@@ -94,7 +94,7 @@ router.get('/SendTestMail', function(req, res) {
 })
 
 
-getToken = function(headers) {
+getToken = function (headers) {
     // console.log(headers.authorization);
     // console.log(JSON.stringify(headers));
     if (headers && headers.authorization) {
@@ -109,7 +109,7 @@ getToken = function(headers) {
     }
 };
 
-router.get('/EncodeData', function(req, res) {
+router.get('/EncodeData', function (req, res) {
     var Passwordaa = req.query.data;
     // console.log(Passwordaa)
     var EncodePass = jwt.encode(Passwordaa, "bugz");
@@ -119,7 +119,7 @@ router.get('/EncodeData', function(req, res) {
     res.send(EncodePass);
 });
 
-router.get('/DecodeData', function(req, res) {
+router.get('/DecodeData', function (req, res) {
     var Passwordaa = req.query.data;
     // var EncodePass = jwt.encode(Passwordaa, "bugz");
     // console.log(EncodePass)
@@ -130,7 +130,7 @@ router.get('/DecodeData', function(req, res) {
 
 app.use(express.static(__dirname + '/../MediaUploads'));
 
-router.get('/ReportExample', function(req, res) {
+router.get('/ReportExample', function (req, res) {
 
     // var objReport = {
     //     jasper: __dirname + '/../reports/Invoice.jasper'
@@ -171,7 +171,7 @@ function CheckUserAccessPermission(ObjParams, callback) {
                     username: objUser.username,
                     password: objUser.password
                 }
-            }).then(function(UserExist) {
+            }).then(function (UserExist) {
                 if (UserExist != null) {
 
                     var tablename = ObjParams.query.tablename;
@@ -183,7 +183,7 @@ function CheckUserAccessPermission(ObjParams, callback) {
                         where: {
                             Module: tablename
                         }
-                    }).then(function(objModule) {
+                    }).then(function (objModule) {
                         if (objModule != null) {
                             UserInRole.belongsTo(Role, {
                                 foreignKey: {
@@ -198,7 +198,7 @@ function CheckUserAccessPermission(ObjParams, callback) {
                                 include: [{
                                     model: Role
                                 }]
-                            }).then(function(strRole) {
+                            }).then(function (strRole) {
 
                                 function uploader(i) {
                                     if (i < strRole.length) {
@@ -208,7 +208,7 @@ function CheckUserAccessPermission(ObjParams, callback) {
                                                 idModule: objModule.id,
                                                 RoleName: strRole[i].tblrole.RoleName
                                             }
-                                        }).then(function(objUserPermission) {
+                                        }).then(function (objUserPermission) {
                                             if (objUserPermission != null) {
 
                                                 if (permission == "Added") {
@@ -282,7 +282,7 @@ function CreateAuditLog(Method, User, Message) {
     objAudit.createddate = new Date();
     objAudit.message = Message;
 
-    AuditLog.create(objAudit).then(function(responseAudit) {});
+    AuditLog.create(objAudit).then(function (responseAudit) { });
 }
 // var rule1 = new schedule.RecurrenceRule();
 
@@ -434,7 +434,7 @@ function GetCurrentDate1() {
 }
 
 
-router.get('/GetMobileLanguageData', function(req, res) {
+router.get('/GetMobileLanguageData', function (req, res) {
     // var translations = {
     //     "en-GB": {
     //         //English Language
@@ -1807,7 +1807,7 @@ router.get('/GetMobileLanguageData', function(req, res) {
     //     res.json(translations);
     // })
 
-    jsonfile.readFile(file, function(err, obj) {
+    jsonfile.readFile(file, function (err, obj) {
         res.json(obj);
         // res.json(translations);
     })
@@ -2291,7 +2291,7 @@ function convertdateformat(date1, flg) {
 
 function SendPushNotification(data, UserId, objAppInfo) {
     // var deviceIds = [];
-    connection.query("SELECT PushNotificationId,Platform,MessageCount,UserType,udid from tblpushnotification where iduser in (" + UserId + ") group by PushNotificationId, Platform", function(err, response, fields) {
+    connection.query("SELECT PushNotificationId,Platform,MessageCount,UserType,udid from tblpushnotification where iduser in (" + UserId + ") group by PushNotificationId, Platform", function (err, response, fields) {
         if (!err && response.length > 0) {
             // PushNotification.findAll({ where: { iduser: UserId } }).then(function(response) {
             function SendNotification(i) {
@@ -2304,9 +2304,9 @@ function SendPushNotification(data, UserId, objAppInfo) {
                     //     if (lstSetting[0].Value == 1) {
                     var deviceIds = [];
                     deviceIds.push(response[i].PushNotificationId)
-                        //SendNotification(i + 1);
-                        // } else {
-                        // console.log(deviceIds)
+                    //SendNotification(i + 1);
+                    // } else {
+                    // console.log(deviceIds)
                     var objData = clone(data);
 
                     if (response[i].Platform == 'ios') {
@@ -2336,9 +2336,9 @@ function SendPushNotification(data, UserId, objAppInfo) {
                     var objPushNotificationSend = new PushNotifications(PushNotificationSettings);
                     if (deviceIds.length > 0) {
 
-                        objPushNotificationSend.send(deviceIds, objData, function(result) {
+                        objPushNotificationSend.send(deviceIds, objData, function (result) {
                             // console.log(result);
-                            connection.query("Update tblpushnotification set messagecount=" + messagecount + " where udid='" + response[i].udid + "' and UserType='" + response[i].UserType + "'", function(errupdate, updateresp, fields) {
+                            connection.query("Update tblpushnotification set messagecount=" + messagecount + " where udid='" + response[i].udid + "' and UserType='" + response[i].UserType + "'", function (errupdate, updateresp, fields) {
                                 console.log(errupdate)
                                 SendNotification(i + 1);
                             });
@@ -2372,23 +2372,20 @@ var ProductAttributeValue = models.productattributevalue;
 var GpsDevice = models.tblgpsdevice;
 var SIM = models.tblsimdetails;
 var AppInfo = models.tblappinfo;
-var WalletTransaction = models.tblwallettransaction;
 
 
 //============================Order Service======================================
 global.CreateOrderServiceGlobal = CreateOrderServiceGlobal;
-global.CreateDabitWalletTransactionGlobal = CreateDabitWalletTransactionGlobal;
 global.GetRandomWord = GetRandomWord;
-global.GetWalletChargesGlobal = GetWalletChargesGlobal;
 global.AddDate = AddDate;
 
 function GetChargesGlobal(Country, ProductTypeId, callback) {
     var TotalAmount = 0;
     try {
-        GetExpiryProductByName(ProductTypeId, function(resProductId) {
+        GetExpiryProductByName(ProductTypeId, function (resProductId) {
             TotalAmount = 0;
             if (resProductId > 0) {
-                GetProductAttributes(resProductId, Country, function(resAllAttributes) {
+                GetProductAttributes(resProductId, Country, function (resAllAttributes) {
                     for (var i = 0; i < resAllAttributes.length; i++) {
                         TotalAmount += resAllAttributes[i].PriceAdjustment;
                     }
@@ -2422,7 +2419,7 @@ function GetExpiryProductByName(ProductTypeId, callback) {
                 Deleted: false,
             },
             attributes: ['Id', 'Name'],
-        }).then(function(response) {
+        }).then(function (response) {
             if (response != null) {
                 return callback(response.Id);
             } else {
@@ -2466,7 +2463,7 @@ function GetProductAttributes(idProduct, Country, callback) {
                 attributes: ['Id', 'Name']
             }]
         }]
-    }).then(function(resAttributes) {
+    }).then(function (resAttributes) {
         var AllAttributeValue = [];
         for (var i = 0; i < resAttributes.length; i++) {
             var value = resAttributes[i];
@@ -2485,7 +2482,7 @@ function GetProductAttributes(idProduct, Country, callback) {
             }
         }
         return callback(AllAttributeValue);
-    }).catch(function(error) {
+    }).catch(function (error) {
         return callback([]);
     })
 }
@@ -2548,7 +2545,7 @@ function GetRandomWord() {
 
 
 function CreateOrderServiceGlobal(Country, UserId, DeviceId, UserName, ProductTypeId, callback) {
-    GetChargesGlobal(Country, ProductTypeId, function(resOrderTotal) {
+    GetChargesGlobal(Country, ProductTypeId, function (resOrderTotal) {
         var OrderTotal = resOrderTotal.TotalAmount;
         var ProductId = resOrderTotal.ProductId;
 
@@ -2607,14 +2604,14 @@ function CreateOrderServiceGlobal(Country, UserId, DeviceId, UserName, ProductTy
                 required: true
             }],
             where: { OrderNotes: DeviceId },
-        }).then(function(OrderServiceExist) {
+        }).then(function (OrderServiceExist) {
             if (OrderServiceExist) {
                 return callback({
                     success: false,
                     message: "Order is already placed ...",
                 });
             } else {
-                OrderService.create(objOrder).then(function(response) {
+                OrderService.create(objOrder).then(function (response) {
                     var objOrderDetail = new Object();
                     objOrderDetail.OrderId = response.id;
                     objOrderDetail.ProductId = ProductId;
@@ -2625,7 +2622,7 @@ function CreateOrderServiceGlobal(Country, UserId, DeviceId, UserName, ProductTy
                     objOrderDetail.idOrderStatus = 1;
                     objOrderDetail.PriceInclTax = OrderTotal;
                     objOrderDetail.PriceExclTax = OrderTotal;
-                    OrderServiceDetail.create(objOrderDetail).then(function(responseOrderDetail) {
+                    OrderServiceDetail.create(objOrderDetail).then(function (responseOrderDetail) {
                         return callback({
                             success: true,
                             message: "Order placed successfully...",
@@ -2646,214 +2643,6 @@ function CreateOrderServiceGlobal(Country, UserId, DeviceId, UserName, ProductTy
 
 //============================End Order Service======================================
 
-//============================Wallet Transaction======================================
-
-
-function CreateDabitWalletTransactionGlobal(Country, DeviceId, UserName, ProductTypeId, callback) {
-    GetWalletChargesGlobal(Country, ProductTypeId, function(resOrderTotal) {
-        var Amount = resOrderTotal.TotalAmount;
-        var Remark = resOrderTotal.Remark;
-
-        var ObjWalletTransaction = new Object();
-        ObjWalletTransaction.id = 0;
-        ObjWalletTransaction.idApp = ProductTypeId;
-        ObjWalletTransaction.Amount = Amount;
-        ObjWalletTransaction.Type = "Debit";
-        ObjWalletTransaction.Remark = Remark;
-        ObjWalletTransaction.OrderNumber = "WALTNO-" + GetRandomWord() + Date.parse(new Date());
-        ObjWalletTransaction.Country = Country;
-        ObjWalletTransaction.PaymentType = "Offline";
-        ObjWalletTransaction.DeviceId = DeviceId;
-        ObjWalletTransaction.IsPaymentSuccess = 0;
-        ObjWalletTransaction.CreatedDate = new Date();
-        ObjWalletTransaction.CreatedBy = UserName;
-        ObjWalletTransaction.ExpiryDate = AddDate(ObjWalletTransaction.CreatedDate, 1, "Year");
-        ObjWalletTransaction.ModifiedDate = null;
-        ObjWalletTransaction.ModifiedBy = null;
-        ObjWalletTransaction.PaymentReceipt = null;
-
-        WalletTransaction.findOne({
-            where: {
-                IsPaymentSuccess: false,
-                idApp: ProductTypeId,
-            }
-        }).then(function(resTraExists) {
-            if (resTraExists == null) {
-                PutEntryWalletTransaction();
-            } else {
-                return callback({
-                    success: false,
-                    message: "Already Transaction Exists.",
-                });
-            }
-        });
-
-        function PutEntryWalletTransaction() {
-            WalletTransaction.create(ObjWalletTransaction).then(function(responseTransaction) {
-                return callback({
-                    success: true,
-                    message: "Transaction successfully.",
-                });
-            });
-        }
-    });
-}
-
-function GetWalletChargesGlobal(Country, ProductTypeId, callback) {
-    var PlatformTotalAmount = 0;
-    var SimTotalAmount = 0;
-    var remark = null;
-    try {
-        GetProductByNameForWallet("Platform Charge", ProductTypeId, function(resProductId) {
-            if (resProductId > 0) {
-                GetProductAttributes(resProductId, Country, function(resAllAttributes) {
-                    for (var i = 0; i < resAllAttributes.length; i++) {
-                        PlatformTotalAmount += resAllAttributes[i].PriceAdjustment;
-                    }
-                    remark = "Platform Charges = " + PlatformTotalAmount;
-                    ForWardSimCharges();
-                });
-            } else {
-                ForWardSimCharges();
-            }
-        });
-
-        function ForWardSimCharges() {
-            SimTotalAmount = 0;
-            GetProductByNameForWallet("SIM Charge", ProductTypeId, function(resSIMProductId) {
-                if (resSIMProductId > 0) {
-                    GetProductAttributes(resSIMProductId, Country, function(resAllSIMAttributes) {
-                        for (var i = 0; i < resAllSIMAttributes.length; i++) {
-                            SimTotalAmount += resAllSIMAttributes[i].PriceAdjustment;
-                        }
-                        if (remark != null) {
-                            remark = remark + "<br/>SIM Charges = " + SimTotalAmount;
-                        } else {
-                            remark = "SIM Charges = " + SimTotalAmount;
-                        }
-                        ForWardResponse();
-                    });
-                } else {
-                    ForWardResponse();
-                }
-            });
-        }
-
-
-        function ForWardResponse() {
-            var TotalAmount = 0;
-            TotalAmount = PlatformTotalAmount + SimTotalAmount;
-            return callback({
-                "TotalAmount": TotalAmount,
-                "Remark": remark,
-            });
-        }
-    } catch (err) {
-        return callback({
-            "TotalAmount": 0,
-            "Remark": ""
-        });
-    }
-}
-
-function GetProductByNameForWallet(Name, ProductTypeId, callback) {
-    try {
-        Product.findOne({
-            where: {
-                Name: Name,
-                ProductTypeId: parseInt(ProductTypeId),
-                Deleted: false,
-            },
-            attributes: ['Id', 'Name'],
-        }).then(function(response) {
-            if (response != null) {
-                return callback(response.Id);
-            } else {
-                return callback(0);
-            }
-        });
-    } catch (ees) {
-        return callback(0);
-    }
-}
-
-function GetSimChargeFlg(DeviceId, callback) {
-    try {
-        GpsDevice.belongsTo(SIM, {
-            foreignKey: {
-                name: 'idSim',
-                allowNull: false,
-            }
-        });
-
-        GetMarkTypeId(function(resMarkId) {
-            if (resMarkId > 0) {
-                ForwardM(resMarkId);
-            } else {
-                return callback(false);
-            }
-        })
-
-        function ForwardM(MarkId) {
-            GpsDevice.findOne({
-                where: {
-                    DeviceId: DeviceId
-                },
-                include: [{
-                    model: SIM,
-                    require: true,
-                    where: {
-                        $and: [{
-                            idApp: {
-                                $ne: parseInt(MarkId)
-                            }
-                        }, {
-                            idApp: {
-                                $gt: 0
-                            }
-                        }]
-                    }
-                }]
-            }).then(function(resDevice) {
-                if (resDevice == null) {
-                    return callback(false);
-                } else {
-                    return callback(true);
-                }
-            });
-        }
-    } catch (err) {
-        return callback(false);
-    }
-}
-
-function GetMarkTypeId(callback) {
-    try {
-        AppInfo.findOne({
-            where: {
-                AppName: 'Maark'
-            }
-        }).then(function(resMarkTypeId) {
-            if (resMarkTypeId == null) {
-                return callback(0);
-            } else {
-                return callback(resMarkTypeId.Id);
-            }
-        });
-    } catch (err) {
-        return callback(0);
-    }
-}
-
-// CreateDabitWalletTransactionGlobal("India", "44444444444456", "XXX", 2, function (resFlg) {
-//     console.log("=================")
-//     console.log(resFlg)
-//     console.log("=================")
-// });
-//============================End Wallet Transaction======================================
-
-
-
 //============================Vehical Location======================================
 
 
@@ -2866,11 +2655,11 @@ function getVehicleLastLocation(callback) {
     var unixStartdate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
     var query = "select * from tblgpsdata a inner join (select max(Date) as maxdate,DeviceId from  tblgpsdata where Date<" + unixStartdate + " group by DeviceId) d on  a.DeviceId = d.DeviceId and a.Date =d.maxdate where a.GPSPositioning='A' group by a.DeviceId";
     console.log("select * from tblgpsdata a inner join (select max(Date) as maxdate,DeviceId from  tblgpsdata where Date<" + unixStartdate + " group by DeviceId) d on  a.DeviceId = d.DeviceId and a.Date =d.maxdate where a.GPSPositioning='A' group by a.DeviceId");
-    connection.query(query, function(err, rows, fields) {
+    connection.query(query, function (err, rows, fields) {
         if (!err && rows) {
             if (rows.length > 0) {
                 for (var i = 0; i < rows.length; i++) {
-                    client.set(rows[i].DeviceId, JSON.stringify(rows[i]), function(err, replies) {
+                    client.set(rows[i].DeviceId, JSON.stringify(rows[i]), function (err, replies) {
 
 
                     });
@@ -2910,8 +2699,8 @@ function convertdateformatForUnix(date1) {
 }
 
 
-router.get('/getVehicleLastLocation', function(req, res) {
-    getVehicleLastLocation(function(response) {
+router.get('/getVehicleLastLocation', function (req, res) {
+    getVehicleLastLocation(function (response) {
         res.json(response);
     })
 })

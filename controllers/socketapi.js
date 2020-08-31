@@ -727,25 +727,9 @@ router.get('/Command5000', function (req, res) {
     var CurrentDate = GetCurrentDate();
     var response = '40400012' + DeviceId + '400001';
     response = response + CalculateCRCbyHex(response) + '0D0A';
-    connection.query("SELECT * from tblgpsdevice where DeviceId=" + DeviceId, function (err, rows, fields) {
-        if (!err) {
-            //if (rows.length > 0) {
-            //tblapisresponse Entry
-            // var ResponceQuery = "INSERT INTO tblapisresponse (Code,Response,Datetime) VALUES ('5000', '" + response + "', '" + CurrentDate + "');";
-            // connection.query(ResponceQuery, function(err, rows1, fields) {
-            res.send(response);
-            // });
-            // } else {
-            //     //tblPetgps Entry
-
-            //     var ResponceQuery = "INSERT INTO tblgpsdevice (Code,Response,Datetime) VALUES ('5000', '" + response + "', '" + CurrentDate + "');";
-            //     connection.query(ResponceQuery, function(err, rows1, fields) {
-            //         res.json(response);
-            //     });
-            //     //});
-            // }
-        }
-    })
+    // connection.query("SELECT * from tblgpsdevice where DeviceId=" + DeviceId, function (err, rows, fields) {
+    res.send(response);
+    // })
 
 
 })
