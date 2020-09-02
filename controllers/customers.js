@@ -242,23 +242,6 @@ router.get('/DecodeData', function (req, res) {
 
 app.use(express.static(__dirname + '/../MediaUploads'));
 
-router.get('/ReportExample', function (req, res) {
-
-    // var objReport = {
-    //     jasper: __dirname + '/../reports/Invoice.jasper'
-    // };
-
-    // var report = { report: objReport, data: { id: 4 } };
-    // var pdf = jasper.pdf(report);
-    // res.set({
-    //     'Content-type': 'application/pdf',
-    //     'Content-Length': pdf.length
-    // });
-    // res.send(pdf);
-
-
-})
-
 var GpsDate = models.tblgpsdate;
 function UpdateGpsDate() {
     var currentDate = new Date();
