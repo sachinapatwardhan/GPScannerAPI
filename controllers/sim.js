@@ -303,18 +303,24 @@ router.post('/uploadExcelDevice', function (req, res) {
                         function addSIm(i) {
                             if (i < lst.length) {
                                 var obj = new Object();
+                                var objUpdate = new Object();
                                 obj.SerialNum = lst[i].SerialNumber.trim();
+                                objUpdate.SerialNum = lst[i].SerialNumber.trim();
                                 if (lst[i].PhoneNumber != null && lst[i].PhoneNumber != undefined) {
                                     obj.PhoneNum = lst[i].PhoneNumber.trim();
+                                    objUpdate.PhoneNum = lst[i].PhoneNumber.trim();
                                 } else {
                                     obj.PhoneNum = null;
+                                    objUpdate.PhoneNum = null;
                                 }
 
                                 if (idTelCo != null && idTelCo != 'null') {
                                     obj.idTelCo = idTelCo;
+                                    objUpdate.idTelCo = idTelCo;
                                 }
                                 if (idApp != null && idApp != 'null') {
                                     obj.idApp = idApp;
+                                    objUpdate.idApp = idApp;
                                 }
                                 obj.CreatedDate = new Date();
 
@@ -326,7 +332,7 @@ router.post('/uploadExcelDevice', function (req, res) {
                                         // funAuditLog.CreateAuditLog('Upload SIM Data', UserExist.username, 'Cerate New SIM Data');
                                         addSIm(i + 1);
                                     } else {
-                                        SIM.update(obj, { where: { id: response[0].id } }).then(function (resUpdateSim) {
+                                        SIM.update(objUpdate, { where: { id: response[0].id } }).then(function (resUpdateSim) {
                                             // Importerror.push(lst[i].SerialNumber);
                                             addSIm(i + 1);
                                         });
