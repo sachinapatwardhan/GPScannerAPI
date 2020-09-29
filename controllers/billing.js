@@ -2156,6 +2156,58 @@ router.get('/MakeStatusPaid', function (req, res) {
     }
 })
 
+router.get('/MakeStatusCancel', function (req, res) {
+    objHeader = req.headers;
+    var token = getToken(objHeader);
+    if (token) {
+        var decoded = jwt.decode(token, TokenKey);
+        User.findOne({
+            where: {
+                username: decoded.username,
+                password: decoded.password
+            }
+        }).then(function (UserExist) {
+            if (!UserExist) {
+                err.message = 'Token';
+                throw err;
+            }
+            return OrderService.findOne({ where: { id: req.query.id } });
+
+        }).then(function (resOrderFind) {
+            if (resOrderFind != null) {
+                resOrderFind.updateAttributes({
+                    OrderStatusId: req.query.status,
+                    ModifiedDate: new Date(),
+                    Courier: decoded.username,
+                }).then(function (resUpdate) {
+                    var objres = {
+                        success: true,
+                        message: 'Order Service Cancel Successfully.',
+                    }
+                    res.json(objres);
+                });
+            } else {
+                res.json({
+                    success: false,
+                    message: "Order Service can not found. Try again later."
+                });
+            }
+        }).catch(function (error) {
+            if (err.message === 'Token') {
+                res.json(InvalidToken);
+            } else {
+                var obj = {
+                    success: false,
+                    message: "Order Service Status can not change. Try again later.",
+                }
+                res.json(obj);
+            }
+        })
+    } else {
+        res.json(InvalidToken);
+    }
+})
+
 //Image APi
 router.post('/uploadImage', function (req, res) {
     var form = new formidable.IncomingForm();

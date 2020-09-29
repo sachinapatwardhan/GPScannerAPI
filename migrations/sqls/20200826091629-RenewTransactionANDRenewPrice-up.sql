@@ -13,3 +13,5 @@ CREATE TABLE `tblrenewtransaction` (
   `Remark` TEXT NULL,
   `CompletedBy` VARCHAR(200) NULL,
   PRIMARY KEY (`id`));
+
+  INSERT INTO `tblorderservicestatus` (`OrderStatus`) VALUES ('Cancel');
