@@ -296,7 +296,7 @@ router.get('/GetAllDynamicUserNew', function (req, res) {
             search = " and tbluserinformation.idApp=" + objParam.appId;
         }
     }
-    var query = "select tblappinfo.AppName,GROUP_CONCAT(tblrole.RoleName) as Role ,tbluserinformation.*,CONVERT_TZ(tbluserinformation.LastLogin,'+00:00','" + CurrentOffset + "') as LastLoginDate from tbluserinformation " +
+    var query = "select tblappinfo.AppName,GROUP_CONCAT(tblrole.RoleName) as Role ,tbluserinformation.*,tblappinfo.WebAppUrl,CONVERT_TZ(tbluserinformation.LastLogin,'+00:00','" + CurrentOffset + "') as LastLoginDate from tbluserinformation " +
         "left join tbluserinrole on tbluserinformation.id = tbluserinrole.userId " +
         "left join tblrole on tbluserinrole.roleId  = tblrole.id " +
         "left join tblappinfo on tblappinfo.id = tbluserinformation.idApp " + search +

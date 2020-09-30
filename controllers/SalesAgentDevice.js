@@ -403,5 +403,95 @@
         }
     }
 
+    router.post('/AdminInpersionateLogin', jsonParser, function (req, res) {
+        console.log(req.body)
+        var token = req.body.Token;
+        if (token) {
+            try {
+                var decoded = jwt.decode(token, TokenKey);
+                User.findOne({
+                    where: {
+                        username: decoded.username,
+                        password: decoded.password
+                    }
+                }).then(function (UserExist) {
+                    if (UserExist != null) {
+                        if (decoded.Role && decoded.Role.indexOf('Super Admin') >= 0) {
+                            User.findOne({
+                                where: {
+                                    id: req.body.UserId
+                                }
+                            }).then(function (response) {
+                                if (response != null) {
+                                    User.hasMany(UserInRole, {
+                                        foreignKey: {
+                                            name: 'userId',
+                                            allowNull: false
+                                        }
+                                    });
+                                    UserInRole.belongsTo(Role, {
+                                        foreignKey: {
+                                            name: 'roleId',
+                                            allowNull: false
+                                        }
+                                    });
+                                    User.findOne({
+                                        where: {
+                                            id: response.id
+                                        },
+                                        include: [{
+                                            model: UserInRole,
+                                            include: [{
+                                                model: Role,
+                                                where: { RoleName: 'Sales Agent' }
+                                            }]
+                                        }],
+                                    }).then(function (response) {
+                                        if (response != null) {
+                                            var user = {
+                                                username: response.username,
+                                                password: response.password,
+                                            }
+                                            var token = jwt.encode(user, "bugz");
+                                            res.json({
+                                                success: true,
+                                                token: 'JWT ' + token,
+                                                UserId: response.id,
+                                                UserName: response.username,
+                                                Email: response.email,
+                                                idApp: response.idApp,
+                                                OrderTotal: response.Amount != null && response.Amount != '' ? response.Amount : 0,
+                                                message: "Login Successfully..."
+                                            });
+                                        } else {
+                                            res.json({
+                                                success: false,
+                                                message: "Invalid Username or Password..."
+                                            });
+                                        }
+                                    })
+
+                                } else {
+                                    res.json({
+                                        success: false,
+                                        message: "Invalid Username or Password..."
+                                    });
+                                }
+                            })
+                        } else {
+                            res.json(InvalidToken);
+                        }
+                    } else {
+                        res.json(InvalidToken);
+                    }
+                })
+            } catch (ex) {
+                res.json(InvalidToken);
+            }
+        } else {
+            res.json(InvalidToken);
+        }
+    });
+
     module.exports = router;
 })();
