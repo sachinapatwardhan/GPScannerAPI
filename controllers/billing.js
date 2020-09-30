@@ -2375,6 +2375,12 @@ router.post('/CVpayPaymentResponse', jsonParser, function (req, res) {
         if (!objOrder) {
             throw "No Order Found for this Order Number";
         }
+
+        if (objOrder.CreatedOnUtc <= OldOrderCheckDate) {
+            PaymentStatus = "Fail";
+            OrderStatusId = 8;
+        }
+
         var updateorder = { AuthorizationTransactionCode: objPaymentResponse.RefNo, AuthorizationTransactionResult: PaymentStatus, OrderStatusId: OrderStatusId, CustomValuesXml: objPaymentResponse.cvpayMessage, PaymentMethodSystemName: 'CV PAY', PaidDateUtc: new Date(), ProcessingCharges: objPaymentResponse.TxnAmt };
         return resOrder.updateAttributes(updateorder);
     }).then(function (resUpdateOrder) {
