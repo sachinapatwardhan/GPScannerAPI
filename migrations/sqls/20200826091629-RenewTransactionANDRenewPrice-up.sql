@@ -15,3 +15,5 @@ CREATE TABLE `tblrenewtransaction` (
   PRIMARY KEY (`id`));
 
   INSERT INTO `tblorderservicestatus` (`OrderStatus`) VALUES ('Cancel');
+  INSERT INTO `tblorderservicestatus` (`OrderStatus`) VALUES ('Not Paid');
+  INSERT INTO `tblorderservicestatus` (`OrderStatus`) VALUES ('Payment Fail');
