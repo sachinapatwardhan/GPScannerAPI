@@ -1,0 +1,20 @@
+CREATE TABLE `tbltrackerreport` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `deviceId` VARCHAR(100) NULL,
+  `vehicleName` VARCHAR(200) NULL,
+  `startDatetime` DATETIME NULL,
+  `endDatetime` DATETIME NULL,
+  `startLatitude` VARCHAR(20) NULL,
+  `startLongitude` VARCHAR(20) NULL,
+  `startLocation` VARCHAR(250) NULL,
+  `endLatitude` VARCHAR(20) NULL,
+  `endLongitude` VARCHAR(20) NULL,
+  `endLocation` VARCHAR(250) NULL,
+  `totalKm` DECIMAL(20, 4) NULL,
+  `totalSecs` INT NULL,
+  `maximumSpeed` VARCHAR(8) NULL,
+  `averageSpeed` VARCHAR(8) NULL,
+  `reportType` VARCHAR(50) NULL,
+  `journeyName` VARCHAR(100) NULL,
+  PRIMARY KEY (`id`)
+);
