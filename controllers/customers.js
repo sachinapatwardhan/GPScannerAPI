@@ -242,23 +242,6 @@ router.get('/DecodeData', function (req, res) {
 
 app.use(express.static(__dirname + '/../MediaUploads'));
 
-router.get('/ReportExample', function (req, res) {
-
-    // var objReport = {
-    //     jasper: __dirname + '/../reports/Invoice.jasper'
-    // };
-
-    // var report = { report: objReport, data: { id: 4 } };
-    // var pdf = jasper.pdf(report);
-    // res.set({
-    //     'Content-type': 'application/pdf',
-    //     'Content-Length': pdf.length
-    // });
-    // res.send(pdf);
-
-
-})
-
 var GpsDate = models.tblgpsdate;
 function UpdateGpsDate() {
     var currentDate = new Date();
@@ -2382,14 +2365,12 @@ var ProductAttributeValue = models.productattributevalue;
 var GpsDevice = models.tblgpsdevice;
 var SIM = models.tblsimdetails;
 var AppInfo = models.tblappinfo;
-var WalletTransaction = models.tblwallettransaction;
+
 
 
 //============================Order Service======================================
 global.CreateOrderServiceGlobal = CreateOrderServiceGlobal;
-global.CreateDabitWalletTransactionGlobal = CreateDabitWalletTransactionGlobal;
 global.GetRandomWord = GetRandomWord;
-global.GetWalletChargesGlobal = GetWalletChargesGlobal;
 global.AddDate = AddDate;
 
 function GetChargesGlobal(Country, ProductTypeId, callback) {
@@ -2652,218 +2633,6 @@ function CreateOrderServiceGlobal(Country, UserId, DeviceId, UserName, ProductTy
 
 
 //============================End Order Service======================================
-
-//============================Wallet Transaction======================================
-
-
-function CreateDabitWalletTransactionGlobal(Country, DeviceId, UserName, ProductTypeId, callback) {
-    GetWalletChargesGlobal(Country, ProductTypeId, function (resOrderTotal) {
-        var Amount = resOrderTotal.TotalAmount;
-        var Remark = resOrderTotal.Remark;
-
-        var ObjWalletTransaction = new Object();
-        ObjWalletTransaction.id = 0;
-        ObjWalletTransaction.idApp = ProductTypeId;
-        ObjWalletTransaction.Amount = Amount;
-        ObjWalletTransaction.Type = "Debit";
-        ObjWalletTransaction.Remark = Remark;
-        ObjWalletTransaction.OrderNumber = "WALTNO-" + GetRandomWord() + Date.parse(new Date());
-        ObjWalletTransaction.Country = Country;
-        ObjWalletTransaction.PaymentType = "Offline";
-        ObjWalletTransaction.DeviceId = DeviceId;
-        ObjWalletTransaction.IsPaymentSuccess = 0;
-        ObjWalletTransaction.CreatedDate = new Date();
-        ObjWalletTransaction.CreatedBy = UserName;
-        ObjWalletTransaction.ExpiryDate = AddDate(ObjWalletTransaction.CreatedDate, 1, "Year");
-        ObjWalletTransaction.ModifiedDate = null;
-        ObjWalletTransaction.ModifiedBy = null;
-        ObjWalletTransaction.PaymentReceipt = null;
-
-        WalletTransaction.findOne({
-            where: {
-                IsPaymentSuccess: false,
-                idApp: ProductTypeId,
-            }
-        }).then(function (resTraExists) {
-            if (resTraExists == null) {
-                PutEntryWalletTransaction();
-            } else {
-                return callback({
-                    success: false,
-                    message: "Already Transaction Exists.",
-                });
-            }
-        });
-
-        function PutEntryWalletTransaction() {
-            WalletTransaction.create(ObjWalletTransaction).then(function (responseTransaction) {
-                return callback({
-                    success: true,
-                    message: "Transaction successfully.",
-                });
-            });
-        }
-    });
-}
-
-function GetWalletChargesGlobal(Country, ProductTypeId, callback) {
-    var PlatformTotalAmount = 0;
-    var SimTotalAmount = 0;
-    var remark = null;
-    try {
-        GetProductByNameForWallet("Platform Charge", ProductTypeId, function (resProductId) {
-            if (resProductId > 0) {
-                GetProductAttributes(resProductId, Country, function (resAllAttributes) {
-                    for (var i = 0; i < resAllAttributes.length; i++) {
-                        PlatformTotalAmount += resAllAttributes[i].PriceAdjustment;
-                    }
-                    remark = "Platform Charges = " + PlatformTotalAmount;
-                    ForWardSimCharges();
-                });
-            } else {
-                ForWardSimCharges();
-            }
-        });
-
-        function ForWardSimCharges() {
-            SimTotalAmount = 0;
-            GetProductByNameForWallet("SIM Charge", ProductTypeId, function (resSIMProductId) {
-                if (resSIMProductId > 0) {
-                    GetProductAttributes(resSIMProductId, Country, function (resAllSIMAttributes) {
-                        for (var i = 0; i < resAllSIMAttributes.length; i++) {
-                            SimTotalAmount += resAllSIMAttributes[i].PriceAdjustment;
-                        }
-                        if (remark != null) {
-                            remark = remark + "<br/>SIM Charges = " + SimTotalAmount;
-                        } else {
-                            remark = "SIM Charges = " + SimTotalAmount;
-                        }
-                        ForWardResponse();
-                    });
-                } else {
-                    ForWardResponse();
-                }
-            });
-        }
-
-
-        function ForWardResponse() {
-            var TotalAmount = 0;
-            TotalAmount = PlatformTotalAmount + SimTotalAmount;
-            return callback({
-                "TotalAmount": TotalAmount,
-                "Remark": remark,
-            });
-        }
-    } catch (err) {
-        return callback({
-            "TotalAmount": 0,
-            "Remark": ""
-        });
-    }
-}
-
-function GetProductByNameForWallet(Name, ProductTypeId, callback) {
-    try {
-        Product.findOne({
-            where: {
-                Name: Name,
-                ProductTypeId: parseInt(ProductTypeId),
-                Deleted: false,
-            },
-            attributes: ['Id', 'Name'],
-        }).then(function (response) {
-            if (response != null) {
-                return callback(response.Id);
-            } else {
-                return callback(0);
-            }
-        });
-    } catch (ees) {
-        return callback(0);
-    }
-}
-
-function GetSimChargeFlg(DeviceId, callback) {
-    try {
-        GpsDevice.belongsTo(SIM, {
-            foreignKey: {
-                name: 'idSim',
-                allowNull: false,
-            }
-        });
-
-        GetMarkTypeId(function (resMarkId) {
-            if (resMarkId > 0) {
-                ForwardM(resMarkId);
-            } else {
-                return callback(false);
-            }
-        })
-
-        function ForwardM(MarkId) {
-            GpsDevice.findOne({
-                where: {
-                    DeviceId: DeviceId
-                },
-                include: [{
-                    model: SIM,
-                    require: true,
-                    where: {
-                        $and: [{
-                            idApp: {
-                                $ne: parseInt(MarkId)
-                            }
-                        }, {
-                            idApp: {
-                                $gt: 0
-                            }
-                        }]
-                    }
-                }]
-            }).then(function (resDevice) {
-                if (resDevice == null) {
-                    return callback(false);
-                } else {
-                    return callback(true);
-                }
-            });
-        }
-    } catch (err) {
-        return callback(false);
-    }
-}
-
-function GetMarkTypeId(callback) {
-    try {
-        AppInfo.findOne({
-            where: {
-                AppName: 'Maark'
-            }
-        }).then(function (resMarkTypeId) {
-            if (resMarkTypeId == null) {
-                return callback(0);
-            } else {
-                return callback(resMarkTypeId.Id);
-            }
-        });
-    } catch (err) {
-        return callback(0);
-    }
-}
-
-// CreateDabitWalletTransactionGlobal("India", "44444444444456", "XXX", 2, function (resFlg) {
-//     console.log("=================")
-//     console.log(resFlg)
-//     console.log("=================")
-// });
-//============================End Wallet Transaction======================================
-
-
-
-//============================Vehical Location======================================
-
-
 
 function getVehicleLastLocation(callback) {
 

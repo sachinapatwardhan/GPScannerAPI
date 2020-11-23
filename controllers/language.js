@@ -2,21 +2,20 @@
 var router = express.Router();
 var User = models.tbluserinformation;
 var Language = models.language;
-var Localizedproperty = models.localizedproperty;
 var LanguageInCountry = models.tbllanguageincountry;
 
 //End of Tables
 
-router.get('/GetAllLanguage', function(req, res) {
-    Language.findAll().then(function(response) {
+router.get('/GetAllLanguage', function (req, res) {
+    Language.findAll().then(function (response) {
         res.json(response);
-    }).catch(function(error) {
+    }).catch(function (error) {
         res.json(error);
     })
 })
 
 
-router.get('/GetAllPublishLanguage', function(req, res) {
+router.get('/GetAllPublishLanguage', function (req, res) {
     Language.hasMany(LanguageInCountry, {
         foreignKey: {
             name: 'IdLanguage',
@@ -32,15 +31,15 @@ router.get('/GetAllPublishLanguage', function(req, res) {
             }
         }],
         order: ['DisplayOrder']
-    }).then(function(response) {
+    }).then(function (response) {
         res.json(response);
-    }).catch(function(error) {
+    }).catch(function (error) {
         res.json(error);
     })
 })
 
-router.get('/GetLanguageById', function(req, res) {
-    Language.findOne({ where: { Id: req.query.idLanguage } }).then(function(response) {
+router.get('/GetLanguageById', function (req, res) {
+    Language.findOne({ where: { Id: req.query.idLanguage } }).then(function (response) {
         if (response != null) {
             res.json({ success: true, message: "Record found...", data: response });
         } else {
@@ -49,12 +48,12 @@ router.get('/GetLanguageById', function(req, res) {
     })
 })
 
-router.get('/GetLangageCulture', function(req, res) {
+router.get('/GetLangageCulture', function (req, res) {
     var allCountryCodes = CountryLanguage.getLanguages();
     var culturename = [];
     for (var i = 0; i < allCountryCodes.length; i++) {
         if (allCountryCodes[i].langCultureMs) {
-            allCountryCodes[i].langCultureMs.forEach(function(locale) {
+            allCountryCodes[i].langCultureMs.forEach(function (locale) {
                 culturename.push(locale.langCultureName);
             })
         };
@@ -66,7 +65,7 @@ router.get('/GetLangageCulture', function(req, res) {
 
 
 
-router.post('/SaveLanguage', jsonParser, function(req, res) {
+router.post('/SaveLanguage', jsonParser, function (req, res) {
     objLanguage = req.body;
     objHeader = req.headers;
 
@@ -75,7 +74,7 @@ router.post('/SaveLanguage', jsonParser, function(req, res) {
     var token = getToken(objHeader);
     if (token) {
         var decoded = jwt.decode(token, TokenKey);
-        User.findOne({ where: { username: decoded.username, password: decoded.password } }).then(function(UserExist) {
+        User.findOne({ where: { username: decoded.username, password: decoded.password } }).then(function (UserExist) {
             if (UserExist != null) {
                 if (objLanguage.Id == 0) {
                     //set Parameter
@@ -85,10 +84,10 @@ router.post('/SaveLanguage', jsonParser, function(req, res) {
                     obj.headers = req.headers;
                     obj.query = req.query;
 
-                    funAccessPermission.CheckUserAccessPermission(obj, function(responseAccessPermission) {
+                    funAccessPermission.CheckUserAccessPermission(obj, function (responseAccessPermission) {
                         var AccessPermission = responseAccessPermission.success;
                         if (AccessPermission) {
-                            Language.findOrCreate({ where: { Name: objLanguage.Name }, defaults: objLanguage }).then(function(response) {
+                            Language.findOrCreate({ where: { Name: objLanguage.Name }, defaults: objLanguage }).then(function (response) {
                                 if ((response[1])) {
                                     funAuditLog.CreateAuditLog('SaveLanguage', UserExist.username, 'Create Language');
                                     res.json({ success: true, message: "Language created successfully...", data: response });
@@ -108,14 +107,14 @@ router.post('/SaveLanguage', jsonParser, function(req, res) {
                     obj.headers = req.headers;
                     obj.query = req.query;
 
-                    funAccessPermission.CheckUserAccessPermission(obj, function(responseAccessPermission) {
+                    funAccessPermission.CheckUserAccessPermission(obj, function (responseAccessPermission) {
                         var AccessPermission = responseAccessPermission.success;
                         if (AccessPermission) {
-                            Language.findOne({ where: { Name: objLanguage.Name }, defaults: objLanguage }).then(function(objLanguageExist) {
+                            Language.findOne({ where: { Name: objLanguage.Name }, defaults: objLanguage }).then(function (objLanguageExist) {
                                 if (objLanguageExist != null && objLanguage.Id != objLanguageExist.Id) {
                                     res.json({ success: false, message: "Language is already Exist...", data: objLanguageExist });
                                 } else {
-                                    Language.update(objLanguage, { where: { Id: objLanguage.Id } }).then(function(response) {
+                                    Language.update(objLanguage, { where: { Id: objLanguage.Id } }).then(function (response) {
                                         if (response[0]) {
                                             funAuditLog.CreateAuditLog('SaveLanguage', UserExist.username, 'Update Language');
                                             res.json({ success: true, message: "Language updated successfully...", data: response });
@@ -137,132 +136,7 @@ router.post('/SaveLanguage', jsonParser, function(req, res) {
     }
 })
 
-
-
-router.post('/CreateLocalizedProperty', jsonParser, function(req, res) {
-    lstLocalizedProperty = req.body;
-    objHeader = req.headers;
-    var token = getToken(objHeader);
-    if (token) {
-        var decoded = jwt.decode(token, TokenKey);
-        User.findOne({ where: { username: decoded.username, password: decoded.password } }).then(function(UserExist) {
-            if (UserExist != null) {
-                if (lstLocalizedProperty.length > 0) {
-                    function uploadLocalizeProperty(i) {
-                        if (i < lstLocalizedProperty.length) {
-                            var objLocalizedProperty = lstLocalizedProperty[i];
-                            if (objLocalizedProperty.Id == 0) {
-                                if (objLocalizedProperty.LocaleValue != null && objLocalizedProperty.LocaleValue != '' && objLocalizedProperty.LocaleValue != undefined) {
-                                    objLocalizedProperty.EntityId = parseInt(req.query.EntityId);
-                                    Localizedproperty.findOrCreate({
-                                        where: {
-                                            EntityId: objLocalizedProperty.EntityId,
-                                            LanguageId: objLocalizedProperty.LanguageId,
-                                            LocaleKeyGroup: objLocalizedProperty.LocaleKeyGroup,
-                                            LocaleKey: objLocalizedProperty.LocaleKey,
-                                        },
-                                        defaults: objLocalizedProperty
-                                    }).then(function(response) {
-                                        // if ((response[1])) {
-                                        //     res.json({ success: true, message: "LocalizedProperty Created successfully...", data: response });
-                                        // } else {
-                                        //     res.json({ success: false, message: "LocalizedProperty is already Exist...", data: response });
-                                        // }
-                                        uploadLocalizeProperty(i + 1);
-
-                                    })
-                                } else {
-                                    // res.json({ success: false, message: "No value" });
-                                    uploadLocalizeProperty(i + 1);
-
-                                }
-                            } else {
-                                if (objLocalizedProperty.LocaleValue != null && objLocalizedProperty.LocaleValue != '' && objLocalizedProperty.LocaleValue != undefined) {
-                                    objLocalizedProperty.EntityId = parseInt(req.query.EntityId);
-                                    Localizedproperty.findOne({
-                                        where: {
-                                            EntityId: objLocalizedProperty.EntityId,
-                                            LanguageId: objLocalizedProperty.LanguageId,
-                                            LocaleKeyGroup: objLocalizedProperty.LocaleKeyGroup,
-                                            LocaleKey: objLocalizedProperty.LocaleKey,
-                                        },
-                                        defaults: objLocalizedProperty
-                                    }).then(function(objLanguageExist) {
-                                        if (objLanguageExist != null && objLocalizedProperty.Id != objLanguageExist.Id) {
-                                            // res.json({ success: false, message: "LocalizedProperty is already Exist..", data: objLanguageExist });
-                                            uploadLocalizeProperty(i + 1);
-                                        } else {
-                                            Localizedproperty.update(objLocalizedProperty, { where: { Id: objLocalizedProperty.Id } }).then(function(response2) {
-                                                if (response2[0]) {
-                                                    // res.json({ success: true, message: "LocalizedProperty Updated successfully...", data: response });
-                                                }
-                                                uploadLocalizeProperty(i + 1);
-
-                                            })
-                                        }
-                                    })
-
-                                } else {
-                                    // res.json({ success: false, message: "No value" });
-                                    uploadLocalizeProperty(i + 1);
-
-                                }
-                            }
-                        } else {
-                            res.json({ success: true, message: "Localized property created.." });
-
-                        }
-                    }
-                    uploadLocalizeProperty(0);
-                }
-
-            } else {
-                res.json(InvalidToken);
-            }
-        })
-    } else {
-        res.json(InvalidToken);
-    }
-})
-
-
-router.get('/GetLocalizedPropertyByID', function(req, res) {
-    Localizedproperty.findAll({ where: { EntityId: req.query.EntityId, LocaleKeyGroup: req.query.LocaleKeyGroup } }).then(function(response) {
-        if (response != null) {
-            res.json({ success: true, message: "Record found...", data: response });
-        } else {
-            res.json({ success: false, message: "Record not found...", data: response });
-        }
-    })
-})
-
-router.get('/DeleteLocalizedProperty', function(req, res) {
-    objHeader = req.headers;
-    var token = getToken(objHeader);
-    if (token) {
-        var decoded = jwt.decode(token, TokenKey);
-        User.findOne({ where: { username: decoded.username, password: decoded.password } }).then(function(UserExist) {
-            if (UserExist != null) {
-                Localizedproperty.destroy({ where: { EntityId: req.query.EntityId } }).then(function(response) {
-                    if (response) {
-                        funAuditLog.CreateAuditLog('DeleteLocalizedProperty', UserExist.username, 'Delete Localized Property');
-                        res.json({ success: true, message: "Localized property deleted successfully...", data: response });
-                    } else {
-                        res.json({ success: false, message: "Requested Record not Exist....", data: response });
-                    }
-                })
-            } else {
-                res.json(InvalidToken);
-            }
-        })
-    } else {
-        res.json(InvalidToken);
-    }
-});
-
-
-
-router.get('/DeleteLanguage', function(req, res) {
+router.get('/DeleteLanguage', function (req, res) {
     objHeader = req.headers;
     var token = getToken(objHeader);
     //Set Parameter for User Permission
@@ -273,26 +147,26 @@ router.get('/DeleteLanguage', function(req, res) {
     obj.headers = req.headers;
     obj.query = req.query;
 
-    funAccessPermission.CheckUserAccessPermission(obj, function(responseAccessPermission) {
+    funAccessPermission.CheckUserAccessPermission(obj, function (responseAccessPermission) {
         var AccessPermission = responseAccessPermission.success;
         if (AccessPermission) {
             if (token) {
                 var decoded = jwt.decode(token, TokenKey);
-                User.findOne({ where: { username: decoded.username, password: decoded.password } }).then(function(UserExist) {
+                User.findOne({ where: { username: decoded.username, password: decoded.password } }).then(function (UserExist) {
                     if (UserExist != null) {
 
-                        Language.findOne({ where: { Id: req.query.idLanguage } }).then(function(response1) {
+                        Language.findOne({ where: { Id: req.query.idLanguage } }).then(function (response1) {
                             if (response1 != null) {
                                 if (response1.FlagImageFileName != '' && response1.FlagImageFileName != null) {
                                     var oldFile = __dirname + '/../MediaUploads/' + response1.FlagImageFileName;
                                     console.log(oldFile)
-                                    fs.exists(oldFile, function(exists) {
+                                    fs.exists(oldFile, function (exists) {
                                         if (exists) {
                                             fs.unlink(oldFile);
                                         }
                                     });
                                 }
-                                Language.destroy({ where: { Id: req.query.idLanguage } }).then(function(response) {
+                                Language.destroy({ where: { Id: req.query.idLanguage } }).then(function (response) {
                                     if (response) {
                                         funAuditLog.CreateAuditLog('DeleteLanguage', UserExist.username, 'Delete Language');
                                         res.json({ success: true, message: "Language deleted successfully...", data: response });
@@ -316,7 +190,7 @@ router.get('/DeleteLanguage', function(req, res) {
     });
 });
 
-router.post('/uploadImage', function(req, res) {
+router.post('/uploadImage', function (req, res) {
     var form = new formidable.IncomingForm();
 
     form.uploadDir = __dirname + '/../MediaUploads';
@@ -327,10 +201,10 @@ router.post('/uploadImage', function(req, res) {
 
 
     //file upload path
-    form.parse(req, function(err, fields, files) {
+    form.parse(req, function (err, fields, files) {
         //you can get fields here
     });
-    form.on('fileBegin', function(name, file) {
+    form.on('fileBegin', function (name, file) {
         var ext = file.name.substring(file.name.indexOf('.'), file.name.length);
         var NewName = GetUserNameFromDate();
         if (ext.indexOf('?') > -1) {
@@ -343,13 +217,13 @@ router.post('/uploadImage', function(req, res) {
 
         //modify file path
     });
-    form.on('end', function() {
+    form.on('end', function () {
         var i = 0;
 
         function uploader(i) {
             if (i < FileName.length) {
                 var Id = parseInt(lstUser[i]);
-                Language.findOne({ where: { Id: Id } }).then(function(response) {
+                Language.findOne({ where: { Id: Id } }).then(function (response) {
                     if (response != null) {
                         //  if (req.query.UserType == 'Owner') {
                         //      if (response.OwnerImage != '' && response.OwnerImage != null) {
@@ -370,20 +244,20 @@ router.post('/uploadImage', function(req, res) {
                         //  } else {
                         if (response.FlagImageFileName != '' && response.FlagImageFileName != null) {
                             var oldFile = __dirname + '/../MediaUploads/' + response.FlagImageFileName;
-                            fs.exists(oldFile, function(exists) {
+                            fs.exists(oldFile, function (exists) {
                                 if (exists) {
                                     fs.unlink(oldFile);
                                 }
                             });
                         };
-                        response.updateAttributes({ FlagImageFileName: FileName[i] }).then(function(resUpdate) {
-                                if ((i + 1) == FileName.length) {
-                                    res.json({ success: true, message: "Images Uploaded Successfully...", data: FileName[i] });
-                                } else {
-                                    uploader(i + 1);
-                                };
-                            })
-                            //  }
+                        response.updateAttributes({ FlagImageFileName: FileName[i] }).then(function (resUpdate) {
+                            if ((i + 1) == FileName.length) {
+                                res.json({ success: true, message: "Images Uploaded Successfully...", data: FileName[i] });
+                            } else {
+                                uploader(i + 1);
+                            };
+                        })
+                        //  }
                     }
                 })
             }
@@ -415,7 +289,7 @@ function GetUserNameFromDate() {
 
 }
 
-router.get('/GetMobileLanguageData', function(req, res) {
+router.get('/GetMobileLanguageData', function (req, res) {
     // var translations = {
     //         "en-GB": {
     //             "Email / Mobile": "Email / Mobile",
@@ -1584,7 +1458,7 @@ router.get('/GetMobileLanguageData', function(req, res) {
     //         // res.json(translations);
     // })
 
-    jsonfile.readFile(file, function(err, obj) {
+    jsonfile.readFile(file, function (err, obj) {
         res.json(obj);
         // res.json(translations);
     })

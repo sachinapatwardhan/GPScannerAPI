@@ -27,7 +27,7 @@ function GetUserNameFromDate() {
 
 }
 
-router.post('/upload', function(req, res) {
+router.post('/upload', function (req, res) {
     var form = new formidable.IncomingForm();
 
     form.uploadDir = __dirname + '/../MediaUploads';
@@ -38,13 +38,13 @@ router.post('/upload', function(req, res) {
     req.query['tablename'] = req.headers['x-requested-with'];
 
     //file upload path
-    form.parse(req, function(err, fields, files) {
+    form.parse(req, function (err, fields, files) {
         // console.log(err)
         // console.log(fields)
         // console.log(files)
         //you can get fields here
     });
-    form.on('fileBegin', function(name, file) {
+    form.on('fileBegin', function (name, file) {
         var ext = file.name.substring(file.name.indexOf('.'), file.name.length);
         var NewName = GetUserNameFromDate();
 
@@ -55,7 +55,7 @@ router.post('/upload', function(req, res) {
 
         //modify file path
     });
-    form.on('end', function() {
+    form.on('end', function () {
         var i = 0;
         //set Parameter
         req.query['permission'] = "Added";
@@ -64,7 +64,7 @@ router.post('/upload', function(req, res) {
         obj.headers = req.headers;
         obj.query = req.query;
 
-        funAccessPermission.CheckUserAccessPermission(obj, function(responseAccessPermission) {
+        funAccessPermission.CheckUserAccessPermission(obj, function (responseAccessPermission) {
             var AccessPermission = responseAccessPermission.success;
             if (AccessPermission) {
 
@@ -80,7 +80,7 @@ router.post('/upload', function(req, res) {
                             Name: FileName[i].substring(0, FileName[i].indexOf('.')),
                         };
 
-                        Media.findOrCreate({ where: { FileName: objMedia.FileName }, defaults: objMedia }).then(function(response) {
+                        Media.findOrCreate({ where: { FileName: objMedia.FileName }, defaults: objMedia }).then(function (response) {
 
                             if ((i + 1) == FileName.length) {
                                 res.json({ success: true, data: response, message: "Images Uploaded Successfully..." });
@@ -104,7 +104,7 @@ router.post('/upload', function(req, res) {
     });
 });
 
-router.post('/uploadPdfFromPost', function(req, res) {
+router.post('/uploadPdfFromPost', function (req, res) {
     var form = new formidable.IncomingForm();
 
     form.uploadDir = __dirname + '/../MediaUploads';
@@ -112,8 +112,8 @@ router.post('/uploadPdfFromPost', function(req, res) {
     var AuthorName = '';
 
     //file upload path
-    form.parse(req, function(err, fields, files) {});
-    form.on('fileBegin', function(name, file) {
+    form.parse(req, function (err, fields, files) { });
+    form.on('fileBegin', function (name, file) {
         var ext = file.name.substring(file.name.indexOf('.'), file.name.length);
         var NewName = GetUserNameFromDate();
 
@@ -121,7 +121,7 @@ router.post('/uploadPdfFromPost', function(req, res) {
         FileName.push(NewName + ext);
         AuthorName = name;
     });
-    form.on('end', function() {
+    form.on('end', function () {
         var i = 0;
 
         function uploader(i) {
@@ -143,10 +143,10 @@ router.post('/uploadPdfFromPost', function(req, res) {
                 obj.headers = req.headers;
                 obj.query = req.query;
 
-                funAccessPermission.CheckUserAccessPermission(obj, function(responseAccessPermission) {
+                funAccessPermission.CheckUserAccessPermission(obj, function (responseAccessPermission) {
                     var AccessPermission = responseAccessPermission.success;
                     if (AccessPermission) {
-                        Media.findOrCreate({ where: { FileName: objMedia.FileName }, defaults: objMedia }).then(function(response) {
+                        Media.findOrCreate({ where: { FileName: objMedia.FileName }, defaults: objMedia }).then(function (response) {
 
                             if ((i + 1) == FileName.length) {
                                 res.json({ success: true, data: response, message: "File Uploaded Successfully..." });
@@ -172,7 +172,7 @@ router.post('/uploadPdfFromPost', function(req, res) {
 
 
 
-router.get('/GetAllDynamicMedia', function(req, res) {
+router.get('/GetAllDynamicMedia', function (req, res) {
 
     var objParam = req.query;
     var objColumns = objParam.columns;
@@ -203,28 +203,28 @@ router.get('/GetAllDynamicMedia', function(req, res) {
         offset: parseInt(objParam.start),
         limit: parseInt(objParam.length)
 
-    }).then(function(response) {
+    }).then(function (response) {
         var response1 = new Object();
         response1.draw = objParam.draw;
         response1.recordsTotal = response.count;
         response1.recordsFiltered = response.count;
         response1.data = response.rows;
         res.json(response1);
-    }).catch(function(error) {
+    }).catch(function (error) {
         res.json(error);
     })
 })
 
-router.get('/GetAllMedia', function(req, res) {
-    Media.findAll().then(function(response) {
+router.get('/GetAllMedia', function (req, res) {
+    Media.findAll().then(function (response) {
         res.json(response);
-    }).catch(function(error) {
+    }).catch(function (error) {
         res.json(error);
     })
 })
 
-router.get('/GetMediaById', function(req, res) {
-    Media.findOne({ where: { id: req.query.idMedia } }).then(function(response) {
+router.get('/GetMediaById', function (req, res) {
+    Media.findOne({ where: { id: req.query.idMedia } }).then(function (response) {
         if (response != null) {
             res.json({ success: true, message: "Record found...", data: response });
         } else {
@@ -233,16 +233,16 @@ router.get('/GetMediaById', function(req, res) {
     })
 })
 
-router.get('/CreateMedia', jsonParser, function(req, res) {
+router.get('/CreateMedia', jsonParser, function (req, res) {
     objMedia = req.body;
     objHeader = req.headers;
     var token = getToken(objHeader);
     if (token) {
         var decoded = jwt.decode(token, TokenKey);
-        User.findOne({ where: { username: decoded.username, password: decoded.password } }).then(function(UserExist) {
+        User.findOne({ where: { username: decoded.username, password: decoded.password } }).then(function (UserExist) {
             if (UserExist != null) {
 
-                Media.findOrCreate({ where: { FileName: objMedia.FileName }, defaults: objMedia }).then(function(response) {
+                Media.findOrCreate({ where: { FileName: objMedia.FileName }, defaults: objMedia }).then(function (response) {
                     if ((response[1])) {
                         funAuditLog.CreateAuditLog('CreateMedia', UserExist.username, 'Create Media');
                         res.json("Media created successfully...");
@@ -259,7 +259,7 @@ router.get('/CreateMedia', jsonParser, function(req, res) {
     }
 });
 
-router.post('/UpdateMedia', jsonParser, function(req, res) {
+router.post('/UpdateMedia', jsonParser, function (req, res) {
     objMedia = req.body;
     objHeader = req.headers;
     //Set Parameter for User Permission
@@ -271,15 +271,15 @@ router.post('/UpdateMedia', jsonParser, function(req, res) {
     obj.headers = req.headers;
     obj.query = req.query;
 
-    funAccessPermission.CheckUserAccessPermission(obj, function(responseAccessPermission) {
+    funAccessPermission.CheckUserAccessPermission(obj, function (responseAccessPermission) {
         var AccessPermission = responseAccessPermission.success;
         if (AccessPermission) {
             var token = getToken(objHeader);
             if (token) {
                 var decoded = jwt.decode(token, TokenKey);
-                User.findOne({ where: { username: decoded.username, password: decoded.password } }).then(function(UserExist) {
+                User.findOne({ where: { username: decoded.username, password: decoded.password } }).then(function (UserExist) {
                     if (UserExist != null) {
-                        Media.update(objMedia, { where: { id: objMedia.id } }).then(function(response) {
+                        Media.update(objMedia, { where: { id: objMedia.id } }).then(function (response) {
                             if (response[0]) {
                                 funAuditLog.CreateAuditLog('UpdateMedia', UserExist.username, 'Update Media');
                                 res.json({ success: true, message: "Media updated successfully...", data: response });
@@ -300,7 +300,7 @@ router.post('/UpdateMedia', jsonParser, function(req, res) {
     });
 });
 
-router.get('/DeleteMedia', function(req, res) {
+router.get('/DeleteMedia', function (req, res) {
     objHeader = req.headers;
     var token = getToken(objHeader);
 
@@ -312,37 +312,31 @@ router.get('/DeleteMedia', function(req, res) {
     obj.headers = req.headers;
     obj.query = req.query;
 
-    funAccessPermission.CheckUserAccessPermission(obj, function(responseAccessPermission) {
+    funAccessPermission.CheckUserAccessPermission(obj, function (responseAccessPermission) {
         var AccessPermission = responseAccessPermission.success;
         if (AccessPermission) {
             if (token) {
                 var decoded = jwt.decode(token, TokenKey);
-                User.findOne({ where: { username: decoded.username, password: decoded.password } }).then(function(UserExist) {
+                User.findOne({ where: { username: decoded.username, password: decoded.password } }).then(function (UserExist) {
                     if (UserExist != null) {
-                        models.product_picture_mapping.findOne({ where: { PictureId: req.query.idMedia } }).then(function(response) {
-                            if (response != null) {
-                                res.json({ success: false, message: "This Record Can't Deleted, It Contain References to other data...", data: response });
-                            } else {
-                                Media.destroy({ where: { id: req.query.idMedia } }).then(function(response) {
-                                    if (response) {
-                                        // fs.access('MediaUploads/' + req.query.filename, fs.F_OK, function(err) {
-                                        //     if (!err) {
-                                        //         // Do something
-                                        //         fs.unlink('MediaUploads/' + req.query.filename);
-                                        //     }
-                                        // });
-                                        var oldFile = __dirname + '/../MediaUploads/' + req.query.filename;
-                                        fs.exists(oldFile, function(exists) {
-                                            if (exists) {
-                                                fs.unlink(oldFile);
-                                            }
-                                        });
-                                        funAuditLog.CreateAuditLog('DeleteMedia', UserExist.username, 'Delete Media');
-                                        res.json({ success: true, message: "Media deleted successfully...", data: response });
-                                    } else {
-                                        res.json(RecordNotFound);
+                        Media.destroy({ where: { id: req.query.idMedia } }).then(function (response) {
+                            if (response) {
+                                // fs.access('MediaUploads/' + req.query.filename, fs.F_OK, function(err) {
+                                //     if (!err) {
+                                //         // Do something
+                                //         fs.unlink('MediaUploads/' + req.query.filename);
+                                //     }
+                                // });
+                                var oldFile = __dirname + '/../MediaUploads/' + req.query.filename;
+                                fs.exists(oldFile, function (exists) {
+                                    if (exists) {
+                                        fs.unlink(oldFile);
                                     }
-                                })
+                                });
+                                funAuditLog.CreateAuditLog('DeleteMedia', UserExist.username, 'Delete Media');
+                                res.json({ success: true, message: "Media deleted successfully...", data: response });
+                            } else {
+                                res.json(RecordNotFound);
                             }
                         })
                     } else {

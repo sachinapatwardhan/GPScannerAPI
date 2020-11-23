@@ -1,9 +1,7 @@
 ﻿//Tables
 var router = express.Router();
 var User = models.tbluserinformation;
-var MediaSize = models.tblmediasetting;
 var TaxSetting = models.tblsetting;
-var RewardPointSetting = models.tblrewardpointssetting;
 var Handshake = models.tblhandshake;
 var PetGps = models.tblgpsscanner;
 var Alarm = models.tblalarm;
@@ -12,103 +10,17 @@ var Commonfunction = require('./common.js');
 
 //End of Tables
 
-//Media Size
-router.get('/GetAllMediaSize', function(req, res) {
-    MediaSize.findAll().then(function(response) {
-        res.json(response);
-    }).catch(function(error) {
-        res.json(error);
-    })
-})
-
-router.get('/GetMediaSizeById', function(req, res) {
-    MediaSize.findOne({ where: { id: req.query.idMediaSize } }).then(function(response) {
-        if (response != null) {
-            res.json({ success: true, message: "Record found...", data: response });
-        } else {
-            res.json({ success: false, message: "Record not found...", data: response });
-        }
-    })
-})
-
-router.post('/SaveMediaSize', jsonParser, function(req, res) {
-    objMediaSize = req.body;
-    objHeader = req.headers;
-    var token = getToken(objHeader);
-    if (token) {
-        var decoded = jwt.decode(token, TokenKey);
-        User.findOne({ where: { username: decoded.username, password: decoded.password } }).then(function(UserExist) {
-            if (UserExist != null) {
-                if (objMediaSize.id == 0) {
-                    MediaSize.findOrCreate({ where: { Height: objMediaSize.Height, Width: objMediaSize.Width }, defaults: objMediaSize }).then(function(response) {
-                        if ((response[1])) {
-                            funAuditLog.CreateAuditLog('SaveMediaSize', UserExist.username, 'Create Media Size');
-                            res.json({ success: true, message: "Media Size created successfully...", data: response });
-                        } else {
-                            res.json({ success: false, message: "Media Size is already Exist...", data: response });
-                        }
-                    })
-                } else {
-                    MediaSize.findOne({ where: { Height: objMediaSize.Height, Width: objMediaSize.Width }, defaults: objMediaSize }).then(function(objMediaSizeExist) {
-                        if (objMediaSizeExist != null && objMediaSize.id != objMediaSizeExist.id) {
-                            res.json({ success: false, message: "Media Size is already Exist...", data: objMediaSizeExist });
-                        } else {
-                            MediaSize.update(objMediaSize, { where: { id: objMediaSize.id } }).then(function(response) {
-                                if (response[0]) {
-                                    funAuditLog.CreateAuditLog('SaveMediaSize', UserExist.username, 'Update Media Size');
-                                    res.json({ success: true, message: "Media Size updated successfully...", data: response });
-                                } else {
-                                    res.json({ success: false, message: "Media Size not updated successfully...", data: response });
-                                }
-                            })
-                        }
-                    })
-                }
-            } else {
-                res.json(InvalidToken);
-            }
-        })
-    } else {
-        res.json(InvalidToken);
-    }
-})
-
-router.get('/DeleteMediaSize', function(req, res) {
-    objHeader = req.headers;
-    var token = getToken(objHeader);
-    if (token) {
-        var decoded = jwt.decode(token, TokenKey);
-        User.findOne({ where: { username: decoded.username, password: decoded.password } }).then(function(UserExist) {
-            if (UserExist != null) {
-                MediaSize.destroy({ where: { id: req.query.idMediaSize } }).then(function(response) {
-                    if (response) {
-                        funAuditLog.CreateAuditLog('DeleteMediaSize', UserExist.username, 'Delete Media Size');
-                        res.json({ success: true, message: "Media Size deleted successfully...", data: response });
-                    } else {
-                        res.json({ success: false, message: "Requested Record not Exist....", data: response });
-                    }
-                })
-            } else {
-                res.json(InvalidToken);
-            }
-        })
-    } else {
-        res.json(InvalidToken);
-    }
-});
-//End of Media Size
-
 //Tax Setting
-router.get('/GetAllTaxSetting', function(req, res) {
-    TaxSetting.findAll().then(function(response) {
+router.get('/GetAllTaxSetting', function (req, res) {
+    TaxSetting.findAll().then(function (response) {
         res.json(response);
-    }).catch(function(error) {
+    }).catch(function (error) {
         res.json(error);
     })
 })
 
-router.get('/GetTaxSettingByName', function(req, res) {
-    TaxSetting.findOne({ where: { Name: req.query.TaxSettingName } }).then(function(response) {
+router.get('/GetTaxSettingByName', function (req, res) {
+    TaxSetting.findOne({ where: { Name: req.query.TaxSettingName } }).then(function (response) {
         if (response != null) {
             res.json({ success: true, message: "Record found...", data: response });
         } else {
@@ -117,7 +29,7 @@ router.get('/GetTaxSettingByName', function(req, res) {
     })
 })
 
-router.get('/GetTaxSettingForSharlink', jsonParser, function(req, res) {
+router.get('/GetTaxSettingForSharlink', jsonParser, function (req, res) {
     objHeader = req.headers;
     var token = getToken(objHeader);
     if (token) {
@@ -127,11 +39,11 @@ router.get('/GetTaxSettingForSharlink', jsonParser, function(req, res) {
                 username: decoded.username,
                 password: decoded.password
             }
-        }).then(function(UserExist) {
+        }).then(function (UserExist) {
             if (UserExist != null) {
-                TaxSetting.findOne({ where: { Name: req.query.TaxSettingName } }).then(function(response) {
+                TaxSetting.findOne({ where: { Name: req.query.TaxSettingName } }).then(function (response) {
                     if (response != null) {
-                        Vehicle.findOne({ where: { deviceid: req.query.DeviceId } }).then(function(VehicleExist) {
+                        Vehicle.findOne({ where: { deviceid: req.query.DeviceId } }).then(function (VehicleExist) {
                             if (VehicleExist.ShareCode != null && VehicleExist.ShareCode != '' && VehicleExist.ShareCode != undefined) {
                                 var response1 = new Object();
                                 response1.Name = response.Name
@@ -141,7 +53,7 @@ router.get('/GetTaxSettingForSharlink', jsonParser, function(req, res) {
                                 // console.log(response1.link)
                                 res.json({ success: true, message: "Record found...", data: response1 });
                             } else {
-                                VehicleExist.updateAttributes({ ShareCode: Math.floor(100000 + Math.random() * 900000) }).then(function(shareCodeupdated) {
+                                VehicleExist.updateAttributes({ ShareCode: Math.floor(100000 + Math.random() * 900000) }).then(function (shareCodeupdated) {
                                     Commonfunction.UpdateVehicleRedis(req.query.DeviceId, 'Vehicle');
                                     funAuditLog.CreateAuditLog('Insert share Location code', UserExist.username, 'Insert share Location code (' + req.query.DeviceId + ')');
                                     var response1 = new Object();
@@ -171,7 +83,7 @@ router.get('/GetTaxSettingForSharlink', jsonParser, function(req, res) {
 
 })
 
-router.get('/GetAllSettingByNamelist', function(req, res) {
+router.get('/GetAllSettingByNamelist', function (req, res) {
     var lstAllSettingsName = req.query.TaxSettingName.split(',');
     var objsearch = new Object();
 
@@ -181,7 +93,7 @@ router.get('/GetAllSettingByNamelist', function(req, res) {
             objsearch["$or"].push({ Name: lstAllSettingsName[i].trim() })
         }
     }
-    TaxSetting.findAll({ where: objsearch }).then(function(response) {
+    TaxSetting.findAll({ where: objsearch }).then(function (response) {
         res.json(response);
         // if (response != null) {
         //     res.json({ success: true, message: "Record found...", data: response });
@@ -191,13 +103,13 @@ router.get('/GetAllSettingByNamelist', function(req, res) {
     })
 })
 
-router.get('/GetSettingByName', function(req, res) {
-    TaxSetting.findAll({ where: { Name: { $like: '%' + req.query.SettingName + '%' } } }).then(function(response) {
+router.get('/GetSettingByName', function (req, res) {
+    TaxSetting.findAll({ where: { Name: { $like: '%' + req.query.SettingName + '%' } } }).then(function (response) {
         res.json(response);
     })
 })
 
-router.post('/SaveTaxSetting', jsonParser, function(req, res) {
+router.post('/SaveTaxSetting', jsonParser, function (req, res) {
     lstTaxSetting = req.body;
     objHeader = req.headers;
 
@@ -207,7 +119,7 @@ router.post('/SaveTaxSetting', jsonParser, function(req, res) {
     var token = getToken(objHeader);
     if (token) {
         var decoded = jwt.decode(token, TokenKey);
-        User.findOne({ where: { username: decoded.username, password: decoded.password } }).then(function(UserExist) {
+        User.findOne({ where: { username: decoded.username, password: decoded.password } }).then(function (UserExist) {
             if (UserExist != null) {
                 function uploader(i) {
                     if (i < lstTaxSetting.length) {
@@ -220,17 +132,17 @@ router.post('/SaveTaxSetting', jsonParser, function(req, res) {
                             obj.headers = req.headers;
                             obj.query = req.query;
 
-                            funAccessPermission.CheckUserAccessPermission(obj, function(responseAccessPermission) {
+                            funAccessPermission.CheckUserAccessPermission(obj, function (responseAccessPermission) {
                                 var AccessPermission = responseAccessPermission.success;
                                 if (AccessPermission) {
 
-                                    TaxSetting.findOrCreate({ where: { Name: lstTaxSetting[i].Name }, defaults: lstTaxSetting[i] }).then(function(response) {
+                                    TaxSetting.findOrCreate({ where: { Name: lstTaxSetting[i].Name }, defaults: lstTaxSetting[i] }).then(function (response) {
                                         if ((response[1])) {
                                             //insert
                                             uploader(i + 1);
                                         } else {
                                             //update
-                                            TaxSetting.update(lstTaxSetting[i], { where: { Name: lstTaxSetting[i].Name } }).then(function(response) {
+                                            TaxSetting.update(lstTaxSetting[i], { where: { Name: lstTaxSetting[i].Name } }).then(function (response) {
                                                 uploader(i + 1);
                                             })
                                         }
@@ -261,7 +173,7 @@ router.post('/SaveTaxSetting', jsonParser, function(req, res) {
     }
 })
 
-router.post('/UpdateTaxSettingByName', jsonParser, function(req, res) {
+router.post('/UpdateTaxSettingByName', jsonParser, function (req, res) {
     objSetting = req.body;
     objHeader = req.headers;
     var token = getToken(objHeader);
@@ -275,21 +187,21 @@ router.post('/UpdateTaxSettingByName', jsonParser, function(req, res) {
     obj.headers = req.headers;
     obj.query = req.query;
 
-    funAccessPermission.CheckUserAccessPermission(obj, function(responseAccessPermission) {
+    funAccessPermission.CheckUserAccessPermission(obj, function (responseAccessPermission) {
         var AccessPermission = responseAccessPermission.success;
         if (AccessPermission) {
             if (token) {
                 var decoded = jwt.decode(token, TokenKey);
-                User.findOne({ where: { username: decoded.username, password: decoded.password } }).then(function(UserExist) {
+                User.findOne({ where: { username: decoded.username, password: decoded.password } }).then(function (UserExist) {
                     if (UserExist != null) {
 
                         TaxSetting.findOne({
                             where: {
                                 Name: objSetting.Name
                             }
-                        }).then(function(response) {
+                        }).then(function (response) {
                             if (response) {
-                                response.updateAttributes({ Value: objSetting.Value }).then(function(resUpdate) {
+                                response.updateAttributes({ Value: objSetting.Value }).then(function (resUpdate) {
                                     funAuditLog.CreateAuditLog('UpdateTaxSettingByName', UserExist.username, 'Update Tax Setting By Name');
                                     res.json({
                                         success: true,
@@ -317,14 +229,14 @@ router.post('/UpdateTaxSettingByName', jsonParser, function(req, res) {
     });
 })
 
-router.get('/DeleteTaxSetting', function(req, res) {
+router.get('/DeleteTaxSetting', function (req, res) {
     objHeader = req.headers;
     var token = getToken(objHeader);
     if (token) {
         var decoded = jwt.decode(token, TokenKey);
-        User.findOne({ where: { username: decoded.username, password: decoded.password } }).then(function(UserExist) {
+        User.findOne({ where: { username: decoded.username, password: decoded.password } }).then(function (UserExist) {
             if (UserExist != null) {
-                TaxSetting.destroy({ where: { id: req.query.idTaxSetting } }).then(function(response) {
+                TaxSetting.destroy({ where: { id: req.query.idTaxSetting } }).then(function (response) {
                     if (response) {
                         funAuditLog.CreateAuditLog('DeleteTaxSetting', UserExist.username, 'Delete Tax Setting');
                         res.json({ success: true, message: "Tax Setting deleted successfully...", data: response });
@@ -342,83 +254,8 @@ router.get('/DeleteTaxSetting', function(req, res) {
 });
 //End of Tax Setting
 
-//Reward Point Setting
-router.get('/GetAllRewardPointSetting', function(req, res) {
-    RewardPointSetting.findAll().then(function(response) {
-        res.json(response);
-    }).catch(function(error) {
-        res.json(error);
-    })
-})
-
-router.get('/GetRewardPointSetting', function(req, res) {
-    RewardPointSetting.findOne().then(function(response) {
-        if (response != null) {
-            res.json({ success: true, message: "Record found...", data: response });
-        } else {
-            res.json({ success: false, message: "Record not found...", data: response });
-        }
-    })
-})
-
-router.post('/SaveRewardPointSetting', jsonParser, function(req, res) {
-    objRewardPointSetting = req.body;
-    objHeader = req.headers;
-    var token = getToken(objHeader);
-    if (token) {
-        var decoded = jwt.decode(token, TokenKey);
-        User.findOne({ where: { username: decoded.username, password: decoded.password } }).then(function(UserExist) {
-            if (UserExist != null) {
-                if (objRewardPointSetting.Id == 0) {
-                    RewardPointSetting.create(objRewardPointSetting).then(function(response) {
-                        funAuditLog.CreateAuditLog('SaveRewardPointSetting', UserExist.username, 'Create Reward Point Setting');
-                        res.json({ success: true, message: "Reward Point Setting created successfully...", data: response });
-                    })
-                } else {
-                    RewardPointSetting.update(objRewardPointSetting, { where: { Id: objRewardPointSetting.Id } }).then(function(response) {
-                        if (response[0]) {
-                            funAuditLog.CreateAuditLog('SaveRewardPointSetting', UserExist.username, 'Update Reward Point Setting');
-                            res.json({ success: true, message: "Reward Point Setting updated successfully...", data: response });
-                        }
-                    })
-                }
-            } else {
-                res.json(InvalidToken);
-            }
-        })
-    } else {
-        res.json(InvalidToken);
-    }
-})
-
-router.get('/DeleteRewardPointSetting', function(req, res) {
-    objHeader = req.headers;
-    var token = getToken(objHeader);
-    if (token) {
-        var decoded = jwt.decode(token, TokenKey);
-        User.findOne({ where: { username: decoded.username, password: decoded.password } }).then(function(UserExist) {
-            if (UserExist != null) {
-                RewardPointSetting.destroy({ where: { Id: req.query.idRewardPointSetting } }).then(function(response) {
-                    if (response) {
-                        funAuditLog.CreateAuditLog('DeleteRewardPointSetting', UserExist.username, 'Delete Reward Point Setting');
-                        res.json({ success: true, message: "Reward Point Setting deleted successfully...", data: response });
-                    } else {
-                        res.json({ success: false, message: "Requested Record not Exist....", data: response });
-                    }
-                })
-            } else {
-                res.json(InvalidToken);
-            }
-        })
-    } else {
-        res.json(InvalidToken);
-    }
-});
-//End of Tax Setting
-
-
 //Hand shake
-router.get('/GetAllHandshake', function(req, res) {
+router.get('/GetAllHandshake', function (req, res) {
     var offset = (parseInt(req.query.page) * 50);
     var objParam = req.query;
     var DeviceID = objParam.deviceId;
@@ -458,14 +295,14 @@ router.get('/GetAllHandshake', function(req, res) {
         };
         search['$and'].push(obj);
     }
-    Handshake.findAll({ where: search, order: 'Datetime desc', limit: 50, offset: offset }).then(function(response) {
+    Handshake.findAll({ where: search, order: 'Datetime desc', limit: 50, offset: offset }).then(function (response) {
         res.json(response);
-    }).catch(function(error) {
+    }).catch(function (error) {
         res.json(error);
     })
 })
 
-router.get('/GetAllDynamickHandshake', function(req, res) {
+router.get('/GetAllDynamickHandshake', function (req, res) {
     var objParam = req.query;
     var objColumns = objParam.columns;
     var objOrderBy = objParam.order;
@@ -513,9 +350,9 @@ router.get('/GetAllDynamickHandshake', function(req, res) {
     var query = "SELECT th.Id,th.DeviceId,CONVERT_TZ(th.Datetime,'+00:00','" + CurrentOffset + "') as Datetime, tv.iduser, tu.idApp FROM tblhandshake as th LEFT JOIN tblvehicle as tv ON th.DeviceId = tv.deviceid LEFT JOIN tbluserinformation AS tu ON tv.iduser = tu.id " + search +
         " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
     var Countqry = "SELECT count(th.id) as TotalRecord FROM tblhandshake as th LEFT JOIN tblvehicle as tv ON th.DeviceId = tv.deviceid LEFT JOIN tbluserinformation AS tu ON tv.iduser = tu.id " + search;
-    connection.query(query, function(err, response) {
+    connection.query(query, function (err, response) {
         if (response != undefined) {
-            connection.query(Countqry, function(err, lstCount, fields) {
+            connection.query(Countqry, function (err, lstCount, fields) {
                 var response1 = new Object();
                 response1.draw = objParam.draw;
                 response1.recordsTotal = lstCount[0].TotalRecord;
@@ -534,7 +371,7 @@ router.get('/GetAllDynamickHandshake', function(req, res) {
     })
 })
 
-router.get('/GetAllDynamickHandshakeNew', function(req, res) {
+router.get('/GetAllDynamickHandshakeNew', function (req, res) {
     var objParam = req.query;
     var objColumns = objParam.columns;
     var objOrderBy = objParam.order;
@@ -599,7 +436,7 @@ router.get('/GetAllDynamickHandshakeNew', function(req, res) {
         // var query = "SELECT th.Id,th.DeviceId,CONVERT_TZ(th.Datetime,'+00:00','" + CurrentOffset + "') as Datetime FROM tblhandshake as th inner join tblgpsdevice as tgd  on tgd.DeviceId = th.DeviceId " + search +
         //     " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
         // var Countqry = "SELECT count(th.id) as TotalRecord FROM tblhandshake as th inner join tblgpsdevice as tgd  on tgd.DeviceId = th.DeviceId " + search;
-        connection.query(query, function(err, response) {
+        connection.query(query, function (err, response) {
             if (response != undefined) {
                 // connection.query(Countqry, function(err, lstCount, fields) {
                 // var response1 = new Object();
@@ -640,7 +477,7 @@ router.get('/GetAllDynamickHandshakeNew', function(req, res) {
 
 
 //Pet Gps
-router.get('/GetAllGpsData', function(req, res) {
+router.get('/GetAllGpsData', function (req, res) {
     var offset = (parseInt(req.query.page) * 50);
     var objParam = req.query;
     var DeviceID = objParam.deviceId;
@@ -680,9 +517,9 @@ router.get('/GetAllGpsData', function(req, res) {
         };
         search['$and'].push(obj);
     }
-    PetGps.findAll({ where: search, order: 'Id desc', limit: 50, offset: offset }).then(function(response) {
+    PetGps.findAll({ where: search, order: 'Id desc', limit: 50, offset: offset }).then(function (response) {
         res.json(response);
-    }).catch(function(error) {
+    }).catch(function (error) {
         res.json(error);
     })
 })
@@ -690,7 +527,7 @@ router.get('/GetAllGpsData', function(req, res) {
 //End Pet Gps
 
 //Pet Alarm
-router.get('/GetAllAlarmData', function(req, res) {
+router.get('/GetAllAlarmData', function (req, res) {
     var offset = (parseInt(req.query.page) * 50);
     var objParam = req.query;
     var DeviceID = objParam.deviceId;
@@ -757,9 +594,9 @@ router.get('/GetAllAlarmData', function(req, res) {
     //     };
     //     search['$and'].push(obj);
     // }
-    Alarm.findAll({ where: search, order: 'Date desc', limit: 50, offset: offset }).then(function(response) {
+    Alarm.findAll({ where: search, order: 'Date desc', limit: 50, offset: offset }).then(function (response) {
         res.json(response);
-    }).catch(function(error) {
+    }).catch(function (error) {
         res.json(error);
     })
 })

@@ -9,7 +9,6 @@ var User = models.tbluserinformation;
 var UserInRole = models.tbluserinrole;
 var Role = models.tblrole;
 var OrderService = models.tblorderservice;
-var WalletTransaction = models.tblwallettransaction;
 var AuditLogLicence = models.tblauditloglicence;
 var DeviceAgentRetailer = models.tbldeviceagentretailer;
 var SimDetail = models.tblsimdetails;
@@ -713,27 +712,7 @@ router.get('/SwipeDeviceAdmin', function (req, res) {
                                                                                                             OrderNotes: req.query.DeviceId
                                                                                                         }).then(function (resOrderUpdate) {
                                                                                                             funAuditLogLicence.CreateAuditLogLicence('Swap Licence Device', null, req.query.DeviceId, null, null, req.query.CreatedBy, 'Swap order service OrderNotes from old OrderNotes :' + req.query.OldDeviceId + ' to new OrderNotes :' + req.query.DeviceId);
-
-                                                                                                            return WalletTransaction.findOne({
-                                                                                                                where: {
-                                                                                                                    DeviceId: req.query.OldDeviceId
-                                                                                                                }
-                                                                                                            })
-                                                                                                                .then(function (resWallet) {
-                                                                                                                    if (!resWallet) {
-                                                                                                                        return LicenceManagerExist;
-                                                                                                                    }
-
-                                                                                                                    return resWallet.updateAttributes({
-                                                                                                                        DeviceId: req.query.DeviceId,
-                                                                                                                        ModifiedDate: new Date(),
-                                                                                                                        ModifiedBy: req.query.CreatedBy
-                                                                                                                    })
-                                                                                                                        .then(function (resWalletUpdate) {
-                                                                                                                            funAuditLogLicence.CreateAuditLogLicence('Swap Licence Device', null, req.query.DeviceId, null, null, req.query.CreatedBy, 'Swap wallet transaction DeviceId (old DeviceId :(' + req.query.OldDeviceId + ' )');
-                                                                                                                            return LicenceManagerExist;
-                                                                                                                        })
-                                                                                                                })
+                                                                                                            return LicenceManagerExist;
                                                                                                         })
                                                                                                     })
                                                                                             })
@@ -884,27 +863,7 @@ router.post('/SwipeDevice', jsonParser, function (req, res) {
                                                                             OrderNotes: req.body.NewDeviceId
                                                                         }).then(function (resOrderUpdate) {
                                                                             funAuditLogLicence.CreateAuditLogLicence('Swap Licence Device', null, req.body.NewDeviceId, null, null, req.body.CreatedBy, 'Swap order service OrderNotes from old OrderNotes :' + req.body.OldDeviceId + ' to new OrderNotes :' + req.body.NewDeviceId);
-
-                                                                            return WalletTransaction.findOne({
-                                                                                where: {
-                                                                                    DeviceId: req.body.OldDeviceId
-                                                                                }
-                                                                            })
-                                                                                .then(function (resWallet) {
-                                                                                    if (!resWallet) {
-                                                                                        return resLicence;
-                                                                                    }
-
-                                                                                    return resWallet.updateAttributes({
-                                                                                        DeviceId: req.query.NewDeviceId,
-                                                                                        ModifiedDate: new Date(),
-                                                                                        ModifiedBy: req.body.CreatedBy
-                                                                                    })
-                                                                                        .then(function (resWalletUpdate) {
-                                                                                            funAuditLogLicence.CreateAuditLogLicence('Swap Licence Device', null, req.body.NewDeviceId, null, null, req.body.CreatedBy, 'Swap wallet transaction DeviceId (old DeviceId :(' + req.body.OldDeviceId + ' )');
-                                                                                            return resLicence;
-                                                                                        })
-                                                                                })
+                                                                            return resLicence;
                                                                         })
                                                                     })
                                                             });
