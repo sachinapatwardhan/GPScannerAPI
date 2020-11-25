@@ -420,6 +420,8 @@ io.sockets.on('connection', function (socket) {
     socket.on('Command9955', function (objGPSData) {
         objGPSData.Deviceid = objGPSData.DeviceId;
         io.sockets.emit(objGPSData.DeviceId + 'BikeRoute', JSON.stringify(objGPSData));
+        // [2020-11-20 @ Dino] Add event for hook from journey report service
+        io.sockets.emit('AllBikeRouteHook', objGPSData);
         //for MyPinHere
         Command9955(objGPSData, function (res) { })
     });

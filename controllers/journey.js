@@ -164,6 +164,14 @@ router.post('/StartJourney', jsonParser, function(req, res) {
             }
         }).then(function(UserExist) {
             if (UserExist != null) {
+                // [2020-11-24 @ Dino] add for maark journey report service
+                io.sockets.emit('AllJourneyHook', {
+                    DeviceId: req.body.DeviceId,
+                    JourneyStart: req.body.JourneyName === '',
+                    JourneyName: req.body.JourneyName,
+                    Date: new Date().getTime() / 1000
+                });
+
                 var search = {};
                 if (objJourney.DeviceId != null && objJourney.DeviceId != '' && objJourney.DeviceId != undefined) {
                     search['$and'] = [];
