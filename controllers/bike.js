@@ -1567,6 +1567,13 @@ router.get('/SaveVehicle', jsonParser, function (req, res) {
                                 where: search
                             }).then(function (objGpsDevice) {
                                 if (objGpsDevice != null) {
+                                    if (objGpsDevice.Status === 'Spoil' || objGpsDevice.Status === 'Terminate') {
+                                        return res.json({
+                                            success: false,
+                                            message: 'Please contact admin. Device error: 1002'
+                                        });
+                                    }
+
                                     objVehicle.DeviceType = objGpsDevice.Type;
                                     objVehicle.DeviceCompany = objGpsDevice.Company;
                                     if (objGpsDevice.AppName == "Tracking") {
@@ -1799,6 +1806,13 @@ router.get('/SaveVehicle', jsonParser, function (req, res) {
                                 where: { AppName: objVehicle.AppName, DeviceId: objVehicle.deviceid }
                             }).then(function (objGpsDevice) {
                                 if (objGpsDevice != null) {
+                                    if (objGpsDevice.Status === 'Spoil' || objGpsDevice.Status === 'Terminate') {
+                                        return res.json({
+                                            success: false,
+                                            message: 'Please contact admin. Device error: 1002'
+                                        });
+                                    }
+
                                     objVehicle.DeviceType = objGpsDevice.Type;
                                     objVehicle.DeviceCompany = objGpsDevice.Company;
                                     if (objGpsDevice.AppName == "Tracking") {

@@ -1539,13 +1539,26 @@ router.post('/SaveOrderServiceRenew', jsonParser, function (req, res) {
             var IsTerminate = false;
             var TerminateDevices = "";
             for (var i = 0; i < lstGpsDevices.length; i++) {
-                if (lstGpsDevices[i].tblsimdetail && lstGpsDevices[i].tblsimdetail.Status == 'Terminate') {
-                    IsTerminate = true;
-                    if (TerminateDevices == '') {
-                        TerminateDevices = lstGpsDevices[i].DeviceId;
-                    } else {
-                        TerminateDevices = TerminateDevices + "," + lstGpsDevices[i].DeviceId;
+                // [2020-12-24 @ Dino] Fix gps device spoil or terminate not allow renew on server side ONLY
+                if (lstGpsDevices[i].Status === 'Spoil' || lstGpsDevices[i].Status === 'Terminate') {
+                    error.message = 'Please contact admin. Device error: 1002';
+                    error.Data = '';
+                    throw error;
+                }
+
+                if (lstGpsDevices[i].tblsimdetail) {
+                    if (lstGpsDevices[i].tblsimdetail.Status == 'Terminate') {
+                        IsTerminate = true;
+                        if (TerminateDevices == '') {
+                            TerminateDevices = lstGpsDevices[i].DeviceId;
+                        } else {
+                            TerminateDevices = TerminateDevices + "," + lstGpsDevices[i].DeviceId;
+                        }
                     }
+                } else {
+                    error.message = 'Please contact admin. Sim problem: 1003';
+                    error.Data = '';
+                    throw error;
                 }
             }
             if (IsTerminate) {
@@ -1774,6 +1787,20 @@ router.post('/SaveOrderServiceRenew', jsonParser, function (req, res) {
                     res.json({
                         success: false,
                         message: "Contact Admin Error : 1001", //+ err.Data,
+                        data: err.Data
+                    });
+                } else if (err.message === 'Please contact admin. Device error: 1002') {
+                    // [2020-12-24 @ Dino] Fix gps device spoil or terminate not allow renew on server side ONLY
+                    res.json({
+                        success: false,
+                        message: err.message,
+                        data: err.Data
+                    });
+                } else if (err.message === 'Please contact admin. Sim problem: 1003') {
+                    // [2020-12-24 @ Dino] Fix gps device spoil or terminate not allow renew on server side ONLY
+                    res.json({
+                        success: false,
+                        message: err.message,
                         data: err.Data
                     });
                 } else {
