@@ -1556,9 +1556,12 @@ router.post('/SaveOrderServiceRenew', jsonParser, function (req, res) {
                         }
                     }
                 } else {
-                    error.message = 'Please contact admin. Sim problem: 1003';
-                    error.Data = '';
-                    throw error;
+                    // [2021-01-04 @ Dino] says this not proper way, but for now allow cambodia because they use own sim
+                    if (lstGpsDevices[i].CountryId == 117) {
+                        error.message = 'Please contact admin. Sim problem: 1003';
+                        error.Data = '';
+                        throw error;
+                    }
                 }
             }
             if (IsTerminate) {
