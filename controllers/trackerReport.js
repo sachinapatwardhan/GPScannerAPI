@@ -3,10 +3,8 @@ const jwt = require('jwt-simple');
 const moment = require('moment');
 const bodyParser = require('body-parser');
 
-const DatabaseConnection = require('../connection/DatabaseConnection.js');
-
 const router = express.Router();
-const connection = new DatabaseConnection().connection;
+const connection = require('../connection/pool.js');
 const jsonParser = bodyParser.json();
 
 router.post('/getJourneyReport', jsonParser, (req, res) => {
@@ -227,7 +225,7 @@ router.post('/getStatisticsReport', jsonParser, (req, res) => {
     }
   }
 
-  const query = "SELECT vehicleName, startDatetime, (CASE WHEN reportType = 'Trip' THEN 1 ELSE 0 END) AS tripCount, SUM(CASE WHEN reportType = 'Parking' THEN 1 ELSE 0 END) AS parkCount, SUM(CASE WHEN reportType = 'Journey' THEN 1 ELSE 0 END) AS journeyCount, SUM(totalKm) AS totalKm, AVG(averageSpeed) AS averageSpeed, MAX(maximumSpeed) AS maximumSpeed, TIMEDIFF(MAX(CASE WHEN reportType = 'Trip' THEN endDatetime ELSE '1000-01-01' END), MIN(CASE WHEN reportType = 'Trip' THEN startDatetime ELSE '9999-12-31' END)) AS workingHours, SEC_TO_TIME(SUM(CASE WHEN reportType = 'Trip' THEN totalSecs ELSE 0 END)) AS drivingHours, SEC_TO_TIME(SUM(CASE WHEN reportType = 'Parking' THEN totalSecs ELSE 0 END)) AS parkingHours, SEC_TO_TIME(SUM(CASE WHEN reportType = 'Trip' THEN idleSecs ELSE 0 END)) AS idleHours FROM tbltrackerreport WHERE processingStatus = ? AND startDatetime >= ? AND startDatetime <= ? AND deviceId IN (?)  GROUP BY vehicleName, DATE(CONVERT_TZ(startDatetime, '+00:00', '+08:00'))";
+  const query = "SELECT vehicleName, startDatetime, (CASE WHEN reportType = 'Trip' THEN 1 ELSE 0 END) AS tripCount, SUM(CASE WHEN reportType = 'Parking' THEN 1 ELSE 0 END) AS parkCount, SUM(CASE WHEN reportType = 'Journey' THEN 1 ELSE 0 END) AS journeyCount, SUM(totalKm) AS totalKm, AVG(averageSpeed) AS averageSpeed, MAX(maximumSpeed) AS maximumSpeed, TIME_TO_SEC(TIMEDIFF(MAX(CASE WHEN reportType = 'Trip' THEN endDatetime ELSE '1000-01-01' END), MIN(CASE WHEN reportType = 'Trip' THEN startDatetime ELSE '9999-12-31' END))) AS workingHours, SUM(CASE WHEN reportType = 'Trip' THEN totalSecs ELSE 0 END) AS drivingHours, SUM(CASE WHEN reportType = 'Parking' THEN totalSecs ELSE 0 END) AS parkingHours, SUM(CASE WHEN reportType = 'Trip' THEN idleSecs ELSE 0 END) AS idleHours FROM tbltrackerreport WHERE processingStatus = ? AND startDatetime >= ? AND startDatetime <= ? AND deviceId IN (?)  GROUP BY vehicleName, DATE(CONVERT_TZ(startDatetime, '+00:00', '+08:00'))";
   const bindings = [
     'Processed',
     startMoment.toISOString(),
