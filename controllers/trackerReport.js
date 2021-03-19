@@ -50,38 +50,51 @@ router.post('/getJourneyReport', jsonParser, (req, res) => {
     });
   }
 
+  if (req.body.date && req.body.dateRange) {
+    return res.json({
+      success: false,
+      message: 'Cannot pass both date range and date. Pass only either date or date range.'
+    });
+  }
+
   let startMoment = null;
   let endMoment = null;
-  switch (req.body.dateRange) {
-    case 'Yesterday': {
-      startMoment = moment().utcOffset(req.body.tz).startOf('day').subtract(1, 'day');
-      endMoment = moment().utcOffset(req.body.tz).endOf('day').subtract(1, 'day');
-      break;
-    }
-    case 'This Week': {
-      startMoment = moment().utcOffset(req.body.tz).startOf('week');
-      endMoment = moment().utcOffset(req.body.tz).endOf('week');
-      break;
-    }
-    case 'Last Week': {
-      startMoment = moment().utcOffset(req.body.tz).startOf('week').subtract(1, 'week');
-      endMoment = moment().utcOffset(req.body.tz).endOf('week').subtract(1, 'week');
-      break;
-    }
-    case 'This Month': {
-      startMoment = moment().utcOffset(req.body.tz).startOf('month');
-      endMoment = moment().utcOffset(req.body.tz).endOf('month');
-      break;
-    }
-    case 'Last Month': {
-      startMoment = moment().utcOffset(req.body.tz).startOf('month').subtract(1, 'month');
-      endMoment = moment().utcOffset(req.body.tz).endOf('month').subtract(1, 'month');
-      break;
-    }
-    default: {
-      startMoment = moment().utcOffset(req.body.tz).startOf('day');
-      endMoment = moment().utcOffset(req.body.tz).endOf('day');
-      break;
+
+  if (req.body.date) {
+    startMoment = moment(req.body.date).utcOffset(req.body.tz).startOf('day');
+    endMoment = moment(req.body.date).utcOffset(req.body.tz).endOf('day');
+  } else {
+    switch (req.body.dateRange) {
+      case 'Yesterday': {
+        startMoment = moment().utcOffset(req.body.tz).startOf('day').subtract(1, 'day');
+        endMoment = moment().utcOffset(req.body.tz).endOf('day').subtract(1, 'day');
+        break;
+      }
+      case 'This Week': {
+        startMoment = moment().utcOffset(req.body.tz).startOf('week');
+        endMoment = moment().utcOffset(req.body.tz).endOf('week');
+        break;
+      }
+      case 'Last Week': {
+        startMoment = moment().utcOffset(req.body.tz).startOf('week').subtract(1, 'week');
+        endMoment = moment().utcOffset(req.body.tz).endOf('week').subtract(1, 'week');
+        break;
+      }
+      case 'This Month': {
+        startMoment = moment().utcOffset(req.body.tz).startOf('month');
+        endMoment = moment().utcOffset(req.body.tz).endOf('month');
+        break;
+      }
+      case 'Last Month': {
+        startMoment = moment().utcOffset(req.body.tz).startOf('month').subtract(1, 'month');
+        endMoment = moment().utcOffset(req.body.tz).endOf('month').subtract(1, 'month');
+        break;
+      }
+      default: {
+        startMoment = moment().utcOffset(req.body.tz).startOf('day');
+        endMoment = moment().utcOffset(req.body.tz).endOf('day');
+        break;
+      }
     }
   }
 
@@ -190,38 +203,51 @@ router.post('/getStatisticsReport', jsonParser, (req, res) => {
     });
   }
 
+  if (req.body.date && req.body.dateRange) {
+    return res.json({
+      success: false,
+      message: 'Cannot pass both date range and date. Pass only either date or date range.'
+    });
+  }
+
   let startMoment = null;
   let endMoment = null;
-  switch (req.body.dateRange) {
-    case 'Yesterday': {
-      startMoment = moment().utcOffset(req.body.tz).startOf('day').subtract(1, 'day');
-      endMoment = moment().utcOffset(req.body.tz).endOf('day').subtract(1, 'day');
-      break;
-    }
-    case 'This Week': {
-      startMoment = moment().utcOffset(req.body.tz).startOf('week');
-      endMoment = moment().utcOffset(req.body.tz).endOf('week');
-      break;
-    }
-    case 'Last Week': {
-      startMoment = moment().utcOffset(req.body.tz).startOf('week').subtract(1, 'week');
-      endMoment = moment().utcOffset(req.body.tz).endOf('week').subtract(1, 'week');
-      break;
-    }
-    case 'This Month': {
-      startMoment = moment().utcOffset(req.body.tz).startOf('month');
-      endMoment = moment().utcOffset(req.body.tz).endOf('month');
-      break;
-    }
-    case 'Last Month': {
-      startMoment = moment().utcOffset(req.body.tz).startOf('month').subtract(1, 'month');
-      endMoment = moment().utcOffset(req.body.tz).endOf('month').subtract(1, 'month');
-      break;
-    }
-    default: {
-      startMoment = moment().utcOffset(req.body.tz).startOf('day');
-      endMoment = moment().utcOffset(req.body.tz).endOf('day');
-      break;
+
+  if (req.body.date) {
+    startMoment = moment(req.body.date).utcOffset(req.body.tz).startOf('day');
+    endMoment = moment(req.body.date).utcOffset(req.body.tz).endOf('day');
+  } else {
+    switch (req.body.dateRange) {
+      case 'Yesterday': {
+        startMoment = moment().utcOffset(req.body.tz).startOf('day').subtract(1, 'day');
+        endMoment = moment().utcOffset(req.body.tz).endOf('day').subtract(1, 'day');
+        break;
+      }
+      case 'This Week': {
+        startMoment = moment().utcOffset(req.body.tz).startOf('week');
+        endMoment = moment().utcOffset(req.body.tz).endOf('week');
+        break;
+      }
+      case 'Last Week': {
+        startMoment = moment().utcOffset(req.body.tz).startOf('week').subtract(1, 'week');
+        endMoment = moment().utcOffset(req.body.tz).endOf('week').subtract(1, 'week');
+        break;
+      }
+      case 'This Month': {
+        startMoment = moment().utcOffset(req.body.tz).startOf('month');
+        endMoment = moment().utcOffset(req.body.tz).endOf('month');
+        break;
+      }
+      case 'Last Month': {
+        startMoment = moment().utcOffset(req.body.tz).startOf('month').subtract(1, 'month');
+        endMoment = moment().utcOffset(req.body.tz).endOf('month').subtract(1, 'month');
+        break;
+      }
+      default: {
+        startMoment = moment().utcOffset(req.body.tz).startOf('day');
+        endMoment = moment().utcOffset(req.body.tz).endOf('day');
+        break;
+      }
     }
   }
 
@@ -304,38 +330,51 @@ router.post('/getFenceReport', jsonParser, (req, res) => {
     });
   }
 
+  if (req.body.date && req.body.dateRange) {
+    return res.json({
+      success: false,
+      message: 'Cannot pass both date range and date. Pass only either date or date range.'
+    });
+  }
+
   let startMoment = null;
   let endMoment = null;
-  switch (req.body.dateRange) {
-    case 'Yesterday': {
-      startMoment = moment().utcOffset(req.body.tz).startOf('day').subtract(1, 'day');
-      endMoment = moment().utcOffset(req.body.tz).endOf('day').subtract(1, 'day');
-      break;
-    }
-    case 'This Week': {
-      startMoment = moment().utcOffset(req.body.tz).startOf('week');
-      endMoment = moment().utcOffset(req.body.tz).endOf('week');
-      break;
-    }
-    case 'Last Week': {
-      startMoment = moment().utcOffset(req.body.tz).startOf('week').subtract(1, 'week');
-      endMoment = moment().utcOffset(req.body.tz).endOf('week').subtract(1, 'week');
-      break;
-    }
-    case 'This Month': {
-      startMoment = moment().utcOffset(req.body.tz).startOf('month');
-      endMoment = moment().utcOffset(req.body.tz).endOf('month');
-      break;
-    }
-    case 'Last Month': {
-      startMoment = moment().utcOffset(req.body.tz).startOf('month').subtract(1, 'month');
-      endMoment = moment().utcOffset(req.body.tz).endOf('month').subtract(1, 'month');
-      break;
-    }
-    default: {
-      startMoment = moment().utcOffset(req.body.tz).startOf('day');
-      endMoment = moment().utcOffset(req.body.tz).endOf('day');
-      break;
+
+  if (req.body.date) {
+    startMoment = moment(req.body.date).utcOffset(req.body.tz).startOf('day');
+    endMoment = moment(req.body.date).utcOffset(req.body.tz).endOf('day');
+  } else {
+    switch (req.body.dateRange) {
+      case 'Yesterday': {
+        startMoment = moment().utcOffset(req.body.tz).startOf('day').subtract(1, 'day');
+        endMoment = moment().utcOffset(req.body.tz).endOf('day').subtract(1, 'day');
+        break;
+      }
+      case 'This Week': {
+        startMoment = moment().utcOffset(req.body.tz).startOf('week');
+        endMoment = moment().utcOffset(req.body.tz).endOf('week');
+        break;
+      }
+      case 'Last Week': {
+        startMoment = moment().utcOffset(req.body.tz).startOf('week').subtract(1, 'week');
+        endMoment = moment().utcOffset(req.body.tz).endOf('week').subtract(1, 'week');
+        break;
+      }
+      case 'This Month': {
+        startMoment = moment().utcOffset(req.body.tz).startOf('month');
+        endMoment = moment().utcOffset(req.body.tz).endOf('month');
+        break;
+      }
+      case 'Last Month': {
+        startMoment = moment().utcOffset(req.body.tz).startOf('month').subtract(1, 'month');
+        endMoment = moment().utcOffset(req.body.tz).endOf('month').subtract(1, 'month');
+        break;
+      }
+      default: {
+        startMoment = moment().utcOffset(req.body.tz).startOf('day');
+        endMoment = moment().utcOffset(req.body.tz).endOf('day');
+        break;
+      }
     }
   }
 
