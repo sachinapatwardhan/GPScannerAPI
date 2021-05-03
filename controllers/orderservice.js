@@ -13,6 +13,8 @@ var GPSDevice = models.tblgpsdevice;
 var Vehicle = models.tblvehicle;
 var Commonfunction = require('./common.js');
 var momentz = require('moment-timezone');
+var UserInRole = models.tbluserinrole;
+var Role = models.tblrole;
 
 //
 // CreateOrderServiceGlobal("India", 1, "0000000000000", "IMMM", function(redds) {
@@ -504,47 +506,98 @@ router.get('/GetAllOrderServiceNew', function (req, res) {
         search['$and'].push(obj);
     }
 
-    if (objParam.IdUser != '' && objParam.IdUser != undefined && objParam.IdUser != '' && objParam.IdUser != 'All') {
-        search1['$and'] = [];
-        var obj = new Object();
-        obj['id'] = {
-            $eq: objParam.IdUser
-        };
-        search1['$and'].push(obj);
-    }
+    // [2021-04-27 @ Dino] Moved IdUser checking into admin logic below
     var offset = (req.query.PageNo * 10) - 10;
 
-    OrderService.findAndCountAll({
-        where: search,
-        offset: parseInt(objParam.start),
-        limit: parseInt(objParam.length),
+    // [2021-04-27 @ Dino] Added this logic to filter out
+    User.hasMany(UserInRole, {
+        foreignKey: {
+            name: 'userId',
+            allowNull: false
+        }
+    });
+
+    UserInRole.belongsTo(Role, {
+        foreignKey: {
+            name: 'roleId',
+            allowNull: false
+        }
+    });
+
+    User.findOne({
+        where: {
+            id: objParam.IdUser
+        },
         include: [{
-            model: OrderServiceStatus,
-            attributes: ['id', 'OrderStatus'],
-            required: true
-            // }, {
-            //     model: OrderServiceDetail,
-            //     attributes: ['id', 'ProductName', 'Quantity', 'UnitPriceInclTax'],
-            //     required: true
-        }, {
-            model: User,
-            attributes: ['id', 'email', 'username', 'country', 'ProfileName', 'idApp'],
-            where: search1,
-            required: true
-        }, {
-            model: AppInfo,
-            required: true,
-            attributes: ['AppName'],
-        }],
-        order: Orderby
-    }).then(function (response) {
-        var response1 = new Object();
-        response1.draw = objParam.draw;
-        response1.LastPage = response.count;
-        response1.recordsTotal = response.count;
-        response1.recordsFiltered = response.count;
-        response1.data = response.rows;
-        res.json(response1);
+            model: UserInRole,
+            include: [{
+                model: Role,
+                attributes: ['RoleName']
+            }]
+        }]
+    }).then(function (foundUser) {
+        var isAdmin = false;
+        for (var i = 0; i < foundUser.tbluserinroles.length; ++i) {
+            var role = foundUser.tbluserinroles[i].tblrole.RoleName;
+
+            if (role === 'Super Admin' || role === 'Admin' || role === 'HC CARGO' || role === 'Navi Track' || role === 'DoTracks') {
+                isAdmin = true;
+                break;
+            }
+        }
+
+        if (!isAdmin) {
+            // [2021-04-27 @ Dino] IdUser checking logic moved here
+            if (objParam.IdUser != '' && objParam.IdUser != undefined && objParam.IdUser != '' && objParam.IdUser != 'All') {
+                search1['$and'] = [];
+                var obj = new Object();
+                obj['id'] = {
+                    $eq: objParam.IdUser
+                };
+                search1['$and'].push(obj);
+            }
+        }
+
+        // [2021-04-27 @ Dino] merged logic and wait after IdUser logic
+        return OrderService.findAndCountAll({
+            logging: console.log,
+            where: search,
+            offset: parseInt(objParam.start),
+            limit: parseInt(objParam.length),
+            include: [{
+                model: OrderServiceStatus,
+                attributes: ['id', 'OrderStatus'],
+                required: true
+                // }, {
+                //     model: OrderServiceDetail,
+                //     attributes: ['id', 'ProductName', 'Quantity', 'UnitPriceInclTax'],
+                //     required: true
+            }, {
+                model: User,
+                attributes: ['id', 'email', 'username', 'country', 'ProfileName', 'idApp'],
+                where: search1,
+                required: true
+            }, {
+                model: AppInfo,
+                required: true,
+                attributes: ['AppName'],
+            }],
+            order: Orderby
+        }).then(function (response) {
+            var response1 = new Object();
+            response1.draw = objParam.draw;
+            response1.LastPage = response.count;
+            response1.recordsTotal = response.count;
+            response1.recordsFiltered = response.count;
+            // [2021-05-03 @ Dino] here we try and swap the "OrderTotal" with the count of device, as suggested by HC-CARGO with discussion from Ian
+            for (var i = 0; i < response.rows.length; ++i) {
+                var row = response.rows[i];
+                row.OrderTotal = row.OrderNotes.split(',').length;
+            }
+            response1.data = response.rows;
+            res.json(response1);
+        })
+    // [2021-04-27 @ Dino] merged catch promise
     }).catch(function (error) {
         console.log(error)
         res.json({
