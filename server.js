@@ -570,6 +570,7 @@ app.use('/dynamicpage', require('./controllers/dynamicpage'));
 //socket API start
 app.use('/socketapi', require('./controllers/socketapi'));
 app.use('/socketapi_concox', require('./controllers/socketapi_concox'));
+app.use('/socketapi_beidou', require('./controllers/socketapi_beidou'));
 
 app.use('/PetDevice', require('./controllers/PetDevice'));
 
