@@ -1,4 +1,5 @@
 var router = express.Router();
+var PaymentSummary = models.tblpaymentsummary;
 var OrderService = models.tblorderservice;
 var OrderServiceStatus = models.tblorderservicestatus;
 var OrderServiceDetail = models.tblorderserviceitem;
@@ -10,6 +11,7 @@ var ProductAttributeValue = models.productattributevalue;
 var AppInfo = models.tblappinfo;
 var User = models.tbluserinformation;
 var GPSDevice = models.tblgpsdevice;
+var WalletTransaction = models.tblwallettransaction;
 var Vehicle = models.tblvehicle;
 var Commonfunction = require('./common.js');
 var momentz = require('moment-timezone');
@@ -537,12 +539,17 @@ router.get('/GetAllOrderServiceNew', function (req, res) {
         }]
     }).then(function (foundUser) {
         var isAdmin = false;
-        for (var i = 0; i < foundUser.tbluserinroles.length; ++i) {
-            var role = foundUser.tbluserinroles[i].tblrole.RoleName;
-
-            if (role === 'Super Admin' || role === 'Admin' || role === 'HC CARGO' || role === 'Navi Track' || role === 'DoTracks') {
-                isAdmin = true;
-                break;
+        // [2021-05-03 @ Dino] new condition, because if role is Admin then front end won't pass the IdUser at all, this line throws error because cannot find user
+        if (objParam.IdUser === undefined || objParam.IdUser === null) {
+            isAdmin = true;
+        } else {
+            for (var i = 0; i < foundUser.tbluserinroles.length; ++i) {
+                var role = foundUser.tbluserinroles[i].tblrole.RoleName;
+    
+                if (role === 'Super Admin' || role === 'Admin' || role === 'HC CARGO' || role === 'Navi Track' || role === 'DoTracks') {
+                    isAdmin = true;
+                    break;
+                }
             }
         }
 
@@ -1815,6 +1822,95 @@ router.post('/SaveOrderService', jsonParser, function (req, res) {
     }
 })
 
+//========================Expire Order Service and Wallet Transaction==============================================
+
+var rule = new schedule.RecurrenceRule();
+rule.hour = 20;
+rule.minute = 0;
+rule.second = 0;
+var Isschedule = schedule.scheduleJob(rule, function () {
+    console.log("Call Every Day '8 PM' O'clock")
+    ExpireOrderService();
+    ExpireWalletTransaction();
+});
+
+function ExpireOrderService() {
+    try {
+        OrderService.findAll({
+            where: {
+                ExpiryDate: {
+                    $lt: new Date()
+                }
+            }
+        }).then(function (resOrderService) {
+            if (resOrderService.length > 0) {
+                function Expire(i) {
+                    if (i < resOrderService.length) {
+                        try {
+                            var objOrderServc = resOrderService[i];
+                            objOrderServc.updateAttributes({
+                                OrderStatusId: 5
+                            }).then(function (resUpdateOrderService) {
+                                OrderServiceDetail.findOne({
+                                    where: {
+                                        OrderId: objOrderServc.id
+                                    }
+                                }).then(function (resfindDetail) {
+                                    if (resfindDetail != null) {
+                                        resfindDetail.updateAttributes({
+                                            idOrderStatus: 5
+                                        }).then(function (resupdateDetail) {
+                                            Expire(i + 1);
+                                        });
+                                    } else {
+                                        Expire(i + 1);
+                                    }
+                                });
+                            });
+                        } catch (errs) {
+                            Expire(i + 1);
+                        }
+                    } else {
+                        console.log("Successfully Expire Order Service");
+                    }
+                }
+                Expire(0);
+            }
+        });
+    } catch (err) { }
+}
+
+function ExpireWalletTransaction() {
+    try {
+        WalletTransaction.findAll({
+            where: {
+                ExpiryDate: {
+                    $lt: new Date()
+                }
+            }
+        }).then(function (resWalletTransaction) {
+            if (resWalletTransaction.length > 0) {
+                function Expiretran(j) {
+                    if (j < resWalletTransaction.length) {
+                        try {
+                            var objWalletTran = resWalletTransaction[j];
+                            objWalletTran.updateAttributes({
+                                IsPaymentSuccess: 3
+                            }).then(function (resUpdateWallet) {
+                                Expiretran(j + 1);
+                            });
+                        } catch (errs) {
+                            Expiretran(j + 1);
+                        }
+                    } else {
+                        console.log("Successfully Expire Wallet Transactions");
+                    }
+                }
+                Expiretran(0);
+            }
+        });
+    } catch (err) { }
+}
 
 function GetCurrentDate() {
     var today = new Date();

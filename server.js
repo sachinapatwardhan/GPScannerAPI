@@ -605,3 +605,4 @@ app.use('/renewtransaction', require('./controllers/renewtransaction.js'));
 // MAARK Install App End
 
 app.use('/trackerReport', require('./controllers/trackerReport.js'));
+app.use('/v2', require('./routes/v2.js'));

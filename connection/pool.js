@@ -8,12 +8,3 @@ const pool = mysql.createPool({
 });
 
 module.exports = pool;
-
-
-pool.query('SELECT ? + ? FROM DUAL', [3, 2], (err, rows) => {
-  if (err) {
-    return console.error(err.stack);
-  }
-
-  return console.log(rows);
-});
