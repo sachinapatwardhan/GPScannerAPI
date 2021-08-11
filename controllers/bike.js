@@ -1576,7 +1576,7 @@ router.get('/SaveVehicle', jsonParser, function (req, res) {
 
                                     objVehicle.DeviceType = objGpsDevice.Type;
                                     objVehicle.DeviceCompany = objGpsDevice.Company;
-                                    if (objGpsDevice.AppName == "Tracking") {
+                                    if (objGpsDevice.AppName == "Tracking" || objGpsDevice.Company == "Beiduo") {
                                         objVehicle.deviceid = objVehicle.IMEI;
                                     }
                                     if (objVehicle.id == 0) {

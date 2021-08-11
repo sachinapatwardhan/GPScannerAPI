@@ -1378,7 +1378,11 @@ router.post('/uploadExcelDevice', function (req, res) {
                         function addDevice(i) {
                             if (i < lst.length) {
                                 var obj = new Object();
-                                obj.DeviceId = lst[i].IMEI.trim().slice(1);
+                                if (Company != 'Beiduo') {
+                                    obj.DeviceId = lst[i].IMEI.trim().slice(1);
+                                } else {
+                                    obj.DeviceId = lst[i].IMEI.trim();
+                                }
                                 // obj.DeviceId = lst[i].IMEI.trim();
                                 obj.IMEI = lst[i].IMEI.trim();
                                 obj.CreatedDate = new Date();
