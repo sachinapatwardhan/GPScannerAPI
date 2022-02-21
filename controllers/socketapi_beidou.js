@@ -194,13 +194,13 @@ router.get('/SetOdometerSetting', function (req, res) {
     var obj = new Object();
     obj.DeviceId = req.query.DeviceId;
     obj.odometer = req.query.odometer;
-    SetOdometerSetting(obj, function (data) {
+    SetOdometerSettingBeidou(obj, function (data) {
         res.json(data);
     })
 })
 
 //Set Initial ODOmeter Settings
-global.SetOdometerSetting = function (objdata, Callback) {
+global.SetOdometerSettingBeidou = function (objdata, Callback) {
     var DeviceId = objdata.DeviceId;
     // var odometer = a2hex(objdata.odometer);
     // var datalength = 8;
