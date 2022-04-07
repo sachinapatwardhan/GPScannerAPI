@@ -7,13 +7,13 @@ router.get('/SendSpeedData', function (req, res) {
     var obj = new Object();
     obj.DeviceId = req.query.DeviceId;
     obj.Speed = req.query.Speed;
-    SendSpeedData(obj, function (data) {
+    SendSpeedDataBeidou(obj, function (data) {
         res.json(data);
     })
 })
 
 //Send Speed Data
-global.SendSpeedData = function (objdata, Callback) {
+global.SendSpeedDataBeidou = function (objdata, Callback) {
     var DeviceId = objdata.DeviceId;
     var Speed = ('00000000' + decimalToHexString(parseInt(objdata.Speed))).slice(-8);
     // var bodycommand = '80010005' + DeviceId + '' + ReplySerialnumber + '' + ReplySerialnumber + '010200'
@@ -104,7 +104,7 @@ router.get('/SetArmSettings', function (req, res) {
                     } else {
                         obj.ArmStatus = 1;
                     }
-                    SetArmSettings(obj, function (data) { });
+                    SetArmSettingsBeidou(obj, function (data) { });
                     funAuditLog.CreateAuditLog('Arm Setting', null, 'Change vehicle (DeviceId:' + DeviceId + ') Arm Setting at (time:' + convertdateformat(new Date()) + ').');
                     res.json({ success: true, message: 'Arm Settings Save Successfully.' });
                 } else {
@@ -117,14 +117,14 @@ router.get('/SetArmSettings', function (req, res) {
         obj.DeviceId = DeviceId;
         obj.Arm = req.query.Arm;
         obj.ArmStatus = req.query.Arm;
-        SetArmSettings(obj, function (data) {
+        SetArmSettingsBeidou(obj, function (data) {
             res.json(data);
         })
     }
 })
 
 //Set Arm Settings
-global.SetArmSettings = function (objdata, Callback) {
+global.SetArmSettingsBeidou = function (objdata, Callback) {
     // var Arm = ('00' + decimalToHexString(parseInt(objdata.ArmStatus))).slice(-2);
     var Arm = '11';
     if (objdata.ArmStatus == 0 || objdata.ArmStatus == '0') {
