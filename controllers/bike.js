@@ -1793,8 +1793,9 @@ router.get('/SaveVehicleold', jsonParser, function (req, res) {
 
 router.get('/SaveVehicle', jsonParser, function (req, res) {
   // [2022-06-24 @ Dino] If deviceid starts with 17 then append 0 to fix Beidou devices
-  if (req.query.deviceid.startsWith('17')) {
-    req.query.deviceid = '0' + req.query.deviceid;
+  if (req.query.IMEI && req.query.IMEI.startsWith('17')) {
+    req.query.IMEI = '0' + req.query.IMEI;
+    req.query.deviceid = req.query.IMEI;
   }
 
   objVehicle = req.query;
