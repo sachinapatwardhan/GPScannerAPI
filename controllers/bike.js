@@ -781,7 +781,7 @@ router.get('/GetAllGPSByTimeZoneDateWithV', function (req, res) {
   var unixEnddate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
 
   var query =
-    "select Id,Datetime, Latitude, Longitude, GPSPositioning, Speed, Direction, DeviceId, IsPatchEngine as IsEngine, OdoMeter, Date, IsOverSpeed,AD1 from tblgpsdata where deviceid='" +
+    "select Id,Datetime, Latitude, Longitude, GPSPositioning, Speed, Direction, DeviceId, IsPatchEngine as IsEngine, OdoMeter, Date, IsOverSpeed,AD1 from tblgpsdata2 where deviceid='" +
     req.query.DeviceId +
     "' and Date >= '" +
     unixStartdate +
