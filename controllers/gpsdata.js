@@ -221,9 +221,9 @@ router.get('/GetAllGpsDataNew', function (req, res) {
     DeviceId != undefined
   ) {
     if (search != '') {
-      search += ' and tgps.DeviceId = ' + DeviceId;
+      search += " and tgps.DeviceId = '" + DeviceId + "'";
     } else {
-      search += ' where tgps.DeviceId = ' + DeviceId;
+      search += " where tgps.DeviceId = '" + DeviceId + "'";
     }
 
     var StartDate = convertdateUTCformat(objParam.StartDate);
