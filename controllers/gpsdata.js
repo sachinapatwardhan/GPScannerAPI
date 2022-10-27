@@ -2426,6 +2426,7 @@ router.get('/GetAllWoringHourForReport', function (req, res) {
 });
 
 //New Working hour report
+// [2022-10-27 @ Dino] Moved from tblgpsdata to tblgpsdata2
 router.get('/GetAllWoringHourForReportNew', function (req, res) {
   var objParam = req.query;
   var WhereCondition = ' ';
@@ -2459,7 +2460,7 @@ router.get('/GetAllWoringHourForReportNew', function (req, res) {
     'select ' +
     'gps.DeviceId,gps.Date,gps.Speed,gps.IsPatchEngine as IsEngine,gps.Latitude,gps.Longitude,gps.GPSPositioning,Bike.Name,Bike.id,Bike.deviceid ' +
     'from tblvehicle  As Bike ' +
-    'inner  join tblgpsdata as gps ' +
+    'inner  join tblgpsdata2 as gps ' +
     'on ' +
     'gps.DeviceId = Bike.deviceid ' +
     WhereCondition +
@@ -4585,6 +4586,7 @@ router.get('/GetAllDriverReport', function (req, res) {
   });
 });
 
+// [2022-10-27 @ Dino] Moved from tblgpsdata to tblgpsdata2
 router.get('/GetAllDriverReportNew', function (req, res) {
   var objParam = req.query;
   var wherecondition1 = '';
@@ -4625,7 +4627,7 @@ router.get('/GetAllDriverReportNew', function (req, res) {
     'select ' +
     ' gps.Date,gps.Speed,gps.Longitude,gps.Latitude,gps.Direction,gps.GPSPositioning,gps.DeviceId,gps.IsPatchEngine as IsEngine,Bike.*  ' +
     'from tblvehicle  As Bike ' +
-    'inner  join tblgpsdata as gps ' +
+    'inner  join tblgpsdata2 as gps ' +
     'on ' +
     'gps.DeviceId = Bike.deviceid ' +
     WhereCondition +
@@ -7296,7 +7298,7 @@ router.get('/DeleteGPSDeleteById', function (req, res) {
 });
 
 //------------------------------------Journey Route Report----------------------------------------------------------
-
+// [2022-10-27 @ Dino] Moved from tblgpsdata to tblgpsdata2
 router.post('/GetAllJourneyRouteForReport', jsonParser, function (req, res) {
   var objParam = req.body;
   var LstJourney = objParam.LstJourney;
@@ -7335,7 +7337,7 @@ router.post('/GetAllJourneyRouteForReport', jsonParser, function (req, res) {
     'select ' +
     'gps.DeviceId,gps.Date,gps.Speed,gps.IsPatchEngine as IsEngine,gps.Latitude,gps.Longitude,gps.GPSPositioning,Bike.Name,Bike.id,Bike.deviceid ' +
     'from tblvehicle  As Bike ' +
-    'inner  join tblgpsdata as gps ' +
+    'inner  join tblgpsdata2 as gps ' +
     'on ' +
     'gps.DeviceId = Bike.deviceid ' +
     WhereCondition +
