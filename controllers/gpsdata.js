@@ -7110,8 +7110,9 @@ router.get('/DeleteGPSdatabyVehicleId', function (req, res) {
               },
             }).then(function (response) {
               if (response) {
+                // [2023-02-07 @ Dino] Set IdGroup to null as per Ian's request
                 response
-                  .updateAttributes({ IsDelete: true })
+                  .updateAttributes({ IsDelete: true, IdGroup: null })
                   .then(function (resUpdate) {
                     Commonfunction.DeleteVehicleRedis(req.query.DeviceId);
                     if (resUpdate) {
