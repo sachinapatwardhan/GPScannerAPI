@@ -143,7 +143,14 @@ router.post('/SaveWarrantyReplaceDevice', jsonParser, function (req, res) {
           objParam.OldDevice != undefined &&
           objParam.OldDevice != ''
         ) {
-          wherecondition1 += " AND DeviceId='" + objParam.OldDevice + "' ";
+          // [2023-03-20 @ Dino] Added hanky panky solution here because frontend Admin passed device ID as number instead of string
+          // causing the 0 in front to disappear, so we append it back
+          wherecondition1 +=
+            " AND (DeviceId='" +
+            objParam.OldDevice +
+            "' OR DeviceId = '0" +
+            objParam.OldDevice +
+            "') ";
         }
 
         if (
@@ -151,19 +158,28 @@ router.post('/SaveWarrantyReplaceDevice', jsonParser, function (req, res) {
           objParam.NewDevice != undefined &&
           objParam.NewDevice != ''
         ) {
-          wherecondition2 += " AND DeviceId='" + objParam.NewDevice + "' ";
+          // [2023-03-20 @ Dino] Added hanky panky solution here because frontend Admin passed device ID as number instead of string
+          // causing the 0 in front to disappear, so we append it back
+          wherecondition2 +=
+            " AND (DeviceId='" +
+            objParam.NewDevice +
+            "' OR DeviceId = '0" +
+            objParam.NewDevice +
+            "') ";
         }
         var query1 =
           ' SELECT DeviceId,AppName FROM tblgpsdevice ' + wherecondition1;
         connection.query(query1, function (err, OldDeviceExist) {
-          if (OldDeviceExist != null && OldDeviceExist.length > 0) {
+          // [2023-03-20 @ Dino] But because of the above fix we need to make sure there is only 1 device
+          if (OldDeviceExist != null && OldDeviceExist.length === 1) {
             var query2 =
               ' SELECT DeviceId,AppName' +
               ' FROM tblgpsdevice tg ' +
               ' WHERE DeviceId NOT IN (SELECT DeviceId FROM tbllicencemanager WHERE DeviceId IS Not null) ' +
               wherecondition2;
             connection.query(query2, function (err, NewDeviceExist) {
-              if (NewDeviceExist != null && NewDeviceExist.length > 0) {
+              // [2023-03-20 @ Dino] But because of the above fix we need to make sure there is only 1 device
+              if (NewDeviceExist != null && NewDeviceExist.length === 1) {
                 var obj = new Object();
                 obj.OldDevice = objParam.OldDevice;
                 obj.NewDevice = objParam.NewDevice;
@@ -304,6 +320,14 @@ router.post('/SaveWarrantyReplaceDevice', jsonParser, function (req, res) {
                   }
                 });
               } else {
+                // [2023-03-20 @ Dino] Because of the above fix so here we try to return the appropriate message
+                if (NewDeviceExist && NewDeviceExist.length > 1) {
+                  return res.json({
+                    success: false,
+                    message: 'There is more than 1 new device found.',
+                  });
+                }
+
                 res.json({
                   success: false,
                   message: 'New Device not exist...',
@@ -311,6 +335,14 @@ router.post('/SaveWarrantyReplaceDevice', jsonParser, function (req, res) {
               }
             });
           } else {
+            // [2023-03-20 @ Dino] Because of the above fix so here we try to return the appropriate message
+            if (OldDeviceExist && OldDeviceExist.length > 1) {
+              return res.json({
+                success: false,
+                message: 'There is more than 1 old device found.',
+              });
+            }
+
             res.json({ success: false, message: 'Old Device not exist...' });
           }
         });
