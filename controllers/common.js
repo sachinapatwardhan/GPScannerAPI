@@ -382,16 +382,22 @@ function GetAddressLatLong(Latitude, Longitude, CallBack) {
         } else {
           var lat = Latitude;
           var lon = Longitude;
+          // var url = 'https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=' + lat + '&lon=' + lon;
           var url =
-            'https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=' +
+            'https://osmnames.klokantech.com/r/' +
+            lon +
+            '/' +
             lat +
-            '&lon=' +
-            lon;
+            '.js?key=dgb7TgC5zR0YpsAqbE';
           request.get(url, function (err, response, data) {
             if (!err) {
               try {
                 data = JSON.parse(data);
-                return CallBack(data.display_name);
+                if (data.results && data.results.length > 0) {
+                  return CallBack(data.results[0].display_name);
+                } else {
+                  return CallBack('');
+                }
               } catch (ex) {
                 return CallBack('');
               }
@@ -421,16 +427,22 @@ function GetAddressLatLong(Latitude, Longitude, CallBack) {
       } else {
         var lat = Latitude;
         var lon = Longitude;
+        // var url = 'https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=' + lat + '&lon=' + lon;
         var url =
-          'https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=' +
+          'https://osmnames.klokantech.com/r/' +
+          lon +
+          '/' +
           lat +
-          '&lon=' +
-          lon;
+          '.js?key=dgb7TgC5zR0YpsAqbE';
         request.get(url, function (err, response, data) {
           if (!err) {
             try {
               data = JSON.parse(data);
-              return CallBack(data.display_name);
+              if (data.results && data.results.length > 0) {
+                return CallBack(data.results[0].display_name);
+              } else {
+                return CallBack('');
+              }
             } catch (ex) {
               return CallBack('');
             }
