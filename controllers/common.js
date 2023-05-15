@@ -361,7 +361,7 @@ function mysqlConnectionSetup() {
 function GetAddressLatLong(Latitude, Longitude, CallBack) {
   Address.findOne({ where: { Lat: Latitude, Lng: Longitude } })
     .then(function (resaddress) {
-      if (resaddress) {
+      if (resaddress && resaddress.Address) {
         return CallBack(resaddress.Address);
       } else {
         if (process.env.GeocodingService == 'google') {
@@ -389,22 +389,28 @@ function GetAddressLatLong(Latitude, Longitude, CallBack) {
             '/' +
             lat +
             '.js?key=dgb7TgC5zR0YpsAqbE';
-          request.get(url, function (err, response, data) {
-            if (!err) {
-              try {
-                data = JSON.parse(data);
-                if (data.results && data.results.length > 0) {
-                  return CallBack(data.results[0].display_name);
-                } else {
+          request.get(
+            url,
+            {
+              rejectUnauthorized: false,
+            },
+            function (err, response, data) {
+              if (!err) {
+                try {
+                  data = JSON.parse(data);
+                  if (data.results && data.results.length > 0) {
+                    return CallBack(data.results[0].display_name);
+                  } else {
+                    return CallBack('');
+                  }
+                } catch (ex) {
                   return CallBack('');
                 }
-              } catch (ex) {
+              } else {
                 return CallBack('');
               }
-            } else {
-              return CallBack('');
             }
-          });
+          );
         }
       }
     })
@@ -434,22 +440,28 @@ function GetAddressLatLong(Latitude, Longitude, CallBack) {
           '/' +
           lat +
           '.js?key=dgb7TgC5zR0YpsAqbE';
-        request.get(url, function (err, response, data) {
-          if (!err) {
-            try {
-              data = JSON.parse(data);
-              if (data.results && data.results.length > 0) {
-                return CallBack(data.results[0].display_name);
-              } else {
+        request.get(
+          url,
+          {
+            rejectUnauthorized: false,
+          },
+          function (err, response, data) {
+            if (!err) {
+              try {
+                data = JSON.parse(data);
+                if (data.results && data.results.length > 0) {
+                  return CallBack(data.results[0].display_name);
+                } else {
+                  return CallBack('');
+                }
+              } catch (ex) {
                 return CallBack('');
               }
-            } catch (ex) {
+            } else {
               return CallBack('');
             }
-          } else {
-            return CallBack('');
           }
-        });
+        );
       }
     });
 }
