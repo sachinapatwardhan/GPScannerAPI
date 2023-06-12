@@ -80,7 +80,7 @@
     "negotiator": "~0.5.3",
     "node-geocoder": "~3.19.0",
     "node-jasper": "~0.2.1",
-    "node-pushnotifications": "~0.1.8",
+    "node-pushnotifications": "~1.1.12",
     "node-schedule": "~1.1.1",
     "node-uuid": "~1.4.7",
     "nodemailer": "~2.4.2",

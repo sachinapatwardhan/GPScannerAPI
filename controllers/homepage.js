@@ -24,58 +24,60 @@ function clone(obj) {
   return copy;
 }
 
-function SendPushNotification(data, UserId) {
-  // var deviceIds = [];
+// [2023-04-26 @ Dino] Removed this as per node-pushnotifications upgrade from 0.1.8 to 1.1.12 using apn@2.2.0
+// Nobody using
+// function SendPushNotification(data, UserId) {
+//   // var deviceIds = [];
 
-  connection.query(
-    'SELECT PushNotificationId,Platform from tblpushnotification where iduser=' +
-      UserId +
-      ' group by PushNotificationId, Platform',
-    function (err, response, fields) {
-      if (!err && response.length > 0) {
-        // PushNotification.findAll({ where: { iduser: UserId } }).then(function(response) {
-        function SendNotification(i) {
-          if (i < response.length) {
-            var deviceIds = [];
-            deviceIds.push(response[i].PushNotificationId);
-            //SendNotification(i + 1);
-            // } else {
-            // console.log(deviceIds)
-            var objData = clone(data);
-            if (response[i].Platform == 'ios') {
-              objData.title = data.message;
-              objData.message = data.title;
-              if (objData.Fence == 'Fence') {
-                PushNotificationSettings.apn.defaultData.sound =
-                  'jinglebellssms.caf';
-              } else {
-                PushNotificationSettings.apn.defaultData.sound = 'default';
-              }
-            }
-            // console.log(response[i].Platform + "_______________________________________________________")
-            // console.log(objData)
-            var objPushNotificationSend = new PushNotifications(
-              PushNotificationSettings
-            );
-            if (deviceIds.length > 0) {
-              objPushNotificationSend.send(
-                deviceIds,
-                objData,
-                function (result) {
-                  // console.log(result);
-                  SendNotification(i + 1);
-                }
-              );
-            } else {
-              SendNotification(i + 1);
-            }
-          }
-        }
-        SendNotification(0);
-      }
-    }
-  );
-}
+//   connection.query(
+//     'SELECT PushNotificationId,Platform from tblpushnotification where iduser=' +
+//       UserId +
+//       ' group by PushNotificationId, Platform',
+//     function (err, response, fields) {
+//       if (!err && response.length > 0) {
+//         // PushNotification.findAll({ where: { iduser: UserId } }).then(function(response) {
+//         function SendNotification(i) {
+//           if (i < response.length) {
+//             var deviceIds = [];
+//             deviceIds.push(response[i].PushNotificationId);
+//             //SendNotification(i + 1);
+//             // } else {
+//             // console.log(deviceIds)
+//             var objData = clone(data);
+//             if (response[i].Platform == 'ios') {
+//               objData.title = data.message;
+//               objData.message = data.title;
+//               if (objData.Fence == 'Fence') {
+//                 PushNotificationSettings.apn.defaultData.sound =
+//                   'jinglebellssms.caf';
+//               } else {
+//                 PushNotificationSettings.apn.defaultData.sound = 'default';
+//               }
+//             }
+//             // console.log(response[i].Platform + "_______________________________________________________")
+//             // console.log(objData)
+//             var objPushNotificationSend = new PushNotifications(
+//               PushNotificationSettings
+//             );
+//             if (deviceIds.length > 0) {
+//               objPushNotificationSend.send(
+//                 deviceIds,
+//                 objData,
+//                 function (result) {
+//                   // console.log(result);
+//                   SendNotification(i + 1);
+//                 }
+//               );
+//             } else {
+//               SendNotification(i + 1);
+//             }
+//           }
+//         }
+//         SendNotification(0);
+//       }
+//     }
+//   );
+// }
 
 function GetCurrentDate() {
   var today = new Date();

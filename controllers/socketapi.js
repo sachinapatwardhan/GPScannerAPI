@@ -73,6 +73,9 @@ function SendIOSPushNotification(DeviceId) {
     title: '9787 is out of Home Fence.',
     message:
       '9787 is out of Home Fence. 9787 is out of Home Fence. 9787 is out of Home Fence. 9787 is out of Home Fence. 9787 is out of Home Fence. 9787 is out of Home Fence. 9787 is out of Home Fence. 9787 is out of Home Fence. 9787 is out of Home Fence.',
+    // [2023-04-26 @ Dino] Added this as per node-pushnotifications upgrade from 0.1.8 to 1.1.12 using apn@2.2.0
+    body: '9787 is out of Home Fence. 9787 is out of Home Fence. 9787 is out of Home Fence. 9787 is out of Home Fence. 9787 is out of Home Fence. 9787 is out of Home Fence. 9787 is out of Home Fence. 9787 is out of Home Fence. 9787 is out of Home Fence.',
+    topic: process.env.PUSH_NOTIFICATION_HC_CARGO_APP_BUNDLE_ID,
     soundname: 'sound50',
     msgcnt: '2',
     otherfields: {
@@ -374,6 +377,9 @@ router.get('/SendPushTest1', function (req, res) {
         var PushNotificationdata = {
           title: 'Alert',
           message: '9787 is out of Home Fence.',
+          // [2023-04-26 @ Dino] Added this as per node-pushnotifications upgrade from 0.1.8 to 1.1.12 using apn@2.2.0
+          body: '9787 is out of Home Fence.',
+          topic: process.env.PUSH_NOTIFICATION_HC_CARGO_APP_BUNDLE_ID,
           Fence: 'Default',
           otherfields: {
             deviceid: 123456,
@@ -1176,6 +1182,11 @@ global.Command9955 = function (objConnection, Callback) {
                                             var PushNotificationdata = {
                                               title: 'Alert',
                                               message: Message,
+                                              // [2023-04-26 @ Dino] Added this as per node-pushnotifications upgrade from 0.1.8 to 1.1.12 using apn@2.2.0
+                                              body: Message,
+                                              topic:
+                                                process.env
+                                                  .PUSH_NOTIFICATION_HC_CARGO_APP_BUNDLE_ID,
                                               // Fence: 'Default',
                                               soundname: soundname,
                                               otherfields: {
@@ -1541,6 +1552,11 @@ global.Command9955 = function (objConnection, Callback) {
                                               var PushNotificationdata = {
                                                 title: 'Alert',
                                                 message: Message,
+                                                // [2023-04-26 @ Dino] Added this as per node-pushnotifications upgrade from 0.1.8 to 1.1.12 using apn@2.2.0
+                                                body: Message,
+                                                topic:
+                                                  process.env
+                                                    .PUSH_NOTIFICATION_HC_CARGO_APP_BUNDLE_ID,
                                                 // Fence: 'Default',
                                                 soundname: soundname,
                                                 otherfields: {
@@ -1926,6 +1942,10 @@ global.Command9999 = function (line, Callback) {
                       var PushNotificationdata = {
                         title: 'Alert',
                         message: Message,
+                        // [2023-04-26 @ Dino] Added this as per node-pushnotifications upgrade from 0.1.8 to 1.1.12 using apn@2.2.0
+                        body: Message,
+                        topic:
+                          process.env.PUSH_NOTIFICATION_HC_CARGO_APP_BUNDLE_ID,
                         // Fence: 'Default',
                         soundname: soundname,
                         otherfields: {

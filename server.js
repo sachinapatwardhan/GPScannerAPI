@@ -1,6 +1,7 @@
 // require('newrelic');
 var swStats = require('swagger-stats'); // ian: added by ian for statistic
 require('dotenv').config();
+const path = require('path');
 global.express = require('express');
 //var router = express.Router();
 global.app = express();
@@ -191,6 +192,17 @@ if (global.IsProduction == false || global.IsProduction == 'false') {
         // key: __dirname + "/certs/NaviDevelopmentKey.pem",
         // production: true
       },
+      // [2023-04-26 @ Dino] Added this as per node-pushnotifications upgrade from 0.1.8 to 1.1.12 using apn@2.2.0
+      production: true,
+      token: {
+        key: path.join(
+          __dirname,
+          './certs',
+          process.env.PUSH_NOTIFICATION_HC_CARGO_APN_KEY_FILE_NAME
+        ),
+        keyId: process.env.PUSH_NOTIFICATION_HC_CARGO_APN_KEY_ID,
+        teamId: process.env.PUSH_NOTIFICATION_HC_CARGO_APN_TEAM_ID,
+      },
     },
   };
 } else {
@@ -219,6 +231,17 @@ if (global.IsProduction == false || global.IsProduction == 'false') {
         cert: __dirname + '/certs/certProduction.pem',
         key: __dirname + '/certs/keyProduction.pem',
         production: true,
+      },
+      // [2023-04-26 @ Dino] Added this as per node-pushnotifications upgrade from 0.1.8 to 1.1.12 using apn@2.2.0
+      production: true,
+      token: {
+        key: path.join(
+          __dirname,
+          './certs',
+          process.env.PUSH_NOTIFICATION_HC_CARGO_APN_KEY_FILE_NAME
+        ),
+        keyId: process.env.PUSH_NOTIFICATION_HC_CARGO_APN_KEY_ID,
+        teamId: process.env.PUSH_NOTIFICATION_HC_CARGO_APN_TEAM_ID,
       },
     },
   };

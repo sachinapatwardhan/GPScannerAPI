@@ -453,6 +453,10 @@ router.post('/SendPushNotification', jsonParser, function (req, res) {
                   if (lstGroupData[i].Platform == 'ios') {
                     objData.title = data.message;
                     objData.message = data.title;
+                    // [2023-04-26 @ Dino] Added this as per node-pushnotifications upgrade from 0.1.8 to 1.1.12 using apn@2.2.0
+                    objData.body = data.title;
+                    objData.topic =
+                      process.env.PUSH_NOTIFICATION_HC_CARGO_APP_BUNDLE_ID;
                     if (objData.Fence == 'Fence') {
                       PushNotificationSettings.apn.defaultData.sound =
                         'jinglebellssms.caf';
