@@ -1801,6 +1801,14 @@ router.get('/SaveVehicle', jsonParser, function (req, res) {
     req.query.IMEI = '0' + req.query.IMEI;
     req.query.deviceid = req.query.IMEI;
   }
+  // [2023-06-12 @ Dino] Also patch this due to sticker issue on Beidou devices, even if we are using new app
+  // Technically the above if statement is not run in the new app because we never passed IMEI
+  if (
+    (req.query.deviceid || {}).startsWith('17') ||
+    (req.query.deviceid || {}).startsWith('19')
+  ) {
+    req.query.deviceid = '0' + req.query.deviceid;
+  }
 
   objVehicle = req.query;
   objVehicle.IsDelete = false;
