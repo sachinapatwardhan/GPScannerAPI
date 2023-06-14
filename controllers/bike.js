@@ -1792,6 +1792,12 @@ router.get('/SaveVehicleold', jsonParser, function (req, res) {
 });
 
 router.get('/SaveVehicle', jsonParser, function (req, res) {
+  // [2023-06-14 @ Dino] Cut off the device ID first character if is new app
+  if (!('IMEI' in req.query)) {
+    req.query.IMEI = req.query.deviceid;
+    req.query.deviceid = req.query.deviceid.substring(1);
+  }
+
   // [2022-06-24 @ Dino] If deviceid starts with 17 then append 0 to fix Beidou devices
   // [2022-07-28 @ Dino] Added also to include 19 as per requested by Ian
   if (
@@ -1800,14 +1806,6 @@ router.get('/SaveVehicle', jsonParser, function (req, res) {
   ) {
     req.query.IMEI = '0' + req.query.IMEI;
     req.query.deviceid = req.query.IMEI;
-  }
-  // [2023-06-12 @ Dino] Also patch this due to sticker issue on Beidou devices, even if we are using new app
-  // Technically the above if statement is not run in the new app because we never passed IMEI
-  if (
-    (req.query.deviceid || {}).startsWith('17') ||
-    (req.query.deviceid || {}).startsWith('19')
-  ) {
-    req.query.deviceid = '0' + req.query.deviceid;
   }
 
   objVehicle = req.query;
