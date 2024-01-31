@@ -137,7 +137,7 @@ router.get('/GetGeneralInfo', function (req, res) {
 
   if (req.query.AppName == 'HC CARGO') {
     CompanyName = 'CAR PRO AUTO PARTS & ACC. S/B';
-    phoneNumber = '603-62581961';
+    phoneNumber = '603-61793598';
   }
   var obj = new Object();
   obj.CompanyName = CompanyName;
