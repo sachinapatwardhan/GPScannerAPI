@@ -1753,9 +1753,9 @@ router.get('/ExportEngineReport', function (req, res) {
       }
     }
     if (search != '') {
-      search += ' And tblgpsdata.DeviceId in (' + DeviceId + ')';
+      search += ' And tblgpsdata2.DeviceId in (' + DeviceId + ')';
     } else {
-      search += ' Where tblgpsdata.DeviceId in (' + DeviceId + ')';
+      search += ' Where tblgpsdata2.DeviceId in (' + DeviceId + ')';
     }
   }
 
@@ -1765,9 +1765,9 @@ router.get('/ExportEngineReport', function (req, res) {
     objParam.StartDate != undefined
   ) {
     if (search != '') {
-      search += ' And tblgpsdata.Date >= ' + unixStartdate + '';
+      search += ' And tblgpsdata2.Date >= ' + unixStartdate + '';
     } else {
-      search += ' Where tblgpsdata.Date >= ' + unixStartdate + '';
+      search += ' Where tblgpsdata2.Date >= ' + unixStartdate + '';
     }
   }
 
@@ -1777,15 +1777,15 @@ router.get('/ExportEngineReport', function (req, res) {
     objParam.EndDate != undefined
   ) {
     if (search != '') {
-      search += ' And tblgpsdata.Date <= ' + unixEnddate + '';
+      search += ' And tblgpsdata2.Date <= ' + unixEnddate + '';
     } else {
-      search += ' Where tblgpsdata.Date <= ' + unixEnddate + '';
+      search += ' Where tblgpsdata2.Date <= ' + unixEnddate + '';
     }
   }
   // var query = "SELECT tblgpsdata.Id, tblgpsdata.Datetime, tblgpsdata.Date, tblgpsdata.Latitude, tblgpsdata.Longitude, tblgpsdata.DeviceId, tblgpsdata.IsEngine, tblgpsdata.Speed, tblvehicle.Name, tblvehicle.iduser FROM tblgpsdata LEFT JOIN tblvehicle ON tblvehicle.deviceid = tblgpsdata.DeviceId " + search;
   // query += Orderby;
   var query =
-    'SELECT  tblgpsdata.Datetime, tblgpsdata.Date, tblgpsdata.Latitude, tblgpsdata.Longitude, tblgpsdata.DeviceId, tblgpsdata.IsPatchEngine as IsEngine, tblgpsdata.Speed,tblgpsdata.GPSPositioning, tblvehicle.Name, tblvehicle.iduser FROM tblgpsdata LEFT JOIN tblvehicle ON tblvehicle.deviceid = tblgpsdata.DeviceId ' +
+    'SELECT  tblgpsdata2.Datetime, tblgpsdata2.Date, tblgpsdata2.Latitude, tblgpsdata2.Longitude, tblgpsdata2.DeviceId, tblgpsdata2.IsPatchEngine as IsEngine, tblgpsdata2.Speed,tblgpsdata2.GPSPositioning, tblvehicle.Name, tblvehicle.iduser FROM tblgpsdata2 LEFT JOIN tblvehicle ON tblvehicle.deviceid = tblgpsdata2.DeviceId ' +
     search;
   query += Orderby;
   connectionreport.query(query, function (err, response) {
