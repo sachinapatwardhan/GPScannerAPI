@@ -23,6 +23,8 @@ var FCM = require('fcm-node');
 
 //End of Tables
 
+const admin = require('./firebase-admin.js');
+
 global.deg_to_lat_long = function (deg, Direction) {
   // var Direction = deg.substring(deg.length - 1, deg.length);
   // var Minute = deg.substring(deg.length - 7, deg.length)
@@ -248,39 +250,83 @@ global.SendPushNotification = function (data, UserId, objAppInfo) {
                   console.log(deviceIds);
                   var objData = clone(data);
 
-                  if (response[i].Platform == 'ios') {
-                    objData.title = data.message;
-                    objData.message = data.message;
+                  if (false) {
+                    if (response[i].Platform == 'ios') {
+                      objData.title = data.message;
+                      objData.message = data.message;
 
-                    PushNotificationSettings.apn.options.cert =
-                      __dirname +
-                      '/../MediaUploads/FileUpload/' +
-                      objAppInfo.IOSCertificate;
-                    PushNotificationSettings.apn.options.key =
-                      __dirname +
-                      '/../MediaUploads/FileUpload/' +
-                      objAppInfo.IOSKey;
+                      PushNotificationSettings.apn.options.cert =
+                        __dirname +
+                        '/../MediaUploads/FileUpload/' +
+                        objAppInfo.IOSCertificate;
+                      PushNotificationSettings.apn.options.key =
+                        __dirname +
+                        '/../MediaUploads/FileUpload/' +
+                        objAppInfo.IOSKey;
 
-                    PushNotificationSettings.apn.badge = messagecount;
+                      PushNotificationSettings.apn.badge = messagecount;
 
-                    if (objData.soundname == 'Default') {
-                      PushNotificationSettings.apn.defaultData.sound =
-                        'default';
+                      if (objData.soundname == 'Default') {
+                        PushNotificationSettings.apn.defaultData.sound =
+                          'default';
+                      } else {
+                        PushNotificationSettings.apn.defaultData.sound =
+                          objData.soundname + '.caf';
+                      }
+
+                      objData.priority = 'high';
+                      var objPushNotificationSend = new PushNotifications(
+                        PushNotificationSettings
+                      );
+                      if (deviceIds.length > 0) {
+                        objPushNotificationSend.send(
+                          deviceIds,
+                          objData,
+                          function (result) {
+                            // console.log(result);
+                            connection.query(
+                              'Update tblpushnotification set messagecount=' +
+                                messagecount +
+                                " where udid='" +
+                                response[i].udid +
+                                "' and UserType='" +
+                                response[i].UserType +
+                                "'",
+                              function (errupdate, updateresp, fields) {
+                                console.log(errupdate);
+
+                                SendNotification(i + 1);
+                              }
+                            );
+                          }
+                        );
+                      } else {
+                        SendNotification(i + 1);
+                      }
                     } else {
-                      PushNotificationSettings.apn.defaultData.sound =
-                        objData.soundname + '.caf';
-                    }
+                      // PushNotificationSettings.gcm.msgcnt = messagecount;
+                      // PushNotificationSettings.gcm.id = objAppInfo.AndroidId;
 
-                    objData.priority = 'high';
-                    var objPushNotificationSend = new PushNotifications(
-                      PushNotificationSettings
-                    );
-                    if (deviceIds.length > 0) {
-                      objPushNotificationSend.send(
-                        deviceIds,
-                        objData,
-                        function (result) {
-                          // console.log(result);
+                      var objDataFCM = clone(data);
+                      objDataFCM.msgcnt = messagecount;
+                      console.log(objDataFCM);
+                      var message = {
+                        //this may vary according to the message type (single recipient, multicast, topic, et cetera)
+                        to: response[i].PushNotificationId,
+                        collapse_key: objAppInfo.AppName,
+                        notification: {
+                          title: objDataFCM.title,
+                          body: objDataFCM.message,
+                          sound: 'default',
+                          click_action: 'FCM_PLUGIN_ACTIVITY',
+                          // "icon": "fcm_push_icon"
+                        },
+                        data: objDataFCM,
+                      };
+                      SendFCMPushOneByOne(
+                        message,
+                        objAppInfo.AndroidId,
+                        function () {
                           connection.query(
                             'Update tblpushnotification set messagecount=' +
                               messagecount +
@@ -291,54 +337,60 @@ global.SendPushNotification = function (data, UserId, objAppInfo) {
                               "'",
                             function (errupdate, updateresp, fields) {
                               console.log(errupdate);
-
                               SendNotification(i + 1);
                             }
                           );
                         }
                       );
-                    } else {
-                      SendNotification(i + 1);
                     }
                   } else {
-                    // PushNotificationSettings.gcm.msgcnt = messagecount;
-                    // PushNotificationSettings.gcm.id = objAppInfo.AndroidId;
+                    if (token) {
+                      admin
+                        .messaging()
+                        .send({
+                          token,
+                          notification: {
+                            title: objDataFCM.title,
+                            body: objDataFCM.message,
+                          },
+                        })
+                        .then(() => {
+                          connection.query(
+                            'Update tblpushnotification set messagecount=' +
+                              messagecount +
+                              " where udid='" +
+                              response[i].udid +
+                              "' and UserType='" +
+                              response[i].UserType +
+                              "'",
+                            function (errupdate, updateresp, fields) {
+                              console.log(errupdate);
+                              SendNotification(i + 1);
+                            }
+                          );
+                        })
+                        .catch((err) => {
+                          console.error('Firebase:');
 
-                    var objDataFCM = clone(data);
-                    objDataFCM.msgcnt = messagecount;
-                    console.log(objDataFCM);
-                    var message = {
-                      //this may vary according to the message type (single recipient, multicast, topic, et cetera)
-                      to: response[i].PushNotificationId,
-                      collapse_key: objAppInfo.AppName,
-                      notification: {
-                        title: objDataFCM.title,
-                        body: objDataFCM.message,
-                        sound: 'default',
-                        click_action: 'FCM_PLUGIN_ACTIVITY',
-                        // "icon": "fcm_push_icon"
-                      },
-                      data: objDataFCM,
-                    };
-                    SendFCMPushOneByOne(
-                      message,
-                      objAppInfo.AndroidId,
-                      function () {
-                        connection.query(
-                          'Update tblpushnotification set messagecount=' +
-                            messagecount +
-                            " where udid='" +
-                            response[i].udid +
-                            "' and UserType='" +
-                            response[i].UserType +
-                            "'",
-                          function (errupdate, updateresp, fields) {
-                            console.log(errupdate);
-                            SendNotification(i + 1);
+                          if ((err || {}).errorInfo) {
+                            if (
+                              err.errorInfo.code ===
+                              'messaging/registration-token-not-registered'
+                            ) {
+                              console.error(err.errorInfo.message);
+                              console.error(token);
+                            } else if (
+                              err.errorInfo.code ===
+                              'messaging/invalid-argument'
+                            ) {
+                              console.error(err.errorInfo.message);
+                              console.error(token);
+                            }
+                          } else {
+                            console.error(err);
                           }
-                        );
-                      }
-                    );
+                        });
+                    }
                   }
                   // console.log(response[i].Platform + "_______________________________________________________")
                   // console.log(objData)

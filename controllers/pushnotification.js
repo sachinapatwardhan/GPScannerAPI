@@ -13,6 +13,8 @@ var serverKey = process.env.PushNotificationgcmid; //put your server key here
 var fcm = new FCM(serverKey);
 //End of Tables
 
+const admin = require('./firebase-admin.js');
+
 router.post('/Subscribe', jsonParser, function (req, res) {
   objPushNotification = req.body;
   console.log(objPushNotification);
@@ -450,53 +452,90 @@ router.post('/SendPushNotification', jsonParser, function (req, res) {
                   // } else {
                   // console.log(deviceIds)
                   var objData = clone(data);
-                  if (lstGroupData[i].Platform == 'ios') {
-                    objData.title = data.message;
-                    objData.message = data.title;
-                    // [2023-04-26 @ Dino] Added this as per node-pushnotifications upgrade from 0.1.8 to 1.1.12 using apn@2.2.0
-                    objData.body = data.title;
-                    objData.topic =
-                      process.env.PUSH_NOTIFICATION_HC_CARGO_APP_BUNDLE_ID;
-                    if (objData.Fence == 'Fence') {
-                      PushNotificationSettings.apn.defaultData.sound =
-                        'jinglebellssms.caf';
-                    } else {
-                      PushNotificationSettings.apn.defaultData.sound =
-                        'default';
-                    }
 
-                    var objPushNotificationSend = new PushNotifications(
-                      PushNotificationSettings
-                    );
-                    if (deviceIds.length > 0) {
-                      objPushNotificationSend.send(
-                        deviceIds,
-                        objData,
-                        function (result) {
-                          // console.log(result);
-                          SendNotification(i + 1);
-                        }
+                  if (false) {
+                    if (lstGroupData[i].Platform == 'ios') {
+                      objData.title = data.message;
+                      objData.message = data.title;
+                      // [2023-04-26 @ Dino] Added this as per node-pushnotifications upgrade from 0.1.8 to 1.1.12 using apn@2.2.0
+                      objData.body = data.title;
+                      objData.topic =
+                        process.env.PUSH_NOTIFICATION_HC_CARGO_APP_BUNDLE_ID;
+                      if (objData.Fence == 'Fence') {
+                        PushNotificationSettings.apn.defaultData.sound =
+                          'jinglebellssms.caf';
+                      } else {
+                        PushNotificationSettings.apn.defaultData.sound =
+                          'default';
+                      }
+
+                      var objPushNotificationSend = new PushNotifications(
+                        PushNotificationSettings
                       );
+                      if (deviceIds.length > 0) {
+                        objPushNotificationSend.send(
+                          deviceIds,
+                          objData,
+                          function (result) {
+                            // console.log(result);
+                            SendNotification(i + 1);
+                          }
+                        );
+                      } else {
+                        SendNotification(i + 1);
+                      }
                     } else {
-                      SendNotification(i + 1);
+                      var objDataFCM = clone(data);
+                      var message = {
+                        to: lstGroupData[i].PushNotificationId,
+                        collapse_key: 'Maark',
+                        notification: {
+                          title: objDataFCM.title,
+                          body: objDataFCM.message,
+                          sound: 'default',
+                          click_action: 'FCM_PLUGIN_ACTIVITY',
+                          // "icon": "fcm_push_icon"
+                        },
+                        data: objDataFCM,
+                      };
+                      SendFCMPushOneByOne(message, function () {
+                        SendNotification(i + 1);
+                      });
                     }
                   } else {
-                    var objDataFCM = clone(data);
-                    var message = {
-                      to: lstGroupData[i].PushNotificationId,
-                      collapse_key: 'Maark',
-                      notification: {
-                        title: objDataFCM.title,
-                        body: objDataFCM.message,
-                        sound: 'default',
-                        click_action: 'FCM_PLUGIN_ACTIVITY',
-                        // "icon": "fcm_push_icon"
-                      },
-                      data: objDataFCM,
-                    };
-                    SendFCMPushOneByOne(message, function () {
-                      SendNotification(i + 1);
-                    });
+                    if (token) {
+                      admin
+                        .messaging()
+                        .send({
+                          token,
+                          notification: {
+                            title: objDataFCM.title,
+                            body: objDataFCM.message,
+                          },
+                        })
+                        .catch((err) => {
+                          console.error('Firebase:');
+
+                          if ((err || {}).errorInfo) {
+                            if (
+                              err.errorInfo.code ===
+                              'messaging/registration-token-not-registered'
+                            ) {
+                              console.error(err.errorInfo.message);
+                              console.error(token);
+                            } else if (
+                              err.errorInfo.code ===
+                              'messaging/invalid-argument'
+                            ) {
+                              console.error(err.errorInfo.message);
+                              console.error(token);
+                            }
+                          } else {
+                            console.error(err);
+                          }
+                        })
+                        .then(() => SendNotification(i + 1));
+                    }
                   }
                   // console.log(response[i].Platform + "_______________________________________________________")
                   // console.log(objData)
