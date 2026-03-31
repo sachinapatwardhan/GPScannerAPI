@@ -285,7 +285,7 @@ router.post('/uploadFileold', function(req, res) {
     var form = new formidable.IncomingForm();
     // console.log(req.query)
     form.uploadDir = __dirname + '/../MediaUploads/FileUpload';
-    // form.uploadDir2 = __dirname + '/../MediaUploads/UserUpload';
+    
     var FileName = [];
     var lstUser = [];
 
@@ -297,16 +297,7 @@ router.post('/uploadFileold', function(req, res) {
 
     });
     form.on('fileBegin', function(name, file) {
-        // var ext = file.name.substring(file.name.indexOf('.'), file.name.length);
-        // var NewName = file.name; //GetUserNameFromDate();
-        // if (ext.indexOf('?') > -1) {
-        //     ext = ext.substring(0, ext.indexOf('?'));
-        // };
-
-        // file.path = form.uploadDir + "/" + NewName; //+ ext;
-        // FileName.push(NewName + ext);
-        // lstUser.push(name);
-
+        
         //modify file path
         var strarr = name.split(',');
 
@@ -395,7 +386,6 @@ router.post('/uploadFileold', function(req, res) {
 
                         }
 
-                        //  }
                     }
                 })
             }
@@ -404,8 +394,7 @@ router.post('/uploadFileold', function(req, res) {
         if (FileName.length == 0) {
             res.json({ success: false, message: "Please Select atleast One File..." });
         }
-        // res.sendStatus(200);
-        //when finish all process
+        
     });
 });
 

@@ -39,59 +39,17 @@ router.get('/GetAllGPSByTimeZoneDate', function(req, res) {
         "Where tblgpsdata.Date >=  '" + unixStartdate + "' and tblgpsdata.Date <=  '" + unixEnddate + "' " +
         wherecondition +
         "group by DeviceId,rowNumber order by Date limit " + req.query.length + " OFFSET " + req.query.start + ";SELECT FOUND_ROWS() as TotalRecord;";
-    // var Count = " SET @cnt = 0; " +
-    //     "select " +
-    //     "tblgpsdata.Date,tblgpsdata.Datetime,tblvehicle.DeviceId, " +
-    //     "CASE " +
-    //     "WHEN IsPatchEngine=true then (@cnt := @cnt + 2) " +
-    //     "ELSE (@cnt+1)  " +
-    //     "END AS rowNumber, " +
-    //     "tblvehicle.Name,tblgpsdata.IsPatchEngine as IsEngine,tblgpsdata.Speed,tblgpsdata.Direction,tblgpsdata.Latitude,tblgpsdata.Longitude,tblvehiclegroup.GroupName " +
-    //     "from tblgpsdata " +
-    //     "left join tblvehicle on tblgpsdata.deviceid = tblvehicle.deviceid " +
-    //     "left join tblvehiclegroup on tblvehiclegroup.Id = tblvehicle.IdGroup " +
-    //     "Where tblgpsdata.Date >=  '" + unixStartdate + "' ' and tblgpsdata.Date <=  '" + unixStartdate + "'" +
-    //     wherecondition +
-    //     "group by DeviceId,rowNumber order by Date ";
-    // var query = "select tblvehicle.Name,tblvehicle.DeviceId,tblgpsdata.Date,tblgpsdata.IsPatchEngine as IsEngine,tblgpsdata.Speed,tblgpsdata.Direction,tblgpsdata.Latitude,tblgpsdata.Longitude,tblvehiclegroup.GroupName from tblgpsdata left join tblvehicle on tblgpsdata.deviceid = tblvehicle.deviceid left join tblvehiclegroup on tblvehiclegroup.Id = tblvehicle.IdGroup Where tblgpsdata.Date >= '" + unixStartdate + "' and tblgpsdata.Date <= '" + unixEnddate + "'" + wherecondition + " order by DeviceId asc " + orderby + " LIMIT " + req.query.length + " OFFSET " + req.query.start + ";"
-    // var Count = "select count(*) AS Totalrecord from tblgpsdata left join tblvehicle on tblgpsdata.deviceid = tblvehicle.deviceid  left join tblvehiclegroup on tblvehiclegroup.Id = tblvehicle.IdGroup  Where tblgpsdata.Date >= '" + unixStartdate + "' and tblgpsdata.Date <= '" + unixEnddate + "'" + wherecondition + ";"
     connection.query(query, function(err, lstGPSData, fields) {
         if (!err) {
-            // connection.query(Count, function(err1, res1, fields) {
+            
             var NewListData = [];
 
-            // var groups = u.groupBy(lstGPSData, function(o) {
-            //     return o.DeviceId;
-            // });
-            // var lstGroup = u.map(groups, function(group) {
-            //     return {
-            //         data: group
-            //     }
-            // });
-
-            // var lstGroup = lstGPSData
-            //     // res.json(lstGPSData);
-            // if (lstGroup.length > 0) {
-            //     var COuntEngineOn = 0;
-            //     for (var i = 0; i < lstGroup.length; i++) {
-            //         if (lstGroup[i].IsEngine == true) {
-            //             COuntEngineOn = 0;
-            //             NewListData.push(lstGroup[i]);
-            //         } else {
-            //             if (COuntEngineOn == 0) {
-            //                 NewListData.push(lstGroup[i]);
-            //                 COuntEngineOn = 1;
-            //             }
-            //         }
-            //     }
-            // }
-
+        
             var object = new Object();
             object.data = lstGPSData[1];
             object.Totalrecord = lstGPSData[2][0].TotalRecord;
-            // response1.recordsFiltered = response[1][0].TotalRecord;
             res.json(object);
-            // })
+            
         }
     });
 });
@@ -114,10 +72,7 @@ router.get('/ExportDetailTripReport_phili', function(req, res) {
             caption: 'Address',
             type: 'string'
         },
-        // {
-        //     caption: 'Device Status',
-        //     type: 'string'
-        // },
+        
         {
             caption: 'Asset Status',
             type: 'string'
@@ -125,35 +80,12 @@ router.get('/ExportDetailTripReport_phili', function(req, res) {
             caption: 'Speed(km/h)',
             type: 'number'
         },
-        /* {
-                    caption: 'Fule(%)',
-                    type: 'number'
-                }, {
-                    caption: 'Fule(L)',
-                    type: 'number'
-                }, {
-                    caption: 'Mileage(km)',
-                    type: 'number'
-                }, {
-                    caption: 'Temp.',
-                    type: 'number'
-                }, {
-                    caption: 'GPS Signal',
-                    type: 'string'
-                }
-        , */
+        
         {
             caption: 'Direction',
             type: 'number'
         },
-        //  {
-        //     caption: 'Latitude',
-        //     type: 'number'
-        // },
-        // {
-        //     caption: 'Longitude',
-        //     type: 'number'
-        // }
+        
     ];
 
 
@@ -186,7 +118,7 @@ router.get('/ExportDetailTripReport_phili', function(req, res) {
         wherecondition +
         "group by DeviceId,rowNumber order by Date";
 
-    // var query = "select tblgpsdata.Date,tblgpsdata.IsPatchEngine as IsEngine,tblgpsdata.Speed,tblgpsdata.Direction,tblgpsdata.Latitude,tblgpsdata.Longitude,tblvehicle.Name,tblvehiclegroup.GroupName  from tblgpsdata left join tblvehicle on tblgpsdata.deviceid = tblvehicle.deviceid left join tblvehiclegroup on tblvehiclegroup.Id = tblvehicle.IdGroup Where tblgpsdata.Date >= '" + unixStartdate + "' and tblgpsdata.Date <= '" + unixEnddate + "'" + wherecondition + " order by Date ASC;"
+    
     connection.query(query, function(err, lstGPSData) {
         conf.rows = [];
         var response = [];
@@ -208,8 +140,7 @@ router.get('/ExportDetailTripReport_phili', function(req, res) {
             } else {
                 lstGPSData[i].IsEngine = "Engine OFF";
             }
-            //response.push(response[i]);
-        }
+                    }
         GetData(0);
 
         function GetData(i) {
@@ -233,10 +164,10 @@ router.get('/ExportDetailTripReport_phili', function(req, res) {
                 var Longitude = 0.00;
                 var Address = 'N/A';
                 if (response[i].Latitude != undefined && response[i].Latitude != null && response[i].Latitude != '' && response[i].Longitude != undefined && response[i].Longitude != null && response[i].Longitude != '') {
-                    // geocoder.reverse({ lat: response[i].Latitude, lon: response[i].Longitude }, function(err, resAddress) {
+                    
                     Commonfunction.GetAddressLatLong(response[i].Latitude, response[i].Longitude, function(resAddress) {
                         if (response[i].Date != null && response[i].Date != '' && response[i].Date != undefined) {
-                            // Datetime = dateformat(response[i].Datetime, 2);
+                            
                             TIme = momentz.utc(new Date(response[i].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a')
                         }
                         if (response[i].Name != null && response[i].Name != '' && response[i].Name != undefined) {
@@ -308,26 +239,14 @@ router.get('/ExportDetailTripReport_phili', function(req, res) {
                             resAddress = 'N/A'
                         }
                         Address = resAddress;
-                        // if (err == null && resAddress != null) {
-                        //     if (resAddress.length > 0) {
-                        //         Address = resAddress[0].formattedAddress;
-                        //         row.push(GroupName, Name.toString(), TIme.toString(), Address, AssetStatus.toString(), Speed, Direction, Latitude, Longitude);
-                        //     } else {
-                        //         Address = "N/A";
-                        //         row.push(GroupName, Name.toString(), TIme.toString(), Address, AssetStatus.toString(), Speed, Direction, Latitude, Longitude);
-                        //     }
-                        // } else {
-                        //     Address = "N/A";
-                        //     // row.push(Name.toString(), TIme.toString(), /*DeviceStatus.toString(),*/ AssetStatus.toString(), Speed, Fuleper, Fulelett, Mileage, Temp, GPSSignal.toString(), Direction, Latitude, Longitude);
-                        //         row.push(GroupName, Name.toString(), TIme.toString(), Address, AssetStatus.toString(), Speed, Direction, Latitude, Longitude);
-                        // }
+                        
                         row.push(GroupName, Name.toString(), TIme.toString(), Address, AssetStatus.toString(), Speed, Direction, Latitude, Longitude);
                         conf.rows.push(row);
                         GetData(i + 1);
                     })
                 } else {
                     if (response[i].Date != null && response[i].Date != '' && response[i].Date != undefined) {
-                        // Datetime = dateformat(response[i].Datetime, 2);
+                        
                         TIme = momentz.utc(new Date(response[i].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a')
                     }
                     if (response[i].GroupName != null && response[i].GroupName != '' && response[i].GroupName != undefined) {
@@ -398,17 +317,12 @@ router.get('/ExportDetailTripReport_phili', function(req, res) {
                     if (response[i].Longitude != null && response[i].Longitude != '' && response[i].Longitude != undefined) {
                         Longitude = response[i].Longitude;
                     }
-                    // row.push(Name.toString(), TIme.toString(), /*DeviceStatus.toString(),*/ AssetStatus.toString(), Speed, /*Fuleper, Fulelett, Mileage, Temp, GPSSignal.toString(),*/ Direction, Latitude, Longitude);
                     row.push(GroupName, Name.toString(), TIme.toString(), Address, AssetStatus.toString(), Speed, Direction, Latitude, Longitude);
                     conf.rows.push(row);
                     GetData(i + 1);
                     // }
                 }
-                /*console.log(Name.toString(), TIme.toString(), Address.toString(), DeviceStatus.toString(), AssetStatus.toString(), Speed, Fuleper, Fulelett, Mileage, Temp, GPSSignal.toString(), Direction, Latitude, Longitude);
-
-                row.push(Name.toString(), TIme.toString(), Address.toString(), DeviceStatus.toString(), AssetStatus.toString(), Speed, Fuleper, Fulelett, Mileage, Temp, GPSSignal.toString(), Direction, Latitude, Longitude);
-                conf.rows.push(row);
-                GetData(i + 1);*/
+                
             } else {
                 var result = nodeExcel.execute(conf);
                 res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
@@ -451,7 +365,6 @@ router.get('/PrintDetailTripReport_phili', function(req, res) {
         wherecondition +
         "group by DeviceId,rowNumber order by Date";
 
-    // var query = "select tblgpsdata.Date,tblgpsdata.IsPatchEngine as IsEngine,tblgpsdata.Speed,tblgpsdata.Direction,tblgpsdata.Latitude,tblgpsdata.Longitude,tblvehicle.Name,tblvehiclegroup.GroupName  from tblgpsdata left join tblvehicle on tblgpsdata.deviceid = tblvehicle.deviceid left join tblvehiclegroup on tblvehiclegroup.Id = tblvehicle.IdGroup Where tblgpsdata.Date >= '" + unixStartdate + "' and tblgpsdata.Date <= '" + unixEnddate + "'" + wherecondition + " order by Date ASC;"
     connection.query(query, function(err, lstGPSData) {
         var response = [];
         var COuntEngineOn = 0;
@@ -475,17 +388,7 @@ router.get('/PrintDetailTripReport_phili', function(req, res) {
             //response.push(response[i]);
         }
         var TodayDate = momentz.utc(new Date()).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
-        // var table = '<h2 style="text-align:center"><b>Detailed Trip Report</b></h2><h5 style="text-align:right">' + TodayDate + '</h5><hr/><table style="width:100%">' +
-        //     '<tr><th style="text-align:left">No</th>' +
-        //     '<th style="text-align:left">Asset Name</th>' +
-        //     '<th style="text-align:left">Time</th>' +
-        //     '<th style="text-align:left">Asset Status</th>' +
-        //     '<th style="text-align:left">Speed(km/h)</th>' +
-        //     '<th style="text-align:left">Direction</th>' +
-        //     '<th style="text-align:left">Latitude</th>' +
-        //     '<th style="text-align:left">Longitude</th></tr>';
-
-
+        
         var table = '<div style="font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; font-size: 10px; padding:0 15px;">' +
             '<div style="padding:15px; border-bottom:1px solid #000;">' +
             '<h1 style="text-transform: uppercase; text-align:center; font-weight: normal;font-size: 14px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">Detailed Trip Report</h1>' +
@@ -503,9 +406,7 @@ router.get('/PrintDetailTripReport_phili', function(req, res) {
             '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Asset Status</th>' +
             '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Speed(km/h)</th>' +
             '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">Direction</th>' +
-            // '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">Latitude</th>' +
-            // '<th style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">Address</th></tr>' +
-            '</thead><tbody>';
+'</thead><tbody>';
 
         GetData(0);
 
@@ -530,8 +431,7 @@ router.get('/PrintDetailTripReport_phili', function(req, res) {
                 var Longitude = 0.00;
 
                 if (response[i].Latitude != undefined && response[i].Latitude != null && response[i].Latitude != '' && response[i].Longitude != undefined && response[i].Longitude != null && response[i].Longitude != '') {
-                    // geocoder.reverse({ lat: response[i].Latitude, lon: response[i].Longitude }, function(err, resAddress) {
-                    Commonfunction.GetAddressLatLong(response[i].Latitude, response[i].Longitude, function(resAddress) {
+                                        Commonfunction.GetAddressLatLong(response[i].Latitude, response[i].Longitude, function(resAddress) {
                         if (response[i].Date != null && response[i].Date != '' && response[i].Date != undefined) {
                             // Datetime = dateformat(response[i].Datetime, 2);
                             TIme = momentz.utc(new Date(response[i].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a')
@@ -605,19 +505,7 @@ router.get('/PrintDetailTripReport_phili', function(req, res) {
                             resAddress = 'N/A';
                         }
                         Address = resAddress;
-                        // if (err == null && resAddress != null) {
-                        //     if (resAddress.length > 0) {
-                        //         Address = resAddress[0].formattedAddress;
-
-                        //         // row.push(Name.toString(), TIme.toString(), Address.toString(), DeviceStatus.toString(), AssetStatus.toString(), Speed, Fuleper, Fulelett, Mileage, Temp, GPSSignal.toString(), Direction, Latitude, Longitude);
-                        //     } else {
-                        //         Address = "N/A";
-
-                        //         // row.push(Name.toString(), TIme.toString(), Address.toString(), DeviceStatus.toString(), AssetStatus.toString(), Speed, Fuleper, Fulelett, Mileage, Temp, GPSSignal.toString(), Direction, Latitude, Longitude);
-                        //     }
-                        // } else {
-                        //     Address = "N/A";
-                        // }
+                        
                         table += '<tr>' +
                             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + (i + 1) + '</td>' +
                             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + GroupName.toString() + '</td>' +
@@ -627,15 +515,11 @@ router.get('/PrintDetailTripReport_phili', function(req, res) {
                             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + AssetStatus.toString() + '</td>' +
                             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + Speed + '</td>' +
                             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; ">' + Direction + '</td>' +
-                            // '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + Latitude + '</td>' +
-                            // '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">' + Longitude + '</td>' +
                             '</tr>';
-                        // row.push(Name.toString(), TIme.toString(), /*DeviceStatus.toString(),*/ AssetStatus.toString(), Speed, Fuleper, Fulelett, Mileage, Temp, GPSSignal.toString(), Direction, Latitude, Longitude);
                         GetData(i + 1);
                     })
                 } else {
                     if (response[i].Date != null && response[i].Date != '' && response[i].Date != undefined) {
-                        // Datetime = dateformat(response[i].Datetime, 2);
                         TIme = momentz.utc(new Date(response[i].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a')
                     }
                     if (response[i].Name != null && response[i].Name != '' && response[i].Name != undefined) {
@@ -705,7 +589,6 @@ router.get('/PrintDetailTripReport_phili', function(req, res) {
                     if (response[i].Longitude != null && response[i].Longitude != '' && response[i].Longitude != undefined) {
                         Longitude = response[i].Longitude;
                     }
-                    // row.push(Name.toString(), TIme.toString(), /*DeviceStatus.toString(),*/ AssetStatus.toString(), Speed, /*Fuleper, Fulelett, Mileage, Temp, GPSSignal.toString(),*/ Direction, Latitude, Longitude);
                     table += '<tr>' +
                         '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + (i + 1) + '</td>' +
                         '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + GroupName.toString() + '</td>' +
@@ -715,8 +598,6 @@ router.get('/PrintDetailTripReport_phili', function(req, res) {
                         '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + AssetStatus.toString() + '</td>' +
                         '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + Speed + '</td>' +
                         '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; ">' + Direction + '</td>' +
-                        // '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + Latitude + '</td>' +
-                        // '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">' + Longitude + '</td>' +
                         '</tr>';
                     GetData(i + 1);
                 }
@@ -750,9 +631,7 @@ router.get('/PrintDetailTripReport_phili', function(req, res) {
 /*================ LastPosition Report Start====================*/
 router.get('/GetAllVehicleLastPositionByUserIdWebApp', jsonParser, function(req, res) {
     var WhereCondition = '';
-    // var StartDate = req.query.StartDate;
-    // var EndDate = req.query.EndDate;
-    var StartDate = req.query.TodayStartDateTime;
+     var StartDate = req.query.TodayStartDateTime;
     var EndDate = req.query.TodayEndDateTime;
 
     var convertDate = convertdateformatForUnix(StartDate);
@@ -761,35 +640,25 @@ router.get('/GetAllVehicleLastPositionByUserIdWebApp', jsonParser, function(req,
     var convertDate = convertdateformatForUnix(EndDate);
     var unixEnddate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
     if (StartDate != '' && EndDate != '' && StartDate != 'Invalid date' && EndDate != 'Invalid date') {
-        /*StartDate = momentz(StartDate).format('YYYY-MM-DD HH:mm:ss');
-        EndDate = momentz(EndDate).format('YYYY-MM-DD HH:mm:ss');
-        console.log(StartDate, "---", EndDate);
-        var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
-        var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
-        console.log(unixStartdate, "------", unixEndDate)*/
+        
         if (WhereCondition == '') {
             WhereCondition = 'where Date>="' + unixStartdate + '" and Date<="' + unixEnddate + '" ';
         } else {
             WhereCondition = WhereCondition + 'and Date>="' + unixStartdate + '" and Date<="' + unixEnddate + '" ';
         }
     } else if (StartDate != null && StartDate != '' && StartDate != 'Invalid date') {
-        // StartDate = momentz(StartDate).format('YYYY-MM-DD HH:mm:ss');
-        // var unixStartdate = new Date(StartDate.replace(' ', 'T')).getTime() / 1000;
         if (WhereCondition == '') {
             WhereCondition = 'where Date>="' + unixStartdate + '" ';
         } else {
             WhereCondition = WhereCondition + 'and Date>="' + unixStartdate + '" ';
         }
     } else if (EndDate != null && EndDate != '' && EndDate != 'Invalid date') {
-        // EndDate = momentz(EndDate).format('YYYY-MM-DD HH:mm:ss');
-        // var unixEndDate = new Date(EndDate.replace(' ', 'T')).getTime() / 1000;
         if (WhereCondition == '') {
             WhereCondition = 'where Date<="' + unixEnddate + '" ';
         } else {
             WhereCondition = WhereCondition + 'and Date<="' + unixEnddate + '" ';
         }
     }
-    // var query = "SELECT  tb.*,tpg.IsEngine,tpg.IsDoor, tpg.Latitude,tpg.Longitude,tpg.Datetime, tpg.Date, tpg.Speed, tpg.Direction FROM tblvehicle tb Inner JOIN tblgpsdata tpg ON tb.deviceid=tpg.DeviceId INNER JOIN (SELECT DeviceId, MAX(Date) as maxDate FROM (SELECT DeviceId, Date FROM tblgpsdata " + WhereCondition + "ORDER BY Date DESC) d GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId AND tpg.Date = b.maxDate WHERE iduser=" + req.query.UserId + " and IsDelete=false group by tb.deviceid order by Name LIMIT " + req.query.length + " OFFSET " + req.query.start + ";"
     var query = "SELECT  tb.*,tpg.IsPatchEngine as IsEngine,tpg.IsDoor, tpg.Latitude,tpg.Longitude,tpg.Datetime, tpg.Date, tpg.Speed, tpg.Direction,tvg.GroupName,tvgs.GroupName as ShareGroupName" +
         " FROM tblvehicle tb left join tblsharedevice tsd ON tsd.idVehicle = tb.id Inner JOIN tblgpsdata tpg ON tb.deviceid=tpg.DeviceId " +
         " LEFT JOIN tblvehiclegroup tvg on tvg.Id = tb.IdGroup" +
@@ -808,12 +677,6 @@ router.get('/GetAllVehicleLastPositionByUserIdWebApp', jsonParser, function(req,
         " (tb.iduser=" + req.query.UserId + " OR tsd.idUser=" + req.query.UserId + ") and IsDelete=false group by tb.deviceid;";
     connection.query(query, function(err, rows, fields) {
         if (!err) {
-            // for (var i = 0; i < rows.length; i++) {
-            //     console.log(rows[i].Date);
-            //     rows[i].Time = momentz.utc(new Date(rows[i].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
-            //     console.log(rows[i].Time);
-            //     // momentz.utc(rows[i].Date * 1000).format('DD-MM-YYYY HH:mm:ss a')
-            // }
             connection.query(count, function(error, count, fields) {
                 res.json({ success: true, data: rows });
             })
@@ -856,21 +719,10 @@ router.get('/ExportLastPositionDataByUserId', function(req, res) {
             caption: 'Engine',
             type: 'string'
         },
-        // {
-        //     caption: 'Door',
-        //     type: 'string'
-        // },
         {
             caption: 'Speed',
             type: 'string'
         },
-        // {
-        //     caption: 'Latitude',
-        //     type: 'string'
-        // }, {
-        //     caption: 'Longitude',
-        //     type: 'string'
-        // },
         {
             caption: 'Direction',
             type: 'string'
@@ -887,31 +739,18 @@ router.get('/ExportLastPositionDataByUserId', function(req, res) {
     var convertDate = convertdateformatForUnix(EndDate);
     var unixEnddate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
     if (StartDate != '' && EndDate != '' && StartDate != 'Invalid date' && EndDate != 'Invalid date') {
-        // StartDate = new Date(StartDate);
-        // EndDate = new Date(EndDate);
-        // var StartDate1 = momentz.utc(StartDate).format('YYYY-MM-DD HH:mm:ss');
-        // var EndDate1 = momentz.utc(EndDate).format('YYYY-MM-DD HH:mm:ss');
-        // var unixStartdate = new Date(StartDate1.replace(' ', 'T')).getTime() / 1000;
-        // var unixEndDate = new Date(EndDate1.replace(' ', 'T')).getTime() / 1000;
-
         if (WhereCondition == '') {
             WhereCondition = 'where Date>="' + unixStartdate + '" and Date<="' + unixEnddate + '" ';
         } else {
             WhereCondition = WhereCondition + 'and Date>="' + unixStartdate + '" and Date<="' + unixEnddate + '" ';
         }
     } else if (StartDate != null && StartDate != '' && StartDate != 'Invalid date') {
-        // StartDate = new Date(StartDate);
-        // var StartDate1 = momentz.utc(StartDate).format('YYYY-MM-DD HH:mm:ss');
-        // var unixStartdate = new Date(StartDate1.replace(' ', 'T')).getTime() / 1000;
         if (WhereCondition == '') {
             WhereCondition = 'where Date>="' + unixStartdate + '" ';
         } else {
             WhereCondition = WhereCondition + 'and Date>="' + unixStartdate + '" ';
         }
     } else if (EndDate != null && EndDate != '' && EndDate != 'Invalid date') {
-        // EndDate = new Date(EndDate);
-        // var EndDate1 = momentz.utc(EndDate).format('YYYY-MM-DD HH:mm:ss');
-        // var unixEndDate = new Date(EndDate1.replace(' ', 'T')).getTime() / 1000;
         if (WhereCondition == '') {
             WhereCondition = 'where Date<="' + unixEnddate + '" ';
         } else {
@@ -927,7 +766,6 @@ router.get('/ExportLastPositionDataByUserId', function(req, res) {
         " b ON tpg.DeviceId = b.DeviceId AND tpg.Date = b.maxDate WHERE " +
         " (tb.iduser=" + req.query.UserId + " OR tsd.idUser=" + req.query.UserId + ") and IsDelete=false " +
         " group by tb.deviceid order by Name";
-    // connection.query("SELECT  tb.*,tpg.IsEngine,tpg.IsDoor, tpg.Latitude,tpg.Longitude,tpg.Datetime, tpg.Date, tpg.Speed, tpg.Direction FROM tblvehicle tb Inner JOIN tblgpsdata tpg ON tb.deviceid=tpg.DeviceId INNER JOIN (SELECT DeviceId, MAX(Date) as maxDate FROM (SELECT DeviceId, Date FROM tblgpsdata " + WhereCondition + "ORDER BY Date DESC) d GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId AND tpg.Date = b.maxDate WHERE iduser=" + req.query.UserId + " and IsDelete=false group by tb.deviceid order by Name;", function(err, rows, fields) {
     connection.query(query, function(err, rows, fields) {
         if (!err) {
             for (var i = 0; i < rows.length; i++) {
@@ -1051,18 +889,7 @@ router.get('/ExportLastPositionDataByUserId', function(req, res) {
                         } else {
                             var Direction = "0" + ' Degree';
                         }
-                        // if (!err && res) {
-                        //     if (res.length > 0) {
-                        //         var Address = res[0].formattedAddress;
-                        //         conf.rows.push([GroupName, AssestName, DeviceId, Time, Address, DeviceStatus, Engine, Speed, Direction]);
-                        //     } else {
-                        //         var Address = "N/A";
-                        //         conf.rows.push([GroupName, AssestName, DeviceId, Time, Address, DeviceStatus, Engine, Speed, Direction]);
-                        //     }
-                        // } else {
-                        //     var Address = "N/A";
-                        //     conf.rows.push([GroupName, AssestName, DeviceId, Time, Address, DeviceStatus, Engine, Speed, Direction]);
-                        // }
+                        
                         if (resAddress == '' || resAddress == null) {
                             resAddress = 'N/A';
                         }
@@ -1093,7 +920,7 @@ router.get('/ExportLastPositionDataByUserId', function(req, res) {
 
                     if (ListPostionData[i].IsOnline != undefined && ListPostionData[i].IsOnline != null && ListPostionData[i].IsOnline != '') {
                         var DeviceStatus = 'Offline'
-                            // ListPostionData[i].IsOnline.toString();
+                            
                     } else {
                         var DeviceStatus = "Online";
                     }
@@ -1230,19 +1057,7 @@ router.get('/PrintLastPositionDataByUserId', function(req, res) {
         }
     })
     var TodayDate = momentz.utc(new Date()).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
-    // var table = '<h2 style="text-align:center"><b>Last Position Report</b></h2><h5 style="text-align:right">' + TodayDate + '</h5><hr/><table style="width:100%">' +
-    //     '<tr><th style="text-align:left">No</th>' +
-    //     '<th style="text-align:left">Asset Name</th>' +
-    //     '<th style="text-align:left">Device Id</th>' +
-    //     '<th style="text-align:left">Time</th>' +
-    //     '<th style="text-align:left">Device Status</th>' +
-    //     '<th style="text-align:left">Engine</th>' +
-    //     '<th style="text-align:left">Speed</th>' +
-    //     '<th style="text-align:left">Latitude</th>' +
-    //     '<th style="text-align:left">Longitude</th>' +
-    //     '<th style="text-align:left">Direction</th></tr>';
-
-
+    
     var table = '<div style="font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; font-size: 10px; padding:0 15px;">' +
         '<div style="padding:15px; border-bottom:1px solid #000;">' +
         '<h1 style="text-transform: uppercase; text-align:center; font-weight: normal;font-size: 14px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">Last Position Report</h1>' +
@@ -1372,58 +1187,7 @@ router.get('/PrintLastPositionDataByUserId', function(req, res) {
                         } else {
                             var Direction = "0" + ' Degree';
                         }
-                        // if (!err && res) {
-                        //     if (res.length > 0) {
-                        //         var Address = res[0].formattedAddress;
-                        //         table += '<tr>' +
-                        //             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + (i + 1) + '</td>' +
-                        //             ' <td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + GroupName + '</td>' +
-                        //             ' <td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + AssestName + '</td>' +
-                        //             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + DeviceId + '</td>' +
-                        //             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + Time + '</td>' +
-                        //             ' <td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + Address + '</td>' +
-                        //             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + DeviceStatus + '</td>' +
-                        //             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + Engine + '</td>' +
-                        //             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + Speed + '</td>' +
-                        //             // '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + Latitude + '</td>' +
-                        //             // '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + Longitude + '</td>' +
-                        //             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">' + Direction + '</td>' +
-                        //             '</tr>';
-                        //         // conf.rows.push([AssestName, DeviceId, Time, DeviceStatus, Engine, Speed, Latitude, Longitude, Direction]);
-                        //     } else {
-                        //         var Address = "N/A";
-                        //         table += '<tr>' +
-                        //             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + (i + 1) + '</td>' +
-                        //             ' <td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + GroupName + '</td>' +
-                        //             ' <td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + AssestName + '</td>' +
-                        //             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + DeviceId + '</td>' +
-                        //             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + Time + '</td>' +
-                        //             ' <td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + Address + '</td>' +
-                        //             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + DeviceStatus + '</td>' +
-                        //             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + Engine + '</td>' +
-                        //             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + Speed + '</td>' +
-                        //             // '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + Latitude + '</td>' +
-                        //             // '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + Longitude + '</td>' +
-                        //             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">' + Direction + '</td>' +
-                        //             '</tr>';
-                        //     }
-                        // } else {
-                        //     var Address = "N/A";
-                        //     table += '<tr>' +
-                        //         '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + (i + 1) + '</td>' +
-                        //         ' <td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + GroupName + '</td>' +
-                        //         ' <td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + AssestName + '</td>' +
-                        //         '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + DeviceId + '</td>' +
-                        //         '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + Time + '</td>' +
-                        //         ' <td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + Address + '</td>' +
-                        //         '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + DeviceStatus + '</td>' +
-                        //         '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + Engine + '</td>' +
-                        //         '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + Speed + '</td>' +
-                        //         // '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + Latitude + '</td>' +
-                        //         // '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + Longitude + '</td>' +
-                        //         '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">' + Direction + '</td>' +
-                        //         '</tr>';
-                        // }
+                        
                         if (resAddress == '' || resAddress == null) {
                             resAddress = 'N/A';
                         }
@@ -1438,8 +1202,6 @@ router.get('/PrintLastPositionDataByUserId', function(req, res) {
                             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + DeviceStatus + '</td>' +
                             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + Engine + '</td>' +
                             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + Speed + '</td>' +
-                            // '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + Latitude + '</td>' +
-                            // '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + Longitude + '</td>' +
                             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">' + Direction + '</td>' +
                             '</tr>';
                         AddList(i + 1);
@@ -1467,7 +1229,7 @@ router.get('/PrintLastPositionDataByUserId', function(req, res) {
 
                     if (ListPostionData[i].IsOnline != undefined && ListPostionData[i].IsOnline != null && ListPostionData[i].IsOnline != '') {
                         var DeviceStatus = 'Offline'
-                            // ListPostionData[i].IsOnline.toString();
+                            
                     } else {
                         var DeviceStatus = "Online";
                     }
@@ -1543,8 +1305,6 @@ router.get('/PrintLastPositionDataByUserId', function(req, res) {
                         '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + DeviceStatus + '</td>' +
                         '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + Engine + '</td>' +
                         '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + Speed + '</td>' +
-                        // '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + Latitude + '</td>' +
-                        // '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + Longitude + '</td>' +
                         '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">' + Direction + '</td>' +
                         '</tr>';
                     AddList(i + 1);
@@ -1867,7 +1627,7 @@ router.get('/ExportParkingReportNew', function(req, res) {
             TotalAllParkingTime = calhrminsecfromsec(TotalAllParkingTime);
         }
         if (Array.length > 0) {
-            var data = u.sortBy(Array, function(num) { return new Date(num.StartTime) }) //.reverse();
+            var data = u.sortBy(Array, function(num) { return new Date(num.StartTime) }) 
             Array = data;
         }
 
@@ -1888,7 +1648,7 @@ router.get('/ExportParkingReportNew', function(req, res) {
                 var Longitude = '';
 
                 if (Array[i].Latitude != undefined && Array[i].Latitude != null && Array[i].Latitude != '' && Array[i].Longitude != undefined && Array[i].Longitude != null && response[i].Longitude != '') {
-                    // geocoder.reverse({ lat: Array[i].Latitude, lon: Array[i].Longitude }, function(err, res) {
+                    
                     Commonfunction.GetAddressLatLong(Array[i].Latitude, Array[i].Longitude, function(resAddress) {
                         if (Array[i].GroupName != null && Array[i].GroupName != '' && Array[i].GroupName != undefined) {
                             GroupName = Array[i].GroupName;
@@ -1915,21 +1675,7 @@ router.get('/ExportParkingReportNew', function(req, res) {
                         if (Array[i].Longitude != null && Array[i].Longitude != '' && Array[i].Longitude != undefined) {
                             Longitude = Array[i].Longitude;
                         }
-                        // if (!err || res != null) {
-                        //     if (res.length > 0) {
-                        //         Address = res[0].formattedAddress;
-                        //         row.push(GroupName, Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address.toString());
-                        //         // row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address.toString(), Latitude, Longitude);
-                        //     } else {
-                        //         Address = "N/A";
-                        //         row.push(GroupName, Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address.toString());
-                        //         // row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address.toString(), Latitude, Longitude);
-                        //     }
-                        // } else {
-                        //     Address = "N/A";
-                        //     row.push(GroupName, Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address);
-                        //     // row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address, Latitude, Longitude);
-                        // }
+                        
                         if (resAddress == '' || resAddress == null) {
                             resAddress = 'N/A';
                         }
@@ -1967,7 +1713,6 @@ router.get('/ExportParkingReportNew', function(req, res) {
                         Longitude = Array[i].Longitude;
                     }
                     row.push(GroupName, Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address);
-                    // row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address, Latitude, Longitude);
                     conf.rows.push(row);
                     GetData(i + 1);
                 }
@@ -2115,15 +1860,7 @@ router.get('/PrintParkingReportNew', function(req, res) {
         GetData(0);
         var TodayDate = momentz.utc(new Date()).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
 
-        // var table = '<h2 style="text-align:center"><b>Parking Report</b></h2><h5 style="text-align:right">' + TodayDate + '</h5><hr/><table style="width:100%">' +
-        //     '<tr><th style="text-align:left">No</th>' +
-        //     '<th style="text-align:left">Asset Name</th>' +
-        //     '<th style="text-align:left">Start Time</th>' +
-        //     '<th style="text-align:left">End Time</th>' +
-        //     '<th style="text-align:left">Parking Time</th>' +
-        //     '<th style="text-align:left">Address</th></tr>';
-
-        var table = '<div style="font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; font-size: 10px; padding:0 15px;">' +
+         var table = '<div style="font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; font-size: 10px; padding:0 15px;">' +
             '<div style="padding:15px; border-bottom:1px solid #000;">' +
             '<h1 style="text-transform: uppercase; text-align:center; font-weight: normal;font-size: 14px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">Parking Report</h1>' +
             '<div style="text-align: right;font-size: 8px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;"><strong>' + TodayDate + '</strong></div>' +
@@ -2181,48 +1918,7 @@ router.get('/PrintParkingReportNew', function(req, res) {
                         if (Array[i].Longitude != null && Array[i].Longitude != '' && Array[i].Longitude != undefined) {
                             Longitude = Array[i].Longitude;
                         }
-                        // if (!err || res != null) {
-                        //     if (res.length > 0) {
-                        //         Address = res[0].formattedAddress;
-                        //         // row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address.toString());
-                        //         table += '<tr>' +
-                        //             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + (i + 1) + '</td>' +
-                        //             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + GroupName.toString() + '</td>' +
-                        //             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + Name.toString() + '</td>' +
-                        //             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + StartTime + '</td>' +
-                        //             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + EndTime + '</td>' +
-                        //             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + ParkingTime.toString() + '</td>' +
-                        //             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">' + Address.toString() + '</td>' +
-                        //             '</tr>';
-                        //         // row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address.toString(), Latitude, Longitude);
-                        //     } else {
-                        //         Address = "N/A";
-                        //         table += '<tr>' +
-                        //             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + (i + 1) + '</td>' +
-                        //             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + GroupName.toString() + '</td>' +
-                        //             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + Name.toString() + '</td>' +
-                        //             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + StartTime + '</td>' +
-                        //             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + EndTime + '</td>' +
-                        //             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + ParkingTime.toString() + '</td>' +
-                        //             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">' + Address.toString() + '</td>' +
-                        //             '</tr>';
-                        //         // row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address.toString());
-                        //         // row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address.toString(), Latitude, Longitude);
-                        //     }
-                        // } else {
-                        //     Address = "N/A";
-                        //     table += '<tr>' +
-                        //         '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + (i + 1) + '</td>' +
-                        //         '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + GroupName.toString() + '</td>' +
-                        //         '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + Name.toString() + '</td>' +
-                        //         '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + StartTime + '</td>' +
-                        //         '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + EndTime + '</td>' +
-                        //         '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + ParkingTime.toString() + '</td>' +
-                        //         '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">' + Address.toString() + '</td>' +
-                        //         '</tr>';
-                        //     // row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address);
-                        //     // row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address, Latitude, Longitude);
-                        // }
+                       
                         if (resAddress == '' || resAddress == null) {
                             resAddress = 'N/A';
                         }
@@ -2275,14 +1971,11 @@ router.get('/PrintParkingReportNew', function(req, res) {
                         '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + ParkingTime.toString() + '</td>' +
                         '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">' + Address.toString() + '</td>' +
                         '</tr>';
-                    // row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address);
-                    // row.push(Name.toString(), StartTime, EndTime, ParkingTime.toString(), Address, Latitude, Longitude);
                     GetData(i + 1);
                 }
 
             } else {
-                // table += '<tr><td>Total:</td><td></td><td></td><td></td><td>' + TotalAllParkingTime + '</td><td></td></tr></table>'
-
+                
                 table += '  <tfoot style="font-weight: bold;">' +
                     ' <tr>' +
                     ' <td style="padding: 8px 5px; border-bottom: 1px dotted #000; border-right: 1px dotted #000;" colspan="2">Total:</td>' +
@@ -2355,9 +2048,7 @@ router.get('/GetAllDriverReportNew', function(req, res) {
 
 
     wherecondition1 += " And ta.AlarmCode = '11'";
-    //WhereCondition += " And Gps.DeviceId = 075034901552";
-    // WhereCondition += " And Gps.IsEngine = false";
-
+    
     var query = "select " +
         " gps.Date,gps.Speed,gps.Longitude,gps.Latitude,gps.Direction,gps.GPSPositioning,gps.DeviceId,gps.IsPatchEngine as IsEngine,Bike.*,tvg.GroupName,tvgs.GroupName as ShareGroupName  " +
         "from tblvehicle  As Bike " +
@@ -2369,9 +2060,9 @@ router.get('/GetAllDriverReportNew', function(req, res) {
         "gps.DeviceId = Bike.deviceid " +
         WhereCondition +
         " order by gps.Date Asc";
-    // console.log(query);
+
     var query1 = "select ta.Datetime, ta.Date, ta.deviceid from tblalarm as ta left join tblvehicle As Bike on ta.deviceid = Bike.deviceid " + wherecondition1 + ";"
-        // console.log(query1)
+
     connection.query(query, function(err, response, fields) {
         if (response.length > 0) {
             connection.query(query1, function(alarmerr, alarmresponse, alarmfields) {
@@ -2383,16 +2074,7 @@ router.get('/GetAllDriverReportNew', function(req, res) {
                         data: group
                     }
                 });
-                // for (var i = 0; i < lstGroup.length; i++) {
-                //     for (var k = 0; k < lstGroup[i].data.length; k++) {
-                //         if (lstGroup[i].data[k].IsEngine == 1) {
-
-                //         } else {
-
-                //         }
-                //     }
-
-                // }
+                
                 var l = 0;
                 var D = 0;
                 var Array = [];
@@ -2411,9 +2093,7 @@ router.get('/GetAllDriverReportNew', function(req, res) {
                     var TotalRecord = 0;
                     var Mileage = 0.00;
                     var Totalsum = 0;
-                    // var StartMilage = 0;
-                    // var Milageco = 0;
-                    // var Engineco = 0;
+
                     if (lstGroup[i].data.length > 0) {
                         var StartMilage = 0;
                         var Milageco = 0;
@@ -2440,9 +2120,9 @@ router.get('/GetAllDriverReportNew', function(req, res) {
 
                                 if (Engineco == 0) {
                                     StartMilage = k;
-                                    // Milageco = 1;
+                                    
                                     Engineco = 1;
-                                    // id = lstGroup[i].data[k].Id;
+                                    
                                 }
                                 // obj.s_id = 0;
                                 if ((k != 0) && lstGroup[i].data[k].GPSPositioning == 'A') {
@@ -2460,15 +2140,7 @@ router.get('/GetAllDriverReportNew', function(req, res) {
                                         Milageco = 1;
                                     }
                                 }
-                                // if ((k) != 0 && lstGroup[i].data[k].GPSPositioning == 'A') {
-                                //     if (k == 0) {
-                                //         Mileage += distance(parseFloat(lstGroup[i].data[k - 1].Latitude), parseFloat(lstGroup[i].data[k - 1].Longitude), parseFloat(lstGroup[i].data[k].Latitude), parseFloat(lstGroup[i].data[k].Longitude));
-                                //     } else {
-                                //         if (lstGroup[i].data[k].Speed > 1) {
-                                //             Mileage += distance(parseFloat(lstGroup[i].data[k - 1].Latitude), parseFloat(lstGroup[i].data[k - 1].Longitude), parseFloat(lstGroup[i].data[k].Latitude), parseFloat(lstGroup[i].data[k].Longitude));
-                                //         }
-                                //     }
-                                // } 
+                                
                                 if (k == 0) { LocateNumber = 1; } else {
                                     if (lstGroup[i].data[k].Latitude != lstGroup[i].data[k - 1].Latitude && lstGroup[i].data[k].Longitude != lstGroup[i].data[k - 1].Longitude) {
                                         {
@@ -2480,7 +2152,7 @@ router.get('/GetAllDriverReportNew', function(req, res) {
                                     if (IsDriving == 0) {
                                         DrivingStartPosition = k;
                                         var obj = new Object();
-                                        // obj.s_id = lstGroup[i].data[k].Id;
+                                        
                                         obj.OverSpeed = 0;
                                         obj.StartLatitude = lstGroup[i].data[k].Latitude;
                                         obj.StartLongitude = lstGroup[i].data[k].Longitude;
@@ -2489,7 +2161,7 @@ router.get('/GetAllDriverReportNew', function(req, res) {
                                         obj.Name = lstGroup[i].data[k].Name;
                                         obj.StartAddress = "No Address Found";
                                         obj.EndAddress = "No Address Found";
-                                        // obj.StartId = lstGroup[i].data[k].Id;
+                                        
                                         obj.DrivingStartTime = momentz.utc(lstGroup[i].data[k].Date).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a')
                                         obj.DrivingStartTime1 = momentz.utc(lstGroup[i].data[k].Date).tz(req.query.TimeZone).format('MM-DD-YYYY hh:mm:ss a')
                                         obj.StartTime1 = lstGroup[i].data[k].Date;
@@ -2506,15 +2178,10 @@ router.get('/GetAllDriverReportNew', function(req, res) {
                                     obj.EndDrivingTime = momentz.utc(lstGroup[i].data[k].Date).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
                                     obj.EndDrivingTime1 = momentz.utc(lstGroup[i].data[k].Date).tz(req.query.TimeZone).format('MM-DD-YYYY hh:mm:ss a');
                                     obj.EndTime1 = lstGroup[i].data[k].Date;
-                                    // obj.EndId = lstGroup[i].data[k].Id;
-                                    // obj.MaxSpeed = parseFloat(u.max(objSpeed, function(MaxSpeeddata) { return MaxSpeeddata; })).toFixed(2);
                                     obj.Speed6090 = Speed6090;
                                     obj.Speed90130 = Speed90130;
                                     obj.Over130 = Over130;
-                                    // if (Milageco == 1) {
                                     Mileage += distance(parseFloat(lstGroup[i].data[StartMilage].Latitude), parseFloat(lstGroup[i].data[StartMilage].Longitude), parseFloat(lstGroup[i].data[k].Latitude), parseFloat(lstGroup[i].data[k].Longitude));
-                                    // Milageco = 0;
-                                    // }
                                     obj.Mileage = parseFloat(Mileage); //.toFixed(2);
                                     var sum = 0;
 
@@ -2587,7 +2254,7 @@ router.get('/GetAllDriverReportNew', function(req, res) {
                             obj.LocateNumber = LocateNumber;
                             obj.DrivingTime = calhrminsecfromsec(calcDateDiffCalInSec(moment(lstGroup[i].data[lastposition].Date), moment(lstGroup[i].data[DrivingStartPosition].Date)));
                             TotalDrivingtime = TotalDrivingtime + calcDateDiffCalInSec(moment(lstGroup[i].data[lastposition].Date), moment(lstGroup[i].data[DrivingStartPosition].Date));
-                            // console.log(obj.s_id, "====", obj.EndId)
+                            
                             if (obj.DrivingTime != "0 sec") {
                                 obj.GroupName = "UnGroup";
                                 if (req.query.idUser == lstGroup[i].data[lastposition].iduser) {
@@ -2674,10 +2341,7 @@ router.get('/PrintDriverReportNew', function(req, res) {
 
 
     wherecondition1 += " And ta.AlarmCode = '11'";
-
-    //WhereCondition += " And Gps.DeviceId = 075034901552";
-    // WhereCondition += " And Gps.IsEngine = false";
-    var query = "select " +
+var query = "select " +
         " gps.Date,gps.Speed,gps.Longitude,gps.Latitude,gps.Direction,gps.GPSPositioning,gps.DeviceId,gps.IsPatchEngine as IsEngine,Bike.*,tvg.GroupName,tvgs.GroupName as ShareGroupName  " +
         "from tblvehicle  As Bike " +
         " left join tblvehiclegroup tvg on tvg.Id = Bike.IdGroup " +
@@ -2753,9 +2417,6 @@ router.get('/PrintDriverReportNew', function(req, res) {
                     var TotalRecord = 0;
                     var Mileage = 0.00;
                     var Totalsum = 0;
-                    // var StartMilage = 0;
-                    // var Milageco = 0;
-                    // var Engineco = 0;
                     if (lstGroup[i].data.length > 0) {
                         var StartMilage = 0;
                         var Milageco = 0;
@@ -3069,9 +2730,6 @@ router.get('/PrintDriverReportNew', function(req, res) {
                         table += '</table>' +
                             ' </div>' +
                             '</div>';
-                        // table += '<tr><td> Total:</td>' +
-                        //     '<td></td><td></td><td></td><td>' + TotalDrivingtime + '</td>' +
-                        //     '<td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td> </td></tr></table>';
                         var html = table;
                         var options = {
                             format: 'A4',
@@ -3213,10 +2871,7 @@ router.get('/ExportDriverReportNew', function(req, res) {
 
 
     wherecondition1 += " And ta.AlarmCode = '11'";
-
-    //WhereCondition += " And Gps.DeviceId = 075034901552";
-    // WhereCondition += " And Gps.IsEngine = false";
-    var query = "select " +
+var query = "select " +
         " gps.Date,gps.Speed,gps.Longitude,gps.Latitude,gps.Direction,gps.GPSPositioning,gps.DeviceId,gps.IsPatchEngine as IsEngine,Bike.*,tvg.GroupName,tvgs.GroupName as ShareGroupName  " +
         "from tblvehicle  As Bike " +
         " left join tblvehiclegroup tvg on tvg.Id = Bike.IdGroup " +
@@ -3261,9 +2916,6 @@ router.get('/ExportDriverReportNew', function(req, res) {
                     var TotalRecord = 0;
                     var Mileage = 0.00;
                     var Totalsum = 0;
-                    // var StartMilage = 0;
-                    // var Milageco = 0;
-                    // var Engineco = 0;
                     if (lstGroup[i].data.length > 0) {
                         var StartMilage = 0;
                         var Milageco = 0;
@@ -3729,7 +3381,6 @@ router.get('/GetAllWoringHourForReportNew', function(req, res) {
                         TotalTiming: TotalTimingDisplay,
                     }
                 });
-                // console.log(TotalAllDrivingTime, " - ", TotalAllParkingTime, " - ", TotalAllTime);
                 TotalAllDrivingTime = calhrminsecfromsec(TotalAllDrivingTime);
                 TotalAllParkingTime = calhrminsecfromsec(TotalAllParkingTime);
                 TotalAllTime = calhrminsecfromsec(TotalAllTime);
@@ -4179,18 +3830,7 @@ router.get('/PrintAllWoringHourForReportNew', function(req, res) {
 
             response1 = u.sortBy(response1, function(num) { return num.Name })
             var TodayDate = momentz.utc(new Date()).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
-            // var table = '<h2 style="text-align:center"><b>Working Hour Report</b></h2><h5 style="text-align:right">' + TodayDate + '</h5><hr/><table style="width:100%">' +
-            //     '<tr><th style="text-align:left">No</th>' +
-            //     '<th style="text-align:left">Asset Name</th>' +
-            //     '<th style="text-align:left">Driving Time</th>' +
-            //     '<th style="text-align:left">Parking Time</th>' +
-            //     '<th style="text-align:left">Total Time</th>' +
-            //     '<th style="text-align:left">Total Mileage</th>' +
-            //     '<th style="text-align:left">Average Speed(km/h)</th>' +
-            //     '<th style="text-align:left">Highest Speed</th>' +
-            //     '<th style="text-align:left">Over Speed(Times)</th></tr>';
-
-
+            
             var table = '<div style="font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; font-size: 10px; padding:0 15px;">' +
                 '<div style="padding:15px; border-bottom:1px solid #000;">' +
                 '<h1 style="text-transform: uppercase; text-align:center; font-weight: normal;font-size: 14px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">Working Hour Report</h1>' +
@@ -4401,11 +4041,7 @@ router.get('/GetAllDailyStatDateNew', function(req, res) {
                                     obj.LocateNumber = obj.LocateNumber + 1;
                                 }
                             }
-                            // if (lstGroup[i].data[k].IsEngine == 1) {
-                            //     if ((k + 1) < lstGroup[i].data.length) {
-                            //         obj.Mileage = obj.Mileage + parseFloat(distance(parseFloat(lstGroup[i].data[k].Latitude), parseFloat(lstGroup[i].data[k].Longitude), parseFloat(lstGroup[i].data[k + 1].Latitude), parseFloat(lstGroup[i].data[k + 1].Longitude)))
-                            //     }
-                            // }
+                            
                             //-----------Add Speed--------------//
                             if (lstGroup[i].data[k].Speed > 1 && lstGroup[i].data[k].IsEngine == 1 && lstGroup[i].data[k].GPSPositioning == 'A') {
                                 Speed = Speed + parseFloat(lstGroup[i].data[k].Speed);
@@ -4446,28 +4082,18 @@ router.get('/GetAllDailyStatDateNew', function(req, res) {
                                     IsParking = 0;
                                     TotalParkingtime = TotalParkingtime + calcDateDiffCalInSec(moment(lstGroup[i].data[k].Date), moment(lstGroup[i].data[ParkingStartPosition].Date));
                                 }
-                                // if (IsDriving == 0) {
-                                //     DrivingStartPosition = k;
-                                // }
-                                // IsDriving = 1;
+                                
                                 if (parseFloat(lstGroup[i].data[k].Speed) > 1) {
                                     if (IsDriving == 0) {
                                         DrivingStartPosition = k;
                                     }
                                     IsDriving = 1;
                                 }
-                                // } else {
-                                //     if (IsDriving == 1) {
-                                //         IsDriving = 0;
-                                //         TotalDrivingtime = TotalDrivingtime + calcDateDiffCalInSec(moment(lstGroup[i].data[k].Date), moment(lstGroup[i].data[DrivingStartPosition].Date));
-                                //     }
-                                // }
+                                
                             } else {
                                 Engineco = 0;
                                 if (IsEngineOn == 1) {
                                     IsEngineOn = 0;
-                                    // console.log(lstGroup[i].data[EngineOnStartPosition].Id, "--", lstGroup[i].data[k].Id);
-                                    // console.log(momentz.utc(lstGroup[i].data[EngineOnStartPosition].Date).tz(req.query.TimeZone).format('DD-MM-YYYY'), "--", momentz.utc(lstGroup[i].data[k].Date).tz(req.query.TimeZone).format('DD-MM-YYYY'));
                                     TotalEngineOnTime = TotalEngineOnTime + calcDateDiffCalInSec(moment(lstGroup[i].data[k].Date), moment(lstGroup[i].data[EngineOnStartPosition].Date));
                                 }
 
@@ -4564,10 +4190,6 @@ router.get('/ExportDailyStatReportNew', function(req, res) {
             caption: 'Total Time',
             type: 'string'
         },
-        // {
-        //     caption: 'Invalid Location',
-        //     type: 'number'
-        // },
         {
             caption: 'Mileage(km)',
             type: 'number'
@@ -5304,7 +4926,6 @@ router.get('/PrintDailyStatReportNew', function(req, res) {
                             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + DrivingTime + '</td>' +
                             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + ParkingTime + '</td>' +
                             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + TotalTime + '</td>' +
-                            // '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + InvalidLocation + '</td>' +
                             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + Mileage + '</td>' +
                             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + AverageSpeed + '</td>' +
                             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + HighestSpeed + '</td>' +
@@ -5312,7 +4933,6 @@ router.get('/PrintDailyStatReportNew', function(req, res) {
                             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + AlarmNumber + '</td>' +
                             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">' + EnginOnTime + '</td>' +
                             '</tr>';
-                        // row.push(Name, Date, DrivingTime, ParkingTime, TotalTime, InvalidLocation, Mileage, AverageSpeed, HighestSpeed, OverSpeed, AlarmNumber, EnginOnTime /*, DoorOpenNumber, DoorOpenTime, ShockNumber, ShockTime, EngineOnNumber*/ );
                         GetData(i + 1);
 
                     } else {
@@ -5326,7 +4946,6 @@ router.get('/PrintDailyStatReportNew', function(req, res) {
                             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + TotalAllDrivingTime + '</td>' +
                             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + TotalAllParkingTime + '</td>' +
                             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;">' + TotalAllTime + '</td>' +
-                            // '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;"></td>' +
                             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;"></td>' +
                             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;"></td>' +
                             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000;"></td>' +
@@ -5419,8 +5038,7 @@ router.get('/GetAllEngineData', function(req, res) {
         " left join tblvehiclegroup tvgs on tvgs.Id = tsd.IdSharedGroup " + search;
     query += Orderby;
     connection.query(query, function(err, response) {
-        // console.log(response.length)
-        if (response != undefined) {
+         if (response != undefined) {
             var Array = [];
             var COuntEngineOff = 0;
             var COuntEngineOn = 0;
@@ -5450,12 +5068,6 @@ router.get('/GetAllEngineData', function(req, res) {
 
                     if (COuntEngineOn == 0) {
                         var obj = new Object();
-                        // response[k].StartTimeold = new Date(response[k].Date * 1000);
-                        // response[k].Status = 'Engine On';
-                        // response[k].StartTime = momentz.utc(new Date(response[k].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
-                        //moment(new Date(response[k].Date * 1000)).format('DD-MM-YYYY hh:mm:ss a');
-                        // console.log("on..", response[k].Id);
-                        // Array.push(response[k]);
                         obj.GroupName = "UnGroup";
                         if (req.query.idUser == response[k].iduser) {
                             if (response[k].GroupName != null && response[k].GroupName != undefined && response[k].GroupName != '') {
@@ -5521,7 +5133,6 @@ router.get('/GetAllEngineData', function(req, res) {
                 } else {
                     Array[j].EndTime1 = new Date(response[response.length - 1].Date * 1000)
                     Array[j].EndTime = momentz.utc(new Date(response[response.length - 1].Date * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm:ss a');
-                    //momentz.utc(new Date(response[response.length - 1].Date * 1000)).format('DD-MM-YYYY hh:mm:ss a');
                     Array[j].ContinueTime = calcDateDiff(Array[j].EndTime, Array[j].StartTime);
                     if (Array[j].Status == 'Engine On') {
                         TotalEngineOnTime = TotalEngineOnTime + calcDateDiffCalInSec(moment(response[response.length - 1].StartTimeold), moment(Array[j].StartTimeold));
@@ -5529,15 +5140,9 @@ router.get('/GetAllEngineData', function(req, res) {
 
                 }
 
-                // if (j != Array.length - 1) {
-
-                //     DatewiseTravelledDistance = distance(parseFloat(Array[j].Latitude), parseFloat(Array[j].Longitude), parseFloat(Array[j + 1].Latitude), parseFloat(Array[j + 1].Longitude))
-                // } else {
-                //     DatewiseTravelledDistance = 0;
-                // }
-                // Array[j].Mileage = DatewiseTravelledDistance;
+                
             }
-            //console.log("Engineon time....", calhrminsecfromsec(TotalEngineOnTime))
+            
             res.json(Array);
             //res.json(response);
         } else {
@@ -5577,9 +5182,6 @@ router.get('/ExportEngineReport', function(req, res) {
 
     var Orderby = ' Order By Date ASC';
     var search = "";
-    // search = " where tblvehicle.iduser=" + req.query.idUser;
-    // var unixStartdate = new Date(objParam.StartDate).getTime() / 1000;
-    // var unixEndDate = new Date(objParam.EndDate).getTime() / 1000;
     var Startdate = objParam.StartDate;
     var Enddate = objParam.EndDate;
 
@@ -5614,8 +5216,7 @@ router.get('/ExportEngineReport', function(req, res) {
             search += " Where tblgpsdata.Date <= '" + unixEnddate + "'";
         }
     }
-    // var query = "SELECT tblgpsdata.Id, tblgpsdata.Datetime, tblgpsdata.Date, tblgpsdata.Latitude, tblgpsdata.Longitude, tblgpsdata.DeviceId, tblgpsdata.IsEngine, tblgpsdata.Speed, tblvehicle.Name, tblvehicle.iduser FROM tblgpsdata LEFT JOIN tblvehicle ON tblvehicle.deviceid = tblgpsdata.DeviceId " + search;
-    // query += Orderby;
+
     var query = "SELECT  tblgpsdata.Datetime, tblgpsdata.Date, tblgpsdata.Latitude, tblgpsdata.Longitude, tblgpsdata.DeviceId, tblgpsdata.IsPatchEngine as IsEngine, tblgpsdata.Speed,tblgpsdata.GPSPositioning, tblvehicle.Name, tblvehicle.iduser,tvg.GroupName,tvgs.GroupName as ShareGroupName " +
         "FROM tblgpsdata LEFT JOIN tblvehicle ON tblvehicle.deviceid = tblgpsdata.DeviceId " +
         " left join tblvehiclegroup tvg on tvg.Id = tblvehicle.IdGroup " +
@@ -5787,9 +5388,7 @@ router.get('/PrintEngineReport', function(req, res) {
 
     var Orderby = ' Order By Date ASC';
     var search = "";
-    // search = " where tblvehicle.iduser=" + req.query.idUser;
-    // var unixStartdate = new Date(objParam.StartDate).getTime() / 1000;
-    // var unixEndDate = new Date(objParam.EndDate).getTime() / 1000;
+
     var Startdate = objParam.StartDate;
     var Enddate = objParam.EndDate;
 
@@ -6038,8 +5637,6 @@ router.get('/GetAllFenceInAndOutData', function(req, res) {
         Orderby = ' ' + req.query.orderby;
     }
     var search = "";
-    // var unixStartdate = new Date(objParam.StartDate).getTime() / 1000;
-    // var unixEndDate = new Date(objParam.EndDate).getTime() / 1000;
     search = "";
     var Startdate = objParam.StartDate;
     var Enddate = objParam.EndDate;
@@ -6050,19 +5647,6 @@ router.get('/GetAllFenceInAndOutData', function(req, res) {
     var convertDate = convertdateformatForUnix(Enddate);
     var unixEnddate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
 
-    // if (objParam.DeviceId != null && objParam.DeviceId != 'All' && objParam.DeviceId != undefined) {
-    //     if (search != "") {
-    //         search += " And tblalarm.DeviceId IN (" + objParam.DeviceId + ")";
-    //     } else {
-    //         search += " Where tblalarm.DeviceId IN (" + objParam.DeviceId + ")";
-    //     }
-    // } else {
-    //     if (search != "") {
-    //         search += " And tblvehicle.IsDelete = 0 AND tblvehicle.idUser = " + objParam.idUser;
-    //     } else {
-    //         search += " Where tblvehicle.IsDelete = 0 AND tblvehicle.idUser = " + objParam.idUser;
-    //     }
-    // }
     if (objParam.DeviceId != null && objParam.DeviceId != 'All' && objParam.DeviceId != undefined && objParam.DeviceId != '-1') {
         if (search != "") {
             search += " And tblalarm.DeviceId in (" + objParam.DeviceId + ")";
@@ -6155,10 +5739,7 @@ router.get('/ExportFenceReport', function(req, res) {
             caption: 'Fence Status',
             type: 'string'
         },
-        //  {
-        //     caption: 'Address',
-        //     type: 'string'
-        // }
+        
     ];
     var Orderby = 'Order By Date ASC';
     var search = "";
@@ -6172,19 +5753,7 @@ router.get('/ExportFenceReport', function(req, res) {
     var convertDate = convertdateformatForUnix(Enddate);
     var unixEnddate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
 
-    // if (objParam.DeviceId != null && objParam.DeviceId != 'All' && objParam.DeviceId != undefined) {
-    //     if (search != "") {
-    //         search += " And tblalarm.DeviceId IN (" + objParam.DeviceId + ")";
-    //     } else {
-    //         search += " Where tblalarm.DeviceId IN (" + objParam.DeviceId + ")";
-    //     }
-    // } else {
-    //     if (search != "") {
-    //         search += " And tblvehicle.IsDelete = 0 AND tblvehicle.idUser = " + objParam.idUser;
-    //     } else {
-    //         search += " Where tblvehicle.IsDelete = 0 AND tblvehicle.idUser = " + objParam.idUser;
-    //     }
-    // }
+    
     if (objParam.DeviceId != null && objParam.DeviceId != 'All' && objParam.DeviceId != undefined && objParam.DeviceId != '-1') {
         if (search != "") {
             search += " And tblalarm.DeviceId in (" + objParam.DeviceId + ")";
@@ -6270,18 +5839,13 @@ router.get('/ExportFenceReport', function(req, res) {
                             }
                         }
 
-                        // if (res.length > 0) {
-                        //     Address = res[0].formattedAddress;
-                        //     row.push(Name.toString(), TIme.toString(), FenceStatus.toString(), Address.toString());
-                        //     conf.rows.push(row);
-                        // } else {
-                        //     Address = "N/A";
+
                         row.push(GroupName, Name.toString(), FenceName.toString(), TIme.toString(), FenceStatus.toString());
                         conf.rows.push(row);
-                        // }
+
 
                         GetData(i + 1);
-                        // })
+
 
                     } else {
                         if (response[i].Date != null && response[i].Date != '' && response[i].Date != undefined) {
@@ -6306,8 +5870,7 @@ router.get('/ExportFenceReport', function(req, res) {
                         conf.rows.push(row);
                         GetData(i + 1);
                     }
-                    // conf.rows.push(Name.toString(), TIme.toString(), FenceStatus.toString(), Address.toString());
-                    // GetData(i + 1);
+
                 } else {
                     var result = nodeExcel.execute(conf);
                     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
@@ -6451,10 +6014,10 @@ router.get('/PrintFenceReport', function(req, res) {
                             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + TIme.toString() + '</td>' +
                             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">' + FenceStatus.toString() + '</td>' +
                             '</tr>';
-                        // }
+
 
                         GetData(i + 1);
-                        // })
+
 
                     } else {
                         if (response[i].Date != null && response[i].Date != '' && response[i].Date != undefined) {
@@ -6480,7 +6043,7 @@ router.get('/PrintFenceReport', function(req, res) {
                             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; border-right: 1px dotted #000; text-align: center;">' + TIme.toString() + '</td>' +
                             '<td style="border-bottom: 1px dotted #000;font-size:10px;font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">' + FenceStatus.toString() + '</td>' +
                             '</tr>';
-                        // Address = "N/A";
+
                         GetData(i + 1);
                     }
                 } else {

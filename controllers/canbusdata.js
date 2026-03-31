@@ -460,10 +460,7 @@ router.get('/ExportAllDrivingData', function(req, res) {
             caption: 'Total Harsh Brake',
             type: 'string'
         }
-        //    , {
-        //        caption: 'CreatedDate',
-        //        type: 'string'
-        //    }
+        
     ];
 
     var objParam = req.query;
@@ -522,8 +519,6 @@ router.get('/ExportAllDrivingData', function(req, res) {
         search += ' where tu.idApp = ' + objParam.idApp;
     }
 
-    // var query = "SELECT td.*, tv.iduser, tu.idApp FROM tbldrivingdata as td left join tblvehicle as tv ON td.DeviceId = tv.deviceid left join tbluserinformation as tu ON tv.iduser = tu.id " + search +
-    //     " order by " + objOrderBy;
     var query = "SELECT td.DeviceId, td.TotalIgnition, td.TotalDrivingTime, td.TotalIdlingTime, td.AverageHotStartTime, td.AverageSpeed, td.HistoryHighestSpeed, td.HistoryHighestRotation, " +
         " td.TotalHarshAcceleration, td.TotalHarshBrake, td.Datetime, tu.idApp FROM tbldrivingdata as td left join tblvehicle as tv ON td.DeviceId = tv.deviceid left join tbluserinformation as tu ON tv.iduser = tu.id " + search +
         " order by " + objOrderBy;
@@ -543,9 +538,6 @@ router.get('/ExportAllDrivingData', function(req, res) {
             var TotalHarshAcceleration = '';
             var TotalHarshBrake = '0';
             var CreatedDate = '';
-            // GetDriverBehaviorData(0);
-            // function GetDriverBehaviorData(i) {
-            // if (i < response.length) {
             for (var i = 0; i < response.length; i++) {
                 var row = [];
                 if (response[i].DeviceId != null && response[i].DeviceId != '' && response[i].DeviceId != undefined) {
@@ -554,9 +546,7 @@ router.get('/ExportAllDrivingData', function(req, res) {
 
                 if (response[i].Datetime != null && response[i].Datetime != '' && response[i].Datetime != undefined) {
                     Datetime = momentz.utc(new Date(response[i].Datetime * 1000)).tz(req.query.TimeZone).format('DD-MM-YYYY hh:mm a');
-                    //momentz(new Date(response[i].Datetime * 1000)).format('DD/MM/YYYY hh:mm a');
-                    // convertdateformat(response[i].Datetime, 2);
-                }
+                    }
 
                 if (response[i].TotalIgnition != null && response[i].TotalIgnition != '' && response[i].TotalIgnition != undefined) {
                     TotalIgnition = response[i].TotalIgnition.toString()
@@ -596,7 +586,7 @@ router.get('/ExportAllDrivingData', function(req, res) {
                 }
                 row.push(DeviceId, Datetime, TotalIgnition, TotalDrivingTime, TotalIdlingTime, AverageHotStartTime, AverageSpeed, HistoryHighestSpeed, HistoryHighestRotation, TotalHarshAcceleration, TotalHarshBrake);
                 conf.rows.push(row);
-                // GetDriverBehaviorData(i + 1);
+                
             }
             var result = nodeExcel.execute(conf);
             res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');

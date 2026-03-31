@@ -99,8 +99,7 @@ router.post('/upload', function (req, res) {
                 res.json(NoAccessPermission);
             }
         });
-        // res.sendStatus(200);
-        //when finish all process    
+        
     });
 });
 
@@ -165,8 +164,7 @@ router.post('/uploadPdfFromPost', function (req, res) {
         if (FileName.length == 0) {
             res.json({ success: false, message: "Please Select atleast One File..." });
         };
-        // res.sendStatus(200);
-        //when finish all process    
+        
     });
 });
 
@@ -192,9 +190,7 @@ router.get('/GetAllDynamicMedia', function (req, res) {
                 search['$or'].push(obj);
             };
         };
-        // search['$or'].push({ FileName: { $like: '%' + objSearch + '%' } });
-        // search['$or'].push({ Author: { $like: '%' + objSearch + '%' } });
-        // search['Author'] = { $like: '%' + objSearch + '%' };
+        
     }
 
     Media.findAndCountAll({
@@ -321,12 +317,6 @@ router.get('/DeleteMedia', function (req, res) {
                     if (UserExist != null) {
                         Media.destroy({ where: { id: req.query.idMedia } }).then(function (response) {
                             if (response) {
-                                // fs.access('MediaUploads/' + req.query.filename, fs.F_OK, function(err) {
-                                //     if (!err) {
-                                //         // Do something
-                                //         fs.unlink('MediaUploads/' + req.query.filename);
-                                //     }
-                                // });
                                 var oldFile = __dirname + '/../MediaUploads/' + req.query.filename;
                                 fs.exists(oldFile, function (exists) {
                                     if (exists) {

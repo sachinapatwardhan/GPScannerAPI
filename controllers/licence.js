@@ -240,7 +240,7 @@ router.get('/ExportAllLicence', function (req, res) {
                 var LicenceRenewalType = '';
                 var AppName = '';
                 var CreatedDate = '';
-                // if (i < response.length) {
+
 
                 var row = [];
                 if (response[i].LicenceNo != null && response[i].LicenceNo != '' && response[i].LicenceNo != undefined) {
@@ -288,9 +288,7 @@ router.get('/ExportAllLicence', function (req, res) {
                     row.push(LicenceNo, DeviceId, email, phone, country, ExpiryDate, ExpiryDay, IsExpired, LicenceType, LicenceRenewalType, CreatedDate);
                 }
                 conf.rows.push(row);
-                // ForLoop(i + 1);
-
-                // } 
+                
             }
             // ForLoop(0);
             var result = nodeExcel.execute(conf);
@@ -326,9 +324,6 @@ router.get('/SaveLicenceDetail', function (req, res) {
                             message: "Licence alerady assigned for this device",
                         });
                     } else {
-                        // User.findOne({ where: { id: req.query.IdUser } }).then(function(DeviceUserExist) {
-                        //     if (DeviceUserExist) {
-                        // AppInfo.findOne({ where: { Id: DeviceUserExist.idApp } }).then(function(AppExits) {
                         GpsDevice.findOne({ where: { DeviceId: req.query.DeviceId }, })
                             .then(function (objGpsDevice) {
                                 if (objGpsDevice != null) {
@@ -423,15 +418,7 @@ router.get('/SaveLicenceDetail', function (req, res) {
                                     });
                                 }
                             })
-                        // })
-                        //     } else {
-                        //         res.json({
-                        //             success: false,
-                        //             message: "Invalid User Name., Please insert valid User Name.",
-                        //             data: ""
-                        //         });
-                        //     }
-                        // })
+                        
                     }
                 })
 
@@ -773,29 +760,6 @@ router.post('/SwipeDevice', jsonParser, function (req, res) {
                     .then(function (resUpdateDeviceAgent) {
                         funAuditLogLicence.CreateAuditLogLicence('Swap Licence Device', null, req.body.NewDeviceId, null, null, req.body.CreatedBy, 'Copy agent device detail from old DeviceId :' + req.body.OldDeviceId + ' to new DeviceId :' + req.body.NewDeviceId);
 
-                        // return SimDetail.findOne({
-                        //         where: {
-                        //             SerialNum: req.body.simSerial
-                        //         }
-                        //     })
-                        //     .then(function(resSim) {
-                        //         if (!resSim) {
-                        //             var err = new Error('No sim found.');
-                        //             err.name = 'BugzError';
-                        //             throw err;
-                        //         }
-
-                        //         return GpsDevice.findOne({
-                        //                 where: {
-                        //                     DeviceId: req.body.NewDeviceId
-                        //                 }
-                        //             })
-                        //             .then(function(resGPSDevice) {
-                        //                 return resGPSDevice.updateAttributes({
-                        //                         idSim: resSim.id
-                        //                     })
-                        //                     .then(function(resGPSDeviceUpdate) {
-                        //                         funAuditLogLicence.CreateAuditLogLicence('Swap Licence Device', null, req.body.NewDeviceId, null, null, req.body.CreatedBy, 'Swap GPSDevice idSim from old DeviceId :' + req.body.OldDeviceId + ' to new DeviceId :' + req.body.NewDeviceId);
                         return LicenceManager.findOne({
                             where: {
                                 DeviceId: req.body.OldDeviceId,
@@ -871,9 +835,7 @@ router.post('/SwipeDevice', jsonParser, function (req, res) {
                                             })
                                     })
                             })
-                        //                 })
-                        //         })
-                        // })
+                        
 
                     })
             })
@@ -998,17 +960,10 @@ function isStrongEnough1(password) {
     var lc = password.match(LOWERCASE_RE);
     var n = password.match(NUMBER_RE);
     var sc = password.match(SPECIAL_CHAR_RE);
-    // var nr = password.match(NON_REPEATING_CHAR_RE);
-    // console.log(uc)
-    // console.log(n)
-    // console.log(password.length >= minLength &&
-    //     uc && uc.length >= uppercaseMinCount &&
-    //     n && n.length >= numberMinCount)
     return password.length >= minLength &&
         uc && uc.length >= uppercaseMinCount &&
         n && n.length >= numberMinCount && !sc;
-    // &&
-    // sc && sc.length >= specialMinCount;
+    
 }
 
 function customPassword1() {
@@ -1024,13 +979,6 @@ var LicenceManager = models.tbllicencemanager;
 
 router.get('/CreateLicenceNumbers', function (req, res) {
     req.setTimeout(3600000);
-    // function insertLicenceno() {
-    // var coll = [];
-    // for (var i = 0; i < 20; i++) {
-    //     var calldata = [customPassword1()];
-    //     console.log(i, "---", calldata)
-    //     coll.push(calldata);
-    // }
     var Length = req.query.Length;
     var CheckPass = req.query.Pass;
     var AppName = req.query.AppName;
@@ -1055,21 +1003,16 @@ router.get('/CreateLicenceNumbers', function (req, res) {
                     function uploder(i) {
                         if (i < LicenceGenerateLength) {
                             var LicenceNo = customPassword1();
-                            // LicenceManager.find({ where: { LicenceNo: LicenceNo } }).then(function(LicenceNoExits) {
-                            //     if (LicenceNoExits) {
-                            //         uploder(i + 1);
-                            //     } else {
                             var obj = new Object();
                             obj.LicenceNo = LicenceNo;
                             obj.idApp = AppExits.Id;
                             obj.LicenceRenewalType = AppExits.LicenceRenewalType;
                             obj.LicenceType = AppExits.LicenceType;
                             LicenceManager.findOrCreate({ where: { LicenceNo: LicenceNo }, defaults: obj }).then(function (response) {
-                                // console.log("###")
+                                
                                 uploder(i + 1);
                             });
-                            //     }
-                            // })
+                            
                         } else {
                             res.json({
                                 success: true,
@@ -1093,13 +1036,9 @@ router.get('/CreateLicenceNumbers', function (req, res) {
             message: "InvalidPassword. Licence number not Generated.",
         });
     }
-    // connection.query("INSERT INTO tbllicencemanager (LicenceNo) VALUES ?", [coll], function(err, res, fields) {
-    //     console.log("Err...", err);
-    //     console.log("res...", res);
-    // })
-    // }
+    
 });
-// insertLicenceno();
+
 
 function updateDeviceAccValue(deviceid) {
     GpsDevice.findOne({ where: { DeviceId: deviceid } }).then(function (GpsDeviceExits) {

@@ -217,7 +217,7 @@ router.post('/uploadExcelDevice', function(req, res) {
     //Set Parameter for User Permission
     req.query['tablename'] = req.headers['x-requested-with'];
 
-    //var FileName = __dirname + '/../MediaUploads/FileUpload/DeviceList.xlsx';
+    
     form.uploadDir = __dirname + '/../MediaUploads/FileUpload';
 
     form.parse(req, function(err, fields, files) {
@@ -230,7 +230,7 @@ router.post('/uploadExcelDevice', function(req, res) {
         file.path = form.uploadDir + "/" + file.name;
         // console.log(file.path);
         FileName = file.path.toString();
-        //FileName.push(file.path);
+        
     });
 
     form.on('end', function() {
@@ -346,11 +346,6 @@ router.get('/ExportDeviceDistributor', function(req, res) {
         });
     }
 
-    // conf.cols.push({
-    //     caption: 'Created Date',
-    //     type: 'string'
-    // });
-
     var objSearch = req.query.search;
     var appId = req.query.appId;
     var search = '';
@@ -393,16 +388,13 @@ router.get('/ExportDeviceDistributor', function(req, res) {
     connection.query(query, function(err, response) {
         if (response != undefined) {
             conf.rows = [];
-            // conf1.rows = [];
-            // GetTrackerData(0);
-
-            // function GetTrackerData(i) {
+            
             for (var i = 0; i < response.length; i++) {
                 var Distributor = '';
                 var AppName = '';
                 var deviceId = '';
                 var CreatedDate = '';
-                // if (i < response.length) {
+               
                 var row = [];
                 if (response[i].Distributor != null && response[i].Distributor != '' && response[i].Distributor != undefined) {
                     Distributor = response[i].Distributor;

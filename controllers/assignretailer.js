@@ -32,13 +32,7 @@ router.get('/GetAllSalesAgent', function (req, res) {
         search = search + 'tblappinfo.AppName like "%' + objSearch + '%" or ';
         search = search + 'tbluserinformation.IsMobileVerify like "%' + objSearch + '%") ';
     };
-    //  if (objParam.UserId != null && objParam.UserId != undefined && objParam.UserId != '') {
-    //      if (search != "") {
-    //          search += " and tblgpsdevice.idSalesAgent =" + objParam.UserId;
-    //      } else {
-    //          search += " Where tblgpsdevice.idSalesAgent =" + objParam.UserId;
-    //      }
-    //  }
+    
     if (objParam.appId != null && objParam.appId != undefined && objParam.appId != '') {
         if (search != "") {
             search += ' and tbluserinformation.idApp = "' + objParam.appId + '"';

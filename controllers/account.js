@@ -44,17 +44,8 @@ router.get('/login', jsonParser, function (req, res) {
     };
     search['$and'].push(obj);
 
-
-    // var obj = new Object();
-    // obj['idApp'] = {
-    //     $eq: req.query.appId
-    // };
-    // search['$and'].push(obj);
+    
     User.findOne({
-        // where: {
-        //     username: req.query.username,
-        //     password: Encryptpassword
-        // }
         where: search
     }).then(function (response) {
         if (response != null) {
@@ -385,11 +376,7 @@ router.get('/Mobilelogin', jsonParser, function (req, res) {
     }
 
     User.findOne({
-        // where: {
-        //     username: req.query.username,
-        //     password: Encryptpassword,
-        //     // Type: req.query.type
-        // }
+        
         where: search
     }).then(function (response) {
         if (response != null) {
@@ -444,18 +431,7 @@ router.get('/Mobilelogin', jsonParser, function (req, res) {
             }
         } else {
 
-            //Get Wifi Data
-            // request.get({
-            //     url: 'http://api.pettorway.com/GetDateServices.asmx/loginSystem?LoginName=' + req.query.username + '&LoginPassword=' + req.query.password + '&LoginType=ENTERPRISE&language=cn&ISMD5=0&timeZone=8&apply=APP&loginUrl=&PushID=',
-            // }, function(error, response, body) {
-            //     var data1 = JSON.parse(body)
-            //     if (data1.success == 'true') {
-            //         res.json({
-            //             success: false,
-            //             mds: data1.mds,
-            //             message: "Old User"
-            //         });
-            //     } else {
+            
             res.json({
                 success: false,
                 message: "Invalid Username or Password..."
@@ -668,18 +644,12 @@ router.post('/register', jsonParser, function (req, res) {
             } else {
                 User.findOne({
                     where: {
-                        // email: objUserReg.email
-                        // $or: [{ email: objUserReg.email }, { phone: objUserReg.phone }]
+                        
                         $or: [{ email: objUserReg.email }]
                     }
                 }).then(function (chkEmailExist) {
                     if (chkEmailExist != null && (chkEmailExist.Type == objUserReg.Type || chkEmailExist.Type == 'Both')) {
-                        // if (objUserReg.phone == chkEmailExist.phone) {
-                        //     res.json({
-                        //         success: false,
-                        //         message: "Phone is already Exist..."
-                        //     });
-                        // } else {
+                        
                         res.json({
                             success: false,
                             message: "Email is already Exist..."
@@ -814,30 +784,18 @@ router.post('/CheckUserExist', jsonParser, function (req, res) {
 
         User.findOne({
             where: {
-                // email: objUserReg.email
-                // $or: [{ email: objUserReg.email }, { username: objUserReg.username }, { phone: objUserReg.phone }]
-                $or: [{ email: objUserReg.email }, { username: objUserReg.username }]
+                                $or: [{ email: objUserReg.email }, { username: objUserReg.username }]
             }
         }).then(function (chkEmailExist) {
             if (chkEmailExist != null) {
-                // if (objUserReg.phone == chkEmailExist.phone) {
-                //     res.json({
-                //         success: false,
-                //         message: "Phone is already Exist..."
-                //     });
-                // } else 
+                
                 if (objUserReg.username == chkEmailExist.username && (chkEmailExist.Type == objUserReg.Type || chkEmailExist.Type == 'Both')) {
                     res.json({
                         success: false,
                         message: "Username is already Exist..."
                     });
                 }
-                // else {
-                //     res.json({
-                //         success: false,
-                //         message: "Email is already Exist..."
-                //     });
-                // }
+                
                 else {
                     res.json({
                         success: true,
@@ -867,7 +825,7 @@ router.post('/CheckWebUserExistWithOTPsend', jsonParser, function (req, res) {
 
         User.findOne({
             where: {
-                // email: objUserReg.email
+                
                 $or: [{ email: objUserReg.email }, { username: objUserReg.username }, { phone: objUserReg.phone }]
             }
         }).then(function (chkEmailExist) {
@@ -981,16 +939,11 @@ router.post('/changepasswordNew', jsonParser, function (req, res) {
     objUser = req.body;
 
     //Set Parameter for User Permission
-    // req.query['tablename'] = req.headers['x-requested-with'];
+    
     var EncryptOldpassword = jwt.encode(objUser.oldpassword, "bugz");
     var EncryptNewpassword = jwt.encode(objUser.password, "bugz");
 
-    // if (objUser.password != objUser.confirmpassword) {
-    //     res.json({
-    //         success: false,
-    //         message: "Password and Confirm Password does not match..."
-    //     });
-    // } else 
+    
     if (objUser.password.length < 2) {
         res.json({
             success: false,
@@ -1039,13 +992,7 @@ router.post('/changepasswordNew', jsonParser, function (req, res) {
                                             // console.log(EmailSettingCreated)
                                         })
 
-                                        // transporter.sendMail(mail, function(error, response) {
-                                        //     if (error) {
-                                        //         // res.json(error);
-                                        //     } else {
-                                        //         // funAuditLog.CreateAuditLog('change password', chkUserExist.username, 'change password');
-                                        //     }
-                                        // });
+                                        
                                         funAuditLog.CreateAuditLog('change password', chkUserExist.username, 'change password-ID: (' + chkUserExist.id + ')');
                                         res.json({
                                             success: true,
@@ -1082,16 +1029,7 @@ router.post('/changepasswordNew', jsonParser, function (req, res) {
                     });
                 }
 
-                // } else {
-                //     res.json({
-                //         success: false,
-                //         message: "Old Password is wrong..."
-                //     });
-                // }
-                //     } else {
-                //         res.json(NoAccessPermission);
-                //     }
-                // });
+                
 
             } else {
                 res.json({
@@ -1130,18 +1068,7 @@ router.post('/changepassword', jsonParser, function (req, res) {
         }).then(function (chkUserExist) {
             if (chkUserExist != null) {
 
-                //set Parameter
-                // req.query['permission'] = "Modified";
-
-                // var obj = {};
-                // obj.headers = req.headers;
-                // obj.query = req.query;
-
-                // funAccessPermission.CheckUserAccessPermission(obj, function(responseAccessPermission) {
-                //     var AccessPermission = responseAccessPermission.success;
-                //     if (AccessPermission) {
-
-
+               
 
                 if (EncryptOldpassword == chkUserExist.password) {
                     chkUserExist.updateAttributes({
@@ -1165,10 +1092,7 @@ router.post('/changepassword', jsonParser, function (req, res) {
                         message: "Old Password is wrong..."
                     });
                 }
-                //     } else {
-                //         res.json(NoAccessPermission);
-                //     }
-                // });
+               
             } else {
                 res.json({
                     success: false,
@@ -1183,7 +1107,7 @@ router.post('/changeUserPassword', jsonParser, function (req, res) {
     objUser = req.body;
 
     //Set Parameter for User Permission
-    // req.query['tablename'] = req.headers['x-requested-with'];
+    
     var EncryptOldpassword = jwt.encode(objUser.password, "bugz");
     var EncryptNewpassword = jwt.encode(objUser.NewPassword, "bugz");
 
@@ -1200,16 +1124,7 @@ router.post('/changeUserPassword', jsonParser, function (req, res) {
         }).then(function (chkUserExist) {
             if (chkUserExist != null) {
 
-                //set Parameter
-                // req.query['permission'] = "Modified";
-
-                // var obj = {};
-                // obj.headers = req.headers;
-                // obj.query = req.query;
-
-                // funAccessPermission.CheckUserAccessPermission(obj, function(responseAccessPermission) {
-                //     var AccessPermission = responseAccessPermission.success;
-                //     if (AccessPermission) {
+                
 
                 if (objUser.Type == 'Owner') {
                     var Password = chkUserExist.password;
@@ -1238,10 +1153,7 @@ router.post('/changeUserPassword', jsonParser, function (req, res) {
                         message: "Old Password is wrong..."
                     });
                 }
-                //     } else {
-                //         res.json(NoAccessPermission);
-                //     }
-                // });
+                
             } else {
                 res.json({
                     success: false,
@@ -1295,18 +1207,14 @@ router.get('/forgotpassword', function (req, res) {
                                         // console.log(EmailSettingCreated)
                                     })
 
-                                    // transporter.sendMail(mail, function(error, response) {
-                                    //     if (error) {
-                                    //         res.json(error);
-                                    //     } else {
+                                   
                                     funAuditLog.CreateAuditLog('forgotpassword', objUser.username, 'forgot User Password - ID: (' + objUser.id + ')');
                                     res.json({
                                         success: true,
                                         message: "Password sent to your email successfully...",
                                         // data: response
                                     });
-                                    //     }
-                                    // });
+                                    
                                 });
                             } else {
                                 res.json({
@@ -1396,14 +1304,7 @@ router.get('/forgotpasswordNew', function (req, res) {
                                             html: body
                                         };
                                         SetsmtpConfig(objSystemEmail, mail, function (EmailSettingCreated) {
-                                            // transporter.sendMail(mail, function(error, response) {
-                                            // if (error) {
-                                            //     res.json(error);
-                                            // } else {
-                                            //     funAuditLog.CreateAuditLog('forgotpassword', response.email, 'forgot User Password');
-
-                                            // }
-                                            // });
+                                            3
                                             console.log(EmailSettingCreated)
                                         })
                                         funAuditLog.CreateAuditLog('forgotpassword', response.email, 'forgot User Password - ID: (' + response.id + ')');
@@ -1485,25 +1386,12 @@ router.get('/forgotpasswordNew', function (req, res) {
                                                         from: objSystemEmail.DefaultEmailFrom,
                                                         to: response1.email, // + ', ' + objSystemEmail.NotificationEmailTo,
                                                         bcc: objSetting.Value,
-                                                        // bcc: 'soham.patel@bugzstudio.com',
+                                                        
                                                         subject: req.query.AppName + " " + objEmailTemplate.EmailSubject,
                                                         html: body
                                                     };
                                                     SetsmtpConfig(objSystemEmail, mail, function (EmailSettingCreated) {
-                                                        // transporter.sendMail(mail, function(error, response) {
-                                                        //     console.log(error)
-                                                        //     if (error) {
-                                                        //         res.json(error);
-                                                        //     } else {
-                                                        //         funAuditLog.CreateAuditLog('forgotpassword', response1.email, 'forgot User Password');
-                                                        //         res.json({
-                                                        //             success: true,
-                                                        //             message: "Password sent to your email successfully...",
-                                                        //             data: response
-                                                        //         });
-                                                        //     }
-                                                        // }); 
-                                                        // console.log(EmailSettingCreated)
+                                                        
 
                                                     })
                                                     res.json({
@@ -1556,8 +1444,7 @@ router.get('/forgotpasswordNew', function (req, res) {
 router.get('/forgotpasswordfromOwnerCustomer', function (req, res) {
     User.findOne({
         where: {
-            // email: req.query.email,
-            // idApp: req.query.idApp
+            
             id: req.query.id,
         }
     }).then(function (objUser) {
@@ -1603,18 +1490,14 @@ router.get('/forgotpasswordfromOwnerCustomer', function (req, res) {
                                         SetsmtpConfig(objSystemEmail, mail, function (EmailSettingCreated) {
                                             // console.log(EmailSettingCreated)
                                         })
-                                        // transporter.sendMail(mail, function(error, response) {
-                                        //     if (error) {
-                                        //         res.json(error);
-                                        //     } else {
+                                       
                                         funAuditLog.CreateAuditLog('forgotpassword', objUser.username, 'forgot User Password - ID: (' + objUser.id + ')');
                                         res.json({
                                             success: true,
                                             message: "Password sent to your email successfully...",
                                             // data: response
                                         });
-                                        //     }
-                                        // });
+                                       
                                     })
                                 } else {
                                     res.json({
@@ -1667,8 +1550,7 @@ router.get('/forgotpasswordfromOwnerCustomerNew', jsonParser, function (req, res
                 if (password == req.query.password) {
                     User.findOne({
                         where: {
-                            // email: req.query.email,
-                            // idApp: req.query.idApp
+                            
                             id: req.query.id,
                         }
                     }).then(function (objUser) {
@@ -1892,13 +1774,6 @@ router.post('/MobileRegister', jsonParser, function (req, res) {
                     updateUserRedisValue(resUserReg.id)
                     funAuditLog.CreateAuditLog('register', resUserReg.username, 'Create New User - ID: (' + resUserReg.id + ')');
 
-                    //Send OTP
-                    // var objOTP = new Object();
-                    // objOTP.To = objUserReg.phone;
-                    // objOTP.body = 'Your Verification Code for logging is ' + objUserReg.OTP + '. Kindly do not share it with anyone else.';
-                    // global.sendSMS(objOTP, function(responseOTP) {
-                    //     console.log(responseOTP)
-                    // });
 
                     res.json({
                         success: true,
@@ -1920,24 +1795,12 @@ router.post('/MobileRegister', jsonParser, function (req, res) {
                         updateUserRedisValue(resUserReg.id);
                         funAuditLog.CreateAuditLog('register', resUserReg.username, 'Create New User - ID: (' + resUserReg.id + ')');
 
-                        //Send OTP
-                        // var objOTP = new Object();
-                        // objOTP.To = objUserReg.phone;
-                        // objOTP.body = 'Your Verification Code for logging is ' + objUserReg.OTP + '. Kindly do not share it with anyone else.';
-                        // global.sendSMS(objOTP, function(responseOTP) {
-                        //     console.log(responseOTP)
-                        // });
 
                         res.json({
                             success: true,
                             message: "User Registered Successfully..."
                         });
 
-
-                        // res.json({
-                        //     success: true,
-                        //     message: "User Registered Successfully..."
-                        // });
                     })
                 })
             }
@@ -2294,13 +2157,6 @@ router.post('/MobileRegisterNew', jsonParser, function (req, res) {
                     UserInRole.create(objUserInRole).then(function (resUserInRole) {
                         funAuditLog.CreateAuditLog('register', resUserReg.username, 'Create New User - ID: (' + resUserReg.id + ')');
 
-                        //Send OTP
-                        // var objOTP = new Object();
-                        // objOTP.To = objUserReg.phone;
-                        // objOTP.body = 'Your Verification Code for logging into is ' + objUserReg.OTP + '. Kindly do not share it with anyone else.';
-                        // global.sendSMS(objOTP, function(responseOTP) {
-                        //     console.log(responseOTP)
-                        // });
                         var objshare = { email: resUserReg.email, id: resUserReg.id, username: resUserReg.username };
                         AddNewShareDevice(objshare, function (response1) {
                             updateUserRedisValue(resUserReg.id)
@@ -2311,12 +2167,6 @@ router.post('/MobileRegisterNew', jsonParser, function (req, res) {
                             });
                         })
 
-
-
-                        // res.json({
-                        //     success: true,
-                        //     message: "User Registered Successfully..."
-                        // });
                     })
                 })
             }
@@ -2442,22 +2292,14 @@ router.get('/MobileForgotPasswordNew', function (req, res) {
                                             // console.log(EmailSettingCreated)
                                         })
 
-                                        // transporter.sendMail(mail, function(error, response) {
-                                        //     if (error) {
-                                        //         res.json({
-                                        //             success: false,
-                                        //             message: "Error in Sending Email " + error,
-                                        //             data: error
-                                        //         });
-                                        //     } else {
+                                        
                                         funAuditLog.CreateAuditLog('forgotpassword', objUser.username, 'forgot User Password - ID: (' + objUser.id + ') ');
                                         res.json({
                                             success: true,
                                             message: "Password sent to your email successfully...",
                                             // data: response
                                         });
-                                        //     }
-                                        // });
+                                       
                                     });
                                 } else {
                                     res.json({
@@ -2733,8 +2575,7 @@ function isStrongEnough(password) {
         uc && uc.length >= uppercaseMinCount &&
         lc && lc.length >= lowercaseMinCount &&
         n && n.length >= numberMinCount;
-    // &&
-    // sc && sc.length >= specialMinCount;
+    
 }
 
 function customPassword() {

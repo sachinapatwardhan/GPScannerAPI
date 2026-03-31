@@ -354,7 +354,7 @@ function mysqlConnectionSetup() {
         mysqlConnectionSetup(); // server variable configures this)
       }
     });
-    // return connection;
+    
   }
 }
 
@@ -433,7 +433,7 @@ function GetAddressLatLong(Latitude, Longitude, CallBack) {
       } else {
         var lat = Latitude;
         var lon = Longitude;
-        // var url = 'https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=' + lat + '&lon=' + lon;
+        
         var url =
           'https://osmnames.klokantech.com/r/' +
           lon +

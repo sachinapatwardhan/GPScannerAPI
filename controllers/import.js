@@ -22,10 +22,7 @@ router.get('/DownloadTemplate', function (req, res) {
         caption: 'SIMNo',
         type: 'string'
     }
-        //  ,{
-        //     caption: 'SIMProvider',
-        //     type: 'string'
-        // }
+        
         , {
         caption: 'TelephoneCompany',
         type: 'string'
@@ -127,10 +124,8 @@ router.post('/ImportData', function (req, res) {
                                     SimService.findOne({ where: { SerialNum: objData.SIMNo } }).then(function (resExist) {
                                         if (resExist != null) {
                                             Simobj.id = resExist.id;
-                                            // SimService.update(Simobj, { where: { id: Simobj.id } }).then(function(response) {
-                                            //     funAuditLog.CreateAuditLog('SaveSIM', CreatedBy, 'Update SIM Data');
                                             AddGpsDevice(Simobj.id);
-                                            //})
+
                                         } else {
                                             Simobj.CreatedDate = new Date();
                                             SimService.create(Simobj).then(function (response) {
@@ -161,11 +156,8 @@ router.post('/ImportData', function (req, res) {
                                                     funAuditLog.CreateAuditLog('SaveGPSDevice', CreatedBy, 'Create GPS Tracker Device');
                                                     CreateUser();
                                                 } else {
-                                                    // GPSDevice.update(objDevice, { where: { id: response[0].id } }).then(function(resUpdate) {
-                                                    //     funAuditLog.CreateAuditLog('SaveGPSDevice', CreatedBy, 'Update GPS Tracker Device');
                                                     CreateUser();
-                                                    // });
-                                                }
+                                                    }
                                             })
                                         }
                                     }).catch(function (resError) {
@@ -187,40 +179,8 @@ router.post('/ImportData', function (req, res) {
                                     }).then(function (chkEmailExist) {
                                         if (chkEmailExist != null) {
                                             idUser = chkEmailExist.id
-                                            // objUser.modifiedby = CreatedBy;
-                                            // objUser.modifieddate = new Date();
-                                            // objUser.id = chkEmailExist.id;
-                                            // User.update(objUser, { where: { id: objUser.id } }).then(function(resUserReg) {
-                                            //     idUser = objUser.id
-                                            //     Role.findOne({ where: { RoleName: "User" } }).then(function(objRole) {
-                                            //         if (objRole != null) {
-                                            //             var objUserInRole = {
-                                            //                 userId: idUser,
-                                            //                 roleId: objRole.id,
-                                            //             }
-                                            //             UserInRole.findOrCreate({ where: { userId: objUserInRole.userId, roleId: objUserInRole.roleId }, defaults: objUserInRole }).then(function(resUserInRole) {
-                                            //                 funAuditLog.CreateAuditLog('SaveUser', CreatedBy, 'Update User');
                                             AddVehicle(idUser)
-                                            //             })
-                                            //         } else {
-                                            //             var objRole = {
-                                            //                 RoleName: "User",
-                                            //                 Description: null
-                                            //             }
-                                            //             Role.create(objRole).then(function(resRole) {
-                                            //                 var objUserInRole = {
-                                            //                     userId: idUser,
-                                            //                     roleId: resRole.id,
-                                            //                 }
-                                            //                 UserInRole.findOrCreate({ where: { userId: objUserInRole.userId, roleId: objUserInRole.roleId }, defaults: objUserInRole }).then(function(resUserInRole) {
-                                            //                     funAuditLog.CreateAuditLog('SaveUser', CreatedBy, 'Update User');
-                                            //                     AddVehicle(idUser)
-                                            //                 })
-                                            //             })
-                                            //         }
-                                            //     })
-                                            // })
-                                        } else {
+                                            } else {
                                             objUser.createdby = CreatedBy;
                                             objUser.createddate = new Date();
                                             User.create(objUser).then(function (resUserReg) {
@@ -266,12 +226,8 @@ router.post('/ImportData', function (req, res) {
                                     VehicleType.findOne({ where: { Type: objVehicleType.Type } }).then(function (response) {
                                         if (response != null) {
                                             objVehicleType.id = response.id;
-                                            // VehicleType.update(objVehicleType, { where: { id: objVehicleType.id } }).then(function(response) {
-                                            //     funAuditLog.CreateAuditLog('SaveVehicleType', CreatedBy, 'Update Vehicle Type');
                                             CreateVehicle(objVehicleType.id)
-
-                                            // })
-                                        } else {
+                                            } else {
                                             objVehicleType.CreatedDate = new Date();
                                             objVehicleType.CreatedBy = CreatedBy;
                                             VehicleType.create(objVehicleType).then(function (response) {

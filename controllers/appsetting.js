@@ -15,11 +15,7 @@ router.get('/GetAllAppName', function(req, res) {
                 res.json({ success: false, data: [] });
             }
         })
-        // AppInfo.findAll().then(function(response) {
-        //     res.json(response);
-        // }).catch(function(error) {
-        //     res.json(error);
-        // })
+        
 });
 
 router.get('/GetAllAppVersion', function(req, res) {

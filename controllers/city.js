@@ -66,10 +66,6 @@ router.get('/GetAllCityByPagging', function(req, res) {
     var objOrder = objParam.order;
     var objSearch = objParam.search.value;
     var Orderby = objColumns[parseInt(objOrder[0].column)].data + ' ' + objOrder[0].dir;
-    // console.log(objOrder)
-    // if (objOrder[0].column == 1) {
-    //     Orderby = "Country" + ' ' + objOrder[0].dir;
-    // }
     var search = {};
     if (objSearch != null && objSearch != '') {
         search['$or'] = [];
@@ -77,15 +73,9 @@ router.get('/GetAllCityByPagging', function(req, res) {
             if (objColumns[i].data != null && objColumns[i].data != '') {
                 var columnName = objColumns[i].data;
                 var obj = new Object();
-                // if (columnName == "tblcountrystatemgmt.tblcountrymgmt.Country") {
-                //     search['$or'].push(['Country like ?', "%" + objSearch + "%"]);
-                // }
-                // // else if (columnName == "Name") {
-                // //     search['$or'].push(['tblstatecitymgmt.Name like ?', "%" + objSearch + "%"]);
-                // // } 
-                // else {
+                
                 search['$or'].push([columnName + ' like ?', "%" + objSearch + "%"]);
-                //}
+                
 
 
             };
@@ -176,7 +166,7 @@ router.post('/SaveCity', jsonParser, function(req, res) {
 
                             City.findOrCreate({ where: { Name: objCity.Name, idState: objCity.idState }, defaults: objCity }).then(function(response) {
                                 if ((response[1])) {
-                                  //  funAuditLog.CreateAuditLog('SaveCity', UserExist.username, 'Create City ('+ response[1].Name +')');
+                                  
                                     res.json({ success: true, message: "City created successfully...", data: response });
                                 } else {
                                     res.json({ success: false, message: "City is already Exist...", data: response });
@@ -247,7 +237,7 @@ router.get('/DeleteCity', function(req, res) {
                     if (UserExist != null) {
                         City.destroy({ where: { id: req.query.CityId } }).then(function(response) {
                             if (response) {
-                               // funAuditLog.CreateAuditLog('DeleteCity', UserExist.username, 'Delete City ('+ response.Name +')');
+                               
                                 res.json({ success: true, message: "City deleted successfully...", data: response });
                             } else {
                                 res.json({ success: false, message: "Requested Record not Exist....", data: response });

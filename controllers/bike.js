@@ -107,29 +107,7 @@ router.get('/GetVehicleDetailById', function (req, res) {
   });
 });
 
-// router.post('/GetAllWorkingBike', jsonParser, function(req, res) {
-//     var query = "select t4.id,t4.Name,t4.deviceid,t4.IsOnline,t4.DeviceType,t4.IsACC,t4.IsEngine, t4.Latitude,t4.Longitude,t4.Datetime, t4.Date, t4.Speed, t4.Direction,t4.OdoMeter,t4.VehicleType " +
-//         "from " +
-//         "(select t3.deviceid,t3.id,t3.iduser,t3.DeviceType,t3.VehicleType,t3.IsACC,tg.OdoMeter,tg.IsEngine, tg.Latitude,tg.Longitude,tg.Datetime, tg.Date, tg.Speed, tg.Direction,t3.Name,t3.IsOnline from  " +
-//         " (select t.iduser ,t.deviceid ,t.id,t.Name,t.DeviceType,t.VehicleType,t.IsACC,t.IsOnline,max(tgp2.id) as 'GPSID'  from  " +
-//         "  (select tb.iduser,tb.deviceid,tb.id,tb.Name,tb.DeviceType,tb.IsACC,tvt.Type as 'VehicleType',tb.IsOnline from tblvehicle tb " +
-//         "   LEFT join tblsharedevice tsd on tb.id=tsd.idVehicle " +
-//         "   LEFT JOIN tblvehicletype tvt on tb.idType=tvt.id " +
-//         "   where (tb.iduser=" + req.query.idUser + " or tsd.idUser=" + req.query.idUser + ")  and tb.IsDelete=0 " +
-//         "  ) as t " +
-//         "  inner join   tblgpsdata as tgp2 on tgp2.DeviceId = t.deviceid  " +
-//         "  group by t.DeviceId " +
-//         " ) as t3 inner join tblgpsdata tg on tg.id = t3.GPSID ) " +
-//         " as t4;";
-//     // connection.query("SELECT tb.id,tb.deviceid,tb.Name,tb.IsOnline, tb.DeviceType, tb.IsACC,tpg.IsEngine, tpg1.Latitude,tpg1.Longitude,tpg.Datetime, tpg.Date, tpg1.Speed, tpg1.Direction,tvt.Type as VehicleType FROM tblvehicle tb LEFT JOIN tblvehicletype tvt on tvt.id = tb.idType INNER JOIN tblgpsdata tpg ON tb.deviceid=tpg.DeviceId INNER JOIN (SELECT DeviceId,MAX(Date) Date FROM tblgpsdata GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId AND tpg.Date = b.Date INNER JOIN tblgpsdata tpg1 ON tb.deviceid=tpg1.DeviceId INNER JOIN (SELECT DeviceId,MAX(Date) Date FROM tblgpsdata where GPSPositioning='A' GROUP BY DeviceId) b1 ON tpg1.DeviceId = b1.DeviceId AND tpg1.Date = b1.Date LEFT JOIN tblsharedevice tsd on tb.id=tsd.idVehicle WHERE (tb.iduser=" + req.query.idUser + " or tsd.idUser=" + req.query.idUser + ") and IsDelete=false;", function(err, rows, fields) {
-//     connection.query(query, function(err, rows, fields) {
-//         if (!err) {
-//             res.json({ success: true, data: rows });
-//         } else {
-//             res.json({ success: false, data: [] });
-//         }
-//     })
-// })
+
 
 router.post('/GetAllWorkingBike', jsonParser, function (req, res) {
   var query =
@@ -144,7 +122,7 @@ router.post('/GetAllWorkingBike', jsonParser, function (req, res) {
     req.query.idUser +
     ') and IsDelete = false ' +
     '  ) as t4 group by t4.deviceid;';
-  // connection.query("SELECT tb.id,tb.iduser,tb.Name,tb.deviceid,tb.IsOnline,tb.DeviceType,tpg1.IsEngine, tpg1.Latitude,tpg1.Longitude,tpg.Datetime, tpg.Date, tpg1.Speed, tpg1.Direction, tpg1.OdoMeter,tsd.id as ShareId,tvt.Type as VehicleType,(SELECT COUNT(*) FROM tblalarm WHERE IsRead=false and DeviceId = tb.deviceid) as NotificationCount, (SELECT COUNT(*) FROM tblserviceenhancementnotification WHERE IsRead=false and idvehicle = tb.id) as AlertCount FROM tblvehicle tb LEFT JOIN tblgpsdata tpg INNER JOIN (SELECT DeviceId,MAX(Date) Date FROM tblgpsdata GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId  AND tpg.Date = b.Date  ON tb.deviceid=tpg.DeviceId LEFT JOIN tblgpsdata tpg1 INNER JOIN (SELECT DeviceId,MAX(Date) Date FROM tblgpsdata where GPSPositioning='A' GROUP BY DeviceId) b1 ON tpg1.DeviceId = b1.DeviceId AND tpg1.Date = b1.Date  ON tb.deviceid=tpg1.DeviceId LEFT join tblsharedevice tsd on tb.id=tsd.idVehicle LEFT JOIN tblvehicletype tvt on tb.idType=tvt.id WHERE (tb.iduser=" + req.query.idUser + " or tsd.iduser=" + req.query.idUser + ") and IsDelete=false and tb.deviceid != '' group by tb.deviceid;", function(err, rows, fields) {
+  
   connectionbikedata.query(query, function (err, rows, fields) {
     if (!err) {
       var lstAllVehicle = [];
@@ -185,27 +163,11 @@ router.post('/GetAllWorkingBike', jsonParser, function (req, res) {
                 lstAllVehicle.push(obj);
                 getData(i + 1);
               } else {
-                // obj.IsEngine = null;
-                // obj.Latitude = null;
-                // obj.Longitude = null;
-                // obj.Datetime = null;
-                // obj.Date = null;
-                // obj.Speed = null;
-                // obj.Direction = null;
-                // obj.OdoMeter = null;
-                // lstAllVehicle.push(obj);
+                
                 getData(i + 1);
               }
             } else {
-              // obj.IsEngine = null;
-              // obj.Latitude = null;
-              // obj.Longitude = null;
-              // obj.Datetime = null;
-              // obj.Date = null;
-              // obj.Speed = null;
-              // obj.Direction = null;
-              // obj.OdoMeter = null;
-              // lstAllVehicle.push(obj);
+              
               getData(i + 1);
             }
           });
@@ -220,31 +182,7 @@ router.post('/GetAllWorkingBike', jsonParser, function (req, res) {
   });
 });
 
-// router.get('/GetAllWorkingBikeWebApp', jsonParser, function(req, res) {
-//     var query = "select t4.id,t4.iduser,t4.Name,t4.deviceid,t4.IsOnline,t4.DeviceType,t4.CreatedDate,t4.IsEngine, t4.Latitude,t4.Longitude,t4.Datetime, t4.Date, t4.Speed, t4.Direction,t4.OdoMeter,t4.ShareId,t4.VehicleType, " +
-//         "(select count(*) from tblalarm  a where a.DeviceId =t4.deviceid and IsRead=false) as 'NotificationCount' , " +
-//         "(SELECT COUNT(*) FROM tblserviceenhancementnotification WHERE IsRead=false and idvehicle = t4.id) as 'AlertCount' " +
-//         "from " +
-//         "(select t3.deviceid,t3.id,t3.iduser,t3.DeviceType,t3.ShareId,t3.VehicleType,t3.CreatedDate,tg.OdoMeter,tg.IsEngine, tg.Latitude,tg.Longitude,tg.Datetime, tg.Date, tg.Speed, tg.Direction,t3.Name,t3.IsOnline from  " +
-//         " (select t.iduser ,t.deviceid ,t.id,t.Name,t.DeviceType,t.VehicleType,t.CreatedDate,t.ShareId,t.IsOnline,max(tgp2.id) as 'GPSID'  from  " +
-//         "  (select tb.iduser,tb.deviceid,tb.id,tb.Name,tb.DeviceType,tb.CreatedDate,tvt.Type as 'VehicleType',tsd.id as'ShareId',tb.IsOnline from tblvehicle tb  " +
-//         "   LEFT join tblsharedevice tsd on tb.id=tsd.idVehicle  " +
-//         "   LEFT JOIN tblvehicletype tvt on tb.idType=tvt.id  " +
-//         "   where (tb.iduser=" + req.query.idUser + " or tsd.idUser=" + req.query.idUser + ") and tb.IsDelete = 0 " +
-//         "  ) as t  " +
-//         "  left join   tblgpsdata as tgp2 on tgp2.DeviceId = t.deviceid  " +
-//         "  group by t.DeviceId  " +
-//         " ) as t3 left join tblgpsdata tg on tg.id = t3.GPSID )  " +
-//         " as t4";
-//     // connection.query("SELECT tb.*,( select count(id) from tblalarm where IsRead=0 and DeviceId = tb.DeviceId) as NotificationCount, (SELECT COUNT(*) FROM tblserviceenhancementnotification WHERE IsRead=false and idvehicle = tb.id) as AlertCount,tpg1.IsEngine, tpg1.Latitude,tpg1.Longitude,tpg.Datetime,tpg.OdoMeter, tpg.Date, tpg1.Speed, tpg1.Direction,tsd.id as ShareId,tvt.Type as VehicleType FROM tblvehicle tb LEFT JOIN tblgpsdata tpg INNER JOIN (SELECT DeviceId,MAX(Date) Date FROM tblgpsdata GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId  AND tpg.Date = b.Date  ON tb.deviceid=tpg.DeviceId LEFT JOIN tblgpsdata tpg1 INNER JOIN (SELECT DeviceId,MAX(Date) Date FROM tblgpsdata where GPSPositioning='A' GROUP BY DeviceId) b1 ON tpg1.DeviceId = b1.DeviceId AND tpg1.Date = b1.Date  ON tb.deviceid=tpg1.DeviceId LEFT join tblsharedevice tsd on tb.id=tsd.idVehicle LEFT JOIN tblvehicletype tvt on tb.idType=tvt.id WHERE (tb.iduser=" + req.query.idUser + " or tsd.iduser=" + req.query.idUser + ") and IsDelete=false and tb.deviceid != '' group by tb.deviceid;", function(err, rows, fields) {
-//     connection.query(query, function(err, rows, fields) {
-//         if (!err) {
-//             res.json({ success: true, data: rows });
-//         } else {
-//             res.json({ success: false, data: [] });
-//         }
-//     })
-// })
+
 
 router.get('/GetAllWorkingBikeWebApp', jsonParser, function (req, res) {
   var query =
@@ -440,11 +378,7 @@ router.get('/DeleteBike', function (req, res) {
 });
 
 router.get('/GetVehicleCurrentLocation', function (req, res) {
-  // var Startdate = new Date();
 
-  // var convertDate = convertdateformatForUnix(Startdate);
-  // var unixStartdate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
-  // // var unixStartdate = Startdate.getTime() / 1000;
 
   client.get(req.query.DeviceId, function (err, strgpsdata) {
     if (!err) {
@@ -463,7 +397,7 @@ router.get('/GetVehicleCurrentLocation', function (req, res) {
     var convertDate = convertdateformatForUnix(Startdate);
     var unixStartdate =
       new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
-    // var unixStartdate = Startdate.getTime() / 1000;
+
     GPSData.findOne({
       where: {
         DeviceId: req.query.DeviceId,
@@ -488,37 +422,17 @@ router.get('/GetVehicleCurrentLocation', function (req, res) {
     });
   }
 
-  //-----------------------------------------------------
 
-  // GPSData.findOne({
-  //     where: {
-  //         DeviceId: req.query.DeviceId,
-  //         GPSPositioning: 'A',
-  //         Date: { $lte: unixStartdate }
-  //     },
-  //     order: 'Date DESC'
-  // }).then(function(response) {
-  //     if (response != null) {
-  //         res.json({ success: true, data: response });
-  //     } else {
-  //         res.json(RecordNotFound);
-  //     }
-  // })
 });
 
 router.get('/GetVehicleCurrentLocationForSharedDevice', function (req, res) {
-  // var Startdate = new Date();
 
-  // var convertDate = convertdateformatForUnix(Startdate);
-  // var unixStartdate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
-  // var unixStartdate = Startdate.getTime() / 1000;
   try {
     var url = jwt.decode(req.query.DeviceId, 'bugz');
     url = url.split(',');
     var DeviceId = url[0];
     var ShareCode = url[1];
-    // var query = "Select tv.Name, tv.IsOnline, tv.iduser, tv.IsShared, tgps.* FROM tblgpsdata as tgps LEFT JOIN tblvehicle as tv ON tgps.DeviceId = tv.deviceid where tgps.DeviceId = " + DeviceId + " AND tv.ShareCode ='" + ShareCode + "' AND tgps.Date <= '" + unixStartdate + "' ORDER BY Date DESC limit 1";
-    //console.log("Select tv.Name, tv.IsOnline, tv.iduser, tv.IsShared, tgps.* FROM tblgpsdata as tgps LEFT JOIN tblvehicle as tv ON tgps.DeviceId = tv.deviceid where tgps.DeviceId = " + DeviceId + " AND tv.ShareCode ='" + ShareCode + "' AND tgps.Date <= '" + unixStartdate + "' ORDER BY Date DESC limit 1")
+   
     var query =
       'Select tv.Name, tv.IsOnline, tv.iduser, tv.IsShared From tblvehicle as tv where tv.deviceid = ' +
       DeviceId +
@@ -571,72 +485,6 @@ router.get('/GetVehicleCurrentLocationForSharedDevice', function (req, res) {
     res.json({ success: false, data: [] });
   }
 });
-
-// router.get('/GetAllGPSDate', function (req, res) {
-//     var AppTimeZone = req.query.TimeZone;
-//     if (AppTimeZone != null && AppTimeZone != undefined && AppTimeZone != '') {
-//         var todaydata = new Date();
-//         var todaydata4 = new Date();
-//         // todaydata = new Date(todaydata.setMonth(todaydata.getMonth() - 4));
-
-//         // var convertDate = convertdateformat(todaydata);
-//         var unixNewDate = todaydata.getTime() / 1000;
-
-//         todaydata4 = new Date(todaydata4.setMonth(todaydata4.getMonth() - 4));
-
-//         // var convertDate = convertdateformat(todaydata4);
-//         var unixTodaydata = todaydata4.getTime() / 1000;
-
-//         GPSData.findAll({
-//             attributes: ['Date'],
-//             where: {
-//                 DeviceId: req.query.DeviceId,
-//                 Date: { $lte: unixNewDate, $gte: unixTodaydata }
-//                 //Datetime: { $lte: new Date(), $gte: todaydata }
-
-//             },
-//             order: 'Date DESC'
-//         }).then(function (response) {
-
-//             var groups = u.groupBy(response, function (o) {
-
-//                 return momentz.utc(o.Date * 1000).tz(AppTimeZone).format('DD-MM-YYYY')
-//             });
-
-//             var lstGroupDate = u.map(groups, function (group, date) {
-//                 return {
-//                     Datetime: date,
-//                     Date: group[0].Date
-//                 }
-//             });
-
-//             res.json(lstGroupDate);
-
-//         })
-//     } else {
-//         var todaydata = new Date();
-
-//         // var convertDate = convertdateformat(todaydata);
-//         var unixNewDate = todaydata.getTime() / 1000;
-
-//         todaydata = new Date(todaydata.setMonth(todaydata.getMonth() - 4));
-
-//         // var convertDate = convertdateformat(todaydata);
-//         var unixTodaydata = todaydata.getTime() / 1000;
-
-//         GPSData.findAll({
-//             attributes: ['Datetime', 'Date'],
-//             where: {
-//                 DeviceId: req.query.DeviceId,
-//                 Date: { $lte: unixNewDate, $gte: unixTodaydata }
-//             },
-//             group: [models.sequelize.fn('date', models.sequelize.col('Datetime'))],
-//             order: 'Date DESC'
-//         }).then(function (response) {
-//             res.json(response);
-//         })
-//     }
-// });
 
 var GpsDate = models.tblgpsdate;
 router.get('/GetAllGPSDate', function (req, res) {
@@ -697,10 +545,10 @@ router.get('/GetAllGPSDateByDate', function (req, res) {
       attributes: ['Date'],
       where: {
         DeviceId: req.query.DeviceId,
-        // Datetime: { $lte: new Date(), $gt: Startdate }
+        
         Date: { $lte: unixNewDate, $gt: StartUnixTime },
       },
-      // group: [models.sequelize.fn('date', models.sequelize.col('Datetime'))],
+      
       order: 'Date DESC',
     }).then(function (response) {
       var groups = u.groupBy(response, function (o) {
@@ -911,27 +759,7 @@ function changeSharedId(VehicleUserId, SharedUserId, DeviceId, callback) {
 var LicenceManager = models.tbllicencemanager;
 global.checkLicence = checkLicence;
 global.checkDeviceAgentorDistributer = checkDeviceAgentorDistributer;
-// function checkLicence(objVehicle, callback) {
-//     // console.log("deviceid.....")
-//     LicenceManager.findOne({ where: { DeviceId: objVehicle.deviceid, IdUser: objVehicle.iduser, IsDeleted: 0 } }).then(function(LicenceNoExist) {
-//         if (LicenceNoExist) {
-//             LicenceNoExist.updateAttributes({
-//                 IdUser: objVehicle.iduser,
-//                 // DeviceId: objVehicle.deviceid,
-//                 ModifiedDate: new Date(),
-//             }).then(function(response) {
-//                 return callback({
-//                     success: true,
-//                     data: LicenceNoExist
-//                 });
-//             })
-//         } else {
-//             return callback({
-//                 success: false,
-//             });
-//         }
-//     })
-// }
+
 
 function checkLicence(objVehicle, username, callback) {
   checkDeviceAgentorDistributer(
@@ -964,7 +792,7 @@ function checkLicence(objVehicle, username, callback) {
                       IsDeleted: 0,
                       idApp: DeviceExist[0].Id,
                       LicenceRenewalType: 'Monthly',
-                      // LicenceType: DeviceExist[0].LicenceType,
+                      
                     },
                     order: 'Id asc',
                   }).then(function (LicenceNoExist) {
@@ -986,13 +814,10 @@ function checkLicence(objVehicle, username, callback) {
                         3
                       );
                       LicenceNoExist.updateAttributes({
-                        // IdUser: objVehicle.iduser,
                         DeviceId: objVehicle.deviceid,
-                        // ModifiedDate: new Date(),
                         CreatedDate: new Date(),
                         ExpiryDate: updatedDate,
-                        // LicenceRenewalType: DeviceExist[0].LicenceRenewalType,
-                        // LicenceType: DeviceExist[0].LicenceType,
+                        
                       }).then(function (response) {
                         funAuditLogLicence.CreateAuditLogLicence(
                           'Assign Licence',
@@ -1023,8 +848,7 @@ function checkLicence(objVehicle, username, callback) {
                       DeviceId: { $eq: null },
                       IsDeleted: 0,
                       idApp: DeviceExist[0].Id,
-                      // LicenceRenewalType: DeviceExist[0].LicenceRenewalType,
-                      // LicenceType: DeviceExist[0].LicenceType,
+                      
                     },
                     order: 'Id asc',
                   }).then(function (LicenceNoExist) {
@@ -1046,13 +870,12 @@ function checkLicence(objVehicle, username, callback) {
                         3
                       );
                       LicenceNoExist.updateAttributes({
-                        // IdUser: objVehicle.iduser,
+                       
                         DeviceId: objVehicle.deviceid,
-                        // ModifiedDate: new Date(),
+                        
                         CreatedDate: new Date(),
                         ExpiryDate: updatedDate,
-                        // LicenceRenewalType: DeviceExist[0].LicenceRenewalType,
-                        // LicenceType: DeviceExist[0].LicenceType,
+                        
                       }).then(function (response) {
                         funAuditLogLicence.CreateAuditLogLicence(
                           'Assign Licence',
@@ -1116,8 +939,7 @@ function checkDeviceAgentorDistributer(deviceId, callback) {
 }
 
 function checkGroup(objVehicle, callback) {
-  // console.log("deviceid.....")
-  // console.log(objVehicle)
+
   if (objVehicle.IdGroup != null) {
     VehicleGroup.findOne({
       where: { Id: objVehicle.IdGroup, IdUser: objVehicle.iduser },
@@ -1191,48 +1013,7 @@ function AssignLicenceNumber(objVehicle, UserName, callback) {
   });
 }
 
-// function SendLicenceAssignMail(DeviceId) {
-//     var query = "Select tu.idApp,tu.username,ta.AppName,tu.email,tl.DeviceId,tl.LicenceNo from tbllicencemanager tl inner join tblvehicle as tv on tl.DeviceId= tv.deviceid inner join tbluserinformation as tu on tv.iduser = tu.id inner join tblappinfo ta on ta.Id=tu.idApp where tl.DeviceId='" + DeviceId + "'";
-//     connection.query(query, function(err, resdata, fields) {
-//         if (!err && resdata[0]) {
-//             var resdata = resdata[0];
-//             SystemEmail.findOne({ where: { IdApp: parseInt(resdata.idApp) } }).then(function(objSystemEmail) {
-//                 EmailTemplate.findOne({
-//                     where: {
-//                         Type: "Assign Licence",
-//                     }
-//                 }).then(function(objEmailTemplate) {
-//                     if (objEmailTemplate != null) {
-//                         var Name = resdata.username;
-//                         Setting.findOne({
-//                             where: {
-//                                 Name: 'NotificationEmailTo'
-//                             }
-//                         }).then(function(objSetting) {
-//                             console.log("Email....", resdata.email)
-//                             var body = objEmailTemplate.EmailBody.replace(/{UserName}/g, Name).replace(/{DeviceId}/g, resdata.DeviceId).replace(/{AppName}/g, resdata.AppName).replace("{LicenceNo}", resdata.LicenceNo);
-//                             var mail = {
-//                                 from: objSystemEmail.DefaultEmailFrom,
-//                                 to: 'leekellym890@gmail.com', //resdata.email,
-//                                 // bcc: objSetting.Value,
-//                                 // bcc: 'soham.patel1@bugzstudio.com',
-//                                 subject: resdata.AppName + " " + objEmailTemplate.EmailSubject,
-//                                 html: body
-//                             };
-//                             SetsmtpConfig(objSystemEmail, mail, function(EmailSettingCreated) {
-//                                 // console.log("##########", EmailSettingCreated)
-//                             })
-//                         })
-//                     } else {
 
-//                     }
-//                 });
-//             })
-//         }
-//     })
-
-// }
-// SendLicenceAssignMail(44445555555555)
 router.get('/SaveVehicleold', jsonParser, function (req, res) {
   objVehicle = req.query;
   objVehicle.IsDelete = false;
@@ -1316,20 +1097,6 @@ router.get('/SaveVehicleold', jsonParser, function (req, res) {
                             objVehicle.iduser +
                             ')'
                         );
-                        // GpsDevice.findOne({ where: { DeviceId: objVehicle.deviceid } }).then(function(GpsDataExist) {
-                        //         if (GpsDataExist) {
-                        //             funAuditLog.CreateAuditLog('SaveDate', UserExist.username, 'Save Vehicle Expiry & Activation Date');
-                        //             GpsDataExist.updateAttributes({
-                        //                 IsActive: 1,
-                        //                 ExpiryDate: ExpiryDate,
-                        //                 ActivationDate: ActivationDate,
-                        //             }).then(function(response1) {
-
-                        //             })
-                        //         }
-                        //     })
-                        // if (objGpsDevice.AppName == 'Maark') {
-                        // CreateOrderServiceGlobal(UserExist.country, UserExist.id, objVehicle.deviceid, UserExist.username, UserExist.idApp, function(orderresponse) {
                         changeSharedId(
                           objVehicle.iduser,
                           objVehicleExist.iduser,
@@ -1348,14 +1115,7 @@ router.get('/SaveVehicleold', jsonParser, function (req, res) {
                           }
                         );
 
-                        // })
-                        // } else {
-                        //     res.json({
-                        //         success: true,
-                        //         message: "Vehicle created successfully...",
-                        //         data: objVehicle
-                        //     });
-                        // }
+                        
                       } else {
                         res.json({
                           success: false,
@@ -1398,28 +1158,7 @@ router.get('/SaveVehicleold', jsonParser, function (req, res) {
                                 ')'
                             );
 
-                            // GpsDevice.findOne({ where: { DeviceId: response.deviceid } }).then(function(GpsDataExist) {
-                            //     if (GpsDataExist) {
-                            //         funAuditLog.CreateAuditLog('SaveDate', UserExist.username, 'Save Vehicle Expiry & Activation Date');
-
-                            //         // var ExpiryDate = null;
-                            //         // var ActivationDate = null;
-                            //         // var d = new Date();
-                            //         // var year = d.getFullYear();
-                            //         // var month = d.getMonth();
-                            //         // var day = d.getDate();
-                            //         // var c = new Date(year + 1, month, day)
-                            //         // ExpiryDate = c;
-                            //         // ActivationDate = d;
-                            //         GpsDataExist.updateAttributes({
-                            //             IsActive: 1,
-                            //             ExpiryDate: ExpiryDate,
-                            //             ActivationDate: ActivationDate,
-                            //         }).then(function(response1) {
-
-                            //         })
-                            //     }
-                            // })
+                            
 
                             //Insert DeviceId to Acc Value set table (if country !=Cambodia)
                             if (
@@ -1439,21 +1178,13 @@ router.get('/SaveVehicleold', jsonParser, function (req, res) {
                               );
                             }
 
-                            // if (objGpsDevice.AppName == 'Maark') {
-                            // CreateOrderServiceGlobal(UserExist.country, UserExist.id, objVehicle.deviceid, UserExist.username, UserExist.idApp, function(orderresponse) {
+                            
                             res.json({
                               success: true,
                               message: 'Vehicle created successfully...',
                               data: objVehicle,
                             });
-                            // })
-                            // } else {
-                            //     res.json({
-                            //         success: true,
-                            //         message: "Vehicle created successfully...",
-                            //         data: objVehicle
-                            //     });
-                            // }
+                            
                           } else {
                             res.json({
                               success: false,
@@ -1505,7 +1236,7 @@ router.get('/SaveVehicleold', jsonParser, function (req, res) {
                           objVehicleExist.iduser,
                           objVehicle.deviceid,
                           function (shareuserupdate) {
-                            // console.log("1...2................................", shareuserupdate)
+                            
                             Commonfunction.UpdateVehicleRedis(
                               objVehicle.deviceid,
                               'Vehicle'
@@ -1572,20 +1303,6 @@ router.get('/SaveVehicleold', jsonParser, function (req, res) {
                             objVehicle.iduser +
                             ')'
                         );
-                        // console.log("***********")
-                        // console.log("country...........", UserExist.country)
-                        // console.log("id................", UserExist.id)
-                        // console.log("username..........", UserExist.username)
-                        // console.log("deviceid..........", objVehicle.deviceid)
-                        // CreateOrderServiceGlobal(UserExist.country, UserExist.id, objVehicle.deviceid, UserExist.username, function(orderresponse) {
-                        //     res.json({
-                        //         success: true,
-                        //         message: "Vehicle created successfully...",
-                        //         data: objVehicle
-                        //     });
-                        // })
-                        // if (objGpsDevice.AppName == 'Maark') {
-                        // CreateOrderServiceGlobal(UserExist.country, UserExist.id, objVehicle.deviceid, UserExist.username, UserExist.idApp, function(orderresponse) {
                         changeSharedId(
                           objVehicle.iduser,
                           objVehicleExist.iduser,
@@ -1604,14 +1321,7 @@ router.get('/SaveVehicleold', jsonParser, function (req, res) {
                           }
                         );
 
-                        // })
-                        // } else {
-                        //     res.json({
-                        //         success: true,
-                        //         message: "Vehicle created successfully...",
-                        //         data: objVehicle
-                        //     });
-                        // }
+                        
                       } else {
                         res.json({
                           success: false,
@@ -1671,34 +1381,13 @@ router.get('/SaveVehicleold', jsonParser, function (req, res) {
                                 function (err, rows, fields) {}
                               );
                             }
-                            // console.log("***********")
-                            // console.log("country...........", UserExist.country)
-                            // console.log("id................", UserExist.id)
-                            // console.log("username..........", UserExist.username)
-                            // console.log("deviceid..........", objVehicle.deviceid)
-                            // CreateOrderServiceGlobal(UserExist.country, UserExist.id, objVehicle.deviceid, UserExist.username, function(orderresponse) {
-                            //     res.json({
-                            //         success: true,
-                            //         message: "Vehicle created successfully...",
-                            //         data: response
-                            //     });
-                            // })
-                            // if (objGpsDevice.AppName == 'Maark') {
-
-                            // CreateOrderServiceGlobal(UserExist.country, UserExist.id, objVehicle.deviceid, UserExist.username, UserExist.idApp, function(orderresponse) {
+                            
                             res.json({
                               success: true,
                               message: 'Vehicle created successfully...',
                               data: objVehicle,
                             });
-                            // })
-                            // } else {
-                            //     res.json({
-                            //         success: true,
-                            //         message: "Vehicle created successfully...",
-                            //         data: objVehicle
-                            //     });
-                            // }
+                            
                           } else {
                             res.json({
                               success: false,
@@ -1943,18 +1632,7 @@ router.get('/SaveVehicle', jsonParser, function (req, res) {
                                       objVehicle.iduser +
                                       ')'
                                   );
-                                  // GpsDevice.findOne({ where: { DeviceId: objVehicle.deviceid } }).then(function(GpsDataExist) {
-                                  //     if (GpsDataExist) {
-                                  //         funAuditLog.CreateAuditLog('SaveDate', UserExist.username, 'Save Vehicle Expiry & Activation Date');
-                                  //         GpsDataExist.updateAttributes({
-                                  //             IsActive: 1,
-                                  //             ExpiryDate: ExpiryDate,
-                                  //             ActivationDate: ActivationDate,
-                                  //         }).then(function(response1) {
-
-                                  //         })
-                                  //     }
-                                  // })
+                                  
 
                                   changeSharedId(
                                     objVehicle.iduser,
@@ -2039,19 +1717,7 @@ router.get('/SaveVehicle', jsonParser, function (req, res) {
                                           ')'
                                       );
 
-                                      // GpsDevice.findOne({ where: { DeviceId: response.deviceid } }).then(function(GpsDataExist) {
-                                      //     if (GpsDataExist) {
-                                      //         funAuditLog.CreateAuditLog('SaveDate', UserExist.username, 'Save Vehicle Expiry & Activation Date');
-
-                                      //         GpsDataExist.updateAttributes({
-                                      //             IsActive: 1,
-                                      //             ExpiryDate: ExpiryDate,
-                                      //             ActivationDate: ActivationDate,
-                                      //         }).then(function(response1) {
-
-                                      //         })
-                                      //     }
-                                      // })
+                                     
                                       if (objGpsDevice.AppName == 'Tracking') {
                                         shareVehicleTosysreportUser(
                                           objVehicle.deviceid
@@ -2250,7 +1916,7 @@ router.get('/SaveVehicle', jsonParser, function (req, res) {
                     objVehicle.deviceid = objGpsDevice.IMEI;
                   }
                   if (objVehicle.id == 0) {
-                    // objVehicle.IsOnline = false;
+                    
                     objVehicle.CreatedDate = new Date();
 
                     Vehicle.findOne({
@@ -2261,12 +1927,12 @@ router.get('/SaveVehicle', jsonParser, function (req, res) {
                     }).then(function (objVehicleExist) {
                       if (objVehicleExist) {
                         objVehicle.id = objVehicleExist.id;
-                        // console.log("1.2...3.....4...........")
+                        
                         checkLicence(
                           objVehicle,
                           UserExist.username,
                           function (LicenceNores) {
-                            // console.log("1.2...3.....4...........", LicenceNores)
+                            
                             if (LicenceNores.success == true) {
                               objVehicle.renewaldate =
                                 LicenceNores.data.ExpiryDate;
@@ -2425,7 +2091,7 @@ router.get('/SaveVehicle', jsonParser, function (req, res) {
                         deviceid: objVehicle.deviceid,
                       },
                     }).then(function (objVehicleExist) {
-                      // objVehicle.IdGroup = objVehicleExist.IdGroup;
+                      
                       if (
                         objVehicleExist != null &&
                         objVehicleExist.id != objVehicle.id &&
@@ -2643,496 +2309,6 @@ router.get('/OldVehicleShareForReport', function (req, res) {
   });
 });
 
-// router.post('/SaveVehicle', jsonParser, function(req, res) {
-//     objVehicle = req.body;
-// router.get('/SaveVehicle', jsonParser, function(req, res) {
-//     objVehicle = req.query;
-//     objVehicle.IsDelete = false;
-//     objHeader = req.headers;
-//     var token = getToken(objHeader);
-//     var search = {};
-//     var ExpiryDate = null;
-//     var ActivationDate = null;
-//     var d = new Date();
-//     var year = d.getFullYear();
-//     var month = d.getMonth();
-//     var day = d.getDate();
-//     var c = new Date(year + 1, month, day)
-//     ExpiryDate = c;
-//     ActivationDate = d;
-//     search['$and'] = [];
-//     if (objVehicle.AppName != null && objVehicle.AppName != undefined && objVehicle.AppName != '') {
-//         var obj = new Object();
-//         obj['AppName'] = {
-//             $eq: objVehicle.AppName
-//         };
-//         search['$and'].push(obj);
-//     }
-
-//     if (objVehicle.IMEI != null && objVehicle.IMEI != undefined && objVehicle.IMEI != '') {
-//         var obj = new Object();
-//         obj['IMEI'] = {
-//             $eq: objVehicle.IMEI
-//         };
-//         search['$and'].push(obj);
-//     }
-
-//     if (token) {
-//         var decoded = jwt.decode(token, TokenKey);
-
-//         User.findOne({
-//             where: {
-//                 username: decoded.username,
-//                 password: decoded.password
-//             }
-//         }).then(function(UserExist) {
-//             if (UserExist != null) {
-//                 if (objVehicle.IMEI != '' && objVehicle.IMEI != null) {
-//                     GpsDevice.findOne({
-//                         where: search
-//                     }).then(function(objGpsDevice) {
-//                         if (objGpsDevice != null) {
-//                             if (objVehicle.id == 0) {
-//                                 objVehicle.IsOnline = false;
-//                                 // objVehicle.CreatedDate = GetCurrentDate();
-//                                 objVehicle.CreatedDate = new Date();
-//                                 objVehicle.DeviceType = objGpsDevice.Type;
-//                                 Vehicle.findOne({
-//                                     where: {
-//                                         deviceid: objVehicle.deviceid,
-//                                         IsDelete: true
-//                                     }
-//                                 }).then(function(objVehicleExist) {
-//                                     if (objVehicleExist) {
-//                                         objVehicle.id = objVehicleExist.id;
-//                                         Vehicle.update(objVehicle, {
-//                                             where: {
-//                                                 id: objVehicle.id
-//                                             }
-//                                         }).then(function(response) {
-//                                             if (response[0]) {
-//                                                 funAuditLog.CreateAuditLog('SaveVehicle(IMEI:' + objVehicle.IMEI + ')', UserExist.username, 'Create Vehicle');
-//                                                 GpsDevice.findOne({ where: { DeviceId: objVehicle.deviceid } }).then(function(GpsDataExist) {
-//                                                     if (GpsDataExist) {
-//                                                         funAuditLog.CreateAuditLog('SaveDate', UserExist.username, 'Save Vehicle Expiry & Activation Date');
-//                                                         GpsDataExist.updateAttributes({
-//                                                             IsActive: 1,
-//                                                             ExpiryDate: ExpiryDate,
-//                                                             ActivationDate: ActivationDate,
-//                                                         }).then(function(response1) {
-
-//                                                         })
-//                                                     }
-//                                                 })
-//                                                 res.json({
-//                                                     success: true,
-//                                                     message: "Vehicle created successfully...",
-//                                                     data: objVehicle
-//                                                 });
-//                                             } else {
-//                                                 res.json({
-//                                                     success: false,
-//                                                     message: "Vehicle is Not created...",
-//                                                     data: objVehicle
-//                                                 });
-//                                             }
-//                                         })
-//                                     } else {
-//                                         Vehicle.findOne({
-//                                             where: {
-//                                                 deviceid: objVehicle.deviceid,
-//                                                 IsDelete: false
-//                                             }
-//                                         }).then(function(objNewPetExist) {
-//                                             if (objNewPetExist) {
-//                                                 res.json({
-//                                                     success: false,
-//                                                     message: "Tracker No. is already assign to other Vehicle...",
-//                                                     data: null
-//                                                 });
-//                                             } else {
-//                                                 Vehicle.create(objVehicle).then(function(response) {
-//                                                     if (response) {
-//                                                         funAuditLog.CreateAuditLog('SaveVehicle(IMEI:' + objVehicle.IMEI + ')', UserExist.username, 'Create Vehicle');
-//                                                         GpsDevice.findOne({ where: { DeviceId: response.deviceid } }).then(function(GpsDataExist) {
-//                                                             if (GpsDataExist) {
-//                                                                 funAuditLog.CreateAuditLog('SaveDate', UserExist.username, 'Save Vehicle Expiry & Activation Date');
-
-//                                                                 // var ExpiryDate = null;
-//                                                                 // var ActivationDate = null;
-//                                                                 // var d = new Date();
-//                                                                 // var year = d.getFullYear();
-//                                                                 // var month = d.getMonth();
-//                                                                 // var day = d.getDate();
-//                                                                 // var c = new Date(year + 1, month, day)
-//                                                                 // ExpiryDate = c;
-//                                                                 // ActivationDate = d;
-//                                                                 GpsDataExist.updateAttributes({
-//                                                                     IsActive: 1,
-//                                                                     ExpiryDate: ExpiryDate,
-//                                                                     ActivationDate: ActivationDate,
-//                                                                 }).then(function(response1) {
-
-//                                                                 })
-//                                                             }
-//                                                         })
-//                                                         res.json({
-//                                                             success: true,
-//                                                             message: "Vehicle created successfully...",
-//                                                             data: response
-//                                                         });
-//                                                     } else {
-//                                                         res.json({
-//                                                             success: false,
-//                                                             message: "Tracker No. is already assign to other Vehicle...",
-//                                                             data: null
-//                                                         });
-//                                                     }
-//                                                 })
-//                                             }
-//                                         })
-//                                     }
-//                                 })
-//                             } else {
-//                                 Vehicle.findOne({
-//                                     where: {
-//                                         deviceid: objVehicle.deviceid
-//                                     }
-//                                 }).then(function(objVehicleExist) {
-//                                     if (objVehicleExist != null && objVehicleExist.id != objVehicle.id && objVehicleExist.IsDeleted == false) {
-//                                         res.json({
-//                                             success: false,
-//                                             message: "Tracker No. is already assign to other Vehicle...",
-//                                             data: objVehicleExist
-//                                         });
-//                                     } else {
-//                                         Vehicle.update(objVehicle, {
-//                                             where: {
-//                                                 id: objVehicle.id
-//                                             }
-//                                         }).then(function(response) {
-//                                             if (response[0]) {
-//                                                 funAuditLog.CreateAuditLog('SaveVehicle', UserExist.username, 'Update Vehicle');
-//                                                 res.json({
-//                                                     success: true,
-//                                                     message: "Vehicle updated successfully...",
-//                                                     data: objVehicle
-//                                                 });
-//                                             } else {
-//                                                 res.json({
-//                                                     success: false,
-//                                                     message: "Vehicle is Not updated...",
-//                                                     data: objVehicle
-//                                                 });
-//                                             }
-//                                         })
-//                                     }
-//                                 })
-//                             }
-//                         } else {
-//                             res.json({
-//                                 success: false,
-//                                 message: "Invalid Tracker No., Please insert valid Tracker No.",
-//                                 data: ""
-//                             });
-//                         }
-//                     })
-//                 } else {
-//                     GpsDevice.findOne({
-//                         where: { AppName: objVehicle.AppName, DeviceId: objVehicle.deviceid }
-//                     }).then(function(objGpsDevice) {
-//                         if (objGpsDevice != null) {
-//                             if (objVehicle.id == 0) {
-//                                 objVehicle.IsOnline = false;
-//                                 // objVehicle.CreatedDate = GetCurrentDate();
-//                                 objVehicle.CreatedDate = new Date();
-//                                 objVehicle.DeviceType = objGpsDevice.Type;
-//                                 Vehicle.findOne({
-//                                     where: {
-//                                         deviceid: objVehicle.deviceid,
-//                                         IsDelete: true
-//                                     }
-//                                 }).then(function(objVehicleExist) {
-//                                     if (objVehicleExist) {
-//                                         objVehicle.id = objVehicleExist.id;
-//                                         Vehicle.update(objVehicle, {
-//                                             where: {
-//                                                 id: objVehicle.id
-//                                             }
-//                                         }).then(function(response) {
-//                                             if (response[0]) {
-//                                                 funAuditLog.CreateAuditLog('SaveVehicle', UserExist.username, 'Create Vehicle');
-//                                                 res.json({
-//                                                     success: true,
-//                                                     message: "Vehicle created successfully...",
-//                                                     data: objVehicle
-//                                                 });
-//                                             } else {
-//                                                 res.json({
-//                                                     success: false,
-//                                                     message: "Vehicle is Not created...",
-//                                                     data: objVehicle
-//                                                 });
-//                                             }
-//                                         })
-//                                     } else {
-//                                         Vehicle.findOne({
-//                                             where: {
-//                                                 deviceid: objVehicle.deviceid,
-//                                                 IsDelete: false
-//                                             }
-//                                         }).then(function(objNewPetExist) {
-//                                             if (objNewPetExist) {
-//                                                 res.json({
-//                                                     success: false,
-//                                                     message: "Tracker No. is already assign to other Vehicle...",
-//                                                     data: null
-//                                                 });
-//                                             } else {
-//                                                 Vehicle.create(objVehicle).then(function(response) {
-//                                                     if (response) {
-//                                                         funAuditLog.CreateAuditLog('SaveVehicle', UserExist.username, 'Create Vehicle');
-//                                                         res.json({
-//                                                             success: true,
-//                                                             message: "Vehicle created successfully...",
-//                                                             data: response
-//                                                         });
-//                                                     } else {
-//                                                         res.json({
-//                                                             success: false,
-//                                                             message: "Tracker No. is already assign to other Vehicle...",
-//                                                             data: null
-//                                                         });
-//                                                     }
-//                                                 })
-//                                             }
-//                                         })
-//                                     }
-//                                 })
-//                             } else {
-//                                 Vehicle.findOne({
-//                                     where: {
-//                                         deviceid: objVehicle.deviceid
-//                                     }
-//                                 }).then(function(objVehicleExist) {
-//                                     if (objVehicleExist != null && objVehicleExist.id != objVehicle.id && objVehicleExist.IsDeleted == false) {
-//                                         res.json({
-//                                             success: false,
-//                                             message: "Tracker No. is already assign to other Vehicle...",
-//                                             data: objVehicleExist
-//                                         });
-//                                     } else {
-//                                         Vehicle.update(objVehicle, {
-//                                             where: {
-//                                                 id: objVehicle.id
-//                                             }
-//                                         }).then(function(response) {
-//                                             if (response[0]) {
-//                                                 funAuditLog.CreateAuditLog('SaveVehicle', UserExist.username, 'Update Vehicle');
-//                                                 res.json({
-//                                                     success: true,
-//                                                     message: "Vehicle updated successfully...",
-//                                                     data: objVehicle
-//                                                 });
-//                                             } else {
-//                                                 res.json({
-//                                                     success: false,
-//                                                     message: "Vehicle is Not updated...",
-//                                                     data: objVehicle
-//                                                 });
-//                                             }
-//                                         })
-//                                     }
-//                                 })
-//                             }
-//                         } else {
-//                             res.json({
-//                                 success: false,
-//                                 message: "Invalid Tracker No., Please insert valid Tracker No.",
-//                                 data: ""
-//                             });
-//                         }
-//                     })
-//                 }
-//             } else {
-//                 res.json(InvalidToken);
-//             }
-//         })
-//     } else {
-//         res.json(InvalidToken);
-//     }
-// });
-
-// router.get('/SaveVehicle', jsonParser, function(req, res) {
-//     objVehicle = req.query;
-//     objHeader = req.headers;
-//     var token = getToken(objHeader);
-//     if (token) {
-//         var decoded = jwt.decode(token, TokenKey);
-//         User.findOne({
-//             where: {
-//                 username: decoded.username,
-//                 password: decoded.password
-//             }
-//         }).then(function(UserExist) {
-//             if (UserExist != null) {
-//                 if (objVehicle.deviceid != '' && objVehicle.deviceid != null) {
-//                     GpsDevice.findOne({
-//                         where: {
-//                             DeviceId: objVehicle.deviceid,
-//                         }
-//                     }).then(function(objGpsDevice) {
-//                         if (objGpsDevice != null) {
-//                             if (objVehicle.id == 0) {
-//                                 objVehicle.IsOnline = false;
-//                                 objVehicle.CreatedDate = GetCurrentDate();
-//                                 objVehicle.DeviceType = objGpsDevice.Type;
-//                                 Vehicle.findOne({
-//                                     where: {
-//                                         deviceid: objVehicle.deviceid,
-//                                         // IsDelete: true
-//                                     }
-//                                 }).then(function(objPetExist) {
-//                                     if (objPetExist && objPetExist.IsDelete) {
-//                                         objPet.id = objPetExist.id;
-//                                         Vehicle.update(objPet, {
-//                                             where: {
-//                                                 id: objVehicle.id
-//                                             }
-//                                         }).then(function(response) {
-//                                             if (response[0]) {
-//                                                 funAuditLog.CreateAuditLog('SaveVehicle', UserExist.username, 'Create Vehicle');
-//                                                 res.json({
-//                                                     success: true,
-//                                                     message: "Vehicle created successfully...",
-//                                                     data: objVehicle
-//                                                 });
-//                                             }
-//                                         })
-//                                     } else if (objPetExist && !objPetExist.IsDelete) {
-//                                         res.json({
-//                                             success: false,
-//                                             message: "Tracker No. is already assign to other Vehicle...",
-//                                             data: null
-//                                         });
-//                                     } else {
-//                                         Vehicle.create(objPet).then(function(response) {
-//                                             if (response) {
-//                                                 funAuditLog.CreateAuditLog('SaveVehicle', UserExist.username, 'Create Vehicle');
-//                                                 res.json({
-//                                                     success: true,
-//                                                     message: "Vehicle created successfully...",
-//                                                     data: response
-//                                                 });
-//                                             } else {
-//                                                 res.json({
-//                                                     success: false,
-//                                                     message: "Tracker No. is already assign to other Vehicle...",
-//                                                     data: null
-//                                                 });
-//                                             }
-//                                         })
-//                                     }
-//                                 })
-//                             } else {
-//                                 Vehicle.findOne({
-//                                     where: {
-//                                         deviceid: objVehicle.deviceid
-//                                     }
-//                                 }).then(function(objVehicleExist) {
-//                                     if (objVehicleExist != null && objVehicleExist.id != objVehicle.id && objVehicleExist.IsDeleted == false) {
-//                                         res.json({
-//                                             success: false,
-//                                             message: "Tracker No. is already assign to other Vehicle...",
-//                                             data: objVehicleExist
-//                                         });
-//                                     } else {
-//                                         Vehicle.update(objVehicle, {
-//                                             where: {
-//                                                 id: objVehicle.id
-//                                             }
-//                                         }).then(function(response) {
-//                                             if (response[0]) {
-//                                                 funAuditLog.CreateAuditLog('SaveVehicle', UserExist.username, 'Update Vehicle');
-//                                                 res.json({
-//                                                     success: true,
-//                                                     message: "Vehicle updated successfully...",
-//                                                     data: objVehicle
-//                                                 });
-//                                             }
-//                                         })
-//                                     }
-//                                 })
-//                             }
-//                         } else {
-//                             res.json({
-//                                 success: false,
-//                                 message: "Invalid Tracker No., Please insert valid Tracker No.",
-//                                 data: ""
-//                             });
-//                         }
-//                     })
-//                 } else {
-//                     if (objVehicle.id == 0) {
-//                         objVehicle.IsOnline = false;
-//                         objVehicle.HandshakDatetime = null;
-//                         objVehicle.CreatedDate = GetCurrentDate();
-//                         Vehicle.create(objVehicle).then(function(response) {
-//                             if (response) {
-//                                 funAuditLog.CreateAuditLog('SaveVehicle', UserExist.username, 'Create Vehicle');
-//                                 res.json({
-//                                     success: true,
-//                                     message: "Vehicle created successfully...",
-//                                     data: response
-//                                 });
-//                             } else {
-//                                 res.json({
-//                                     success: false,
-//                                     message: "Tracker No. is already assign to other pet...",
-//                                     data: null
-//                                 });
-//                             }
-//                         })
-//                     } else {
-//                         Vehicle.findOne({
-//                             where: {
-//                                 id: objVehicle.id
-//                             }
-//                         }).then(function(objVehicleExist) {
-//                             if (objVehicleExist != null && objVehicleExist.id != objVehicle.id && objVehicleExist.IsDelete == false) {
-//                                 res.json({
-//                                     success: false,
-//                                     message: "Tracker No. is already assign to other Vehicle...",
-//                                     data: objVehicleExist
-//                                 });
-//                             } else {
-//                                 Vehicle.update(objVehicle, {
-//                                     where: {
-//                                         id: objVehicle.id
-//                                     }
-//                                 }).then(function(response) {
-//                                     if (response[0]) {
-//                                         funAuditLog.CreateAuditLog('SaveBike', UserExist.username, 'Update Vehicle');
-//                                         res.json({
-//                                             success: true,
-//                                             message: "Vehicle updated successfully...",
-//                                             data: objVehicle
-//                                         });
-//                                     }
-//                                 })
-//                             }
-//                         })
-//                     }
-//                 }
-//             } else {
-//                 res.json(InvalidToken);
-//             }
-//         })
-//     } else {
-//         res.json(InvalidToken);
-//     }
-// });
-
 router.get('/UpdateVehicleName', jsonParser, function (req, res) {
   connectionbikedata.query(
     "Update tblvehicle set Name='" +
@@ -3252,7 +2428,7 @@ router.get('/UpdateVehicleShare', jsonParser, function (req, res) {
 router.get('/UpdateInsurenceDate', jsonParser, function (req, res) {
   var convertDate = convertdateformatForUnix(req.query.InsurenceDate);
   var InsurenceDate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
-  // console.log("Update tblvehicle set InsurenceDate='" + req.query.InsurenceDate + "' where deviceid=deviceid='" + req.query.DeviceId + "'")
+  
   connectionbikedata.query(
     "Update tblvehicle set InsurenceDate='" +
       req.query.InsurenceDate +
@@ -3280,7 +2456,7 @@ router.get('/UpdateInsurenceDate', jsonParser, function (req, res) {
 router.get('/UpdatePUCDate', jsonParser, function (req, res) {
   var convertDate = convertdateformatForUnix(req.query.PUCDate);
   var PUCDate = new Date(convertDate.replace(' ', 'T')).getTime() / 1000;
-  // console.log("Update tblvehicle set PUCDate='" + req.query.PUCDate + "' where deviceid=deviceid='" + req.query.DeviceId + "'")
+  
   connectionbikedata.query(
     "Update tblvehicle set PUCDate='" +
       req.query.PUCDate +
@@ -3307,12 +2483,7 @@ router.get('/GetAllExpireDevice', jsonParser, function (req, res) {
   date.setHours(0);
   date.setMinutes(0);
   date.setSeconds(0);
-  // var query = "select tblgpsdevice.DeviceId,tblgpsdevice.ExpiryDate,tblsimdetails.SerialNum,tblvehicle.renewaldate " +
-  //     "from tblgpsdevice LEFT JOIN tblsimdetails ON tblgpsdevice.idSim = tblsimdetails.id " +
-  //     "INNER JOIN tblvehicle ON  tblgpsdevice.DeviceId = tblvehicle.deviceid " +
-  //     "where tblgpsdevice.AppName ='" + req.query.AppName + "' and " +
-  //     "tblvehicle.renewaldate >'" + ConvertDateFormat(date, true) + "' order by renewaldate asc";
-
+  
   var query =
     'select tblvehicle.deviceid,tblsimdetails.SerialNum,tblvehicle.renewaldate ' +
     'from tblgpsdevice LEFT JOIN tblsimdetails ON tblgpsdevice.idSim = tblsimdetails.id ' +
@@ -3329,29 +2500,7 @@ router.get('/GetAllExpireDevice', jsonParser, function (req, res) {
     res.json(response);
   });
 
-  // GpsDevice.belongsTo(SIM, {
-  //     foreignKey: {
-  //         name: 'idSim',
-  //         allowNull: true,
-  //     }
-  // });
 
-  // GpsDevice.findAll({
-  //     attributes: ['DeviceId', 'ExpiryDate'],
-  //     where: {
-  //         ExpiryDate: {
-  //             $gt: date
-  //         },
-  //         AppName: req.query.AppName,
-  //     },
-  //     include: [{
-  //         model: SIM,
-  //         attributes: ['SerialNum']
-  //     }],
-  //     order: 'ExpiryDate asc',
-  // }).then(function(response) {
-  //     res.json(response);
-  // })
 });
 
 router.get('/GetAllWorkingBikeWebAppNew1', jsonParser, function (req, res) {
@@ -3375,7 +2524,7 @@ router.get('/GetAllWorkingBikeWebAppNew1', jsonParser, function (req, res) {
     '  group by t.DeviceId ' +
     ' ) as t3 left join tblgpsdata tg on tg.id = t3.GPSID ) ' +
     ' as t4';
-  // connection.query("SELECT tb.id,tb.iduser,tb.Name,tb.deviceid,tb.IsOnline,tb.DeviceType,tpg1.IsEngine, tpg1.Latitude,tpg1.Longitude,tpg.Datetime, tpg.Date, tpg1.Speed, tpg1.Direction, tpg1.OdoMeter,tsd.id as ShareId,tvt.Type as VehicleType,(SELECT COUNT(*) FROM tblalarm WHERE IsRead=false and DeviceId = tb.deviceid) as NotificationCount, (SELECT COUNT(*) FROM tblserviceenhancementnotification WHERE IsRead=false and idvehicle = tb.id) as AlertCount FROM tblvehicle tb LEFT JOIN tblgpsdata tpg INNER JOIN (SELECT DeviceId,MAX(Date) Date FROM tblgpsdata GROUP BY DeviceId) b ON tpg.DeviceId = b.DeviceId  AND tpg.Date = b.Date  ON tb.deviceid=tpg.DeviceId LEFT JOIN tblgpsdata tpg1 INNER JOIN (SELECT DeviceId,MAX(Date) Date FROM tblgpsdata where GPSPositioning='A' GROUP BY DeviceId) b1 ON tpg1.DeviceId = b1.DeviceId AND tpg1.Date = b1.Date  ON tb.deviceid=tpg1.DeviceId LEFT join tblsharedevice tsd on tb.id=tsd.idVehicle LEFT JOIN tblvehicletype tvt on tb.idType=tvt.id WHERE (tb.iduser=" + req.query.idUser + " or tsd.iduser=" + req.query.idUser + ") and IsDelete=false and tb.deviceid != '' group by tb.deviceid;", function(err, rows, fields) {
+  
   connectionbikedata.query(query, function (err, rows, fields) {
     if (!err) {
       res.json({ success: true, data: rows });
@@ -3559,9 +2708,7 @@ router.get('/GetExcelVehicleDetailReport', function (req, res) {
     CurrentOffset +
     "') as DisplayExpiryDate2,tgd.IMEI,ts.SerialNum,ts.PhoneNum from tblgpsdevice as tgd " +
     'left join tblsimdetails as ts on tgd.idSim=ts.id ' +
-    // "left join tblgpsdata as tg on (tgd.DeviceId=tg.DeviceId and tg.GPSPositioning='A') " +
     'left join (tblvehicle as tv inner join tbluserinformation as tu on tv.iduser=tu.id) on (tgd.DeviceId=tv.deviceid and tv.IsDelete=false) ' +
-    // "where (tv.id is not null || tg.Id is not null) " +
     'group by tgd.DeviceId';
   connectionbikedata.query(query, function (err, rowsdata, fields) {
     if (!err) {
@@ -3644,8 +2791,7 @@ router.get('/GetExcelVehicleDetailReport', function (req, res) {
               obj.AppName = AppName;
               obj.Date = response.Date;
               lstAllData.push(obj);
-              // row.push(User, rowsdata[i].DeviceId, rowsdata[i].IMEI, SimNum, PhoneNum, ExpiryDate, GPSDate, AppName);
-              // conf.rows.push(row);
+              
               GetGpsData(i + 1);
             } else if (rowsdata[i].id != null) {
               var User = '';
@@ -3706,8 +2852,7 @@ router.get('/GetExcelVehicleDetailReport', function (req, res) {
               obj.AppName = AppName;
               obj.Date = 0;
               lstAllData.push(obj);
-              // row.push(User, rowsdata[i].DeviceId, rowsdata[i].IMEI, SimNum, PhoneNum, ExpiryDate, '', AppName);
-              // conf.rows.push(row);
+              
               GetGpsData(i + 1);
             } else {
               GetGpsData(i + 1);
@@ -3745,7 +2890,7 @@ router.get('/GetExcelVehicleDetailReport', function (req, res) {
         }
       }
       GetGpsData(0);
-      // res.json({ success: true, data: rows });
+      
     } else {
       res.json({ success: false, data: [] });
     }
@@ -4104,18 +3249,7 @@ function convertdateformat(date1) {
   );
 }
 
-// function convertdateformatForUnix(date1) {
-//     var date = new Date(date1);
-//     var firstdayMonth = date.getMonth() + 1;
-//     var firstdayDay = date.getDate();
-//     var firstdayYear = date.getFullYear();
-//     var firstdayHours = 0;
-//     var firstdayMinutes = 0;
-//     var firstdaySeconds = 0;
 
-//     return ("00" + firstdayYear.toString()).slice(-4) + "-" + ("00" + firstdayMonth.toString()).slice(-2) + "-" + ("0000" + firstdayDay.toString()).slice(-2) + " " + ("00" + firstdayHours.toString()).slice(-2) + ':' + ("00" + firstdayMinutes.toString()).slice(-2) + ':' + ("00" + firstdaySeconds.toString()).slice(-2);
-
-// }
 
 function convertdateformatLicenceExpiry(date1, flg) {
   var date = new Date(date1);

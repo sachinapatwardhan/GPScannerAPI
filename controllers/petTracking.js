@@ -5,49 +5,7 @@ var PetTracking = models.tbldevicetracking;
 var PetGPS = models.tblgpsscanner;
 app.use(express.static(__dirname + '/../MediaUploads'));
 //End of Tables
-/*
-router.get('/GetAllpetGps', function(req, res) {
 
-    PetGPS.findAll().then(function(response) {
-        res.json(response);
-    }).catch(function(error) {
-        res.json(error);
-    })
-})*/
-/*router.get('/saveDate', function(req, res) {
-    console.log("He...............", req.query)
-    var objtask = new Object();
-    objtask.Id = 0;
-    objtask.Date = parseInt(req.query.Time) / 1000;
-    objtask.Datetime = req.query.DateTime;
-    objtask.Latitude = 3.19871167;
-    objtask.Longitude = 101.72789667;
-    objtask.GPSPositioning = 'B';
-    objtask.Speed = 003;
-    objtask.Direction = 000;
-    objtask.Status = 00000000;
-    objtask.ReservedSign = 'Q';
-    objtask.DeviceId = 100000000000;
-    console.log(objtask.Date)
-
-    // PetGPS.create(objtask).then(function(response) {
-    //         console.log(response)
-    //         res.json(response);
-    //     }).catch(function(error) {
-    //         console.log("e..........", error)
-    //         res.json(error);
-
-    //     })
-    var date = parseInt(req.query.Time) / 1000;
-    PetGPS.findOne({ where: { Id: 1 } }).then(function(exists) {
-        console.log(exists)
-        exists.updateAttributes({ Date: date }).then(function(response) {
-            res.json(response);
-        }).catch(function(error) {
-            res.json(error);
-        })
-    })
-})*/
 router.get('/GetAllPetTracking', function(req, res) {
     PetTracking.findAll().then(function(response) {
         res.json(response);
@@ -165,7 +123,7 @@ router.post('/ImportPetAdventures', jsonParser, function(req, res) {
     var AuthorName = '';
 
     form.uploadDir = __dirname + '/../MediaUploads/FileUpload';
-    //form.uploadDir =  "D:/Documents/Pettorway/PettorwayAPI/Ecom5NodeApi/MediaUploads/FileUpload";
+    
     var filePath = '';
 
     form.parse(req, function(err, fields, files) {});
@@ -195,10 +153,7 @@ router.post('/ImportPetAdventures', jsonParser, function(req, res) {
                     var min = parseInt(objData[4].substring(2, 4));
                     var sec = parseInt(objData[4].substring(4, 6));
                     var GPSDateTime = ("0000" + year.toString()).slice(-4) + "-" + ("00" + month.toString()).slice(-2) + "-" + ("00" + day.toString()).slice(-2) + " " + ("00" + hour.toString()).slice(-2) + ":" + ("00" + min.toString()).slice(-2) + ":" + ("00" + sec.toString()).slice(-2);
-                    // console.log("------------------------------")
-                    // console.log(GPSDateTime)
-                    // console.log("------------------------------")
-
+                    
                     var objPetGPS = new Object();
                     objPetGPS.Datetime = GPSDateTime;
                     if (objData[7] == 'E') {

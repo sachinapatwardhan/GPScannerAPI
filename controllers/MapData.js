@@ -69,19 +69,7 @@ router.get('/ExportReport', function(req, res) {
 
     connection.query(query, function(err, response) {
         conf.rows = [];
-        // var lstTemp = [];
-        // for (var i = 0; i < response.length; i++) {
-        //     if (response[i].IsEngine == true) {
-        //         COuntEngineOff = 0;
-        //         lstTemp.push(response[i]);
-        //     } else {
-        //         if (COuntEngineOff == 0) {
-        //             lstTemp.push(response[i]);
-        //         }
-        //         COuntEngineOff = COuntEngineOff + 1;
-        //     }
-        // }
-
+        
         GetData(0);
 
         function GetData(i) {
@@ -149,10 +137,6 @@ router.get('/ExportReportNew', function(req, res) {
             caption: 'Address',
             type: 'string'
         },
-        // {
-        //     caption: 'Latitude/Longitude',
-        //     type: 'string'
-        // },
         {
             caption: 'Speed (km/h)',
             type: 'string'
@@ -374,17 +358,7 @@ router.get('/GetNotification', function(req, res) {
 
 router.post('/SaveFence', jsonParser, function(req, res) {
     objFence = req.body;
-    // objHeader = req.headers;
-    // var token = getToken(objHeader);
-    // if (token) {
-    //     var decoded = jwt.decode(token, TokenKey);
-    //     User.findOne({
-    //         where: {
-    //             username: decoded.username,
-    //             password: decoded.password
-    //         }
-    //     }).then(function(UserExist) {
-    //         if (UserExist != null) {
+    
     Fence.findOrCreate({
         where: {
             deviceId: objFence.deviceId,
@@ -491,7 +465,7 @@ router.post('/SaveFence', jsonParser, function(req, res) {
         } else {
             Fence.update(objFence, {
                 where: {
-                    //deviceId: objFence.deviceId
+                    
                     id: objFence.id,
                 }
             }).then(function(response) {
@@ -592,13 +566,7 @@ router.post('/SaveFence', jsonParser, function(req, res) {
         }
     })
 
-    //         } else {
-    //             res.json(InvalidToken);
-    //         }
-    //     })
-    // } else {
-    //     res.json(InvalidToken);
-    // }
+    
 });
 
 router.get('/GetFenceByPet', function(req, res) {

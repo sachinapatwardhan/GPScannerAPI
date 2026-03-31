@@ -5,12 +5,7 @@ var Vehicle = models.tblvehicle;
 // var JourneyGPSData = models.tbljourneygpsdata;
 var momentz = require('moment-timezone');
 
-// router.get('/getAllCompletedJourneyHistoryById', function(req, res) {
-//     var query = "select Id,Datetime, Latitude, Longitude, GPSPositioning, Speed, Direction, DeviceId, IsPatchEngine as IsEngine, OdoMeter, Date from tbljourneygpsdata where IdJourneyRoute=" + req.query.Id;
-//     connection.query(query, function(err, lstGPSData, fields) {
-//         res.json(lstGPSData);
-//     });
-// })
+
 
 router.get('/getAllCompletedJourney', function(req, res) {
     var search = {};
@@ -260,11 +255,6 @@ router.get('/deleteJourneyById', function(req, res) {
                         }
                     }).then(function(JourneyRouteExist) {
                         if (JourneyRouteExist) {
-                            // JourneyGPSData.destroy({
-                            //     where: {
-                            //         IdJourneyRoute: req.query.Id
-                            //     }
-                            // }).then(function(JouryGpsDataDeleted) {
                             JourneyRouteExist.updateAttributes({ IsDelete: 1 }).then(function(response) {
                                 if (response) {
                                     funAuditLog.CreateAuditLog('Delete journey route', UserExist.username, 'Delete journey route/ DeviceId (' + JourneyRouteExist.DeviceId + ')');
@@ -358,7 +348,6 @@ router.get('/ExportReport', function(req, res) {
                 var IsEngine = 'Off';
 
                 if (response[i].Datetime != null && response[i].Datetime != '' && response[i].Datetime != undefined) {
-                    // Datetime = dateformat(response[i].Datetime, 2);
                     Datetime = momentz.utc(new Date(response[i].Date * 1000)).tz(objTask.TimeZone).format('DD-MM-YYYY hh:mm:ss a')
                 }
 

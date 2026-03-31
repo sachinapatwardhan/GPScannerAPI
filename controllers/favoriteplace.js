@@ -52,18 +52,7 @@ router.post('/SaveFavoritePlace', jsonParser, function(req, res) {
     FavoritePlace.findOrCreate({ where: { DeviceId: objFavoritePlace.DeviceId, Name: objFavoritePlace.Name }, defaults: objFavoritePlace }).then(function(response) {
         if (response[0]) {
             var IsInFavoritePlace = false;
-            // console.log("-----------------------------------------------------------------------")
-
-            // GPSData.findOne({
-            //     where: {
-            //         DeviceId: objFavoritePlace.DeviceId
-            //     },
-            //     order: 'id DESC'
-            // }).then(function(resGPS) {
-            //     // console.log("-----------------------------------------------------------------------")
-            //     if (resGPS != null) {
-
-
+            
             //----------------call redix server data--------------------------
             client.get(objFavoritePlace.DeviceId, function(err, strgpsdata) {
                 console.log("@@@@@@@@@@@@@@@", err)
@@ -93,7 +82,7 @@ router.post('/SaveFavoritePlace', jsonParser, function(req, res) {
                     }
                 }).then(function(resFavoritePlace) {
                     resFavoritePlace.updateAttributes({ IsInFavoritePlace: IsInFavoritePlace }).then(function(resUpdate) {
-                        // funAuditLog.CreateAuditLog('SaveFence', UserExist.username , 'Delete Pet Tracking');
+                        
                         res.json({
                             success: true,
                             message: "Favorite Place created successfully...",
@@ -111,13 +100,7 @@ router.post('/SaveFavoritePlace', jsonParser, function(req, res) {
                 }
             }).then(function(response) {
                 var IsPetInFence = true;
-                // PetGPS.findOne({
-                //     where: {
-                //         DeviceId: objFavoritePlace.deviceId
-                //     },
-                //     order: 'id DESC'
-                // }).then(function(response) {
-                // if (response != null) {
+                
                 //----------------call redix server data--------------------------
                 client.get(objFavoritePlace.deviceId, function(err, response) {
 
@@ -130,7 +113,7 @@ router.post('/SaveFavoritePlace', jsonParser, function(req, res) {
                                 latitude: parseFloat(response.Latitude),
                                 longitude: parseFloat(response.Longitude)
                             }
-                            // var IsPetInFence = true;
+                            
 
                         if (objFavoritePlace.fencedraw == "circle") {
                             var CircleCenterPoints = {
@@ -213,13 +196,6 @@ router.post('/SaveFavoritePlace', jsonParser, function(req, res) {
         }
     })
 
-    //         } else {
-    //             res.json(InvalidToken);
-    //         }
-    //     })
-    // } else {
-    //     res.json(InvalidToken);
-    // }
 });
 
 router.get('/DeleteFavoritePlace', function(req, res) {

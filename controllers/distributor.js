@@ -1,7 +1,5 @@
 var router = express.Router();
 
-//Gps Tracker
-// --------------------------------------Get All Gps Device From Distributor-----------------------------------
 
 router.get('/GetAllGPSDeviceForDistributor', function (req, res) {
     var objParam = req.query;
@@ -75,7 +73,7 @@ router.get('/GetAllGPSDeviceForDistributor', function (req, res) {
         " Left Join tblsimdetails on tblsimdetails.id = tblgpsdevice.idSim" +
         " Left Join tblcountrymgmt on tblcountrymgmt.id = tblgpsdevice.CountryId" +
         " Left Join tbltelco on tblsimdetails.idTelCo = tbltelco.id " + search;
-    // " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
+    
     connection.query(query, function (err, response) {
         if (response != undefined) {
             connection.query(Countqry, function (err, lstCount, fields) {
@@ -180,7 +178,7 @@ router.get('/ExportTrackerForDistributor', function (req, res) {
     var objColumns = objParam.columns;
     var objOrderBy = objParam.order;
     var objSearch = objParam.search;
-    // var Orderby = objColumns[parseInt(objOrderBy[0].column)].data + ' ' + objOrderBy[0].dir;
+    
     var Orderby = ' tblgpsdevice.CreatedDate desc'
     var search = '';
 
@@ -242,10 +240,6 @@ router.get('/ExportTrackerForDistributor', function (req, res) {
     connection.query(query, function (err, response) {
         if (response != undefined) {
             conf.rows = [];
-            // conf1.rows = [];
-            // GetTrackerData(0);
-
-            // function GetTrackerData(i) {
             for (var i = 0; i < response.length; i++) {
                 var DeviceId = '';
                 var Company = '';
@@ -263,7 +257,7 @@ router.get('/ExportTrackerForDistributor', function (req, res) {
                 var AppName = '';
                 var Country = '';
                 var CreatedBy = '';
-                // if (i < response.length) {
+                
                 var row = [];
                 if (response[i].DeviceId != null && response[i].DeviceId != '' && response[i].DeviceId != undefined) {
                     DeviceId = response[i].DeviceId;
@@ -295,10 +289,6 @@ router.get('/ExportTrackerForDistributor', function (req, res) {
                 if (response[i].Name != null && response[i].Name != '' && response[i].Name != undefined) {
                     TelCompany = response[i].Name;
                 }
-
-                // if (response[i].username != null && response[i].username != '' && response[i].username != undefined) {
-                //     SalesAgent = response[i].username;
-                // }
                 if (response[i].ExpiryDate != null && response[i].ExpiryDate != '' && response[i].ExpiryDate != undefined) {
                     ExpiryDate = moment(response[i].ExpiryDate).format('DD-MM-YYYY hh:mm:ss a');
                 }
@@ -336,7 +326,7 @@ router.get('/ExportTrackerForDistributor', function (req, res) {
                     conf.rows.push(row);
                 }
 
-                // GetTrackerData(i + 1);
+                
             }
             var result = nodeExcel.execute(conf);
 
@@ -427,8 +417,6 @@ router.get('/GetAllDynamicOwnerCustomerForDistributor', function (req, res) {
 
 
     query += " SELECT FOUND_ROWS() as TotalRecord ";
-    // var Countqry = "SELECT count(tbluserinformation.id) as TotalRecord " +
-    //     "from tbluserinformation left join tblappinfo on tbluserinformation.idApp = tblappinfo.id " + JoinQuery + search;
     connectionUserData.query(query, function (err, response) {
         if (response != undefined) {
             // connection.query(Countqry, function(err, lstCount, fields) {
@@ -438,7 +426,6 @@ router.get('/GetAllDynamicOwnerCustomerForDistributor', function (req, res) {
             response1.recordsFiltered = response[1][0].TotalRecord;
             response1.data = response[0];
             res.json(response1);
-            // });
         } else {
             var response1 = new Object();
             response1.draw = objParam.draw;
@@ -514,7 +501,7 @@ router.get('/GetAllDynamicVehicleForDistibutor', function (req, res) {
         }
     }
 
-    // console.log(search)
+
     var qry = "Select vehicle.*,vehicletype.Type,gpsdevice.IMEI,CONVERT_TZ(vehicle.HandshakDatetime,'+00:00','" + CurrentOffset + "') as DisplyHandshakDate, CONVERT_TZ(vehicle.renewaldate,'+00:00','" + CurrentOffset + "') as Displyrenewaldate,  " +
         "user.username AS username " +
         "FROM tblvehicle AS vehicle " +
@@ -523,9 +510,6 @@ router.get('/GetAllDynamicVehicleForDistibutor', function (req, res) {
         " left join tblgpsdevice as gpsdevice on gpsdevice.DeviceId =vehicle.deviceid " +
         " LEFT JOIN tbluserinformation AS user ON vehicle.iduser = user.id " + search +
         " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
-    // var Countqry = "SELECT count(vehicle.id) as TotalRecord " +
-    //     "FROM tblvehicle AS vehicle " +
-    //     "LEFT JOIN tbluserinformation AS user ON vehicle.iduser = user.id " + search;
     var Countqry = "SELECT count(vehicle.id) as TotalRecord " +
         "FROM tblvehicle AS vehicle " +
         " INNER JOIN tbldeviceagentretailer AS der ON  der.deviceId = vehicle.deviceid" +

@@ -194,7 +194,7 @@ router.post('/uploadExcelDevice', function(req, res) {
     //Set Parameter for User Permission
     req.query['tablename'] = req.headers['x-requested-with'];
 
-    //var FileName = __dirname + '/../MediaUploads/FileUpload/DeviceList.xlsx';
+   
     form.uploadDir = __dirname + '/../MediaUploads/FileUpload';
 
     form.parse(req, function(err, fields, files) {
@@ -207,7 +207,7 @@ router.post('/uploadExcelDevice', function(req, res) {
         file.path = form.uploadDir + "/" + file.name;
         // console.log(file.path);
         FileName = file.path.toString();
-        //FileName.push(file.path);
+        
     });
 
     form.on('end', function() {
@@ -320,10 +320,7 @@ router.get('/ExportAgentRetailer', function(req, res) {
         });
     }
 
-    // conf.cols.push({
-    //     caption: 'Created Date',
-    //     type: 'string'
-    // });
+    
 
     var objSearch = req.query.search;
     var appId = req.query.appId;
@@ -375,17 +372,14 @@ router.get('/ExportAgentRetailer', function(req, res) {
     connection.query(query, function(err, response) {
         if (response != undefined) {
             conf.rows = [];
-            // conf1.rows = [];
-            // GetTrackerData(0);
-
-            // function GetTrackerData(i) {
+            
             for (var i = 0; i < response.length; i++) {
                 var agent = '';
                 var retailer = '';
                 var AppName = '';
                 var deviceId = '';
                 var CreatedDate = '';
-                // if (i < response.length) {
+                
                 var row = [];
                 if (response[i].agent != null && response[i].agent != '' && response[i].agent != undefined) {
                     agent = response[i].agent;
@@ -414,7 +408,7 @@ router.get('/ExportAgentRetailer', function(req, res) {
                 }
                 conf.rows.push(row);
 
-                // GetTrackerData(i + 1);
+                
             }
             var result = nodeExcel.execute(conf);
 

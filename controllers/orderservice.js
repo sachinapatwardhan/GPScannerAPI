@@ -18,10 +18,7 @@ var momentz = require('moment-timezone');
 var UserInRole = models.tbluserinrole;
 var Role = models.tblrole;
 
-//
-// CreateOrderServiceGlobal("India", 1, "0000000000000", "IMMM", function(redds) {
-//     console.log(redds)
-// })
+
 
 router.get('/GetAllDeviceId', function (req, res) {
     var search = "";
@@ -344,12 +341,7 @@ router.get('/GetAllOrderServiceNew', function (req, res) {
         };
     }
 
-    // OrderService.hasMany(OrderServiceDetail, {
-    //     foreignKey: {
-    //         name: 'OrderId',
-    //         allowNull: false
-    //     }
-    // });
+
 
     OrderService.belongsTo(OrderServiceStatus, {
         foreignKey: {
@@ -387,12 +379,6 @@ router.get('/GetAllOrderServiceNew', function (req, res) {
         var StartDate = convertdateUTCformat(objParam.StartDate);
         var EndDate = convertdateUTCformat(objParam.EndDate, 2);
 
-        // var obj = new Object();
-        // obj['ExpiryDate'] = {
-        //     $between: [StartDate, EndDate]
-        // };
-        // InnerSearch['$or'].push(obj);
-
         var obj1 = new Object();
         obj1['CreatedOnUtc'] = {
             $between: [StartDate, EndDate]
@@ -413,12 +399,6 @@ router.get('/GetAllOrderServiceNew', function (req, res) {
         }
 
         var StartDate = convertdateUTCformat(objParam.StartDate);
-        // var obj = new Object();
-        // obj['ExpiryDate'] = {
-        //     $gte: StartDate
-        // };
-        // InnerSearch['$or'].push(obj);
-
         var obj1 = new Object();
         obj1['CreatedOnUtc'] = {
             $gte: StartDate
@@ -439,12 +419,6 @@ router.get('/GetAllOrderServiceNew', function (req, res) {
         }
 
         var EndDate = convertdateUTCformat(objParam.EndDate, 2);
-
-        // var obj = new Object();
-        // obj['ExpiryDate'] = {
-        //     $lte: EndDate
-        // };
-        // InnerSearch['$or'].push(obj);
 
         var obj1 = new Object();
         obj1['CreatedOnUtc'] = {
@@ -575,10 +549,7 @@ router.get('/GetAllOrderServiceNew', function (req, res) {
                 model: OrderServiceStatus,
                 attributes: ['id', 'OrderStatus'],
                 required: true
-                // }, {
-                //     model: OrderServiceDetail,
-                //     attributes: ['id', 'ProductName', 'Quantity', 'UnitPriceInclTax'],
-                //     required: true
+                
             }, {
                 model: User,
                 attributes: ['id', 'email', 'username', 'country', 'ProfileName', 'idApp'],
@@ -631,13 +602,6 @@ router.get('/GetAllOrderServiceMobile', function (req, res) {
         search['$or'].push(['tblorderservicestatus.OrderStatus like ?', "%" + objSearch + "%"]);
         search['$or'].push(['Terms like ?', "%" + objSearch + "%"]);
     }
-
-    // OrderService.hasMany(OrderServiceDetail, {
-    //     foreignKey: {
-    //         name: 'OrderId',
-    //         allowNull: false
-    //     }
-    // });
 
     OrderService.belongsTo(OrderServiceStatus, {
         foreignKey: {
@@ -806,9 +770,6 @@ router.get('/RenewOrderService', function (req, res) {
     }).then(function (objOrderExists) {
 
         if (objOrderExists != null) {
-            // var OrderTotal = resOrderTotal.TotalAmount;
-            // var ProductId = resOrderTotal.ProductId;
-
             var objOrder = new Object();
             objOrder.CustomerId = objOrderExists.CustomerId;
             objOrder.CreatedOnUtc = new Date();
@@ -976,10 +937,7 @@ router.get('/UpdateOrderServiceDates', function (req, res) {
                     }
 
                 })
-                // res.json({
-                //     success: true,
-                //     message: "Expiry Date Updated Successfully"
-                // });
+                
             });
         } else {
             res.json({
@@ -1081,7 +1039,6 @@ router.get('/ExportOrderService', function (req, res) {
 
     if (objParam.StartDate != '' && objParam.StartDate != null && objParam.StartDate != undefined && objParam.EndDate != '' && objParam.EndDate != null && objParam.EndDate != undefined) {
 
-        // search['$and'] = [];
         if (search['$and'] == undefined) {
             search['$and'] = [];
         }
@@ -1329,13 +1286,6 @@ router.get('/ExportOrderServiceNew', function (req, res) {
         search['$or'].push(['tblorderservicestatus.OrderStatus like ?', "%" + objSearch + "%"]);
     }
 
-    // OrderService.hasOne(OrderServiceDetail, {
-    //     foreignKey: {
-    //         name: 'OrderId',
-    //         allowNull: false
-    //     }
-    // });
-
     OrderService.belongsTo(OrderServiceStatus, {
         foreignKey: {
             name: 'OrderStatusId',
@@ -1359,7 +1309,7 @@ router.get('/ExportOrderServiceNew', function (req, res) {
 
     if (objParam.StartDate != '' && objParam.StartDate != null && objParam.StartDate != undefined && objParam.EndDate != '' && objParam.EndDate != null && objParam.EndDate != undefined) {
 
-        // search['$and'] = [];
+
         if (search['$and'] == undefined) {
             search['$and'] = [];
         }
@@ -1371,12 +1321,6 @@ router.get('/ExportOrderServiceNew', function (req, res) {
 
         var StartDate = convertdateUTCformat(objParam.StartDate);
         var EndDate = convertdateUTCformat(objParam.EndDate, 2);
-
-        // var obj = new Object();
-        // obj['ExpiryDate'] = {
-        //     $between: [StartDate, EndDate]
-        // };
-        // InnerSearch['$or'].push(obj);
 
         var obj1 = new Object();
         obj1['CreatedOnUtc'] = {
@@ -1398,12 +1342,6 @@ router.get('/ExportOrderServiceNew', function (req, res) {
         }
 
         var StartDate = convertdateUTCformat(objParam.StartDate);
-        // var obj = new Object();
-        // obj['ExpiryDate'] = {
-        //     $gte: StartDate
-        // };
-        // InnerSearch['$or'].push(obj);
-
         var obj1 = new Object();
         obj1['CreatedOnUtc'] = {
             $gte: StartDate
@@ -1424,12 +1362,6 @@ router.get('/ExportOrderServiceNew', function (req, res) {
         }
 
         var EndDate = convertdateUTCformat(objParam.EndDate, 2);
-
-        // var obj = new Object();
-        // obj['ExpiryDate'] = {
-        //     $lte: EndDate
-        // };
-        // InnerSearch['$or'].push(obj);
 
         var obj1 = new Object();
         obj1['CreatedOnUtc'] = {
@@ -1512,10 +1444,7 @@ router.get('/ExportOrderServiceNew', function (req, res) {
             model: OrderServiceStatus,
             attributes: ['id', 'OrderStatus'],
             required: true
-            // }, {
-            //     model: OrderServiceDetail,
-            //     attributes: ['id', 'ProductName', 'Quantity', 'UnitPriceInclTax'],
-            //     required: true
+            
         }, {
             model: User,
             attributes: ['id', 'email', 'username', 'country', 'ProfileName'],
@@ -1562,14 +1491,10 @@ router.get('/ExportOrderServiceNew', function (req, res) {
             } else {
                 var CreatedOnUtc = '';
             }
-            // if (ObjData.ExpiryDate != '' && ObjData.ExpiryDate != null && ObjData.ExpiryDate != undefined) {
-            //     var ExpiryDate = moment(moment.utc(ObjData.ExpiryDate).toDate()).format("DD/MM/YYYY hh:mm A");
-            // } else {
-            //     var ExpiryDate = '';
-            // }
+            
             var OrderTotal = ObjData.OrderTotal;
             var Device = ObjData.OrderNotes;
-            // var Country = ObjData.ShippAddress1;
+            
             var Country = ObjData.tbluserinformation.country;
             var Status = ObjData.tblorderservicestatus.OrderStatus;
             srow.push(No.toString());
@@ -1579,7 +1504,7 @@ router.get('/ExportOrderServiceNew', function (req, res) {
                 srow.push(Email);
             }
             srow.push(CreatedOnUtc);
-            // srow.push(ExpiryDate);
+            
             srow.push(OrderTotal.toString());
             srow.push(Device);
             srow.push(Country);

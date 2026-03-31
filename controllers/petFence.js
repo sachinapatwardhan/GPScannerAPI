@@ -119,17 +119,7 @@ router.get('/GetFenceById', function(req, res) {
 
 router.post('/SaveFence', jsonParser, function(req, res) {
     objFence = req.body;
-    // objHeader = req.headers;
-    // var token = getToken(objHeader);
-    // if (token) {
-    //     var decoded = jwt.decode(token, TokenKey);
-    //     User.findOne({
-    //         where: {
-    //             username: decoded.username,
-    //             password: decoded.password
-    //         }
-    //     }).then(function(UserExist) {
-    //         if (UserExist != null) {
+    
     Fence.findOrCreate({
         where: {
             deviceId: objFence.deviceId
@@ -219,7 +209,7 @@ router.post('/SaveFence', jsonParser, function(req, res) {
                     }
                 }).then(function(objPet) {
                     objPet.updateAttributes({ IsInFence: IsPetInFence }).then(function(resUpdate) {
-                        // funAuditLog.CreateAuditLog('SaveFence', UserExist.username , 'Delete Pet Tracking');
+                        
                         Commonfunction.UpdateVehicleRedis(objFence.deviceId, 'Vehicle');
                         res.json({
                             success: true,
@@ -306,9 +296,9 @@ router.post('/SaveFence', jsonParser, function(req, res) {
                             }
                             lstpolygonDrawC.push(objDraw);
 
-                            // console.log(lstpolygonDrawC)
+                            
                             IsPetInFence = geolib.isPointInside(CheckPoints, lstpolygonDrawC)
-                                // console.log("Sqre IsPetIn Fence - " + IsPetInFence)
+                               
                         };
                     }
 
@@ -332,13 +322,7 @@ router.post('/SaveFence', jsonParser, function(req, res) {
         }
     })
 
-    //         } else {
-    //             res.json(InvalidToken);
-    //         }
-    //     })
-    // } else {
-    //     res.json(InvalidToken);
-    // }
+    
 });
 
 router.post('/OldSaveFenceById', jsonParser, function(req, res) {
@@ -431,7 +415,6 @@ router.post('/OldSaveFenceById', jsonParser, function(req, res) {
                     }
                 }).then(function(resUpdate) {
                     Commonfunction.UpdateVehicleRedis(objFence.deviceId, 'Fence');
-                    // funAuditLog.CreateAuditLog('SaveFence', UserExist.username , 'Delete Pet Tracking');
                     res.json({
                         success: true,
                         message: "Fence created successfully...",
@@ -515,11 +498,6 @@ router.post('/OldSaveFenceById', jsonParser, function(req, res) {
                         };
                     }
 
-                    // Bike.findOne({
-                    //     where: {
-                    //         deviceid: objFence.deviceId
-                    //     }
-                    // }).then(function(objPet) {
                     objFence.IsInFence = IsPetInFence;
                     Fence.update(objFence, {
                         where: {
@@ -547,13 +525,7 @@ router.post('/SaveFenceById', jsonParser, function(req, res) {
             if (resFence) {
                 Commonfunction.UpdateVehicleRedis(objFence.deviceId, 'Fence');
                 var IsPetInFence = true;
-                // PetGPS.findOne({
-                //     where: {
-                //         DeviceId: objFence.deviceId
-                //     },
-                //     order: 'id DESC'
-                // }).then(function(response) {
-                //     if (response != null) {
+                
 
                 //----------------call redix server data--------------------------
                 client.get(objFence.deviceId, function(err, strgpsdata) {
@@ -621,11 +593,7 @@ router.post('/SaveFenceById', jsonParser, function(req, res) {
                             IsPetInFence = geolib.isPointInside(CheckPoints, lstpolygonDrawC)
                         };
                     }
-                    // Bike.findOne({
-                    //     where: {
-                    //         deviceid: objFence.deviceId
-                    //     }
-                    // }).then(function(objPet) {
+                    
                     objFence.IsInFence = IsPetInFence;
                     Fence.update(objFence, {
                         where: {
@@ -633,8 +601,7 @@ router.post('/SaveFenceById', jsonParser, function(req, res) {
                         }
                     }).then(function(resUpdate) {
                         Commonfunction.UpdateVehicleRedis(objFence.deviceId, 'Fence');
-                        // funAuditLog.CreateAuditLog('SaveFence', UserExist.username , 'Delete Pet Tracking');
-                        res.json({
+                                               res.json({
                             success: true,
                             message: "Fence created successfully...",
                             data: resUpdate
@@ -652,14 +619,7 @@ router.post('/SaveFenceById', jsonParser, function(req, res) {
         }).then(function(resFence) {
             Commonfunction.UpdateVehicleRedis(objFence.deviceId, 'Fence');
             var IsPetInFence = true;
-            // var IsPetInFence = true;
-            // PetGPS.findOne({
-            //     where: {
-            //         DeviceId: objFence.deviceId
-            //     },
-            //     order: 'id DESC'
-            // }).then(function(response) {
-            //     if (response != null) {
+            
 
             //----------------call redix server data--------------------------
             client.get(objFence.deviceId, function(err, strgpsdata) {
@@ -729,11 +689,6 @@ router.post('/SaveFenceById', jsonParser, function(req, res) {
                     };
                 }
 
-                // Bike.findOne({
-                //     where: {
-                //         deviceid: objFence.deviceId
-                //     }
-                // }).then(function(objPet) {
                 objFence.IsInFence = IsPetInFence;
                 Fence.update(objFence, {
                     where: {

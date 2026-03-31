@@ -103,13 +103,7 @@ router.get('/GetAllGPSDeleteData', function (req, res) {
         search = search + 'tblvehicle.Name like "%' + objSearch + '%" or ';
         search = search + 'tbluserinformation.username like "%' + objSearch + '%") ';
     };
-    //  if (objParam.UserId != null && objParam.UserId != undefined && objParam.UserId != '') {
-    //      if (search != "") {
-    //          search += " and tblgpsdevice.idSalesAgent =" + objParam.UserId;
-    //      } else {
-    //          search += " Where tblgpsdevice.idSalesAgent =" + objParam.UserId;
-    //      }
-    //  }
+    
     if (objParam.appId != null && objParam.appId != undefined && objParam.appId != '') {
         if (search != "") {
             search += ' and tbluserinformation.idApp = "' + objParam.appId + '"';

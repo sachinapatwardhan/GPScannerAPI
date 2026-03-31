@@ -218,7 +218,7 @@
             } else {
                 search = search + ' where tgd.DeviceId not in (select deviceId from tbldeviceagentretailer where retailerId is not null)';
             }
-            // search = search + '  tgd.DeviceId not in (select deviceId from tbldeviceagentretailer)'
+            
         }
 
         var query = "select tgd.DeviceId,tgd.Type,tgd.IMEI,tgd.Version,CONVERT_TZ(tgd.CreatedDate,'+00:00','" + CurrentOffset + "') as CreatedDate,tgd.CreatedBy,tgd.AppName,tgd.ExpiryDate,ts.SerialNum,ts.PhoneNum,tel.Name,tdr.id,tdr.agentId,tcm.Country" +

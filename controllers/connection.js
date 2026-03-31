@@ -1,18 +1,4 @@
 var router = express.Router();
-// global.connection = mysql.createConnection({
-//     host: MysqlHost,
-//     user: Mysqluser,
-//     password: Mysqlpassword,
-//     database: Mysqldatabase,
-//     multipleStatements: true
-// });
-// global.connectionhandshake = mysql.createConnection({
-//     host: MysqlHost,
-//     user: Mysqluser,
-//     password: Mysqlpassword,
-//     database: Mysqldatabase,
-//     multipleStatements: true
-// });
 
 
 global.handleDisconnect = handleDisconnect;
@@ -25,7 +11,7 @@ global.handleDisconnectAlarmData = handleDisconnectAlarmData;
 global.handleDisconnectUserData = handleDisconnectUserData;
 
 function handleDisconnect() {
-    // console.log("@@@@@@@@@@@@@@@@@@@@@@")
+    
     global.connection = mysql.createConnection({
         host: MysqlHost,
         user: Mysqluser,

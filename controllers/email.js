@@ -18,11 +18,7 @@
                  res.json({ success: false, data: [] });
              }
          })
-         // AppInfo.findAll().then(function(response) {
-         //     res.json(response);
-         // }).catch(function(error) {
-         //     res.json(error);
-         // })
+         
  });
 
  router.get('/GetAllEmailSetting', function(req, res) {
@@ -391,9 +387,9 @@
                          SystemEmail.findOne().then(function(objSystemEmail) {
                              var mail = {
                                  from: objSystemEmail.DefaultEmailFrom,
-                                 to: objEmail.EmailTo, // + ', ' + objSystemEmail.NotificationEmailTo,
+                                 to: objEmail.EmailTo, 
                                  subject: objEmail.EmailSubject,
-                                 //text: 'hello ' + objUser.username + ' ' + 'Your New Password is ' + NewPassword,
+                                 
                                  html: objEmail.EmailBody
                              };
                              transporter.sendMail(mail, function(error, response) {

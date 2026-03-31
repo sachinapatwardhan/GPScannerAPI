@@ -12,254 +12,7 @@ var Vehicle = models.tblvehicle;
 var Commonfunction = require('./common.js');
 //End of Tables
 
-router.get('/GetAllGPSDeviceold', function (req, res) {
-    var objParam = req.query;
 
-    var objColumns = objParam.columns;
-    var objOrderBy = objParam.order;
-    var objSearch = objParam.search;
-    var Orderby = objColumns[parseInt(objOrderBy[0].column)].data + ' ' + objOrderBy[0].dir;
-    var search = {};
-    var search1 = {};
-    search1['$and'] = [];
-    var TelSearchflg = false;
-    var SalesAgSearchflg = false;
-
-    var IsUserSuperAdmin = false;
-    var IsCountryAll = false;
-    var CountryList = objParam.CountryList;
-    if (CountryList == undefined || CountryList == null || CountryList == "") {
-        CountryList = [];
-    }
-
-    var UserRoles = objParam.UserRoles;
-    if (UserRoles == 'Sales Agent') {
-        var obj1 = new Object();
-        obj1['idSalesAgent'] = {
-            $eq: parseInt(objParam.UserId)
-        }
-        search1['$and'].push(obj1);
-    }
-    if (UserRoles.length > 0) {
-
-        function CheckUserCountry(i) {
-            if (i < UserRoles.length) {
-
-                if (UserRoles[i] == 'Super Admin') {
-                    IsUserSuperAdmin = true;
-                    CheckUserCountry(i + 1);
-                } else {
-                    CheckUserCountry(i + 1);
-                }
-
-            } else {
-                if (objSearch != null && objSearch != '') {
-                    search1['$or'] = [];
-
-                    for (var i = 0; i < objColumns.length; i++) {
-                        if (objColumns[i].data != null && objColumns[i].data != '') {
-                            var columnName = objColumns[i].data;
-
-                            if (columnName == 'DeviceId') {
-                                search1['$or'].push(['tblgpsdevice.DeviceId like ?', "%" + objSearch + "%"]);
-                            } else if (columnName == 'Type') {
-                                search1['$or'].push(['tblgpsdevice.Type like ?', "%" + objSearch + "%"]);
-                            } else if (columnName == 'Version') {
-                                search1['$or'].push(['tblgpsdevice.Version like ?', "%" + objSearch + "%"]);
-                            } else if (columnName == 'CreatedBy') {
-                                search1['$or'].push(['tblgpsdevice.CreatedBy like ?', "%" + objSearch + "%"]);
-                            } else if (columnName == 'CreatedDate') {
-                                search1['$or'].push(['tblgpsdevice.CreatedDate like ?', "%" + objSearch + "%"]);
-                            } else if (columnName == 'SimNum') {
-                                search1['$or'].push(['tblgpsdevice.SimNum like ?', "%" + objSearch + "%"]);
-                            } else if (columnName == 'tbltelco.Name') {
-                                TelSearchflg = true;
-                                search1['$or'].push(['tbltelco.Name like ?', "%" + objSearch + "%"]);
-                            } else if (columnName == 'tbluserinformation.username') {
-                                SalesAgSearchflg = true;
-                                search1['$or'].push(['tbluserinformation.username like ?', "%" + objSearch + "%"]);
-                            } else if (columnName == 'ExpiryDate') {
-                                search1['$or'].push(['tblgpsdevice.ExpiryDate like ?', "%" + objSearch + "%"]);
-                            }
-                        };
-                    };
-                }
-                if (!IsUserSuperAdmin && CountryList.length != 0) {
-                    search['$or'] = [];
-                    if (CountryList.length > 0) {
-                        function CheckCountry(p) {
-                            if (p < CountryList.length) {
-                                var obj = new Object();
-                                if (CountryList[p] != "") {
-
-                                    obj['Country'] = {
-                                        $like: '%' + CountryList[p] + '%'
-                                    }
-
-                                    search['$or'].push(obj);
-
-                                    if (CountryList[p] == "All") {
-                                        IsCountryAll = true;
-                                    }
-                                }
-                                CheckCountry(p + 1);
-                            }
-                        }
-                        CheckCountry(0);
-                    }
-                }
-
-                var flg = true;
-                if (IsCountryAll || IsUserSuperAdmin) {
-                    flg = false;
-                }
-
-                GPSDevice.belongsTo(Country, {
-                    foreignKey: {
-                        name: 'CountryId',
-                        allowNull: true
-                    }
-                });
-                GPSDevice.belongsTo(TelCo, {
-                    foreignKey: {
-                        name: 'TelCoId',
-                        allowNull: true
-                    }
-                });
-                GPSDevice.belongsTo(User, {
-                    foreignKey: {
-                        name: 'idSalesAgent',
-                        allowNull: true
-                    }
-                });
-
-                GPSDevice.findAndCountAll({
-                    where: search1,
-                    order: Orderby,
-                    offset: parseInt(objParam.start),
-                    limit: parseInt(objParam.length),
-                    include: [{
-                        model: Country,
-                        attributes: ['Country'],
-                        required: flg,
-                        where: search,
-                    }, {
-                        model: TelCo,
-                        required: TelSearchflg,
-                    }, {
-                        model: User,
-                        required: SalesAgSearchflg,
-                    }],
-                }).then(function (response) {
-                    var response1 = new Object();
-                    response1.draw = objParam.draw;
-                    response1.recordsTotal = response.count;
-                    response1.recordsFiltered = response.count;
-                    response1.data = response.rows;
-                    res.json(response1);
-                }).catch(function (error) {
-                    res.json({
-                        success: false,
-                        response: error
-                    });
-                })
-            }
-        }
-        CheckUserCountry(0)
-    }
-})
-router.get('/GetAllGPSDeviceold1', function (req, res) {
-    var objParam = req.query;
-
-    var objColumns = objParam.columns;
-    var objOrderBy = objParam.order;
-    var objSearch = objParam.search;
-    var Orderby = objColumns[parseInt(objOrderBy[0].column)].data + ' ' + objOrderBy[0].dir;
-    var search = '';
-
-    var TelSearchflg = false;
-    var SalesAgSearchflg = false;
-
-    var IsUserSuperAdmin = false;
-    var IsCountryAll = false;
-    var CountryList = objParam.CountryList;
-    if (CountryList == undefined || CountryList == null || CountryList == "") {
-        CountryList = [];
-    }
-
-    var UserRoles = objParam.UserRoles;
-
-    if (objSearch != null && objSearch != '') {
-        search = 'Where (tblgpsdevice.DeviceId like "%' + objSearch + '%" or ';
-        search = search + 'tblgpsdevice.Type like "%' + objSearch + '%" or ';
-        search = search + 'tblgpsdevice.IMEI like "%' + objSearch + '%" or ';
-        search = search + 'tblgpsdevice.Version like "%' + objSearch + '%" or ';
-        search = search + 'tblgpsdevice.SimNum like "%' + objSearch + '%" or ';
-        search = search + 'tbltelco.Name like "%' + objSearch + '%" or ';
-        search = search + 'tblgpsdevice.ExpiryDate like "%' + objSearch + '%" or ';
-        search = search + 'tblgpsdevice.CreatedDate like "%' + objSearch + '%" or ';
-        search = search + 'tblgpsdevice.CreatedBy like "%' + objSearch + '%" or ';
-        search = search + 'tblsimdetails.SerialNum like "%' + objSearch + '%" or ';
-        search = search + 'tblsimdetails.PhoneNum like "%' + objSearch + '%" or ';
-        search = search + 'tblcountrymgmt.Country like "%' + objSearch + '%" or ';
-        search = search + 'tblgpsdevice.AppName like "%' + objSearch + '%") ';
-    };
-    if (objParam.UserId != null && objParam.UserId != undefined && objParam.UserId != '') {
-        if (search != "") {
-            search += " and tblgpsdevice.idSalesAgent =" + objParam.UserId;
-        } else {
-            search += " Where tblgpsdevice.idSalesAgent =" + objParam.UserId;
-        }
-    }
-
-    if (objParam.AppName != null && objParam.AppName != undefined && objParam.AppName != '') {
-        if (search != "") {
-            search += ' and tblgpsdevice.AppName = "' + objParam.AppName + '"';
-        } else {
-            search += ' where tblgpsdevice.AppName = "' + objParam.AppName + '"';
-        }
-    }
-
-    var query = " select tblgpsdevice.*, tblcountrymgmt.Country, " +
-        " CONVERT_TZ(tblgpsdevice.CreatedDate,'+00:00','" + CurrentOffset + "') as CreatedDate," +
-        " CONVERT_TZ(tblgpsdevice.ExpiryDate,'+00:00','" + CurrentOffset + "') as ExpiryDate," +
-        " tbltelco.Name, tbluserinformation.username, tbluserinformation.idApp,tblsimdetails.SerialNum,tblsimdetails.PhoneNum" +
-        " from tblgpsdevice " +
-        " Left Join tbluserinformation on tblgpsdevice.idSalesAgent=tbluserinformation.id " +
-        " Left Join tblsimdetails on tblsimdetails.id = tblgpsdevice.idSim" +
-        " Left Join tblcountrymgmt on tblcountrymgmt.id = tblgpsdevice.CountryId" +
-        " Left Join tbltelco on tblsimdetails.idTelCo = tbltelco.id " + search +
-        " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
-
-    var Countqry = "SELECT count(tblgpsdevice.id) as TotalRecord " +
-        " from tblgpsdevice " +
-        " Left Join tbluserinformation on  tblgpsdevice.idSalesAgent=tbluserinformation.id " +
-        " Left Join tblsimdetails on tblsimdetails.id = tblgpsdevice.idSim" +
-        " Left Join tblcountrymgmt on tblcountrymgmt.id = tblgpsdevice.CountryId" +
-        " Left Join tbltelco on tblsimdetails.idTelCo = tbltelco.id " + search;
-    // " order by " + Orderby + " limit " + parseInt(objParam.length) + " offset " + parseInt(objParam.start);
-    connection.query(query, function (err, response) {
-        if (response != undefined) {
-            connection.query(Countqry, function (err, lstCount, fields) {
-                var response1 = new Object();
-                response1.draw = objParam.draw;
-                response1.recordsTotal = lstCount[0].TotalRecord;
-                response1.recordsFiltered = lstCount[0].TotalRecord;
-                response1.data = response;
-                res.json(response1);
-            });
-        } else {
-            console.log(err);
-            var response1 = new Object();
-            response1.draw = objParam.draw;
-            response1.recordsTotal = 0;
-            response1.recordsFiltered = 0;
-            response1.data = [];
-            res.json(response1);
-        }
-    })
-
-})
 
 router.get('/GetAllGPSDevice', function (req, res) {
     var objParam = req.query;
@@ -312,13 +65,6 @@ router.get('/GetAllGPSDevice', function (req, res) {
         }
     }
 
-    // if (objParam.UserId != null && objParam.UserId != undefined && objParam.UserId != '') {
-    //     if (search != "") {
-    //         search += " and tblgpsdevice.idSalesAgent =" + objParam.UserId;
-    //     } else {
-    //         search += " Where tblgpsdevice.idSalesAgent =" + objParam.UserId;
-    //     }
-    // }
 
     if (objParam.AppName != null && objParam.AppName != undefined && objParam.AppName != '') {
         if (search != "") {
@@ -486,10 +232,6 @@ router.get('/ExportTracker', function (req, res) {
             });
         }
 
-        // conf.cols.push({
-        //     caption: 'Expiry Date',
-        //     type: 'string'
-        // });
 
         conf.cols.push({
             caption: 'Date',
@@ -598,10 +340,7 @@ router.get('/ExportTracker', function (req, res) {
     connection.query(query, function (err, response) {
         if (response != undefined) {
             conf.rows = [];
-            // conf1.rows = [];
-            // GetTrackerData(0);
-
-            // function GetTrackerData(i) {
+            
             for (var i = 0; i < response.length; i++) {
                 var DeviceId = '';
                 var Company = '';
@@ -623,7 +362,7 @@ router.get('/ExportTracker', function (req, res) {
                 var LicenceNo = "";
                 var Status = '';
                 var Remark = '';
-                // if (i < response.length) {
+                
                 var row = [];
                 if (response[i].DeviceId != null && response[i].DeviceId != '' && response[i].DeviceId != undefined) {
                     DeviceId = response[i].DeviceId;
@@ -656,12 +395,7 @@ router.get('/ExportTracker', function (req, res) {
                     TelCompany = response[i].Name;
                 }
 
-                // if (response[i].username != null && response[i].username != '' && response[i].username != undefined) {
-                //     SalesAgent = response[i].username;
-                // }
-                // if (response[i].ExpiryDate != null && response[i].ExpiryDate != '' && response[i].ExpiryDate != undefined) {
-                //     ExpiryDate = moment(response[i].ExpiryDate).format('DD-MM-YYYY hh:mm:ss a');
-                // }
+                
                 if (response[i].CreatedDate != null && response[i].CreatedDate != '' && response[i].CreatedDate != undefined) {
                     Date = moment(response[i].CreatedDate).format('DD-MM-YYYY hh:mm:ss a');
                 }
@@ -722,7 +456,7 @@ router.get('/ExportTracker', function (req, res) {
                     conf.rows.push(row);
                 }
 
-                // GetTrackerData(i + 1);
+                
             }
             var result = nodeExcel.execute(conf);
 
@@ -754,167 +488,7 @@ router.get('/GetGPSDeviceById', function (req, res) {
     })
 })
 
-// router.get('/GetAllPetDeviceStatusbyCountry', function(req, res) {
 
-//     var objParam = req.query;
-//     var objColumns = objParam.columns;
-//     var objOrderBy = objParam.order;
-//     var objSearch = objParam.search;
-//     var objSearch = objParam.search.value;
-
-//     var CountryList = objParam.CountryList;
-//     if (CountryList == undefined || CountryList == null || CountryList == "") {
-//         CountryList = [];
-//     }
-//     var UserRoles = objParam.UserRoles;
-//     var Orderby = objColumns[parseInt(objOrder[0].column)].data + ' ' + objOrder[0].dir;
-//     var search = {};
-//     var search1 = {};
-
-//     search1['$and'] = [];
-
-//     var IsUserSuperAdmin = false;
-//     var IsCountryAll = false;
-
-
-//     if (objSearch != null && objSearch != '') {
-//         search['$or'] = [];
-//         for (var i = 0; i < objColumns.length; i++) {
-//             if (objColumns[i].data != null && objColumns[i].data != '') {
-//                 var columnName = objColumns[i].data;
-//                 var obj = new Object();
-//                 obj[columnName] = {
-//                     $like: '%' + objSearch + '%'
-//                 }
-//                 search['$or'].push(obj);
-//             };
-//         };
-//     }
-
-//     search['$and'] = [];
-
-//     search['$and'].push({ IsDeleted: false });
-
-//     Pet.belongsTo(User, {
-//         foreignKey: {
-//             name: 'iduser',
-//             allowNull: false
-//         }
-//     });
-
-//     if (UserRoles.length > 0) {
-
-//         function CheckUserCountry(i) {
-//             if (i < UserRoles.length) {
-//                 if (UserRoles[i] == 'Super Admin') {
-//                     IsUserSuperAdmin = true;
-//                     CheckUserCountry(i + 1);
-//                 } else {
-//                     CheckUserCountry(i + 1);
-//                 }
-
-//             } else {
-//                 if (!IsUserSuperAdmin) {
-//                     search['$or'] = [];
-//                 } else {
-//                     search['$and'] = [];
-//                 }
-
-
-//                 if (!IsUserSuperAdmin) {
-//                     search['$or'] = [];
-//                     if (CountryList.length > 0) {
-//                         function CheckCountry(p) {
-//                             if (p < CountryList.length) {
-//                                 var obj = new Object();
-//                                 if (CountryList[p] != "") {
-
-//                                     obj['country'] = {
-//                                         $like: '%' + CountryList[p] + '%'
-//                                     }
-//                                     search['$or'].push(obj);
-
-//                                     if (CountryList[p] == "All") {
-//                                         IsCountryAll = true;
-//                                     }
-//                                 }
-//                                 CheckCountry(p + 1);
-//                             }
-//                         }
-//                         CheckCountry(0);
-//                     }
-//                 }
-
-//                 if (IsCountryAll) {
-//                     search = {};
-//                 } else {
-//                     search1['$and'].push(search)
-//                 }
-
-//                 if (!IsUserSuperAdmin) {
-//                     Pet.findAndCountAll({
-//                         //where: search,
-//                         where: {
-//                             deviceid: {
-//                                 $ne: ''
-//                             },
-//                             $and: [search]
-//                         },
-//                         order: Orderby,
-//                         offset: parseInt(objParam.start),
-//                         limit: parseInt(objParam.length),
-//                         include: [{
-//                             model: User,
-//                             where: { country: UserCountry },
-//                             required: true
-//                         }]
-//                     }).then(function(response) {
-//                         var PetList = [];
-//                         var response1 = new Object();
-//                         response1.draw = objParam.draw;
-//                         response1.recordsTotal = response.count;
-//                         response1.recordsFiltered = response.count;
-//                         response1.data = response.rows;
-//                         res.json(response1);
-
-//                     }).catch(function(error) {
-//                         res.json(error);
-//                     })
-//                 } else {
-//                     Pet.findAndCountAll({
-//                         //where: search,
-//                         where: {
-//                             deviceid: {
-//                                 $ne: ''
-//                             },
-//                             $and: [search]
-//                         },
-//                         order: Orderby,
-//                         offset: parseInt(objParam.start),
-//                         limit: parseInt(objParam.length),
-//                         include: [{
-//                             model: User,
-//                             required: true
-//                         }]
-//                     }).then(function(response) {
-//                         var PetList = [];
-//                         var response1 = new Object();
-//                         response1.draw = objParam.draw;
-//                         response1.recordsTotal = response.count;
-//                         response1.recordsFiltered = response.count;
-//                         response1.data = response.rows;
-//                         res.json(response1);
-
-//                     }).catch(function(error) {
-//                         res.json(error);
-//                     })
-//                 }
-//             }
-//         }
-//         CheckUserCountry(0);
-//     }
-
-// })
 
 router.get('/GetAllPetbyCountry', function (req, res) {
 
@@ -971,19 +545,7 @@ router.get('/GetAllPetbyCountry', function (req, res) {
         }
     });
 
-    // if (country != null && country != '') {
-    //     model.push({
-    //         model: User,
-    //         where: {
-    //             country: country
-    //         }
-    //     });
-    // } else {
-    //     model.push({
-    //         model: User
-    //     });
-
-    // }
+    
 
     if (UserRoles.length > 0) {
 
@@ -1280,16 +842,6 @@ router.get('/UpdateStatus', function (req, res) {
                     }
                 }).then(function (ObjExist) {
                     if (ObjExist) {
-                        // ObjExist.updateAttributes({
-                        //     IsActive: req.query.IsActive,
-                        //     ExpiryDate: ExpiryDate,
-                        //     ActivationDate: ActivationDate
-                        // }).then(function(response) {
-                        //     if (response) {
-                        //         res.json({ success: true, message: "Tracker Status Updated successfully", data: response });
-                        //     }
-                        // })
-
                         if ((req.query.flg == true || req.query.flg == 'true') || (req.query.dateFlag == true || req.query.dateFlag == 'true')) {
                             ObjExist.updateAttributes({
                                 IsActive: req.query.IsActive,
@@ -1344,11 +896,9 @@ router.post('/uploadExcelDevice', function (req, res) {
     //Set Parameter for User Permission
     req.query['tablename'] = req.headers['x-requested-with'];
 
-    //var FileName = __dirname + '/../MediaUploads/FileUpload/DeviceList.xlsx';
     form.uploadDir = __dirname + '/../MediaUploads/FileUpload';
 
     form.parse(req, function (err, fields, files) {
-        //console.log(fields);
         Company = fields.Company;
         DeviceType = fields.Type;
         IsOldDevice = fields.IsOldDevice;
@@ -1360,9 +910,8 @@ router.post('/uploadExcelDevice', function (req, res) {
 
     form.on('fileBegin', function (name, file) {
         file.path = form.uploadDir + "/" + file.name;
-        // console.log(file.path);
         FileName = file.path.toString();
-        //FileName.push(file.path);
+        
     });
 
     form.on('end', function () {
@@ -1383,7 +932,7 @@ router.post('/uploadExcelDevice', function (req, res) {
                                 } else {
                                     obj.DeviceId = lst[i].IMEI.trim();
                                 }
-                                // obj.DeviceId = lst[i].IMEI.trim();
+                                
                                 obj.IMEI = lst[i].IMEI.trim();
                                 obj.CreatedDate = new Date();
                                 obj.Latitude = '22.54967667';
@@ -1439,7 +988,7 @@ router.post('/uploadExcelDevice', function (req, res) {
                                                                     }
                                                                     addDevice(i + 1);
                                                                 });
-                                                                // Importerror.push(lst[i].SerialNumber); 
+                                                               
                                                             }
                                                         })
                                                     }
@@ -1478,7 +1027,7 @@ router.post('/uploadExcelDevice', function (req, res) {
                                                                     }
                                                                     addDevice(i + 1);
                                                                 } else {
-                                                                    // Importerror.push(lst[i].SerialNumber);
+                                                                    
                                                                     GPSDevice.update(obj, { where: { id: response[0].id } }).then(function (resUpdate) {
                                                                         if (obj.AppName == 'MYPINHERE') {
                                                                             client.set(obj.DeviceId + "ProjectIgnitionStatus", 'true', function (err, replies) { });
@@ -1509,7 +1058,7 @@ router.post('/uploadExcelDevice', function (req, res) {
                                                                         }
                                                                         addDevice(i + 1);
                                                                     } else {
-                                                                        // Importerror.push(lst[i].SerialNumber);
+                                                                        
                                                                         GPSDevice.update(obj, { where: { id: response[0].id } }).then(function (resUpdate) {
                                                                             if (obj.AppName == 'MYPINHERE') {
                                                                                 client.set(obj.DeviceId + "ProjectIgnitionStatus", 'true', function (err, replies) { });
@@ -1537,7 +1086,7 @@ router.post('/uploadExcelDevice', function (req, res) {
                                         if ((response[1])) {
                                             addDevice(i + 1);
                                         } else {
-                                            // Importerror.push(lst[i].SerialNumber);
+                                            
                                             GPSDevice.update(obj, { where: { id: response[0].id } }).then(function (resUpdate) {
                                                 addDevice(i + 1);
                                             });
@@ -1659,71 +1208,7 @@ router.get('/GetSIMDetailBySerialNum', function (req, res) {
     })
 })
 
-// router.post('/SaveSimServiceToIMEI', jsonParser, function(req, res) {
-//     var objIMEI = req.body;
-//     objHeader = req.headers;
-//     var token = getToken(objHeader);
-//     if (token) {
-//         var decoded = jwt.decode(token, TokenKey);
 
-//         objIMEI.CreatedDate = new Date();
-//         objIMEI.CreatedBy = decoded.username;
-//         if (objIMEI.IsNewSIM) {
-//             SimService.create(objIMEI).then(function(response) {
-//                 if (response) {
-//                     objIMEI.idSim = response.id;
-//                     if (objIMEI.IsNewIMEI) {
-//                         GPSDevice.create(objIMEI).then(function(resIMEI) {
-//                             if (resIMEI) {
-//                                 res.json({ success: true, message: "SIM Serial Num Attached SuccessFully", data: resIMEI });
-//                             } else {
-//                                 res.json({ success: false, message: "Something Went wrong Please Try Again Later..", data: respose });
-//                             }
-//                         })
-//                     } else {
-//                         GPSDevice.findOne({ where: { IMEI: objIMEI.IMEI } }).then(function(objIMEIExist) {
-//                             if (objIMEIExist != null) {
-//                                 objIMEIExist.updateAttributes({ idSim: objIMEI.idSim, }).then(function(response) {
-//                                     if (response) {
-//                                         res.json({ success: true, message: "SIM Serial Num Attached SuccessFully..", data: response });
-//                                     } else {
-//                                         res.json({ success: false, message: "Something Went wrong Please Try Again Later..", data: resIMEI });
-//                                     }
-//                                 })
-//                             }
-//                         })
-//                     }
-//                 } else {
-//                     res.json({ success: false, message: "Something Went wrong Please Try Again Later..", data: respose });
-//                 }
-//             })
-//         } else {
-//             if (objIMEI.IsNewIMEI) {
-//                 GPSDevice.create(objIMEI).then(function(resIMEI) {
-//                     if (resIMEI) {
-//                         res.json({ success: true, message: "SIM Serial Num Attached SuccessFully", data: resIMEI });
-//                     } else {
-//                         res.json({ success: false, message: "Something Went wrong Please Try Again Later..", data: respose });
-//                     }
-//                 })
-//             } else {
-//                 GPSDevice.findOne({ where: { IMEI: objIMEI.IMEI } }).then(function(objIMEIExist) {
-//                     if (objIMEIExist != null) {
-//                         objIMEIExist.updateAttributes({ idSim: objIMEI.idSim, }).then(function(response) {
-//                             if (response) {
-//                                 res.json({ success: true, message: "SIM Serial Num Attached SuccessFully..", data: response });
-//                             } else {
-//                                 res.json({ success: false, message: "Something Went wrong Please Try Again Later..", data: resIMEI });
-//                             }
-//                         })
-//                     }
-//                 });
-//             }
-//         }
-//     } else {
-//         res.json(InvalidToken);
-//     }
-// })
 
 router.post('/SaveSimServiceToIMEI', jsonParser, function (req, res) {
     var objIMEI = req.body;
